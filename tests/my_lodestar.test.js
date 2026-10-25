@@ -257,6 +257,65 @@ test("no_put_calls", async ({ page }) => {
   assert.deepStrictEqual(r, { puts: 0, dirty: 0 });
 });
 
+// ---- Task 6: what changed (Change Log rows are injected by replacing logRead; real rows come from saved files)
+const T6 = { fresh: true, today: "2026-10-26", title: "Sarah Lim" };
+const inject = (page, rows) => page.evaluate(r => { window.logRead = () => r.slice().sort((x, y) => x.t < y.t ? 1 : -1); }, rows);
+const chg = (page, id, since) => page.evaluate(([id, since]) => lodeChanges(mePeople().find(z => z.p.id === id), since, "2026-10-26"), [id, since]);
+const row = (o) => Object.assign({ t: "2026-10-25 09:00:00", who: "A. Planner", file: "SUP 2", what: "", a: "", z: "", cell: "" }, o);
+test("changes_include_own_cell_edit", async ({ page }) => {
+  await inject(page, [row({ what: "HAWK, 2 Nov AM", z: "Meeting", cell: "Nov!D27" }), row({ t: "2026-10-25 10:00:00", what: "HAWK, 3 Nov PM", z: "", a: "SIM", cell: "Nov!E28" })]);
+  const c = await chg(page, "HAWK", "2026-10-20 00:00:00");
+  assert.deepStrictEqual(c.map(x => [x.kind, x.text]), [["mine", "Your 3 Nov PM was cleared"], ["mine", "Your 2 Nov AM is now Meeting"]]);
+  assert.ok(/A\. Planner/.test(c[0].sub));
+}, T6);
+test("changes_ignore_other_people", async ({ page }) => {
+  await inject(page, [row({ what: "VIPER, 2 Nov AM", z: "Meeting", cell: "Nov!D27" }), row({ file: "SUP 1", what: "HAWK, 2 Nov AM", z: "Meeting", cell: "Nov!D27" })]);
+  assert.deepStrictEqual(await chg(page, "HAWK", null), []);
+});
+test("changes_include_cancelled_flight", async ({ page }) => {
+  const f = await page.evaluate(() => { for (let k = 0; k <= 7; k++) { const iso = lodeAddDays("2026-10-26", k), D = opsDay(iso); const r = D && D.rows && D.rows.find(z => z.seats.some(c => c && c.dept === "SUP 2")); if (r) { const c = r.seats.find(c => c && c.dept === "SUP 2"); return { iso, id: c.id, key: r.key, s: r.x.s }; } } });
+  assert.ok(f, "no SUP 2 flight in the window");
+  await page.evaluate(([k]) => { books[opsIdx()].S.fc.set(k, { row: 99, st: "Cancelled", why: "Weather", seat: ["", "", "", "", "", ""], atd: "", ata: "", etd: "", eta: "", tail: "", stb: "", ao: "", brf: "", xtra: "", pax: "" }); }, [f.key]);
+  await inject(page, [row({ file: "Ops Room", who: "Ops Duty", what: "Flight Crew, x", z: "Cancelled", cell: "Flight Crew!" + (await page.evaluate(() => OPS_TXT.st)) + "99" })]);
+  const c = await chg(page, f.id, null);
+  assert.deepStrictEqual(c.map(x => x.kind), ["cancelled"]);
+  assert.ok(/cancelled/i.test(c[0].text) && /Weather/.test(c[0].sub), JSON.stringify(c[0]));
+});
+test("changes_include_master_move_and_duty", async ({ page }) => {
+  const f = await page.evaluate(() => { const P = masterBook().S; for (let k = 0; k <= 7; k++) { const iso = lodeAddDays("2026-10-26", k), q = ymd(iso, 2026); for (const w of mePeople()) { if (w.dept !== "SUP 2") continue; const it = lodeDay(w, iso).items.find(x => x.kind === "flight" && x.time);
+    if (it) { const fl = P.fl.find(z => z.mi === q.mi && z.d === q.d && z.s === it.s && z.code === it.code); if (fl && fl.row) return { id: w.p.id, iso, row: fl.row, code: it.code, time: it.time.split("-")[0], ref: sdoRef(q.y, q.mi, q.d) }; } } } });
+  assert.ok(f, "no flight with a Master row in the window");
+  await inject(page, [row({ t: "2026-10-25 11:00:00", file: "Master Planner", what: "Flights, x", a: f.time, z: "1330", cell: "Flights!D" + f.row }), row({ t: "2026-10-25 12:00:00", file: "Duty Roster", what: "SDO Plan, x", z: "SUP 2", cell: "SDO Plan!" + f.ref })]);
+  const c = await chg(page, f.id, null);
+  assert.deepStrictEqual(c.map(x => x.kind), ["duty", "moved"]);
+  assert.ok(new RegExp(f.code + " moved " + f.time + " → 1330").test(c[1].text), c[1].text);
+});
+test("changes_since_last_visit_only", async ({ page }) => {
+  await inject(page, [row({ t: "2026-10-24 09:00:00", what: "HAWK, 2 Nov AM", z: "Meeting", cell: "Nov!D27" }), row({ t: "2026-10-25 18:00:00", what: "HAWK, 3 Nov AM", z: "SIM", cell: "Nov!D28" })]);
+  const c = await chg(page, "HAWK", "2026-10-25 12:00:00");
+  assert.deepStrictEqual(c.map(x => x.text), ["Your 3 Nov AM is now SIM"]);
+});
+test("changes_first_visit_last_7_days", async ({ page }) => {
+  const t = n => page.evaluate(n => { const d = new Date(Date.now() - n * 86400000), p = x => String(x).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " 12:00:00"; }, n);
+  await inject(page, [row({ t: await t(2), what: "HAWK, 2 Nov AM", z: "Meeting", cell: "Nov!D27" }), row({ t: await t(10), what: "HAWK, 3 Nov AM", z: "SIM", cell: "Nov!D28" })]);
+  assert.deepStrictEqual((await chg(page, "HAWK", null)).map(x => x.text), ["Your 2 Nov AM is now Meeting"]);
+});
+test("changes_capped_at_8_with_500_log_rows", async ({ page }) => {
+  const rows = Array.from({ length: 500 }, (_, n) => row({ t: "2026-10-25 " + String(10 + Math.floor(n / 60)).padStart(2, "0") + ":" + String(n % 60).padStart(2, "0") + ":00", what: "HAWK, " + (1 + n % 28) + " Nov AM", z: "R" + n, cell: "Nov!D27" }));
+  await inject(page, rows);
+  const c = await chg(page, "HAWK", "2026-10-01 00:00:00");
+  assert.strictEqual(c.length, 8);
+  assert.ok(c[0].t >= c[7].t);
+});
+test("badge_count_matches_and_seen_is_remembered", async ({ page }) => {
+  await inject(page, [row({ t: "2026-10-25 18:00:00", what: "HAWK, 3 Nov AM", z: "SIM", cell: "Nov!D28" }), row({ t: "2026-10-25 19:00:00", what: "HAWK, 4 Nov AM", z: "OIL", cell: "Nov!D29" })]);
+  await page.evaluate(() => { spRemember("lode_seen_SUP 2|HAWK", "2000-01-01 00:00:00"); cur.lodeIso = null; document.querySelector("nav.tabs button[data-v='lode']").click(); renderLode(); });
+  assert.ok(/2 NEW/i.test(await page.innerText("#lodeChanged")), await page.innerText("#lodeChanged"));
+  await page.evaluate(() => document.querySelector("nav.tabs button[data-v='ov']").click());
+  const seen = await page.evaluate(() => spRecall("lode_seen_SUP 2|HAWK"));
+  assert.ok(seen && seen > "2020-01-01", seen);   // moved on to the time of leaving the tab
+});
+
 // ---- runner
 (async () => {
   const only = process.argv[2];

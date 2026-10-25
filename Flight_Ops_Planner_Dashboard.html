@@ -774,6 +774,8 @@ body.opsfs #opsSize{display:none}
 #lodeWeek{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}#lodeWeek th:first-child{width:84px;white-space:nowrap}#lodeWeek th{text-align:left;font-size:10px;letter-spacing:.6px;color:var(--s500);padding:4px 10px;background:var(--s50);border-top:1px solid var(--s200);border-bottom:1px solid var(--s200)}
 #lodeWeek td{padding:2px 10px;border-bottom:1px solid var(--s100);height:27px}#lodeWeek td.dy{width:84px;font-weight:800}#lodeWeek td.dy small{display:block;font-size:10px;color:var(--s500);font-weight:600;line-height:1}#lodeWeek tr.off td{background:var(--s50);color:var(--s400)}
 #lodeWeek .pl{display:inline-block;border-radius:5px;padding:1px 8px;font-weight:800;font-size:11.5px;margin-right:4px}#lodeWeek .pl small{font-weight:600;opacity:.8;margin-left:4px}.pl.fl{background:#1e293b;color:#fff}.pl.gn{background:#fef3c7;color:#78350f}.pl.sb{background:#dcfce7;color:#166534}.pl.dt{background:#fecdd3;color:#881337}.pl.lv{background:#e2e8f0;color:#475569}.pl.sy{background:#fef3c7;color:#92400e;border:1px solid #f59e0b}.pl.cx{background:#fee2e2;color:#991b1b;text-decoration:line-through}.pl.cx i{font-style:normal;text-decoration:none}
+.lcard h3 .new{background:#2563eb;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-weight:800;margin-left:4px}.chg{padding:2px 14px 4px}.chg>div{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--s200);font-size:12.5px;line-height:1.25}.chg>div:last-child{border-bottom:0}
+.chg .ic{width:24px;height:24px;border-radius:5px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;font-size:12px}.chg small{display:block;color:var(--s500);font-size:11px}
 </style>
 </head>
 <body>
@@ -4611,6 +4613,46 @@ function lodeCards(who, iso) {
     return { medical, rest, cur: curc, syl };
   });
 }
+// What changed for one person: Change Log rows since sinceT (null = the last 7 days) that touch them. Entry = { kind, text, sub, t }, newest first, at most 8.
+// Counted: edits to their own cells; their flight cancelled in the Ops Room; a flight they are planned on added or moved in the Master Planner;
+// a duty day (SDO / BDO) given to their department. Rows are matched by file, sheet and cell, not by wording.
+const lodeNow = (back = 0) => { const d = new Date(Date.now() - back * 86400000), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()); };
+function lodeChanges(who, sinceT, iso) {
+  iso = iso || cur.lodeIso || opsToday(); sinceT = sinceT || lodeNow(7);
+  const to = lodeAddDays(iso, 7), inWin = d => d >= iso && d <= to, cs = who.p.id, mb = masterBook(), oi = opsIdx(), ob = oi >= 0 ? books[oi].S : null, rb = rosterBook(), out = [];
+  const reOps = new RegExp("^Flight Crew!" + OPS_TXT.st + "(\\d+)$"), reFl = /^Flights!([A-Z]+)(\d+)$/, reDuty = /^(SDO|BDO) Plan!([A-Z]+\d+)$/;
+  for (const x of logRead()) {
+    if (x.t < sinceT) continue;
+    const cell = x.cell || "", by = "by " + x.who;
+    let m;
+    if (cs && !/^nil$/i.test(cs) && same(x.file, who.dept) && x.what.startsWith(cs + ", ")) {
+      const rest = x.what.slice(cs.length + 2); out.push({ kind: "mine", text: x.z ? "Your " + rest + " is now " + x.z : "Your " + rest + " was cleared", sub: by + " · " + x.file, t: x.t });
+    } else if (ob && mb && (m = reOps.exec(cell)) && /^cancel/i.test(x.z)) {
+      const e = [...ob.fc].find(([, o]) => o.row === +m[1]); if (!e) continue;
+      const d = e[0].split("|")[0], D = inWin(d) && opsDay(d), r = D && D.rows && D.rows.find(z => z.key === e[0]);
+      if (r && r.seats.some(c => c && same(c.dept, who.dept) && same(c.id, who.p.id))) out.push({ kind: "cancelled", text: lodeFmt(d) + " " + SHIFTS[r.x.s] + " flight cancelled", sub: (e[1].why || "Cancelled") + " · " + by, t: x.t });
+    } else if (mb && (m = reFl.exec(cell))) {
+      const f = mb.S.fl.find(z => z.row === +m[2]); if (!f) continue;
+      const d = isoOf(mb.S.year, f.mi, f.d); if (!inWin(d) || !["C", "D"].includes(m[1])) continue;
+      if (!lodeDay(who, d).items.some(i => i.kind === "flight" && i.s === f.s && same(i.code, f.code))) continue;
+      if (m[1] === "D") out.push({ kind: "moved", text: lodeFmt(d) + " " + f.code + " moved " + (x.a || "no time") + " → " + (x.z || "no time"), sub: by + " · Master Planner", t: x.t });
+      else if (!x.a) out.push({ kind: "added", text: "Added to " + lodeFmt(d) + " " + SHIFTS[f.s] + " " + f.code, sub: by + " · Master Planner", t: x.t });
+    } else if (rb && (m = reDuty.exec(cell)) && dutyKey(x.z) === dutyKey(who.dept)) {
+      for (let k = 0; k <= 7; k++) { const d = lodeAddDays(iso, k), q = ymd(d, rb.S.year); if (sdoRef(q.y, q.mi, q.d) === m[2]) { out.push({ kind: "duty", text: m[1] + " " + lodeFmt(d), sub: "Duty Roster gave " + m[1] + " to " + who.dept, t: x.t }); break; } }
+    }
+  }
+  const seen = new Set();
+  return out.sort((a, b) => a.t < b.t ? 1 : a.t > b.t ? -1 : 0).filter(e => { const k = e.text + "|" + e.sub; return seen.has(k) ? false : seen.add(k); }).slice(0, 8);
+}
+const lodeSeenKey = w => "lode_seen_" + w.dept + "|" + lodeId(w.p);
+function lodeMarkSeen() { const R = lodeResolve(); if (R.who && R.src !== "viewing") spRemember(lodeSeenKey(R.who), lodeNow()); }
+window.addEventListener("pagehide", () => { if ($("v-lode").classList.contains("on")) lodeMarkSeen(); });
+const LODE_ICON = { cancelled: ["✕", "#dc2626"], added: ["+", "#16a34a"], moved: ["✎", "#d97706"], duty: ["D", "#be123c"], mine: ["✎", "#2563eb"] };
+function lodeChangedHtml(who, viewing, iso) {
+  const seen = viewing ? null : spRecall(lodeSeenKey(who), null), C = lodeChanges(who, seen, iso);
+  return "<div class='lcard'><h3>What changed" + (seen && C.length ? " <span class='new'>" + C.length + " NEW</span>" : "") + " <small>" + (seen ? "since " + esc(logWhen(seen)) : "last 7 days") + "</small></h3><div class='chg'>" +
+    (C.length ? C.map(e => "<div><span class='ic' style='background:" + LODE_ICON[e.kind][1] + "'>" + LODE_ICON[e.kind][0] + "</span><span>" + esc(e.text) + "<small>" + esc(e.sub) + "</small></span></div>").join("") : "<div class='lodenone'>Nothing has changed for you.</div>") + "</div></div>";
+}
 const LODE_SEAT = { "Aircraft Captain": "AC", Pilot: "Co-Pilot", Loadmaster: "LM", TACCO: "TACCO", "SUP 1": "SUP 1", "SUP 2": "SUP 2", "Additional crew": "Extra" };
 const LODE_TAG = { Planned: "gy", Flown: "gr", Cancelled: "rs", "Not closed": "am" };
 const lodeHello = () => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
@@ -4676,7 +4718,7 @@ function renderLode() {
       (R.src === "viewing" ? "<div id='lodeBanner' class='lodebanner'>Viewing " + esc(lodeId(w.p)) + ", not you. <button class='btn' id='lodeBack'>Back to me</button></div>" : "") +
       "<div class='lodecards'>" + lodeCardsHtml(c) + "</div>" +
       "<div class='lodegrid'><div class='lodecol'><div class='lcard'>" + lodeTodayHtml(w, D, iso === today, iso) + lodeWeekHtml(w, iso) + "</div></div>" +
-      "<div class='lodecol'><div id='lodeChanged'></div><div id='lodeMonth'></div></div></div>";
+      "<div class='lodecol'><div id='lodeChanged'>" + lodeChangedHtml(w, R.src === "viewing", iso) + "</div><div id='lodeMonth'></div></div></div>";
   }
   el.innerHTML = h;
 }
@@ -4784,6 +4826,7 @@ $("helpBtn").onclick = openHelp; $("helpX").onclick = () => { $("helpPop").style
 $("helpPop").addEventListener("click", e => { if (e.target.id === "helpPop") $("helpPop").style.display = "none"; });
 document.addEventListener("keydown", e => { if (e.key === "Escape") { $("helpPop").style.display = "none"; $("chitPop").style.display = "none"; } });
 document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.onclick = () => {
+  if (b.dataset.v !== "lode" && $("v-lode").classList.contains("on")) lodeMarkSeen();   // leaving My Lodestar: what changed counts from now on
   document.querySelectorAll("nav.tabs button[data-v]").forEach(x => x.classList.toggle("on", x === b));
   $("mpTabBtn").classList.toggle("on", !!b.closest("#mpMenu")); $("mpMenu").classList.remove("open");
   $("plTabBtn").classList.toggle("on", !!b.closest("#plMenu")); $("plMenu").classList.remove("open"); if (b.closest("#plMenu")) $("plTabBtn").textContent = (b.dataset.v === "syl" ? "Syllabus Tracking" : "Planner") + " ▾";

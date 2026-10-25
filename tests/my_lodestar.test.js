@@ -34,6 +34,62 @@ test("planner_still_works", async ({ page, errs }) => {
   assert.deepStrictEqual(errs, []);
 });
 
+// ---- Task 2: who am I, and View as
+const P = { fresh: true, title: "Sarah Lim" };
+test("key_ignores_rank_order_case", async ({ page }) => {
+  const r = await page.evaluate(() => [lodeKey("CPT Tan Wei Ming"), lodeKey("tan wei ming cpt"), lodeKey("CPT (NS) Lee Kok Wai")]);
+  assert.deepStrictEqual(r[0], r[1]);
+  assert.deepStrictEqual(r[2], ["kok", "lee", "wai"]);
+}, P);
+test("match_unique", async ({ page }) => {
+  assert.strictEqual(await page.evaluate(() => lodeMatch("Sarah Lim").p.id), "HAWK");
+  assert.strictEqual(await page.evaluate(() => lodeMatch("lim sarah").p.id), "HAWK");
+});
+test("match_none_for_email", async ({ page }) => {
+  assert.strictEqual(await page.evaluate(() => lodeMatch("sarah.lim@x.mil")), null);
+});
+test("empty_title_matches_nothing", async ({ page }) => {
+  assert.strictEqual(await page.evaluate(() => [lodeMatch(""), lodeMatch(undefined), lodeMatch("CPT")].join("|")), "||");
+});
+test("match_ambiguous_returns_null", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const x = mePeople().find(z => z.p.id !== "HAWK"), keep = x.p.name; x.p.name = "CPT Sarah Lim";
+    try { return lodeMatch("Sarah Lim"); } finally { x.p.name = keep; }
+  });
+  assert.strictEqual(r, null);
+});
+test("auto_match_shows_chip", async ({ page }) => {
+  await page.evaluate(() => { SP.user = { Title: "Sarah Lim", Email: "" }; cur.lodeAs = null; renderLode(); });
+  const t = await page.innerText("#lodeChip");
+  assert.ok(/HAWK/.test(t) && /signed in/i.test(t), t);
+});
+test("no_match_shows_who_are_you", async ({ page }) => {
+  await page.evaluate(() => { SP.user = { Title: "nobody@x.mil" }; spRemember("lode_me", null); cur.lodeAs = null; renderLode(); });
+  assert.ok(await page.isVisible("#lodePick"));
+  assert.strictEqual(await page.evaluate(() => lodeWho()), null);
+});
+test("pick_is_remembered", async ({ page }) => {
+  await page.evaluate(() => { SP.user = { Title: "nobody@x.mil" }; const w = mePeople().find(z => z.p.id === "RAPTOR"); lodeSetWho(w); cur.lodeAs = null; });
+  assert.strictEqual(await page.evaluate(() => lodeWho().p.id), "RAPTOR");
+  assert.deepStrictEqual(await page.evaluate(() => spRecall("lode_me")), { dept: "SUP 2", id: "RAPTOR" });
+  await page.evaluate(() => { renderLode(); });
+  assert.ok(/picked/i.test(await page.innerText("#lodeChip")));
+  await page.click("#lodeNotMe");
+  assert.strictEqual(await page.evaluate(() => lodeWho()), null);
+  assert.ok(await page.isVisible("#lodePick"));
+});
+test("view_as_banner", async ({ page }) => {
+  await page.evaluate(() => { SP.user = { Title: "Sarah Lim" }; spRemember("lode_me", null); cur.lodeAs = null; renderLode(); });
+  await page.click("#lodeChip .lodeAsBtn");
+  await page.click("#lodeList [data-who='SUP 2|VIPER']");
+  const b = await page.innerText("#lodeBanner");
+  assert.ok(/Viewing VIPER/.test(b) && /not you/i.test(b), b);
+  assert.strictEqual(await page.evaluate(() => lodeWho().p.id), "VIPER");
+  await page.click("#lodeBack");
+  assert.strictEqual(await page.evaluate(() => lodeWho().p.id), "HAWK");
+  assert.ok(!(await page.isVisible("#lodeBanner")));
+});
+
 // ---- runner
 (async () => {
   const only = process.argv[2];

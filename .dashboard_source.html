@@ -756,6 +756,10 @@ table.opst tr.f.flash td{animation:opsFlash 1.6s}@keyframes opsFlash{0%,40%{back
 .tlleg{display:flex;flex-wrap:wrap;gap:14px;padding:10px 14px 0;font-size:11.5px;color:var(--s600)}.tlleg .sw{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;background:#94a3b8}
 .tlleg .sw.brf{background:repeating-linear-gradient(45deg,#99f6e4 0 4px,#ccfbf1 4px 8px)}.tlleg .sw.flown{background:#16a34a}.tlleg .sw.open{background:#f59e0b}.tlleg .sw.due{background:#3b82f6}.tlleg .sw.oa{background:#7c3aed}.tlleg .sw.act{background:var(--s900);height:4px}
 body.opsfs #opsSize{display:none}
+.lodetop{display:flex;justify-content:flex-end;position:relative}.lodechip{display:flex;align-items:center;gap:8px;background:var(--s800);color:#cbd5e1;border-radius:20px;padding:4px 14px 4px 5px;font-size:12px}
+.lodechip .av{width:24px;height:24px;border-radius:50%;background:#15803d;color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center}.lodechip b{color:#fff;font-size:13px}.lodechip a{color:#93c5fd;font-weight:700;cursor:pointer}
+.lodelist{position:absolute;right:0;top:34px;z-index:20;background:#fff;border:1px solid var(--s300);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:360px;overflow:auto;min-width:260px}.lodelist .lg{padding:5px 10px;font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--s500);background:var(--s50)}.lodelist .li{padding:6px 12px;cursor:pointer}.lodelist .li:hover{background:var(--s100)}
+.lodebanner{margin:8px 0;padding:8px 12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;color:#78350f;font-weight:600}.lodebox{max-width:460px;margin:60px auto;background:#fff;border:1px solid var(--s200);border-radius:12px;padding:22px}
 </style>
 </head>
 <body>
@@ -4479,7 +4483,54 @@ $("blkGo").onclick = () => {
 // ---------- My schedule: one person's month across the open department files (flights with times, duties, ground programme, leave, comments)
 function mePeople() { const out = []; books.forEach((b, bi) => { if (!isDept(b)) return; b.S.roster.forEach((p, i) => { if (p.name || p.id) out.push({ bi, i, p, dept: b.S.dept }); }); }); return out; }
 // ---------- My Lodestar: a read-only personal home page (spec: docs/superpowers/specs/2026-10-25-my-lodestar-design.md). Never calls put().
-function renderLode() { const el = $("lodeBody"); if (!el) return; el.innerHTML = ""; }
+// Who am I: the SharePoint sign-in name is matched to exactly one roster name (rank, case and word order ignored); else a remembered pick; else a list.
+const LODE_RANKS = new Set("maj cpt lta ltc col me1 me2 me3 me4 me5 2lt 3sg 2sg 1sg ms1 ms2 ms3 ns".split(" "));
+const lodeKey = name => String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(w => w && !LODE_RANKS.has(w)).sort();
+const lodeId = p => p.id && !/^nil$/i.test(p.id) ? p.id : p.name;   // NIL = no callsign: known by name
+const lodeFind = (dept, id) => mePeople().find(x => same(x.dept, dept) && same(lodeId(x.p), id)) || null;
+function lodeMatch(title) {
+  const k = lodeKey(title).join(" "); if (!k) return null;
+  const hit = mePeople().filter(x => lodeKey(x.p.name).join(" ") === k);
+  return hit.length === 1 ? hit[0] : null;
+}
+function lodeResolve() {
+  if (cur.lodeAs) { const w = lodeFind(cur.lodeAs.dept, cur.lodeAs.id); if (w) return { who: w, src: "viewing" }; }
+  const r = spRecall("lode_me", null);
+  if (r && r.none) return { who: null, src: "" };   // "Not me": the list, even when the sign-in name would match
+  const pw = r && lodeFind(r.dept, r.id); if (pw) return { who: pw, src: "picked" };
+  const m = lodeMatch(SP.user && SP.user.Title); return m ? { who: m, src: "signed in via SharePoint" } : { who: null, src: "" };
+}
+const lodeWho = () => lodeResolve().who;
+function lodeSetWho(w) { spRemember("lode_me", w ? { dept: w.dept, id: lodeId(w.p) } : null); cur.lodeAs = null; cur.lodeMenu = false; renderLode(); }
+function lodeViewAs(w) { cur.lodeAs = w ? { dept: w.dept, id: lodeId(w.p) } : null; cur.lodeMenu = false; renderLode(); }
+const lodeOpts = fn => { let g = null, h = ""; mePeople().forEach(x => { if (x.dept !== g) { h += fn.group(g = x.dept); } h += fn.item(x); }); return h + fn.end(); };
+function lodeChipHtml(R) {
+  const w = R.who, ini = (w.p.ini || w.p.id || w.p.name || "?").slice(0, 2).toUpperCase();
+  return "<div id='lodeChip' class='lodechip'><span class='av'>" + esc(ini) + "</span><b>" + esc(w.p.id || w.p.name) + "</b><span class='lodesub'>" + esc([w.dept, w.p.cat, R.src === "viewing" ? "viewing" : R.src].filter(Boolean).join(" · ")) + "</span>" +
+    "<a class='lodeAsBtn'>View as ▾</a>" + (R.src === "viewing" ? "" : "<a id='lodeNotMe'>Not me</a>") + "</div>" +
+    (cur.lodeMenu ? "<div id='lodeList' class='lodelist'>" + lodeOpts({ group: d => "<div class='lg'>" + esc(d) + "</div>", item: x => "<div class='li' data-who='" + esc(x.dept + "|" + lodeId(x.p)) + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</div>", end: () => "" }) + "</div>" : "");
+}
+function renderLode() {
+  const el = $("lodeBody"); if (!el) return;
+  if (!mePeople().length) { el.innerHTML = "<div class='muted' style='padding:20px'>Open a department planner to see your page.</div>"; return; }
+  const R = lodeResolve(); let h = "";
+  if (!R.who) {
+    h = "<div id='lodePick' class='lodebox'><h3>Who are you?</h3><p class='muted'>The dashboard could not tell who you are from your sign-in name. Pick yourself once; this browser remembers it.</p><select id='lodeSel'><option value=''>Pick yourself…</option>" +
+      lodeOpts({ group: d => (d === null ? "" : "</optgroup>") + "<optgroup label='" + esc(d) + "'>", item: x => "<option value='" + esc(x.dept + "|" + lodeId(x.p)) + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</option>", end: () => "</optgroup>" }) + "</select></div>";
+  } else {
+    h = "<div class='lodetop'>" + lodeChipHtml(R) + "</div>" +
+      (R.src === "viewing" ? "<div id='lodeBanner' class='lodebanner'>Viewing " + esc(R.who.p.id || R.who.p.name) + ", not you. <button class='btn' id='lodeBack'>Back to me</button></div>" : "");
+  }
+  el.innerHTML = h;
+}
+$("lodeBody").addEventListener("click", e => {
+  const t = e.target, byKey = k => { const [d, ...r] = k.split("|"); return lodeFind(d, r.join("|")); };
+  if (t.closest(".lodeAsBtn")) { cur.lodeMenu = !cur.lodeMenu; renderLode(); }
+  else if (t.closest("#lodeNotMe")) { spRemember("lode_me", { none: 1 }); cur.lodeAs = null; cur.lodeMenu = false; renderLode(); }
+  else if (t.closest("#lodeBack")) lodeViewAs(null);
+  else if (t.closest("#lodeList [data-who]")) { const w = byKey(t.closest("[data-who]").dataset.who); if (w) lodeViewAs(w); }
+});
+$("lodeBody").addEventListener("change", e => { if (e.target.id !== "lodeSel" || !e.target.value) return; const [d, ...r] = e.target.value.split("|"), w = lodeFind(d, r.join("|")); if (w) lodeSetWho(w); });
 const landLode = () => { const b = document.querySelector("nav.tabs button[data-v='lode']"); if (b && !OPS && books.length) b.click(); };
 $("btnUndo").onclick = () => undo(true); $("btnRedo").onclick = () => undo(false);
 document.addEventListener("keydown", e => {

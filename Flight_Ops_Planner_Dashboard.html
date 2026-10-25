@@ -4567,6 +4567,35 @@ function lodeDay(who, iso) {
   return out;
 }
 const lodeWeek = (who, iso) => Array.from({ length: 7 }, (_, k) => lodeDay(who, lodeAddDays(iso, k + 1)));
+// The four status cards for one person on one day: medical (down-chit), crew rest, currency, syllabus (null in files without a syllabus).
+function lodeCards(who, iso) {
+  return withBook(who.bi, () => {
+    const st = S, i = who.i, q = ymd(iso, st.year), known = q.y === st.year && !(q.mi === NX_MI && !st.nx), k = known ? dayOfYear(st.year, q.mi, q.d) : -1;
+    const CH = computeChit(st)[i], down = k >= 0 && k < CH.down.length && CH.down[k];
+    const medical = down ? { ok: false, text: "Down-chit", sub: "since " + lodeFmt(new Date(Date.UTC(st.year, 0, 1 + CH.since[k])).toISOString().slice(0, 10)) } : { ok: true, text: "Fit to fly", sub: "No down-chit" };
+    const R = computeRest(st), run = k >= 0 && k < R[i].run.length ? R[i].run[k] : 0;
+    const rest = { run, flagged: run >= REST_DAYS, text: run ? run + " day" + (run === 1 ? "" : "s") + " in a row" : "Rested",
+      sub: run && k + 1 < R[i].fly.length ? "Flying " + lodeFmt(lodeAddDays(iso, 1)).split(" ")[0] + " would make " + restIfFly(R, i, k + 1) : "" };
+    let curc = { level: "na", text: "No currency rules", sub: "" };
+    const C = computeCurrency(st);
+    if (C) {
+      const list = C[i].res.map((r, n) => r ? { r, name: st.rules[n].name } : null).filter(Boolean);
+      if (list.length) {
+        const bad = list.find(z => /^(LAPSED|NO RECORD)/i.test(z.r.text)), due = list.filter(z => z.r.st === "due").sort((a, b) => a.r.left - b.r.left)[0], ok = list.filter(z => z.r.st === "ok").length;
+        curc = { level: bad ? "bad" : due ? "due" : "ok", sub: ok + " of " + list.length + " rules current",
+          text: bad ? (/^LAPSED/i.test(bad.r.text) ? bad.name + " lapsed" : bad.name + ": no record") : due ? due.name + " due " + serShort(due.r.lapse) : "All current" };
+      }
+    }
+    let syl = null;
+    if (st.hasSyl && st.sylDef) {
+      const P = sylPath(st.sylDef, st, who.p), w = P.stages[P.wk];
+      if (!w) syl = { label: "Syllabus", text: "Path complete", sub: "" };
+      else { const nx = w.all.find(x => !x.pass), pl = nx && nx.plan.filter(l => l.iso >= iso).sort((a, b) => a.iso < b.iso ? -1 : 1)[0];
+        syl = { label: "Syllabus · " + w.stg.name, text: nx ? nx.it.desc || nx.it.code : "Stage complete", sub: (pl ? "Planned " + lodeFmt(pl.iso) + " " + SHIFTS[pl.sh] + " · " : "") + w.done + " of " + w.n + " passed" }; }
+    }
+    return { medical, rest, cur: curc, syl };
+  });
+}
 function renderLode() {
   const el = $("lodeBody"); if (!el) return;
   if (!mePeople().length) { el.innerHTML = "<div class='muted' style='padding:20px'>Open a department planner to see your page.</div>"; return; }

@@ -162,6 +162,53 @@ test("missing_master_names_parts", async ({ page }) => {
   assert.ok(D.ops.length >= 1 && D.ops.every(r => r.fromPlan === true && r.status === "Planned"), JSON.stringify(D.ops));
 }, { fresh: true, others: false, today: "2026-10-26" });
 
+// ---- Task 4: the four status cards
+const cards = (page, id, iso, dept) => page.evaluate(([id, iso, dept]) => lodeCards(mePeople().find(z => z.p.id === id && (!dept || z.dept === dept)), iso), [id, iso, dept]);
+const T4 = { fresh: true, today: "2026-10-26" };
+test("medical_down_chit", async ({ page }) => {
+  const c = await cards(page, "KESTREL", "2026-10-26");
+  assert.deepStrictEqual([c.medical.ok, c.medical.text, c.medical.sub], [false, "Down-chit", "since Thu 1 Oct"]);
+}, T4);
+test("medical_fit_default", async ({ page }) => {
+  const c = await cards(page, "HAWK", "2026-10-26");
+  assert.deepStrictEqual([c.medical.ok, c.medical.text, c.medical.sub], [true, "Fit to fly", "No down-chit"]);
+});
+test("rest_counts_run_to_day", async ({ page }) => {
+  const c = await cards(page, "VIPER", "2026-10-02");
+  assert.deepStrictEqual([c.rest.run, c.rest.text, c.rest.sub, c.rest.flagged], [2, "2 days in a row", "Flying Sat would make 3", false]);
+  assert.strictEqual((await cards(page, "HAWK", "2026-10-26")).rest.text, "Rested");
+});
+test("rest_flags_at_five", async ({ page }) => {
+  await page.evaluate(() => { const st = books[0].S, i = st.roster.findIndex(p => p.id === "VIPER"); [2, 3, 4].forEach(d => { st.m[9].grid[i * 3][d] = "FLT-2.0"; }); });
+  const c = await cards(page, "VIPER", "2026-10-05");
+  assert.deepStrictEqual([c.rest.run, c.rest.flagged], [5, true]);
+});
+test("currency_soonest_rule", async ({ page }) => {
+  const v = await cards(page, "VIPER", "2026-10-26");
+  assert.deepStrictEqual([v.cur.level, v.cur.text, v.cur.sub], ["bad", "Night flying lapsed", "1 of 3 rules current"]);
+  const e = await cards(page, "OWL", "2026-10-26");
+  assert.deepStrictEqual([e.cur.level, e.cur.text], ["ok", "All current"]);
+  await page.evaluate(() => { const st = books[0].S; st.rules.find(r => r.name === "Mission currency").warn = 200; });   // widen the warning window so HAWK's rule is "due"
+  const h = await cards(page, "HAWK", "2026-10-26");
+  assert.deepStrictEqual([h.cur.level, h.cur.text, h.cur.sub], ["due", "Mission currency due 17 Dec", "1 of 2 rules current"]);
+});
+test("currency_none_when_no_rules", async ({ page }) => {
+  const id = await page.evaluate(() => { const x = mePeople().find(z => z.dept === "SUP 1"); books[x.bi].S.hasCur = false; return x.p.id; });   // a file without currency rules
+  const c = await cards(page, id, "2026-10-26", "SUP 1");
+  assert.deepStrictEqual([c.cur.level, c.cur.text], ["na", "No currency rules"]);
+});
+test("syl_progress_and_next", async ({ page }) => {
+  const e = await cards(page, "EAGLE", "2026-10-26");
+  assert.deepStrictEqual([e.syl.label, e.syl.text, e.syl.sub], ["Syllabus · CAT C", "TTX 2", "5 of 14 passed"]);
+  const o = await cards(page, "OWL", "2026-10-26");
+  assert.deepStrictEqual([o.syl.label, o.syl.text, o.syl.sub], ["Syllabus · OCU", "Flight 2", "Planned Tue 27 Oct NIGHT · 8 of 13 passed"]);
+  assert.strictEqual((await cards(page, "HAWK", "2026-10-26")).syl.text, "Path complete");
+});
+test("syl_null_for_older_layout", async ({ page }) => {
+  const id = await page.evaluate(() => mePeople().find(z => z.dept === "SUP 1").p.id);
+  assert.strictEqual((await cards(page, id, "2026-10-26", "SUP 1")).syl, null);
+});
+
 // ---- runner
 (async () => {
   const only = process.argv[2];

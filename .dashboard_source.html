@@ -954,7 +954,8 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z87</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z88</div>
+    <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
 <div id="spPick"><div class="box">
@@ -986,7 +987,7 @@ body.opsfs #opsSize{display:none}
   <div id="rollBody"></div>
   <div class="btns"><button class="btn" id="rollCancel">Cancel</button><button class="btn primary" id="rollGo">Start</button></div>
 </div></div>
-<div id="helpPop"><div class="box"><h2><span id="helpTitle">Help</span><button class="btn" id="helpX">Close</button></h2><div id="helpBody"></div></div></div>
+<div id="helpPop"><div class="box"><h2><span id="helpTitle">Help</span><button class="btn" id="helpX">Close</button></h2><div id="helpBody"></div><div class="muted" style="font-size:11px;margin-top:10px">LODESTAR · built by MARTELL</div></div></div>
 <div id="blkPop"><div class="box">
   <h2>Block of days</h2>
   <div class="muted" style="font-size:12px">Put one activity on a run of days, e.g. a course, attachment, detachment or overseas exercise.</div>
@@ -4094,7 +4095,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z87 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z88 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

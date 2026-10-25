@@ -41,7 +41,7 @@ existing macro-heavy ops tool (Oracle).
 8. **Not required** (Brandon decided, don't build or suggest again): double-booking check, fair share view, print layouts,
    postings dates, aircraft availability, weekly CO summary, leave balance, actual flying hours tracking beyond the Ops
    Room, Aborted / Re-plan, duplicate-tail warning, pairing rules, SDO person assignment / swap / fairness, PDF export,
-   phone view, .ics export, look-ahead panel, copy last week, notes for the day.
+   phone view, .ics export, look-ahead panel, copy last week, notes for the day, Ops Room P1/P2 alert windows (resolved by the 1 Set / 2 Set button, 2026-10-25).
 9. Ask before anything irreversible or outward-facing. Brandon uploads to SharePoint himself.
 
 ## Files in this folder

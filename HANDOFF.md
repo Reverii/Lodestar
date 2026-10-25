@@ -45,7 +45,6 @@ Waiting on Brandon:
 - Syllabus tracker: his test; Pilot and Loadmaster syllabus lists to send.
 - My Lodestar (individual dashboard) mock-up `_archive/Cleanup 2026-10-25/previews/My_Lodestar_mockup.png`: awaiting
   feedback, nothing built. First question there is identity (SharePoint current user -> roster callsign).
-- Ops Room P1/P2 alert windows mock-up: awaiting "build it".
 - Scale-up go-ahead (brings the other 4 departments to the SUP 2 layout incl. Jan next year and syllabus).
 
 Not started:

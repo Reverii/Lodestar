@@ -756,10 +756,24 @@ table.opst tr.f.flash td{animation:opsFlash 1.6s}@keyframes opsFlash{0%,40%{back
 .tlleg{display:flex;flex-wrap:wrap;gap:14px;padding:10px 14px 0;font-size:11.5px;color:var(--s600)}.tlleg .sw{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;background:#94a3b8}
 .tlleg .sw.brf{background:repeating-linear-gradient(45deg,#99f6e4 0 4px,#ccfbf1 4px 8px)}.tlleg .sw.flown{background:#16a34a}.tlleg .sw.open{background:#f59e0b}.tlleg .sw.due{background:#3b82f6}.tlleg .sw.oa{background:#7c3aed}.tlleg .sw.act{background:var(--s900);height:4px}
 body.opsfs #opsSize{display:none}
-.lodetop{display:flex;justify-content:flex-end;position:relative}.lodechip{display:flex;align-items:center;gap:8px;background:var(--s800);color:#cbd5e1;border-radius:20px;padding:4px 14px 4px 5px;font-size:12px}
+.lodetop{display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative}.loderight{display:flex;align-items:center;gap:8px;position:relative}.lodenav{display:flex;gap:6px}.lodechip{display:flex;align-items:center;gap:8px;background:var(--s800);color:#cbd5e1;border-radius:20px;padding:4px 14px 4px 5px;font-size:12px}
 .lodechip .av{width:24px;height:24px;border-radius:50%;background:#15803d;color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center}.lodechip b{color:#fff;font-size:13px}.lodechip a{color:#93c5fd;font-weight:700;cursor:pointer}
 .lodelist{position:absolute;right:0;top:34px;z-index:20;background:#fff;border:1px solid var(--s300);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:360px;overflow:auto;min-width:260px}.lodelist .lg{padding:5px 10px;font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--s500);background:var(--s50)}.lodelist .li{padding:6px 12px;cursor:pointer}.lodelist .li:hover{background:var(--s100)}
 .lodebanner{margin:8px 0;padding:8px 12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;color:#78350f;font-weight:600}.lodebox{max-width:460px;margin:60px auto;background:#fff;border:1px solid var(--s200);border-radius:12px;padding:22px}
+.lodehi{display:flex;align-items:baseline;gap:10px}.lodehi h2{margin:0;font-size:21px}.lodehi .d{color:var(--s500);font-weight:600}
+.lodecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:8px 0}.lc{background:#fff;border:1px solid var(--s200);border-left:5px solid var(--s300);border-radius:8px;padding:7px 12px}
+.lc .k{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--s500);text-transform:uppercase}.lc .v{font-size:17px;font-weight:800;margin-top:1px}.lc .s{font-size:11.5px;color:var(--s500);min-height:14px}
+.lc.g{border-left-color:#16a34a}.lc.g .v{color:#15803d}.lc.o{border-left-color:#d97706}.lc.o .v{color:#d97706}.lc.y{border-left-color:#ca8a04}.lc.y .v{color:#a16207}.lc.r{border-left-color:#dc2626}.lc.r .v{color:#dc2626}.lc.n .v{color:var(--s500)}
+.lc .dots i{display:inline-block;width:11px;height:11px;border-radius:2px;background:#f59e0b;margin-left:3px}.lc .dots i.e{background:var(--s200)}
+.lodegrid{display:grid;grid-template-columns:1fr 320px;gap:10px}.lcard{background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}.lcard h3{margin:0;padding:7px 14px;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--s700);border-bottom:1px solid var(--s200)}.lcard h3 small{text-transform:none;letter-spacing:0;font-weight:500;color:var(--s500)}
+.lcard .today{display:grid;grid-template-columns:1.15fr 1fr}.lcard .tl{padding:8px 14px;border-right:1px solid var(--s200)}.lcard .tr{padding:8px 14px;display:flex;flex-direction:column;gap:6px}
+.tg{display:inline-block;border-radius:4px;padding:2px 8px;font-size:10.5px;font-weight:800;letter-spacing:.4px;margin-right:4px}.tg.bl{background:#dbeafe;color:#1e40af}.tg.gy{background:#e2e8f0;color:#475569}.tg.gr{background:#dcfce7;color:#166534}.tg.am{background:#fef3c7;color:#92400e}.tg.rs{background:#fecdd3;color:#9f1239}
+.lcard .code{font-size:21px;font-weight:800;margin-top:3px}.lcard .code small{font-size:12px;color:var(--s500);font-weight:600;margin-left:6px}.lcard .times{display:flex;gap:24px;margin-top:5px}.lcard .times div{font-size:9.5px;font-weight:800;color:var(--s500);letter-spacing:.5px}.lcard .times b{display:block;font-size:16px;color:var(--s900);letter-spacing:0}
+.lcard .crew{margin-top:5px;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lcard .crew span{color:var(--s500)}.lcard .crew b{margin-right:4px}.lcard .it{display:flex;gap:8px;align-items:flex-start;font-size:12.5px}.lcard .it .tg{min-width:62px;text-align:center;margin:0}.lcard .it small{display:block;color:var(--s500);font-size:11px}
+.lodenone,.lodemiss,.lodemore{padding:10px 0;color:var(--s500);font-size:12.5px}.lodemiss{padding:6px 14px;background:var(--s50);border-top:1px solid var(--s200);font-size:11.5px}.lodemuted{color:var(--s500);font-size:11.5px}
+#lodeWeek{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}#lodeWeek th:first-child{width:84px;white-space:nowrap}#lodeWeek th{text-align:left;font-size:10px;letter-spacing:.6px;color:var(--s500);padding:4px 10px;background:var(--s50);border-top:1px solid var(--s200);border-bottom:1px solid var(--s200)}
+#lodeWeek td{padding:2px 10px;border-bottom:1px solid var(--s100);height:27px}#lodeWeek td.dy{width:84px;font-weight:800}#lodeWeek td.dy small{display:block;font-size:10px;color:var(--s500);font-weight:600;line-height:1}#lodeWeek tr.off td{background:var(--s50);color:var(--s400)}
+#lodeWeek .pl{display:inline-block;border-radius:5px;padding:1px 8px;font-weight:800;font-size:11.5px;margin-right:4px}#lodeWeek .pl small{font-weight:600;opacity:.8;margin-left:4px}.pl.fl{background:#1e293b;color:#fff}.pl.gn{background:#fef3c7;color:#78350f}.pl.sb{background:#dcfce7;color:#166534}.pl.dt{background:#fecdd3;color:#881337}.pl.lv{background:#e2e8f0;color:#475569}.pl.sy{background:#fef3c7;color:#92400e;border:1px solid #f59e0b}.pl.cx{background:#fee2e2;color:#991b1b;text-decoration:line-through}.pl.cx i{font-style:normal;text-decoration:none}
 </style>
 </head>
 <body>
@@ -4528,7 +4542,8 @@ function lodeDay(who, iso) {
     for (let s = 0; s < 3; s++) {
       const v = M.grid[i * 3 + s][d]; if (!v) continue;
       const a = A.get(v.toUpperCase()), ci = a ? a.ci : -1, isF = ci === CAT_FLIGHT, note = (st.notes && st.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "";
-      cells.push({ s, code: v, text: a && a.desc ? a.desc : v, note, time: isF ? plannedFlights(M, d, s).get(v.toUpperCase()) || "" : "", cancelled: isF ? cxlOf(st, who.p.id, mi, d, s) || "" : "",
+      const sl = isF && st.hasSyl && st.sylDef ? sylLink(st, who.p.id, iso, s) : null, si = sl && sl.res === "Planned" ? st.sylDef.items.find(z => same(z.code, sl.code)) : null;
+      cells.push({ s, code: v, text: a && a.desc ? a.desc : v, note, syl: si ? si.desc || si.code : "", time: isF ? plannedFlights(M, d, s).get(v.toUpperCase()) || "" : "", cancelled: isF ? cxlOf(st, who.p.id, mi, d, s) || "" : "",
         kind: isF ? "flight" : isSb(v) ? "standby" : ci === CAT_SQD ? "duty" : AWAY(ci) ? "away" : "other" });
     }
     const items = cells.filter(c => c.kind === "flight");   // a code on all three shifts (leave, BDO) is one all-day item
@@ -4538,7 +4553,7 @@ function lodeDay(who, iso) {
     }
     const gm = mb && mb.S.year === y ? grDay(mb.S, mi, d).filter(g => g.act && needsDept(g.crew, st.dept)).map(g => [g.act, g.time || ""]) : [], seen = new Set(gm.map(([t, tm]) => (t + " " + tm).trim().toLowerCase()));
     const gr = gm.concat(st.gndRow && M.gnd[d] ? String(M.gnd[d]).split("; ").filter(x => x && !seen.has(x.trim().toLowerCase())).map(x => [x, ""]) : []);   // the department's own row is usually a copy of the Master Planner's
-    gr.forEach(([t, tm]) => items.push({ s: -1, kind: "ground", code: "", text: t, time: tm, cancelled: "", note: "" }));
+    gr.forEach(([t, tm]) => items.push({ s: -1, kind: "ground", code: "", text: t, time: tm, cancelled: "", note: "", syl: "" }));
     const key = x => x.time && lodeMins(x.time) != null ? lodeMins(x.time) : x.s < 0 ? -1 : [0, 720, 1080][x.s];
     out.items = items.map((x, n) => [x, n]).sort((p, q) => key(p[0]) - key(q[0]) || p[1] - q[1]).map(z => z[0]);
     out.duty = [...new Set(out.items.filter(x => x.kind === "duty").map(x => x.code))].join(", ");
@@ -4589,10 +4604,61 @@ function lodeCards(who, iso) {
       const P = sylPath(st.sylDef, st, who.p), w = P.stages[P.wk];
       if (!w) syl = { label: "Syllabus", text: "Path complete", sub: "" };
       else { const nx = w.all.find(x => !x.pass), pl = nx && nx.plan.filter(l => l.iso >= iso).sort((a, b) => a.iso < b.iso ? -1 : 1)[0];
-        syl = { label: "Syllabus · " + w.stg.name, text: nx ? nx.it.desc || nx.it.code : "Stage complete", sub: (pl ? "Planned " + lodeFmt(pl.iso) + " " + SHIFTS[pl.sh] + " · " : "") + w.done + " of " + w.n + " passed" }; }
+        syl = { label: "Syllabus · " + w.stg.name, text: nx ? nx.it.desc || nx.it.code : P.wk === P.stages.length - 1 ? "Path complete" : "Stage complete", sub: (pl ? "Planned " + lodeFmt(pl.iso) + " " + SHIFTS[pl.sh] + " · " : "") + w.done + " of " + w.n + " passed" }; }
     }
     return { medical, rest, cur: curc, syl };
   });
+}
+const LODE_SEAT = { "Aircraft Captain": "AC", Pilot: "Co-Pilot", Loadmaster: "LM", TACCO: "TACCO", "SUP 1": "SUP 1", "SUP 2": "SUP 2", "Additional crew": "Extra" };
+const LODE_TAG = { Planned: "gy", Flown: "gr", Cancelled: "rs", "Not closed": "am" };
+const lodeHello = () => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
+const lodeLong = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short", year: "numeric" }).replace(",", "");
+function lodeCardsHtml(c) {
+  const card = (cls, k, v, sub) => "<div class='lc " + cls + "'><div class='k'>" + esc(k) + "</div><div class='v'>" + v + "</div><div class='s'>" + esc(sub) + "</div></div>";
+  const dots = Array.from({ length: REST_DAYS }, (_, n) => "<i" + (n < c.rest.run ? "" : " class='e'") + "></i>").join("");
+  return card(c.medical.ok ? "g" : "r", "Medical", c.medical.ok ? "✓ " + esc(c.medical.text) : esc(c.medical.text), c.medical.sub) +
+    card(c.rest.flagged ? "r" : c.rest.run >= REST_DAYS - 1 ? "o" : "g", "Crew rest", esc(c.rest.text) + (c.rest.run ? " <span class='dots'>" + dots + "</span>" : ""), c.rest.sub) +
+    card({ bad: "r", due: "o", ok: "g", na: "n" }[c.cur.level], "Currency", esc(c.cur.text), c.cur.sub) +
+    (c.syl ? card("y", c.syl.label, esc(c.syl.text), c.syl.sub) : "");
+}
+function lodeTodayHtml(who, D, isToday, iso) {
+  const head = "<h3>" + (isToday ? "Today" : esc(lodeFmt(iso))) + " <small>from your plan, the Master Planner and the Ops Room</small></h3>";
+  if (!D.known) return head + "<div class='lodenone'>Not in this file yet.</div>";
+  const me = r => r.seats.find(z => same(z.id, who.p.id)), f = D.ops[0];
+  let left = "<div class='lodenone'>No flight " + (isToday ? "today" : "this day") + ".</div>";
+  if (f) {
+    const m = me(f);
+    left = "<span class='tg bl'>" + SHIFTS[f.s] + " FLIGHT</span><span class='tg " + LODE_TAG[f.status] + "'>" + esc(f.status.toUpperCase()) + "</span>" +
+      "<div class='code'>" + esc(f.code) + "<small>" + esc([f.desc, f.tail ? "Tail " + f.tail + (f.stb ? " (SBY " + f.stb + ")" : "") : "", m ? m.role + " seat" : ""].filter(Boolean).join(" · ")) + "</small></div>" +
+      "<div class='times'>" + [["Brief", f.brief], ["ETD", f.etd], ["ETA", f.eta], ["Area", f.area]].map(([k, v]) => "<div>" + k.toUpperCase() + "<b>" + esc(v || "–") + "</b></div>").join("") + "</div>" +
+      (f.seats.length ? "<div class='crew'>" + f.seats.filter(z => z !== m).map(z => "<span>" + esc(LODE_SEAT[z.role] || z.role) + "</span> <b>" + esc(z.id) + "</b>").join(" ") + "</div>" : "") +
+      D.ops.slice(1).map(r => "<div class='lodemore'>Also " + esc(r.code) + " " + esc(SHIFTS[r.s]) + " · " + esc(r.status) + "</div>").join("");
+  }
+  const it = (tag, cls, t, sub) => "<div class='it'><span class='tg " + cls + "'>" + tag + "</span><div>" + t + (sub ? "<small>" + esc(sub) + "</small>" : "") + "</div></div>";
+  const rows = D.items.filter(x => x.kind !== "flight").map(x => x.kind === "standby" ? it("STANDBY", "gr", esc(x.text), SHIFTS[x.s] || "All day") :
+    x.kind === "ground" ? it("GROUND", "am", esc(x.text + (x.time ? " " + x.time : "")), "") :
+    x.kind === "away" ? it("AWAY", "gy", esc(x.text), x.s < 0 ? "All day" : SHIFTS[x.s]) :
+    x.kind === "duty" ? "" : it(x.s < 0 ? "ALL DAY" : SHIFTS[x.s], "am", esc(x.code + (x.time ? " " + x.time : "")), x.note ? "“" + x.note + "”" : ""));
+  rows.push(it("DUTY", "rs", esc(D.duty || "No duty " + (isToday ? "today" : "this day")), D.duty ? "" : D.nextDuty ? "Next: " + D.nextDuty : ""));
+  const miss = D.missing.length ? "<div class='lodemiss'>Not open: " + esc(D.missing.join(", ")) + ". Those parts are left out.</div>" : "";
+  return head + "<div class='today'><div class='tl'>" + left + "</div><div class='tr'>" + rows.join("") + "</div></div>" + miss;
+}
+function lodeWeekHtml(who, iso) {
+  const pill = x => {
+    const tm = x.time ? "<small>" + esc(x.time.split("-")[0]) + "</small>" : "";
+    if (x.kind === "flight") return "<span class='pl " + (x.cancelled ? "cx" : "fl") + "'>" + esc(x.code) + tm + (x.cancelled ? " <i>CXL</i>" : "") + "</span>" + (x.syl && !x.cancelled ? "<span class='pl sy'>🎓 " + esc(x.syl) + "</span>" : "");
+    if (x.kind === "ground") return "<span class='pl gn'>" + esc(x.text) + (x.time ? "<small>" + esc(x.time.split("-")[0]) + "</small>" : "") + "</span>";
+    return "<span class='pl " + ({ standby: "sb", duty: "dt", away: "lv" }[x.kind] || "gn") + "'>" + esc(x.code) + tm + "</span>" + (x.s < 0 ? "<span class='lodemuted'> " + (x.kind === "duty" ? "whole day" : esc(x.text)) + "</span>" : "");
+  };
+  let h = "<table id='lodeWeek'><tr><th>NEXT 7 DAYS</th><th>AM</th><th>PM</th><th>NIGHT</th></tr>";
+  lodeWeek(who, iso).forEach(D => {
+    const [wd, dd, mo] = lodeFmt(D.iso).split(" "), wk = [0, 6].includes(new Date(D.iso + "T00:00:00").getDay());
+    const lab = "<td class='dy'><b>" + wd + " " + dd + "</b><small>" + mo + "</small></td>";
+    if (!D.known) { h += "<tr class='d off'>" + lab + "<td colspan='3'>Not in this file yet</td></tr>"; return; }
+    const col = k => D.items.filter(x => k === 0 ? x.s <= 0 : x.s === k).map(pill).join("");
+    h += "<tr class='d" + (!D.items.length && wk ? " off" : "") + "'>" + lab + "<td>" + (!D.items.length && wk ? "Off" : col(0)) + "</td><td>" + col(1) + "</td><td>" + col(2) + "</td></tr>";
+  });
+  return h + "</table>";
 }
 function renderLode() {
   const el = $("lodeBody"); if (!el) return;
@@ -4602,8 +4668,13 @@ function renderLode() {
     h = "<div id='lodePick' class='lodebox'><h3>Who are you?</h3><p class='muted'>The dashboard could not tell who you are from your sign-in name. Pick yourself once; this browser remembers it.</p><select id='lodeSel'><option value=''>Pick yourself…</option>" +
       lodeOpts({ group: d => (d === null ? "" : "</optgroup>") + "<optgroup label='" + esc(d) + "'>", item: x => "<option value='" + esc(x.dept + "|" + lodeId(x.p)) + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</option>", end: () => "</optgroup>" }) + "</select></div>";
   } else {
-    h = "<div class='lodetop'>" + lodeChipHtml(R) + "</div>" +
-      (R.src === "viewing" ? "<div id='lodeBanner' class='lodebanner'>Viewing " + esc(R.who.p.id || R.who.p.name) + ", not you. <button class='btn' id='lodeBack'>Back to me</button></div>" : "");
+    const w = R.who, today = opsToday(), iso = cur.lodeIso || today, D = lodeDay(w, iso), c = lodeCards(w, iso);
+    h = "<div class='lodetop'><div class='lodehi'><h2>" + lodeHello() + ", " + esc(lodeId(w.p)) + "</h2><span class='d'>" + esc(lodeLong(iso)) + "</span></div>" +
+      "<div class='loderight'>" + lodeChipHtml(R) + "<div class='lodenav'><button class='btn' id='lodePrev'>‹ Prev day</button><button class='btn' id='lodeNext'>Next day ›</button></div></div></div>" +
+      (R.src === "viewing" ? "<div id='lodeBanner' class='lodebanner'>Viewing " + esc(lodeId(w.p)) + ", not you. <button class='btn' id='lodeBack'>Back to me</button></div>" : "") +
+      "<div class='lodecards'>" + lodeCardsHtml(c) + "</div>" +
+      "<div class='lodegrid'><div class='lodecol'><div class='lcard'>" + lodeTodayHtml(w, D, iso === today, iso) + lodeWeekHtml(w, iso) + "</div></div>" +
+      "<div class='lodecol'><div id='lodeChanged'></div><div id='lodeMonth'></div></div></div>";
   }
   el.innerHTML = h;
 }
@@ -4612,6 +4683,7 @@ $("lodeBody").addEventListener("click", e => {
   if (t.closest(".lodeAsBtn")) { cur.lodeMenu = !cur.lodeMenu; renderLode(); }
   else if (t.closest("#lodeNotMe")) { spRemember("lode_me", { none: 1 }); cur.lodeAs = null; cur.lodeMenu = false; renderLode(); }
   else if (t.closest("#lodeBack")) lodeViewAs(null);
+  else if (t.closest("#lodePrev") || t.closest("#lodeNext")) { cur.lodeIso = lodeAddDays(cur.lodeIso || opsToday(), t.closest("#lodePrev") ? -1 : 1); renderLode(); }
   else if (t.closest("#lodeList [data-who]")) { const w = byKey(t.closest("[data-who]").dataset.who); if (w) lodeViewAs(w); }
 });
 $("lodeBody").addEventListener("change", e => { if (e.target.id !== "lodeSel" || !e.target.value) return; const [d, ...r] = e.target.value.split("|"), w = lodeFind(d, r.join("|")); if (w) lodeSetWho(w); });

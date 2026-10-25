@@ -209,6 +209,54 @@ test("syl_null_for_older_layout", async ({ page }) => {
   assert.strictEqual((await cards(page, id, "2026-10-26", "SUP 1")).syl, null);
 });
 
+// ---- Task 5: the page
+const T5 = { fresh: true, today: "2026-10-26", title: "Sarah Lim" };
+const shown = async (page, iso) => { await page.evaluate(iso => { cur.lodeIso = iso || null; cur.lodeAs = null; spRemember("lode_me", null); document.querySelector("nav.tabs button[data-v='lode']").click(); renderLode(); }, iso); await page.waitForTimeout(150); return page.innerText("#v-lode"); };
+test("day_flight_carries_planned_syllabus", async ({ page }) => {
+  const D = await day(page, "OWL", "2026-10-27");
+  assert.strictEqual(D.items.find(x => x.kind === "flight").syl, "Flight 2");
+  assert.strictEqual((await day(page, "HAWK", "2026-10-05")).items.find(x => x.kind === "flight").syl, "");
+}, T5);
+test("renders_greeting_and_cards", async ({ page }) => {
+  const t = await shown(page);
+  assert.ok(/Good (morning|afternoon|evening), HAWK/.test(t), t.slice(0, 200));
+  assert.ok(/Monday 26 Oct 2026/.test(t));
+  for (const w of ["MEDICAL", "CREW REST", "CURRENCY"]) assert.ok(t.toUpperCase().includes(w), w);
+  assert.ok(await page.isVisible("#lodePrev") && await page.isVisible("#lodeNext"));
+});
+test("today_panel_shows_flight_details", async ({ page }) => {
+  await page.evaluate(() => { SP.user = { Title: "Kumaravel S." }; });
+  const t = await shown(page, "2026-10-14");
+  for (const w of ["FLT-1.5", "0800", "1100", "NOT CLOSED", "SUP 2", "TUNA"]) assert.ok(t.toUpperCase().includes(w.toUpperCase()), w + " in: " + t);
+});
+test("next_days_table_rows", async ({ page }) => {
+  await page.evaluate(() => { SP.user = { Title: "Sarah Lim" }; });
+  await shown(page);
+  const rows = await page.evaluate(() => [...document.querySelectorAll("#lodeWeek tr.d")].map(r => r.cells[0].innerText.replace(/\s+/g, " ").trim()));
+  assert.deepStrictEqual(rows, ["Tue 27 Oct", "Wed 28 Oct", "Thu 29 Oct", "Fri 30 Oct", "Sat 31 Oct", "Sun 1 Nov", "Mon 2 Nov"]);
+});
+test("prev_next_day_moves_focus", async ({ page }) => {
+  await shown(page);
+  await page.click("#lodeNext"); assert.ok(/Tuesday 27 Oct 2026/.test(await page.innerText("#v-lode")));
+  await page.click("#lodePrev"); await page.click("#lodePrev"); assert.ok(/Sunday 25 Oct 2026/.test(await page.innerText("#v-lode")));
+});
+test("fits_1280x720_without_scroll", async ({ page }) => {
+  await shown(page);
+  const r = await page.evaluate(() => { const v = document.getElementById("v-lode"); return { over: v.scrollHeight - v.clientHeight, page: document.documentElement.scrollHeight }; });
+  assert.ok(r.over <= 1 && r.page <= 720, JSON.stringify(r));
+});
+test("unknown_day_message", async ({ page }) => {
+  const t = await shown(page, "2028-01-05");
+  assert.ok(/Not in this file yet/.test(t), t.slice(0, 300));
+});
+test("no_put_calls", async ({ page }) => {
+  await page.evaluate(() => { window.__puts = 0; const o = window.put; window.put = function () { window.__puts++; return o.apply(this, arguments); }; });
+  await shown(page);
+  await page.click("#lodeNext"); await page.click("#lodePrev"); await page.click("#lodeChip .lodeAsBtn"); await page.click("#lodeList [data-who='SUP 2|VIPER']"); await page.click("#lodeBack");
+  const r = await page.evaluate(() => ({ puts: window.__puts, dirty: books.reduce((n, b) => n + b.dirty.size, 0) }));
+  assert.deepStrictEqual(r, { puts: 0, dirty: 0 });
+});
+
 // ---- runner
 (async () => {
   const only = process.argv[2];

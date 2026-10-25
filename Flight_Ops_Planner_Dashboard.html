@@ -776,6 +776,8 @@ body.opsfs #opsSize{display:none}
 #lodeWeek .pl{display:inline-block;border-radius:5px;padding:1px 8px;font-weight:800;font-size:11.5px;margin-right:4px}#lodeWeek .pl small{font-weight:600;opacity:.8;margin-left:4px}.pl.fl{background:#1e293b;color:#fff}.pl.gn{background:#fef3c7;color:#78350f}.pl.sb{background:#dcfce7;color:#166534}.pl.dt{background:#fecdd3;color:#881337}.pl.lv{background:#e2e8f0;color:#475569}.pl.sy{background:#fef3c7;color:#92400e;border:1px solid #f59e0b}.pl.cx{background:#fee2e2;color:#991b1b;text-decoration:line-through}.pl.cx i{font-style:normal;text-decoration:none}
 .lcard h3 .new{background:#2563eb;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-weight:800;margin-left:4px}.chg{padding:2px 14px 4px}.chg>div{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--s200);font-size:12.5px;line-height:1.25}.chg>div:last-child{border-bottom:0}
 .chg .ic{width:24px;height:24px;border-radius:5px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;font-size:12px}.chg small{display:block;color:var(--s500);font-size:11px}
+#lodeMonth .sum{display:grid;grid-template-columns:repeat(3,1fr)}#lodeMonth .sum>div{padding:7px 12px;border-right:1px solid var(--s200);border-bottom:1px solid var(--s200)}#lodeMonth .sum>div:nth-child(3n){border-right:0}#lodeMonth .sum b{font-size:19px;display:block;line-height:1.1}#lodeMonth .sum span{font-size:9.5px;font-weight:800;color:var(--s500);letter-spacing:.5px}#lodeMonth .sum small{display:block;color:var(--s500);font-size:11px}
+#lodeToPlanner{float:right;color:var(--blue);text-transform:none;letter-spacing:0;font-size:12px;font-weight:600;cursor:pointer}.lodecol{display:flex;flex-direction:column;gap:10px}
 </style>
 </head>
 <body>
@@ -951,7 +953,7 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z89</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z90</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4096,7 +4098,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z89 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z90 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -4653,6 +4655,23 @@ function lodeChangedHtml(who, viewing, iso) {
   return "<div class='lcard'><h3>What changed" + (seen && C.length ? " <span class='new'>" + C.length + " NEW</span>" : "") + " <small>" + (seen ? "since " + esc(logWhen(seen)) : "last 7 days") + "</small></h3><div class='chg'>" +
     (C.length ? C.map(e => "<div><span class='ic' style='background:" + LODE_ICON[e.kind][1] + "'>" + LODE_ICON[e.kind][0] + "</span><span>" + esc(e.text) + "<small>" + esc(e.sub) + "</small></span></div>").join("") : "<div class='lodenone'>Nothing has changed for you.</div>") + "</div></div>";
 }
+// The month so far for one person: the Planner's own totals (flights, planned hours, ground, duty, leave), cancelled flights, hours flown (Ops Room ATD to ATA) and syllabus passes.
+function lodeMonth(who, mi) {
+  return withBook(who.bi, () => {
+    const st = S, A = actIndex(), t = monthStats(mi, A).crew[who.i], G = st.m[mi].grid, dim = daysIn(st.year, mi), pre = isoOf(st.year, mi, 0).slice(0, 7);
+    let cancelled = 0;
+    for (let d = 0; d < dim; d++) for (let s = 0; s < 3; s++) { const v = G[who.i * 3 + s][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && cxlOf(st, who.p.id, mi, d, s)) cancelled++; }
+    const f = opsFlown().get([st.dept, who.p.id, mi].join("|").toUpperCase());
+    return { flights: t.fl, cancelled, hrsFlown: f ? f.h : 0, hrsPlanned: t.hrs, ground: t.gd, duty: t.sdo, leave: t.lv, sylPassed: (st.syl || []).filter(x => same(x.id, who.p.id) && x.res === "Pass" && x.iso.slice(0, 7) === pre).length };
+  });
+}
+function lodeMonthHtml(who, iso) {
+  const st = books[who.bi].S, q = ymd(iso, st.year); if (q.y !== st.year || (q.mi === NX_MI && !st.nx)) return "";
+  const m = lodeMonth(who, q.mi), tile = (b, k, sub) => "<div><b>" + b + "</b><span>" + k + "</span><small>" + esc(sub) + "</small></div>";
+  return "<div class='lcard'><h3>" + MONTHS_FULL[q.mi % 12] + " so far<a id='lodeToPlanner' data-mi='" + q.mi + "'>Month in the Planner ›</a></h3><div class='sum'>" +
+    tile(m.flights, "FLIGHTS", m.cancelled ? m.cancelled + " cancelled" : "none cancelled") + tile(m.hrsFlown.toFixed(1), "HRS FLOWN", "of " + m.hrsPlanned.toFixed(1) + " planned") + tile(m.ground, "GROUND DUTY", "days") +
+    tile(m.duty, "SDO / BDO", "days") + tile(m.leave, "LEAVE", "days") + (st.hasSyl ? tile(m.sylPassed, "SYLLABUS", "passed this month") : "") + "</div></div>";
+}
 const LODE_SEAT = { "Aircraft Captain": "AC", Pilot: "Co-Pilot", Loadmaster: "LM", TACCO: "TACCO", "SUP 1": "SUP 1", "SUP 2": "SUP 2", "Additional crew": "Extra" };
 const LODE_TAG = { Planned: "gy", Flown: "gr", Cancelled: "rs", "Not closed": "am" };
 const lodeHello = () => { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; };
@@ -4718,7 +4737,7 @@ function renderLode() {
       (R.src === "viewing" ? "<div id='lodeBanner' class='lodebanner'>Viewing " + esc(lodeId(w.p)) + ", not you. <button class='btn' id='lodeBack'>Back to me</button></div>" : "") +
       "<div class='lodecards'>" + lodeCardsHtml(c) + "</div>" +
       "<div class='lodegrid'><div class='lodecol'><div class='lcard'>" + lodeTodayHtml(w, D, iso === today, iso) + lodeWeekHtml(w, iso) + "</div></div>" +
-      "<div class='lodecol'><div id='lodeChanged'>" + lodeChangedHtml(w, R.src === "viewing", iso) + "</div><div id='lodeMonth'></div></div></div>";
+      "<div class='lodecol'><div id='lodeChanged'>" + lodeChangedHtml(w, R.src === "viewing", iso) + "</div><div id='lodeMonth'>" + lodeMonthHtml(w, iso) + "</div></div></div>";
   }
   el.innerHTML = h;
 }
@@ -4727,6 +4746,7 @@ $("lodeBody").addEventListener("click", e => {
   if (t.closest(".lodeAsBtn")) { cur.lodeMenu = !cur.lodeMenu; renderLode(); }
   else if (t.closest("#lodeNotMe")) { spRemember("lode_me", { none: 1 }); cur.lodeAs = null; cur.lodeMenu = false; renderLode(); }
   else if (t.closest("#lodeBack")) lodeViewAs(null);
+  else if (t.closest("#lodeToPlanner")) { cur.m = +t.closest("#lodeToPlanner").dataset.mi; renderControls(); document.querySelector("nav.tabs button[data-v='plan']").click(); renderPlanner(); }
   else if (t.closest("#lodePrev") || t.closest("#lodeNext")) { cur.lodeIso = lodeAddDays(cur.lodeIso || opsToday(), t.closest("#lodePrev") ? -1 : 1); renderLode(); }
   else if (t.closest("#lodeList [data-who]")) { const w = byKey(t.closest("[data-who]").dataset.who); if (w) lodeViewAs(w); }
 });
@@ -4803,7 +4823,8 @@ const HELP = {
     "<p><b>From the Planner:</b> click a crew cell, open the gold <b>🎓 Syllabus</b> box (off by default) and tick the item, then pick the flight or sim. The cell gets a gold corner and the item under the code; the item shows <b>planned</b> here. On the day or after, click the cell again to record <b>✓ Pass</b> or <b>✕ Fail</b>. Only Pass and Fail use a chance.</p>" +
     "<p>The stages, items and chances are on your own planner file's <b>Syllabus Settings</b>, <b>Syllabus Stages</b> and <b>Syllabus Items</b> sheets (edit them in Excel). Only your department's crew are listed.</p>"],
   log: ["Changes", "<p>Every change saved from this dashboard, newest first: when, who, which file, what changed in words, and the value before and after. On SharePoint the name is the person signed in to SharePoint, so it follows their access rights: someone without edit rights on a file cannot save it, so cannot appear in its log.</p><p>Each Excel file keeps its own log on a <b>Change Log</b> sheet (added automatically the first time something is saved). This tab shows the logs of every file you have open; filter by person, file, day or text. Hover a change to see the exact sheet and cell.</p>"],
-  lode: ["My Lodestar", "<p>Your own page: today, the next 7 days, your status and what changed. View only.</p>"],
+  lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
+    "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p>Currency checks per person from the rules on this tab (on hold for now). Red = lapsed, amber = due soon; the same badges show next to names on the Planner.</p>"],

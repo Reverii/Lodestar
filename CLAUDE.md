@@ -54,6 +54,8 @@ existing macro-heavy ops tool (Oracle).
 | `Flight_Ops_Planner_Dashboard.html` | **the dev build Brandon uses** (~6 MB; embeds SUP 2 as template + the other files as samples) |
 | `release/Flight_Ops_Planner_Dashboard.html` | release build (dev code stripped). Not for Brandon yet |
 | `input/LODESTAR_Data_Input.xlsx` | Brandon's filled real-data workbook (Crew, Flight Codes, Activities, Lists, Public Holidays) |
+| `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, needs the dashboard built first); `LODE_FILES=<folder>` points them at another set of xlsx files |
+| `docs/superpowers/` | design specs and implementation plans (My Lodestar) |
 | `specs/SUP2_syllabus_items.csv` | real SUP 2 syllabus (47 items); embedded in `.build_planner.py` as `SYL_REAL` |
 | `deck/LODESTAR.pptx` | CO reveal deck, Brandon's edited master copy |
 | `logo/final/`, `logo/animated/` | Compass Rose logo (chosen), 8 s intro video |
@@ -110,7 +112,7 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 2`. The dashboard has
   `const LAYOUT = { dept: 2, master: 2, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
   lower or missing = checked sheet by sheet and listed as "older layout". Bump both sides together when cells move.
-- Dashboard version string: `Dashboard version 2026-10-25 z86` (two places in `.dashboard_source.html`: `#wDiag` and
+- Dashboard version string: `Dashboard version 2026-10-25 z90` (two places in `.dashboard_source.html`: `#wDiag` and
   `spDiag`). Bump the `zNN` number on each change you ship so Brandon can tell builds apart.
 
 ## Key cell layout (department file; full detail in the builders and dashboard constants)
@@ -128,8 +130,8 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 
 ## Testing
 
-The Node/Playwright tests (`web/*.test.js`, SharePoint mock `spmock2.js`) lived in a cloud scratchpad that no longer
-exists; they are not in this folder. To check a change, open the built dashboard in Chromium/Edge (Playwright works),
+The old Node/Playwright tests (`web/*.test.js`, SharePoint mock `spmock2.js`) lived in a cloud scratchpad that no longer
+exists. New checks are in `tests/` (run `python3 .lodestar_build.py dashboard && node tests/my_lodestar.test.js`). To check a change, open the built dashboard in Chromium/Edge (Playwright works),
 load the Excel files from this folder (file input or "Open every file (dev)" folder picker), and exercise the feature;
 check saved files with openpyxl. Pages accept `window.OPS_TODAY` / `CUR_TODAY = "2026-10-14"` to fake today. A small
 SharePoint REST mock is worth rebuilding if you touch save/merge/live refresh.

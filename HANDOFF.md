@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Where things stand
 
-- **Dashboard z89** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
+- **Dashboard z90** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
@@ -33,6 +33,12 @@ Full detail per feature is in `PROJECT_CHECKLIST.md`. Version tags `zNN` are das
   real SUP 2 syllabus 47 items (z72-z80; compact picker was reverted to list style in z80).
 - Autosave 2.5 s, SharePoint merge on save, live refresh 15 s, self-heal, Change Log sheet + Changes tab (z68, z69, z82).
 - Year rollover "Start new year…" (z67) and Jan (next year) look-ahead tab (z83).
+- **My Lodestar (z90)**: the first tab, a read-only personal home page: greeting, four cards (medical, crew rest, currency,
+  syllabus), Today (flight with tail, brief, ETD/ETA, area and crew from the Ops Room; standby; ground; duty), Next 7 days by
+  AM / PM / NIGHT, What changed (own edits, cancelled flights, Master Planner moves, new duty days since the last visit) and the
+  month so far. Who you are: SharePoint sign-in name matched to exactly one roster name (rank, case and word order ignored), else
+  a remembered pick; View as shows anyone. The My schedule tab is gone. Spec `docs/superpowers/specs/2026-10-25-my-lodestar-design.md`,
+  plan `docs/superpowers/plans/2026-10-25-my-lodestar.md`. Not built: Passport card and Outlook / .ics button (Brandon left both out).
 - Version check banner (z18), dev mode + release build (z70), real data load (z84), dev mode edits Master Planner and
   Duty Roster properly (z85), z86 latest fixes, z87 Redo button now enabled after an Undo (the buttons were not refreshed by `undo()`), z88 author mark "Built by MARTELL", z89 Block of days with "Replace cells" now drops the replaced flight's Planned syllabus entry (it used to leave it behind).
 
@@ -43,8 +49,6 @@ Waiting on Brandon:
 - Excel Online test results for the `SharePoint tests/` variants (now in `_archive/Cleanup 2026-10-25/`).
 - Compact layout check at 1920x1200 / 150%.
 - Syllabus tracker: his test; Pilot and Loadmaster syllabus lists to send.
-- My Lodestar (individual dashboard) mock-up `_archive/Cleanup 2026-10-25/previews/My_Lodestar_mockup.png`: awaiting
-  feedback, nothing built. First question there is identity (SharePoint current user -> roster callsign).
 - Scale-up go-ahead (brings the other 4 departments to the SUP 2 layout incl. Jan next year and syllabus).
 
 Not started:
@@ -71,7 +75,9 @@ shortcuts in the Planner, hours/sorties chart.
 
 ## Things that did not come across
 
-- The Node/Playwright test suite and SharePoint mock (`web/` in an old cloud scratchpad) are gone. Rebuild what you need.
+- The old Node/Playwright test suite and SharePoint mock (`web/` in an old cloud scratchpad) are gone. A new `tests/` folder exists:
+  `node tests/my_lodestar.test.js` (after `python3 .lodestar_build.py dashboard`) runs 56 checks for My Lodestar plus a regression
+  pass (every tab opens, edit / undo / redo / save, Block of days). No SharePoint mock yet; rebuild one before touching save, merge or live refresh.
 - `build8` / `build8_v17` named in old notes are `.build_planner.py` / `.build_planner_other_depts.py` here.
 - The claude.ai project memory (decision history) is summarised in `CLAUDE.md`, this file and `PROJECT_CHECKLIST.md`.
 

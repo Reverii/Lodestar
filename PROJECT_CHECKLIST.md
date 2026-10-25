@@ -151,6 +151,8 @@ These aren't gaps, just ideas that could make it nicer to use. Pick any you like
 
 - [x] "Today" button (Planner, My schedule) and today highlighted in blue on the Planner, My schedule, Master Planning and Duty Planner (z18)
 - [x] My schedule tab (z18): pick anyone from the open department files, see their month as a calendar (flights with planned times, duties, ground programme, leave, cell comments, cancelled flights) with month totals
+- [x] My schedule tab removed (z90): My Lodestar does the same job, and View as looks up anyone
+- [x] My Lodestar (z90): first tab, read-only personal home page (cards, Today, Next 7 days, What changed, month so far); matched to the roster from the SharePoint sign-in name, else a remembered pick. No Passport card, no Outlook button (Brandon, 25 Oct)
 - [x] Find box on the Planner (z18): outlines every cell, time or comment in the month that matches, and matching names; Enter jumps to the next
 - [-] ~~Copy last week / repeat pattern: copy a week of plans onto the next week~~ Not required (21 Oct)
 - [x] Undo / redo (z18): ↶ ↷ buttons in the header, Ctrl+Z / Ctrl+Y, up to 40 steps; history restarts after Save

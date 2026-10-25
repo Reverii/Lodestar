@@ -316,6 +316,72 @@ test("badge_count_matches_and_seen_is_remembered", async ({ page }) => {
   assert.ok(seen && seen > "2020-01-01", seen);   // moved on to the time of leaving the tab
 });
 
+// ---- Task 7: month summary, help, version
+const T7 = { fresh: true, today: "2026-10-26", title: "Sarah Lim" };
+const month = (page, id, mi) => page.evaluate(([id, mi]) => lodeMonth(mePeople().find(z => z.p.id === id), mi), [id, mi]);
+const plannerTotals = (page, id) => page.evaluate(id => withBook(0, () => { const t = monthStats(9, actIndex()).crew[books[0].S.roster.findIndex(p => p.id === id)]; return { flights: t.fl, hrsPlanned: t.hrs, ground: t.gd, duty: t.sdo, leave: t.lv }; }), id);
+test("month_matches_planner_totals", async ({ page }) => {
+  for (const id of ["HAWK", "VIPER", "KESTREL"]) {
+    const m = await month(page, id, 9), t = await plannerTotals(page, id);
+    assert.deepStrictEqual({ flights: m.flights, hrsPlanned: m.hrsPlanned, ground: m.ground, duty: m.duty, leave: m.leave }, t, id);
+  }
+  assert.strictEqual((await month(page, "HAWK", 9)).cancelled, 0);
+}, T7);
+test("month_cancelled_and_flown_hours", async ({ page }) => {
+  const base = await month(page, "HAWK", 9);
+  await page.evaluate(() => { const D = opsDay("2026-10-14"), r = D.rows.find(z => z.seats.some(c => c && c.id === "HAWK")); books[opsIdx()].S.fc.set(r.key, { row: 98, st: "", why: "", seat: ["", "", "", "", "", ""], atd: "0800", ata: "1100", etd: "", eta: "", tail: "", stb: "", ao: "", brf: "", xtra: "", pax: "" }); });
+  const flown = await month(page, "HAWK", 9);
+  assert.strictEqual(flown.hrsFlown, 3);
+  await page.evaluate(() => { const D = opsDay("2026-10-14"), r = D.rows.find(z => z.seats.some(c => c && c.id === "HAWK")); books[opsIdx()].S.fc.set(r.key, { row: 98, st: "Cancelled", why: "Weather", seat: ["", "", "", "", "", ""], atd: "", ata: "", etd: "", eta: "", tail: "", stb: "", ao: "", brf: "", xtra: "", pax: "" }); });
+  const c = await month(page, "HAWK", 9);
+  assert.deepStrictEqual([c.cancelled, c.flights, c.hrsFlown], [1, base.flights - 1, 0]);
+  assert.strictEqual(base.sylPassed, 0);
+});
+test("month_card_renders", async ({ page }) => {
+  await page.evaluate(() => { spRemember("lode_me", null); cur.lodeIso = null; document.querySelector("nav.tabs button[data-v='lode']").click(); renderLode(); });
+  const t = await page.innerText("#lodeMonth");
+  assert.ok(/October so far/i.test(t) && /FLIGHTS/i.test(t) && /HRS FLOWN/i.test(t) && /LEAVE/i.test(t), t);
+});
+test("help_text_present", async ({ page }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='lode']").click(); });
+  await page.click("#helpBtn");
+  const t = await page.innerText("#helpBody");
+  assert.ok(/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));
+});
+test("version_is_z90", async ({ page }) => {
+  const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
+  assert.ok(/ z90 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-25 z90 "), "start screen version");
+});
+
+// ---- Regression: the rest of the dashboard still works around My Lodestar
+test("every_tab_opens_without_errors", async ({ page, errs }) => {
+  const views = await page.evaluate(() => [...document.querySelectorAll("nav.tabs button[data-v]")].map(b => b.dataset.v));
+  for (const v of views) { await page.evaluate(v => document.querySelector("nav.tabs button[data-v='" + v + "']").click(), v); await page.waitForTimeout(250); }
+  assert.ok(views.includes("lode") && !views.includes("me"), views.join());
+  assert.deepStrictEqual(errs, []);
+}, { fresh: true, today: "2026-10-26", title: "Sarah Lim" });
+test("edit_undo_redo_save_roundtrip", async ({ page, errs }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='plan']").click(); document.querySelector("#month").value = "9"; document.querySelector("#month").dispatchEvent(new Event("change")); });
+  await page.click("#plan td[data-k='g:1:1']"); await page.keyboard.type("Meeting"); await page.keyboard.press("Enter"); await page.waitForTimeout(400);
+  const st = () => page.evaluate(() => ({ cell: books[0].S.m[9].grid[1][1], undo: !btnUndo.disabled, redo: !btnRedo.disabled, dirty: books[0].dirty.size }));
+  assert.deepStrictEqual(await st(), { cell: "Meeting", undo: true, redo: false, dirty: 1 });
+  await page.click("#btnUndo"); await page.waitForTimeout(300);
+  assert.deepStrictEqual(await st(), { cell: "", undo: false, redo: true, dirty: 0 });   // the Redo button follows an undo (z87 fix)
+  await page.click("#btnRedo"); await page.waitForTimeout(300);
+  const [dl] = await Promise.all([page.waitForEvent("download", { timeout: 15000 }), page.click("#btnSave")]);
+  assert.ok(/\.xlsx$/.test(dl.suggestedFilename()));
+  await page.waitForTimeout(500);
+  assert.strictEqual(await page.evaluate(() => books[0].dirty.size), 0);
+  assert.deepStrictEqual(errs, []);
+});
+test("block_of_days_drops_planned_syllabus", async ({ page }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='plan']").click(); document.querySelector("#month").value = "9"; document.querySelector("#month").dispatchEvent(new Event("change")); });
+  await page.click("#plan td[data-k='g:17:26']"); await page.click("#popList .it.blk");
+  await page.selectOption("#blkCode", "OIL"); await page.check("#blkOver"); await page.uncheck("#blkS0"); await page.uncheck("#blkS1"); await page.click("#blkGo"); await page.waitForTimeout(300);
+  assert.deepStrictEqual(await page.evaluate(() => S.syl.filter(x => x.id === "OWL" && x.iso === "2026-10-27").length), 0);
+}, { fresh: true, today: "2026-10-26", title: "Sarah Lim" });
+
 // ---- runner
 (async () => {
   const only = process.argv[2];

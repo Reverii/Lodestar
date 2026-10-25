@@ -1,0 +1,50 @@
+name: Publish dashboard to GitHub Pages
+
+# Publishes ONLY Flight_Ops_Planner_Dashboard.html (as index.html). No Excel files, sources or notes.
+on:
+  push:
+    branches: [main]
+    paths: [Flight_Ops_Planner_Dashboard.html, .github/workflows/pages.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # The dashboard embeds Flight_Ops_Planner_SUP2.xlsx. Only publish while that file is still the demo set.
+      - name: Guard - demo data only
+        run: |
+          pip install openpyxl
+          python3 - <<'EOF'
+          import sys, openpyxl
+          ws = openpyxl.load_workbook("Flight_Ops_Planner_SUP2.xlsx")["Roster"]
+          ids = {str(ws.cell(r, 2).value or "").strip().upper() for r in range(6, 60)}
+          if "VIPER" not in ids:
+              sys.exit("SUP 2 roster no longer holds the demo crew. Refusing to publish a build that may contain real data.")
+          EOF
+
+      - name: Stage the dashboard only
+        run: |
+          mkdir _site
+          cp Flight_Ops_Planner_Dashboard.html _site/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

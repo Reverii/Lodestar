@@ -78,6 +78,8 @@ shortcuts in the Planner, hours/sorties chart.
 
 ## Data notes
 
+- Start new year keeps the whole Syllabus Log, including old-year "Planned" entries (Brandon, 2026-10-25: kept). A flight planned late in December may still need its result recorded.
+
 - Callsign NIL = no callsign (known by name). "LM" crew tag maps to L.
 - Mission types are TRG / OPS, so only the general flying currency rule is kept.
 - Codes can contain spaces (e.g. `AWAY S (3H)`); the dashboard handles them in "+N more".

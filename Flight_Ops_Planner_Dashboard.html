@@ -954,7 +954,7 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z86</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z87</div>
   </div>
 </div>
 <div id="spPick"><div class="box">
@@ -1735,7 +1735,7 @@ function undo(back = true) {
   to.push(undoBase || snapAll());
   st.forEach((x, i) => { books[i].S = structuredClone(x.S); books[i].dirty = new Map(x.dirty); undoSaved(books[i], x); });
   undoBase = st; useBook(cur.b); OPS_CXL_CACHE = null; CHIT_GEN++;
-  renderAll(); toast(back ? "Undone" : "Redone", 1000);
+  renderAll(); updateUndo(); toast(back ? "Undone" : "Redone", 1000);
 }
 function updateUndo() {
   $("btnUndo").disabled = !undoSt.length; $("btnRedo").disabled = !redoSt.length;
@@ -4096,7 +4096,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z86 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z87 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

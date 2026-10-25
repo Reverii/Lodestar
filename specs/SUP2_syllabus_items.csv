@@ -1,0 +1,48 @@
+Stage,Track,Order,Code,Description,Type
+OCU,Intro,1,S2-O-INT1,Demo Flight,Flight
+OCU,Intro,2,S2-O-INT2,TTX 1,Ground
+OCU,Intro,3,S2-O-INT3,TTX 2,Ground
+OCU,Sims,1,S2-O-SIM1,SIMS 1,Sim
+OCU,Sims,2,S2-O-SIM2,SIMS 2,Sim
+OCU,Sims,3,S2-O-SIM3,SIMS 3,Sim
+OCU,Sims,4,S2-O-SIMCHK,SIMS Check,Sim
+OCU,Flight,1,S2-O-FLT1,Flight 1,Flight
+OCU,Flight,2,S2-O-FLT2,Flight 2,Flight
+OCU,Flight,3,S2-O-FLT3,Flight 3,Flight
+OCU,Flight,4,S2-O-FLT4,Flight 4,Flight
+OCU,Flight,5,S2-O-FLT5,Flight 5,Flight
+OCU,Flight,6,S2-O-FLTCHK,CAT D Check,Flight
+CAT C,TTX,1,S2-C-TTX1,TTX 1,Ground
+CAT C,TTX,2,S2-C-TTX2,TTX 2,Ground
+CAT C,Sims,1,S2-C-SIM1,SIMS 1,Sim
+CAT C,Sims,2,S2-C-SIM2,SIMS 2,Sim
+CAT C,Sims,3,S2-C-SIM3,SIMS 3,Sim
+CAT C,Sims,4,S2-C-SIMCHK,SIMS Check,Sim
+CAT C,Flight,1,S2-C-FLT1,Flight 1,Flight
+CAT C,Flight,2,S2-C-FLT2,Flight 2,Flight
+CAT C,Flight,3,S2-C-FLT3,Flight 3,Flight
+CAT C,Flight,4,S2-C-FLTCHK,CAT C Check,Flight
+CAT C,Role: SAL,1,S2-C-SAL1,SAL TTX 1,Ground
+CAT C,Role: SAL,2,S2-C-SAL2,SAL Flight 1,Flight
+CAT C,Role: SAL,3,S2-C-SAL3,SAL Flight 2,Flight
+CAT C,Role: SAL,4,S2-C-SALCHK,SAL Check,Flight
+CAT B,Sims,1,S2-B-SIM1,TACT SIMS 1,Sim
+CAT B,Sims,2,S2-B-SIM2,MKZ SIMS 1,Sim
+CAT B,Sims,3,S2-B-SIM3,MAS SIMS 1,Sim
+CAT B,Role: EIS,1,S2-B-EIS1,EIS TTX,Ground
+CAT B,Role: EIS,2,S2-B-EIS2,EIS Flight 1,Flight
+CAT B,Role: EIS,3,S2-B-EISCHK,EIS Check,Flight
+CAT B,Role: MS,1,S2-B-MS1,MS TTX,Ground
+CAT B,Role: MS,2,S2-B-MS2,MS TACT TTX,Ground
+CAT B,Role: MS,3,S2-B-MS3,MS SIMS 1,Sim
+CAT B,Role: MS,4,S2-B-MS4,MS Flight 1,Flight
+CAT B,Role: MS,5,S2-B-MS5,MS Flight 2,Flight
+CAT B,Role: MS,6,S2-B-MSCHK,MS Check,Flight
+CAT A,Sims,1,S2-A-SIM1,MAS Tact SIMS 1,Sim
+CAT A,Sims,2,S2-A-SIM2,MAS Tact SIMS 2,Sim
+CAT A,Sims,3,S2-A-SIM3,MAS Tact SIMS 3,Sim
+CAT A,Sims,4,S2-A-SIMCHK,MAS Tact SIMS Check,Sim
+CAT A,Flight,1,S2-A-FLT1,MAS Tact Flight 1,Flight
+CAT A,Flight,2,S2-A-FLT2,MAS Tact Flight 2,Flight
+CAT A,Flight,3,S2-A-FLT3,MAS Tact Flight 3,Flight
+CAT A,Flight,4,S2-A-FLTCHK,MAS Tact Flight Check,Flight

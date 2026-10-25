@@ -1,0 +1,12 @@
+# Old versions, screenshots and release builds stay in the project folder only
+_archive/
+previews/
+release/
+# Real crew data input folder
+input/
+# Python / OS clutter
+__pycache__/
+*.pyc
+~$*
+.DS_Store
+Thumbs.db

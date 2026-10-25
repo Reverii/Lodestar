@@ -382,6 +382,42 @@ test("block_of_days_drops_planned_syllabus", async ({ page }) => {
   assert.deepStrictEqual(await page.evaluate(() => S.syl.filter(x => x.id === "OWL" && x.iso === "2026-10-27").length), 0);
 }, { fresh: true, today: "2026-10-26", title: "Sarah Lim" });
 
+// ---- Final review fixes
+const T8 = { fresh: true, today: "2026-10-26", title: "nobody@x.mil" };
+test("escape_apostrophe_in_names", async ({ page }) => {
+  await page.evaluate(() => { const a = mePeople().find(z => z.p.id === "OWL"), b = mePeople().find(z => z.p.id === "EAGLE");
+    a.p.id = "NIL"; a.p.name = "Liam O'Brien"; b.p.id = "NIL"; b.p.name = "Bad' onmouseover='window.__x=1"; spRemember("lode_me", null); cur.lodeAs = null; });
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='lode']").click(); renderLode(); });
+  const opts = await page.evaluate(() => [...document.querySelectorAll("#lodeSel option")].map(o => o.value).filter(v => /Brien/.test(v)));
+  assert.deepStrictEqual(opts, ["SUP 2|Liam O'Brien"]);
+  assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#lodeBody [onmouseover]").length), 0);
+  await page.selectOption("#lodeSel", "SUP 2|Liam O'Brien");
+  assert.strictEqual(await page.evaluate(() => lodeWho().p.name), "Liam O'Brien");
+  await page.click("#lodeChip .lodeAsBtn");
+  assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#lodeList [onmouseover]").length), 0);
+  await page.evaluate(() => [...document.querySelectorAll("#lodeList .li")].find(e => e.dataset.who === "SUP 2|Liam O'Brien").click());
+  assert.ok(/Viewing Liam O'Brien/.test(await page.innerText("#lodeBanner")));
+}, T8);
+test("nil_callsign_people_do_not_share_flights", async ({ page }) => {
+  await page.evaluate(() => { mePeople().find(z => z.p.id === "HAWK").p.id = "NIL"; mePeople().find(z => z.p.id === "OWL").p.id = "NIL"; });
+  const r = await page.evaluate(() => { const hawk = mePeople().find(z => z.p.name === "CPT Sarah Lim"), owl = mePeople().find(z => z.p.name === "ME2 Nurul Huda");
+    return { hawk: lodeDay(hawk, "2026-10-14").ops.map(o => [o.code, o.fromPlan]), owl: lodeDay(owl, "2026-10-14").ops.length, me: lodeDay(hawk, "2026-10-14").ops[0].seats.filter(z => z.me).length }; });
+  assert.deepStrictEqual(r, { hawk: [["2xFLT-1.5", false]], owl: 0, me: 1 });
+}, T8);
+test("empty_callsign_still_finds_ops_row", async ({ page }) => {
+  await page.evaluate(() => { mePeople().find(z => z.p.id === "HAWK").p.id = ""; });
+  const r = await page.evaluate(() => lodeDay(mePeople().find(z => z.p.name === "CPT Sarah Lim"), "2026-10-14").ops.map(o => [o.fromPlan, o.etd, o.seats.some(z => z.me)]));
+  assert.deepStrictEqual(r, [[false, "0800", true]]);
+}, T8);
+test("cards_on_unknown_day_say_so", async ({ page }) => {
+  const u = await cards(page, "HAWK", "2028-01-05"), k = await cards(page, "HAWK", "2026-10-14");
+  assert.deepStrictEqual([u.known, u.medical.ok, u.medical.text, u.rest.text, u.rest.na], [false, null, "Not in this file yet", "Not in this file yet", true]);
+  assert.ok(/as of today$/.test(u.cur.sub) && /as of today$/.test(k.cur.sub), u.cur.sub + " | " + k.cur.sub);
+  assert.ok(!/as of today/.test((await cards(page, "HAWK", "2026-10-26")).cur.sub));
+  await page.evaluate(() => { spRemember("lode_me", null); cur.lodeIso = "2028-01-05"; document.querySelector("nav.tabs button[data-v='lode']").click(); renderLode(); });
+  assert.ok(!/Fit to fly/.test(await page.innerText("#v-lode")));
+}, { fresh: true, today: "2026-10-26", title: "Sarah Lim" });
+
 // ---- runner
 (async () => {
   const only = process.argv[2];

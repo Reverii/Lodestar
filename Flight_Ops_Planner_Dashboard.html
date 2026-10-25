@@ -4523,18 +4523,21 @@ function lodeResolve() {
 const lodeWho = () => lodeResolve().who;
 function lodeSetWho(w) { spRemember("lode_me", w ? { dept: w.dept, id: lodeId(w.p) } : null); cur.lodeAs = null; cur.lodeMenu = false; renderLode(); }
 function lodeViewAs(w) { cur.lodeAs = w ? { dept: w.dept, id: lodeId(w.p) } : null; cur.lodeMenu = false; renderLode(); }
+const lodeQ = v => esc(v).replace(/'/g, "&#39;");   // attribute values are single-quoted, and names come from Excel files
 const lodeOpts = fn => { let g = null, h = ""; mePeople().forEach(x => { if (x.dept !== g) { h += fn.group(g = x.dept); } h += fn.item(x); }); return h + fn.end(); };
 function lodeChipHtml(R) {
   const w = R.who, ini = (w.p.ini || w.p.id || w.p.name || "?").slice(0, 2).toUpperCase();
   return "<div id='lodeChip' class='lodechip'><span class='av'>" + esc(ini) + "</span><b>" + esc(w.p.id || w.p.name) + "</b><span class='lodesub'>" + esc([w.dept, w.p.cat, R.src === "viewing" ? "viewing" : R.src].filter(Boolean).join(" · ")) + "</span>" +
     "<a class='lodeAsBtn'>View as ▾</a>" + (R.src === "viewing" ? "" : "<a id='lodeNotMe'>Not me</a>") + "</div>" +
-    (cur.lodeMenu ? "<div id='lodeList' class='lodelist'>" + lodeOpts({ group: d => "<div class='lg'>" + esc(d) + "</div>", item: x => "<div class='li' data-who='" + esc(x.dept + "|" + lodeId(x.p)) + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</div>", end: () => "" }) + "</div>" : "");
+    (cur.lodeMenu ? "<div id='lodeList' class='lodelist'>" + lodeOpts({ group: d => "<div class='lg'>" + esc(d) + "</div>", item: x => "<div class='li' data-who='" + lodeQ(x.dept + "|" + lodeId(x.p)) + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</div>", end: () => "" }) + "</div>" : "");
 }
 // One person's day, from their department file, the Master Planner and the Ops Room. LodeItem = { s: 0|1|2|-1 (-1 = all day), kind, code, text, time, cancelled, note }.
 const lodeAddDays = (iso, n) => new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10) + n)).toISOString().slice(0, 10);
 const lodeMins = t => { const m = /^\s*(\d{1,2}):?(\d{2})/.exec(String(t || "")); return m ? +m[1] * 60 + +m[2] : null; };
 const lodeFmt = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
 const LODE_OUT = { plan: "Planned", flown: "Flown", cxl: "Cancelled", open: "Not closed" };
+// Is this Ops Room seat or crew entry the person? Crew entries carry the roster row (i); the row is exact even for callsign NIL or none. Seats typed in the Ops Room carry only an id.
+const lodeIsMe = (who, c) => !!c && same(c.dept, who.dept) && (c.i != null ? c.i === who.i : !!lodeId(who.p) && !/^nil$/i.test(c.id) && same(c.id, lodeId(who.p)));
 function lodeDay(who, iso) {
   const out = { iso, known: false, items: [], ops: [], duty: "", nextDuty: "", missing: [] };
   const st0 = books[who.bi].S, { y, mi, d } = ymd(iso, st0.year);
@@ -4567,10 +4570,10 @@ function lodeDay(who, iso) {
     if (D && D.rows) D.rows.forEach(r => {
       const sit = r.seats.map((p, k) => p ? [OPS_SEATS[k][0], p] : null).filter(Boolean);
       Object.values(r.auto || {}).flat().forEach(p => sit.push(["Additional crew", p]));
-      if (!sit.some(([, p]) => same(p.dept, st.dept) && same(p.id, who.p.id))) return;
+      if (!sit.some(([, p]) => lodeIsMe(who, p))) return;
       const o = r.o || {};
       out.ops.push({ code: r.x.code, desc: r.x.desc || "", status: LODE_OUT[opsOutcome(r, iso)], tail: o.tail || "", stb: o.stb || "", s: r.x.s, sortie: r.x.code + (r.x.ac > 1 ? " (aircraft " + (r.a + 1) + "/" + r.x.ac + ")" : ""),
-        brief: o.brf || "", etd: r.etd || "", eta: r.eta || "", area: o.ao || "", seats: sit.map(([role, p]) => ({ role, id: p.id })), fromPlan: false });
+        brief: o.brf || "", etd: r.etd || "", eta: r.eta || "", area: o.ao || "", seats: sit.map(([role, p]) => ({ role, id: p.id, me: lodeIsMe(who, p) })), fromPlan: false });
     });
     out.items.filter(x => x.kind === "flight" && !out.ops.some(r => r.s === x.s)).forEach(x => {   // no Ops Room row: show the flight as planned
       const [etd, eta] = opsTimes(x.time, 0);
@@ -4591,9 +4594,9 @@ function lodeCards(who, iso) {
   return withBook(who.bi, () => {
     const st = S, i = who.i, q = ymd(iso, st.year), known = q.y === st.year && !(q.mi === NX_MI && !st.nx), k = known ? dayOfYear(st.year, q.mi, q.d) : -1;
     const CH = computeChit(st)[i], down = k >= 0 && k < CH.down.length && CH.down[k];
-    const medical = down ? { ok: false, text: "Down-chit", sub: "since " + lodeFmt(new Date(Date.UTC(st.year, 0, 1 + CH.since[k])).toISOString().slice(0, 10)) } : { ok: true, text: "Fit to fly", sub: "No down-chit" };
+    const medical = !known ? { ok: null, text: "Not in this file yet", sub: "" } : down ? { ok: false, text: "Down-chit", sub: "since " + lodeFmt(new Date(Date.UTC(st.year, 0, 1 + CH.since[k])).toISOString().slice(0, 10)) } : { ok: true, text: "Fit to fly", sub: "No down-chit" };
     const R = computeRest(st), run = k >= 0 && k < R[i].run.length ? R[i].run[k] : 0;
-    const rest = { run, flagged: run >= REST_DAYS, text: run ? run + " day" + (run === 1 ? "" : "s") + " in a row" : "Rested",
+    const rest = !known ? { run: 0, flagged: false, na: true, text: "Not in this file yet", sub: "" } : { run, flagged: run >= REST_DAYS, text: run ? run + " day" + (run === 1 ? "" : "s") + " in a row" : "Rested",
       sub: run && k + 1 < R[i].fly.length ? "Flying " + lodeFmt(lodeAddDays(iso, 1)).split(" ")[0] + " would make " + restIfFly(R, i, k + 1) : "" };
     let curc = { level: "na", text: "No currency rules", sub: "" };
     const C = computeCurrency(st);
@@ -4601,7 +4604,7 @@ function lodeCards(who, iso) {
       const list = C[i].res.map((r, n) => r ? { r, name: st.rules[n].name } : null).filter(Boolean);
       if (list.length) {
         const bad = list.find(z => /^(LAPSED|NO RECORD)/i.test(z.r.text)), due = list.filter(z => z.r.st === "due").sort((a, b) => a.r.left - b.r.left)[0], ok = list.filter(z => z.r.st === "ok").length;
-        curc = { level: bad ? "bad" : due ? "due" : "ok", sub: ok + " of " + list.length + " rules current",
+        curc = { level: bad ? "bad" : due ? "due" : "ok", sub: ok + " of " + list.length + " rules current" + (iso !== opsToday() ? " · as of today" : ""),
           text: bad ? (/^LAPSED/i.test(bad.r.text) ? bad.name + " lapsed" : bad.name + ": no record") : due ? due.name + " due " + serShort(due.r.lapse) : "All current" };
       }
     }
@@ -4612,7 +4615,7 @@ function lodeCards(who, iso) {
       else { const nx = w.all.find(x => !x.pass), pl = nx && nx.plan.filter(l => l.iso >= iso).sort((a, b) => a.iso < b.iso ? -1 : 1)[0];
         syl = { label: "Syllabus · " + w.stg.name, text: nx ? nx.it.desc || nx.it.code : P.wk === P.stages.length - 1 ? "Path complete" : "Stage complete", sub: (pl ? "Planned " + lodeFmt(pl.iso) + " " + SHIFTS[pl.sh] + " · " : "") + w.done + " of " + w.n + " passed" }; }
     }
-    return { medical, rest, cur: curc, syl };
+    return { known, medical, rest, cur: curc, syl };
   });
 }
 // What changed for one person: Change Log rows since sinceT (null = the last 7 days) that touch them. Entry = { kind, text, sub, t }, newest first, at most 8.
@@ -4632,7 +4635,7 @@ function lodeChanges(who, sinceT, iso) {
     } else if (ob && mb && (m = reOps.exec(cell)) && /^cancel/i.test(x.z)) {
       const e = [...ob.fc].find(([, o]) => o.row === +m[1]); if (!e) continue;
       const d = e[0].split("|")[0], D = inWin(d) && opsDay(d), r = D && D.rows && D.rows.find(z => z.key === e[0]);
-      if (r && r.seats.some(c => c && same(c.dept, who.dept) && same(c.id, who.p.id))) out.push({ kind: "cancelled", text: lodeFmt(d) + " " + SHIFTS[r.x.s] + " flight cancelled", sub: (e[1].why || "Cancelled") + " · " + by, t: x.t });
+      if (r && r.seats.some(c => lodeIsMe(who, c))) out.push({ kind: "cancelled", text: lodeFmt(d) + " " + SHIFTS[r.x.s] + " flight cancelled", sub: (e[1].why || "Cancelled") + " · " + by, t: x.t });
     } else if (mb && (m = reFl.exec(cell))) {
       const f = mb.S.fl.find(z => z.row === +m[2]); if (!f) continue;
       const d = isoOf(mb.S.year, f.mi, f.d); if (!inWin(d) || !["C", "D"].includes(m[1])) continue;
@@ -4679,15 +4682,15 @@ const lodeLong = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", 
 function lodeCardsHtml(c) {
   const card = (cls, k, v, sub) => "<div class='lc " + cls + "'><div class='k'>" + esc(k) + "</div><div class='v'>" + v + "</div><div class='s'>" + esc(sub) + "</div></div>";
   const dots = Array.from({ length: REST_DAYS }, (_, n) => "<i" + (n < c.rest.run ? "" : " class='e'") + "></i>").join("");
-  return card(c.medical.ok ? "g" : "r", "Medical", c.medical.ok ? "✓ " + esc(c.medical.text) : esc(c.medical.text), c.medical.sub) +
-    card(c.rest.flagged ? "r" : c.rest.run >= REST_DAYS - 1 ? "o" : "g", "Crew rest", esc(c.rest.text) + (c.rest.run ? " <span class='dots'>" + dots + "</span>" : ""), c.rest.sub) +
+  return card(c.medical.ok === null ? "n" : c.medical.ok ? "g" : "r", "Medical", c.medical.ok ? "✓ " + esc(c.medical.text) : esc(c.medical.text), c.medical.sub) +
+    card(c.rest.na ? "n" : c.rest.flagged ? "r" : c.rest.run >= REST_DAYS - 1 ? "o" : "g", "Crew rest", esc(c.rest.text) + (c.rest.run ? " <span class='dots'>" + dots + "</span>" : ""), c.rest.sub) +
     card({ bad: "r", due: "o", ok: "g", na: "n" }[c.cur.level], "Currency", esc(c.cur.text), c.cur.sub) +
     (c.syl ? card("y", c.syl.label, esc(c.syl.text), c.syl.sub) : "");
 }
 function lodeTodayHtml(who, D, isToday, iso) {
   const head = "<h3>" + (isToday ? "Today" : esc(lodeFmt(iso))) + " <small>from your plan, the Master Planner and the Ops Room</small></h3>";
   if (!D.known) return head + "<div class='lodenone'>Not in this file yet.</div>";
-  const me = r => r.seats.find(z => same(z.id, who.p.id)), f = D.ops[0];
+  const me = r => r.seats.find(z => z.me), f = D.ops[0];
   let left = "<div class='lodenone'>No flight " + (isToday ? "today" : "this day") + ".</div>";
   if (f) {
     const m = me(f);
@@ -4729,7 +4732,7 @@ function renderLode() {
   const R = lodeResolve(); let h = "";
   if (!R.who) {
     h = "<div id='lodePick' class='lodebox'><h3>Who are you?</h3><p class='muted'>The dashboard could not tell who you are from your sign-in name. Pick yourself once; this browser remembers it.</p><select id='lodeSel'><option value=''>Pick yourself…</option>" +
-      lodeOpts({ group: d => (d === null ? "" : "</optgroup>") + "<optgroup label='" + esc(d) + "'>", item: x => "<option value='" + esc(x.dept + "|" + lodeId(x.p)) + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</option>", end: () => "</optgroup>" }) + "</select></div>";
+      lodeOpts({ group: d => (d === null ? "" : "</optgroup>") + "<optgroup label='" + esc(d) + "'>", item: x => "<option value='" + lodeQ(x.dept + "|" + lodeId(x.p)) + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</option>", end: () => "</optgroup>" }) + "</select></div>";
   } else {
     const w = R.who, today = opsToday(), iso = cur.lodeIso || today, D = lodeDay(w, iso), c = lodeCards(w, iso);
     h = "<div class='lodetop'><div class='lodehi'><h2>" + lodeHello() + ", " + esc(lodeId(w.p)) + "</h2><span class='d'>" + esc(lodeLong(iso)) + "</span></div>" +

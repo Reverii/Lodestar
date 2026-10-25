@@ -90,6 +90,78 @@ test("view_as_banner", async ({ page }) => {
   assert.ok(!(await page.isVisible("#lodeBanner")));
 });
 
+// ---- Task 3: one person's day and the next 7 days
+const day = (page, id, iso) => page.evaluate(([id, iso]) => lodeDay(mePeople().find(z => z.p.id === id), iso), [id, iso]);
+const T3 = { fresh: true, today: "2026-10-26" };
+test("day_flight_has_time_and_comment", async ({ page }) => {
+  const D = await day(page, "HAWK", "2026-10-05");
+  assert.strictEqual(D.known, true);
+  const f = D.items.filter(x => x.kind === "flight");
+  assert.deepStrictEqual(f.map(x => [x.s, x.code, x.time]), [[0, "FLT-2.0", "0830"], [2, "NVG-2.0", "1930-2130"]]);
+  assert.strictEqual(f[0].note, "Lead, brief 0730");
+  assert.strictEqual(f[0].cancelled, "");
+}, T3);
+test("day_cancelled_flag", async ({ page }) => {
+  await page.evaluate(() => {
+    const D = opsDay("2026-10-14"), r = D.rows.find(z => z.seats.some(c => c && c.id === "HAWK"));
+    books[opsIdx()].S.fc.set(r.key, { st: "Cancelled", why: "Weather", seat: ["", "", "", "", "", ""], atd: "", ata: "", etd: "", eta: "", tail: "", stb: "", ao: "", brf: "", xtra: "", pax: "" });
+  });
+  const D = await day(page, "HAWK", "2026-10-14");
+  assert.strictEqual(D.items.find(x => x.kind === "flight").cancelled, "Weather");
+  assert.strictEqual(D.ops[0].status, "Cancelled");
+});
+test("day_ops_row_details", async ({ page }) => {
+  const D = await day(page, "RAPTOR", "2026-10-14");
+  assert.strictEqual(D.ops.length, 1);
+  const r = D.ops[0];
+  assert.ok(/FLT-1\.5/.test(r.code) && r.etd === "0800" && r.eta === "1100", JSON.stringify(r));
+  assert.strictEqual(r.status, "Not closed");
+  assert.ok(/aircraft 2\/2/.test(r.sortie), r.sortie);
+  assert.ok(r.seats.some(z => z.role === "SUP 2" && z.id === "RAPTOR") && r.seats.some(z => z.role === "TACCO" && z.id === "TUNA"));
+});
+test("day_ground_and_duty", async ({ page }) => {
+  const g = await day(page, "VIPER", "2026-10-07");
+  assert.deepStrictEqual(g.items.filter(x => x.kind === "ground").map(x => [x.text, x.time, x.s]), [["CRM Lecture", "1400-1600", -1]]);
+  const f = await page.evaluate(() => { const st = books[0].S; for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) for (let s = 0; s < 3; s++) if (/^SDO$/i.test(st.m[9].grid[i*3+s][d] || "")) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; });
+  const D = await day(page, f.id, f.iso);
+  assert.strictEqual(D.duty, "SDO");
+  assert.ok(D.items.some(x => x.kind === "duty" && x.code === "SDO"));
+  const prev = await page.evaluate(([id, iso]) => { const w = mePeople().find(z => z.p.id === id), t = new Date(iso + "T00:00:00"); t.setDate(t.getDate() - 1); return lodeDay(w, isoOf(t.getFullYear(), t.getMonth(), t.getDate() - 1)).nextDuty; }, [f.id, f.iso]);
+  assert.ok(/SDO/.test(prev), "nextDuty: " + prev);
+});
+test("day_leave_is_away", async ({ page }) => {
+  const f = await page.evaluate(() => { const st = books[0].S; for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) if (/^LL$/i.test(st.m[9].grid[i*3][d] || "")) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; });
+  const D = await day(page, f.id, f.iso);
+  assert.ok(D.items.some(x => x.kind === "away" && x.code === "LL"), JSON.stringify(D.items));
+});
+test("day_empty_plan_is_free", async ({ page }) => {
+  const f = await page.evaluate(() => { const st = books[0].S, mb = masterBook(); for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) { if ([0,1,2].every(s => !st.m[9].grid[i*3+s][d]) && !grDay(mb.S, 9, d).some(g => g.act) && !st.m[9].gnd[d]) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; } });
+  const D = await day(page, f.id, f.iso);
+  assert.strictEqual(D.known, true);
+  assert.deepStrictEqual(D.items, []);
+});
+test("day_outside_year_unknown", async ({ page }) => {
+  const a = await day(page, "HAWK", "2028-01-05"), b = await day(page, "HAWK", "2027-01-05");
+  assert.deepStrictEqual([a.known, a.items.length, b.known], [false, 0, true]);
+});
+test("week_has_seven_days_across_month_end", async ({ page }) => {
+  const W = await page.evaluate(() => lodeWeek(mePeople().find(z => z.p.id === "HAWK"), "2026-10-28").map(x => [x.iso, x.known]));
+  assert.deepStrictEqual(W, [["2026-10-29", true], ["2026-10-30", true], ["2026-10-31", true], ["2026-11-01", true], ["2026-11-02", true], ["2026-11-03", true], ["2026-11-04", true]]);
+});
+test("night_flight_eta_after_midnight", async ({ page }) => {
+  await page.evaluate(() => { const P = masterBook().S, f = P.fl.find(z => z.mi === 9 && z.d === 1 && z.s === 2); f.time = "2300-0100"; });
+  const D = await day(page, "VIPER", "2026-10-02"), N = await day(page, "VIPER", "2026-10-03");
+  const r = D.ops.find(z => /NVG/.test(z.code));
+  assert.ok(r && r.etd === "2300" && r.eta === "0100", JSON.stringify(D.ops));
+  assert.ok(!N.ops.some(z => /NVG/.test(z.code)));
+}, T3);
+test("missing_master_names_parts", async ({ page }) => {
+  const D = await day(page, "HAWK", "2026-10-05");
+  assert.deepStrictEqual(D.missing, ["Master Planner", "Ops Room", "Duty Roster"]);
+  assert.ok(D.items.some(x => x.kind === "flight" && x.code === "FLT-2.0"));
+  assert.ok(D.ops.length >= 1 && D.ops.every(r => r.fromPlan === true && r.status === "Planned"), JSON.stringify(D.ops));
+}, { fresh: true, others: false, today: "2026-10-26" });
+
 // ---- runner
 (async () => {
   const only = process.argv[2];

@@ -4510,6 +4510,61 @@ function lodeChipHtml(R) {
     "<a class='lodeAsBtn'>View as ▾</a>" + (R.src === "viewing" ? "" : "<a id='lodeNotMe'>Not me</a>") + "</div>" +
     (cur.lodeMenu ? "<div id='lodeList' class='lodelist'>" + lodeOpts({ group: d => "<div class='lg'>" + esc(d) + "</div>", item: x => "<div class='li' data-who='" + esc(x.dept + "|" + lodeId(x.p)) + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</div>", end: () => "" }) + "</div>" : "");
 }
+// One person's day, from their department file, the Master Planner and the Ops Room. LodeItem = { s: 0|1|2|-1 (-1 = all day), kind, code, text, time, cancelled, note }.
+const lodeAddDays = (iso, n) => new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10) + n)).toISOString().slice(0, 10);
+const lodeMins = t => { const m = /^\s*(\d{1,2}):?(\d{2})/.exec(String(t || "")); return m ? +m[1] * 60 + +m[2] : null; };
+const lodeFmt = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+const LODE_OUT = { plan: "Planned", flown: "Flown", cxl: "Cancelled", open: "Not closed" };
+function lodeDay(who, iso) {
+  const out = { iso, known: false, items: [], ops: [], duty: "", nextDuty: "", missing: [] };
+  const st0 = books[who.bi].S, { y, mi, d } = ymd(iso, st0.year);
+  if (y !== st0.year || (mi === NX_MI && !st0.nx)) return out;
+  out.known = true;
+  if (!masterBook()) out.missing.push("Master Planner");
+  if (opsIdx() < 0) out.missing.push("Ops Room");
+  if (!rosterBook()) out.missing.push("Duty Roster");
+  withBook(who.bi, () => {
+    const st = S, A = actIndex(), M = st.m[mi], i = who.i, mb = masterBook(), cells = [];
+    for (let s = 0; s < 3; s++) {
+      const v = M.grid[i * 3 + s][d]; if (!v) continue;
+      const a = A.get(v.toUpperCase()), ci = a ? a.ci : -1, isF = ci === CAT_FLIGHT, note = (st.notes && st.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "";
+      cells.push({ s, code: v, text: a && a.desc ? a.desc : v, note, time: isF ? plannedFlights(M, d, s).get(v.toUpperCase()) || "" : "", cancelled: isF ? cxlOf(st, who.p.id, mi, d, s) || "" : "",
+        kind: isF ? "flight" : isSb(v) ? "standby" : ci === CAT_SQD ? "duty" : AWAY(ci) ? "away" : "other" });
+    }
+    const items = cells.filter(c => c.kind === "flight");   // a code on all three shifts (leave, BDO) is one all-day item
+    for (const code of [...new Set(cells.filter(c => c.kind !== "flight").map(c => c.code))]) {
+      const g = cells.filter(c => c.code === code);
+      if (g.length === 3) items.push(Object.assign({}, g[0], { s: -1, note: g.map(c => c.note).find(Boolean) || "" })); else items.push(...g);
+    }
+    const gm = mb && mb.S.year === y ? grDay(mb.S, mi, d).filter(g => g.act && needsDept(g.crew, st.dept)).map(g => [g.act, g.time || ""]) : [], seen = new Set(gm.map(([t, tm]) => (t + " " + tm).trim().toLowerCase()));
+    const gr = gm.concat(st.gndRow && M.gnd[d] ? String(M.gnd[d]).split("; ").filter(x => x && !seen.has(x.trim().toLowerCase())).map(x => [x, ""]) : []);   // the department's own row is usually a copy of the Master Planner's
+    gr.forEach(([t, tm]) => items.push({ s: -1, kind: "ground", code: "", text: t, time: tm, cancelled: "", note: "" }));
+    const key = x => x.time && lodeMins(x.time) != null ? lodeMins(x.time) : x.s < 0 ? -1 : [0, 720, 1080][x.s];
+    out.items = items.map((x, n) => [x, n]).sort((p, q) => key(p[0]) - key(q[0]) || p[1] - q[1]).map(z => z[0]);
+    out.duty = [...new Set(out.items.filter(x => x.kind === "duty").map(x => x.code))].join(", ");
+    const D = opsDay(iso);
+    if (D && D.rows) D.rows.forEach(r => {
+      const sit = r.seats.map((p, k) => p ? [OPS_SEATS[k][0], p] : null).filter(Boolean);
+      Object.values(r.auto || {}).flat().forEach(p => sit.push(["Additional crew", p]));
+      if (!sit.some(([, p]) => same(p.dept, st.dept) && same(p.id, who.p.id))) return;
+      const o = r.o || {};
+      out.ops.push({ code: r.x.code, desc: r.x.desc || "", status: LODE_OUT[opsOutcome(r, iso)], tail: o.tail || "", stb: o.stb || "", s: r.x.s, sortie: r.x.code + (r.x.ac > 1 ? " (aircraft " + (r.a + 1) + "/" + r.x.ac + ")" : ""),
+        brief: o.brf || "", etd: r.etd || "", eta: r.eta || "", area: o.ao || "", seats: sit.map(([role, p]) => ({ role, id: p.id })), fromPlan: false });
+    });
+    out.items.filter(x => x.kind === "flight" && !out.ops.some(r => r.s === x.s)).forEach(x => {   // no Ops Room row: show the flight as planned
+      const [etd, eta] = opsTimes(x.time, 0);
+      out.ops.push({ code: x.code, desc: x.text, status: x.cancelled ? "Cancelled" : "Planned", tail: "", stb: "", s: x.s, sortie: x.code, brief: "", etd, eta, area: "", seats: [], fromPlan: true });
+    });
+    out.ops.sort((p, q) => p.s - q.s);
+    for (let k = 1; k <= 60 && !out.nextDuty; k++) {
+      const n = lodeAddDays(iso, k), q = ymd(n, st.year); if (q.y !== st.year || (q.mi === NX_MI && !st.nx)) break;
+      const hit = [0, 1, 2].map(s => st.m[q.mi].grid[who.i * 3 + s][q.d]).find(v => { const a = v && A.get(v.toUpperCase()); return a && a.ci === CAT_SQD; });
+      if (hit) out.nextDuty = hit + " " + lodeFmt(n);
+    }
+  });
+  return out;
+}
+const lodeWeek = (who, iso) => Array.from({ length: 7 }, (_, k) => lodeDay(who, lodeAddDays(iso, k + 1)));
 function renderLode() {
   const el = $("lodeBody"); if (!el) return;
   if (!mePeople().length) { el.innerHTML = "<div class='muted' style='padding:20px'>Open a department planner to see your page.</div>"; return; }

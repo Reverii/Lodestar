@@ -954,7 +954,7 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z88</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z89</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4095,7 +4095,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z88 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z89 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -4485,7 +4485,10 @@ $("blkCancel").onclick = () => { $("blkPop").style.display = "none"; };
 $("blkPop").addEventListener("keydown", e => { if (e.key === "Escape") $("blkPop").style.display = "none"; });
 $("blkGo").onclick = () => {
   const x = blkCells(), code = $("blkCode").value; if (x.err || !x.cells.length) return;
-  for (const c of x.cells) { S.m[c.mi].grid[c.r][c.d] = code; put(monSheet(c.mi), colL(DAY_COL0 + c.d) + (g0() + c.r), code); }
+  for (const c of x.cells) { S.m[c.mi].grid[c.r][c.d] = code; put(monSheet(c.mi), colL(DAY_COL0 + c.d) + (g0() + c.r), code);
+    if (c.old && S.hasSyl && !S.kind) {   // a replaced flight no longer carries its Planned syllabus entry (Pass / Fail results stay)
+      const pr = S.roster[Math.floor(c.r / 3)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, c.mi, c.d), c.r % 3) : null;
+      if (lk && lk.res === "Planned") sylClear(S, lk); } }
   const nt = $("blkNote").value.trim(); if (nt && S.hasNotes) { const c0 = x.cells[0]; setNote(c0.mi, c0.r, c0.d, nt); }
   $("blkPop").style.display = "none";
   const months = [...new Set(x.cells.map(c => c.mi))];

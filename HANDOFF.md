@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Where things stand
 
-- **Dashboard z87** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
+- **Dashboard z89** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
@@ -34,7 +34,7 @@ Full detail per feature is in `PROJECT_CHECKLIST.md`. Version tags `zNN` are das
 - Autosave 2.5 s, SharePoint merge on save, live refresh 15 s, self-heal, Change Log sheet + Changes tab (z68, z69, z82).
 - Year rollover "Start new year…" (z67) and Jan (next year) look-ahead tab (z83).
 - Version check banner (z18), dev mode + release build (z70), real data load (z84), dev mode edits Master Planner and
-  Duty Roster properly (z85), z86 latest fixes, z87 Redo button now enabled after an Undo (the buttons were not refreshed by `undo()`).
+  Duty Roster properly (z85), z86 latest fixes, z87 Redo button now enabled after an Undo (the buttons were not refreshed by `undo()`), z88 author mark "Built by MARTELL", z89 Block of days with "Replace cells" now drops the replaced flight's Planned syllabus entry (it used to leave it behind).
 
 ## Open items (from PROJECT_CHECKLIST.md)
 

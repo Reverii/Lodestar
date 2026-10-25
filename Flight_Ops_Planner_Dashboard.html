@@ -387,20 +387,6 @@ header.top .btn.ur{padding:6px 9px;font-size:15px;line-height:1}
 #blkPop label.ck{flex-direction:row;align-items:center;gap:6px;text-transform:none;font-size:13px;color:var(--s700);font-weight:600;flex:0 0 auto;min-width:0}
 #blkPrev{margin-top:12px;padding:8px 10px;border-radius:8px;background:var(--s100);font-size:13px}
 #blkPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
-#meCal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-#meCal .dh{font-size:11px;font-weight:800;color:var(--s500);text-transform:uppercase;text-align:center}
-#meCal .dd{background:#fff;border:1px solid var(--s200);border-radius:8px;padding:5px 6px;min-height:92px;font-size:12px}
-#meCal .dd.we{background:#f8fafc}#meCal .dd.hol{background:#fff1f2}#meCal .dd.tdy{box-shadow:0 0 0 3px #2563eb}#meCal .dd.blank{visibility:hidden}
-#meCal .dn{font-weight:800;color:var(--s700);display:flex;justify-content:space-between;gap:4px}#meCal .dn small{font-weight:600;color:#9f1239;font-size:10px;text-align:right}
-#meCal .ln{display:flex;gap:4px;align-items:center;margin-top:3px}
-#meCal .ln .s{font-size:9px;font-weight:800;width:30px;color:var(--s500)}
-#meCal .ln .chip{font-size:11px;padding:1px 5px;border-radius:4px;font-weight:800}
-#meCal .ln .t{font-size:10.5px;color:var(--s600)}
-#meCal .cm{font-size:10.5px;color:#7e22ce;font-style:italic;margin-top:2px}
-#meCal .gp{font-size:10.5px;color:#166534;margin-top:3px}
-#meCal .cx{text-decoration:line-through;opacity:.6}
-#meSum{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px}
-#meSum .kpi{min-width:110px}
 #laybanner{display:none;padding:6px 16px;font-size:12.5px;border-bottom:1px solid #fde68a;background:#fffbeb;color:#78350f}
 #laybanner.on{display:block}#laybanner.new{background:#fee2e2;color:#7f1d1d;border-color:#fecaca}
 #laybanner b{font-weight:700}#laybanner details{display:inline}#laybanner summary{display:inline;cursor:pointer;text-decoration:underline}
@@ -647,7 +633,6 @@ td.who i.curb.down{background:#991b1b;color:#fff}td.who i.curb.downx{background:
 #plan td.dnd{background-image:repeating-linear-gradient(135deg,rgba(220,38,38,.16) 0 4px,transparent 4px 9px)}
 #plan td.dnf{box-shadow:inset 0 0 0 3px #dc2626!important}
 .opsb.down{background:#991b1b;color:#fff}td.oc.odown{background:#fee2e2!important}
-#meCal .dwn{font-size:10px;font-weight:800;color:#fff;background:#991b1b;border-radius:4px;padding:0 5px;margin-top:3px;display:inline-block}
 button.upc{border:1px solid #dc2626;background:#fff;color:#b91c1c;border-radius:5px;font-size:11px;font-weight:700;padding:1px 7px;cursor:pointer;margin-left:4px}
 #chitPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
 #chitPop .box{background:#fff;border-radius:12px;padding:20px;max-width:440px;width:94%}
@@ -791,10 +776,10 @@ body.opsfs #opsSize{display:none}
 <div id="robanner"></div>
 <div id="laybanner"></div>
 <nav class="tabs">
+  <button data-v="lode">My Lodestar</button>
   <div class="tdd lft" id="plMenu"><button id="plTabBtn" type="button" class="on">Planner ▾</button>
     <div class="tmenu"><button data-v="plan" class="on">Planner <small>the month plan</small></button><button data-v="syl">Syllabus Tracking <small>training path, Pass / Fail per item</small></button></div></div>
   <button data-v="ov">Overview</button>
-  <button data-v="me">My schedule</button>
   <button data-v="roster">Crew Roster</button>
   <button data-v="cur">Currency</button>
   <button data-v="acts">Activities</button>
@@ -833,16 +818,8 @@ body.opsfs #opsSize{display:none}
     </div>
     <div id="logBody"></div>
   </section>
-  <section class="view" id="v-me">
-    <div class="controls" style="align-items:flex-end">
-      <label>Person<select id="mePerson" style="min-width:260px"></select></label>
-      <label>Month<select id="meMonth"></select></label>
-      <button class="btn" id="meToday" style="margin-bottom:2px">Today</button>
-      <div style="flex:1"></div>
-      <div class="muted" style="font-size:11.5px;max-width:420px">One person's month from their department's plan: flights (with the planned time), duties, ground programme, leave and cell comments. View only; edit on the Planner.</div>
-    </div>
-    <div id="meSum"></div>
-    <div id="meCal"></div>
+  <section class="view" id="v-lode">
+    <div id="lodeBody"></div>
   </section>
   <section class="view" id="v-sdo">
     <div class="controls" style="align-items:center">
@@ -1192,7 +1169,9 @@ function loadWorkbook(buf, name, handle, other) {
       st.rules.push({ name: str(cr["A" + r]), applies: str(cr["B" + r]), who: str(cr["C" + r]), counts: str(cr["D" + r]), which: str(cr["E" + r]), win: num(cr["F" + r]), min: num(cr["G" + r]), warn: num(cr["H" + r]), note: str(cr["I" + r]) }); }
     for (let i = 0; i < N; i++) { const row = []; for (let k = 0; k < CUR_N; k++) { const v = cb[colL(4 + 2 * k) + (CUR_ROW0 + i)]; row.push(typeof v === "number" ? Math.floor(v) : null); } st.curBase.push(row); }
   }
-  return addBook(st, other, name, handle);
+  const added = addBook(st, other, name, handle);
+  if (!other) setTimeout(landLode, 0);   // the first file you open lands on My Lodestar (not in Ops Room mode)
+  return added;
 }
 const NOTE_ROW0 = 6, NOTE_N = 1500;
 // set or clear the comment on crew cell g:r:d of month mi (current book)
@@ -2609,7 +2588,7 @@ $("curTable").addEventListener("change", e => {
   renderCur(); renderPlanner();
 });
 ["curBaseEd", "curOnlyBad"].forEach(id => $(id).addEventListener("change", renderCur));
-function renderAll() { renderBooks(); renderControls(); renderPlanner(); renderCur(); renderCodes(); renderMp(); renderOverview(); renderSdo(); renderOps(); renderRoster(); renderActs(); if ($("v-me").classList.contains("on")) renderMe(); renderLog(); renderSyl(); updateSave(); }
+function renderAll() { renderBooks(); renderControls(); renderPlanner(); renderCur(); renderCodes(); renderMp(); renderOverview(); renderSdo(); renderOps(); renderRoster(); renderActs(); if ($("v-lode").classList.contains("on")) renderLode(); renderLog(); renderSyl(); updateSave(); }
 function renderControls() {
   $("rollBtn").style.display = OPS ? "" : "none";
   $("year").value = S.year;
@@ -4501,51 +4480,9 @@ $("blkGo").onclick = () => {
 
 // ---------- My schedule: one person's month across the open department files (flights with times, duties, ground programme, leave, comments)
 function mePeople() { const out = []; books.forEach((b, bi) => { if (!isDept(b)) return; b.S.roster.forEach((p, i) => { if (p.name || p.id) out.push({ bi, i, p, dept: b.S.dept }); }); }); return out; }
-function renderMe() {
-  if (!books.length) return;
-  const L = mePeople();
-  if (!L.length) { $("mePerson").innerHTML = ""; $("meCal").innerHTML = "<div class='muted'>Open a department planner to see a person's schedule.</div>"; $("meSum").innerHTML = ""; return; }
-  if (!cur.me) { const r = spRecall("me", null); cur.me = r && L.find(x => same(x.dept, r.dept) && same(x.p.id || x.p.name, r.who)) ? r : { dept: L[0].dept, who: L[0].p.id || L[0].p.name }; }
-  let sel = L.find(x => same(x.dept, cur.me.dept) && same(x.p.id || x.p.name, cur.me.who)) || L[0];
-  let g = null;
-  $("mePerson").innerHTML = L.map(x => (x.dept !== g ? (g !== null ? "</optgroup>" : "") + "<optgroup label='" + esc(g = x.dept) + "'>" : "") + "<option value='" + x.bi + ":" + x.i + "'" + (x === sel ? " selected" : "") + ">" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</option>").join("") + "</optgroup>";
-  const b = books[sel.bi], st = b.S, y = st.year;
-  if (cur.meM == null) cur.meM = cur.m;
-  if (cur.meM === NX_MI && !st.nx) cur.meM = 11;
-  const mi = cur.meM, dim = daysIn(y, mi), M = st.m[mi], i = sel.i;
-  $("meMonth").innerHTML = monOpts(mi, y, st.nx, true);
-  const A = withBook(sel.bi, actIndex), ms = withBook(sel.bi, () => monthStats(mi, A)), t = ms.crew[i];
-  const mb = masterBook(), hol = new Map(st.hols.map(h => [h.d, h.n])), tD = todayCol(y, mi), CHm = computeChit(st);
-  let away = 0, sqd = 0;
-  for (let d = 0; d < dim; d++) { const cs = new Set([0, 1, 2].map(s => (A.get(String(M.grid[i * 3 + s][d] || "").toUpperCase()) || {}).ci)); if ([...cs].some(c => c != null && AWAY(c))) away++; if (cs.has(CAT_SQD)) sqd++; }
-  const kp = [["Flights", t.fl, "var(--blue)"], ["Ground duty days", t.gd, "var(--amber)"], ["Squadron duty days", sqd, "var(--rose)"], ["Leave days", t.lv, "var(--teal)"], ["Days away", away, "var(--s700)"]];
-  $("meSum").innerHTML = "<div style='align-self:center;font-weight:800;font-size:15px;margin-right:6px'><span class='" + catCls(sel.p.cat) + "'>" + esc(sel.p.name || sel.p.id) + "</span> <span class='muted' style='font-weight:600;font-size:12px'>" + esc([sel.p.id, sel.dept, sel.p.role].filter(Boolean).join(" · ")) + "</span></div>" +
-    kp.map(k => "<div class='kpi' style='border-left-color:" + k[2] + "'><div class='l'>" + k[0] + "</div><div class='v' style='color:" + k[2] + "'>" + (k[1] || 0) + "</div></div>").join("");
-  const off = (new Date(y, mi, 1).getDay() + 6) % 7;
-  let h = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(x => "<div class='dh'>" + x + "</div>").join("");
-  for (let k = 0; k < off; k++) h += "<div class='dd blank'></div>";
-  for (let d = 0; d < dim; d++) {
-    const dt = new Date(y, mi, d + 1), iso = isoOf(y, mi, d), we = dt.getDay() === 0 || dt.getDay() === 6;
-    h += "<div class='dd" + (hol.has(iso) ? " hol" : we ? " we" : "") + (d === tD ? " tdy" : "") + "'><div class='dn'>" + (d + 1) + "<small>" + esc(hol.get(iso) || "") + "</small></div>";
-    let any = false;
-    for (let s = 0; s < 3; s++) {
-      const v = M.grid[i * 3 + s][d]; if (!v) continue; any = true;
-      const a = A.get(v.toUpperCase()), isF = a && a.ci === CAT_FLIGHT, tm = isF ? plannedFlights(M, d, s).get(v.toUpperCase()) : "", cx = isF ? cxlOf(st, sel.p.id, mi, d, s) : null;
-      const cn = st.notes && st.notes.get(mi + ":" + (i * 3 + s) + ":" + d);
-      h += "<div class='ln" + (cx ? " cx" : "") + "' title='" + esc([SHIFTS[s] + ": " + v + (a && a.desc ? " (" + a.desc + ")" : ""), cx ? "Cancelled in the Ops Room: " + cx : ""].filter(Boolean).join("\n")) + "'><span class='s'>" + SHIFTS[s] + "</span><span class='chip " + catClass(v, A) + "'>" + esc(v) + "</span>" + (tm ? "<span class='t'>" + esc(tm) + "</span>" : "") + (cx ? "<span class='t' style='color:#b91c1c'>CXL</span>" : "") + "</div>" + (cn ? "<div class='cm'>" + esc(cn) + "</div>" : "");
-    }
-    if (CHm && CHm[i].down[dayOfYear(y, mi, d)] && ![0, 1, 2].some(s => dutyKey(M.grid[i * 3 + s][d]) === MC_CODE)) { h += "<span class='dwn' title='Not cleared to fly until up-chitted'>DOWN-CHIT</span>"; any = true; }
-    const gp = [mb && mb.S.year === y ? deptGround(mb.S, mi, d, st.dept) : "", st.gndRow ? M.gnd[d] : ""].filter(Boolean);
-    const gtx = [...new Set(gp.join("; ").split("; ").filter(Boolean))].join("; ");
-    if (gtx) h += "<div class='gp'>GND: " + esc(gtx) + "</div>";
-    if (!any && !gtx) h += "<div class='muted' style='font-size:10.5px;margin-top:3px'>Free</div>";
-    h += "</div>";
-  }
-  $("meCal").innerHTML = h;
-}
-$("mePerson").onchange = e => { const [bi, i] = e.target.value.split(":").map(Number), p = books[bi].S.roster[i]; cur.me = { dept: books[bi].S.dept, who: p.id || p.name }; spRemember("me", cur.me); renderMe(); };
-$("meMonth").onchange = e => { cur.meM = +e.target.value; renderMe(); };
-$("meToday").onclick = () => { cur.meM = todayYMD().mi; renderMe(); };
+// ---------- My Lodestar: a read-only personal home page (spec: docs/superpowers/specs/2026-10-25-my-lodestar-design.md). Never calls put().
+function renderLode() { const el = $("lodeBody"); if (!el) return; el.innerHTML = ""; }
+const landLode = () => { const b = document.querySelector("nav.tabs button[data-v='lode']"); if (b && !OPS && books.length) b.click(); };
 $("btnUndo").onclick = () => undo(true); $("btnRedo").onclick = () => undo(false);
 document.addEventListener("keydown", e => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
@@ -4617,8 +4554,7 @@ const HELP = {
     "<p><b>From the Planner:</b> click a crew cell, open the gold <b>🎓 Syllabus</b> box (off by default) and tick the item, then pick the flight or sim. The cell gets a gold corner and the item under the code; the item shows <b>planned</b> here. On the day or after, click the cell again to record <b>✓ Pass</b> or <b>✕ Fail</b>. Only Pass and Fail use a chance.</p>" +
     "<p>The stages, items and chances are on your own planner file's <b>Syllabus Settings</b>, <b>Syllabus Stages</b> and <b>Syllabus Items</b> sheets (edit them in Excel). Only your department's crew are listed.</p>"],
   log: ["Changes", "<p>Every change saved from this dashboard, newest first: when, who, which file, what changed in words, and the value before and after. On SharePoint the name is the person signed in to SharePoint, so it follows their access rights: someone without edit rights on a file cannot save it, so cannot appear in its log.</p><p>Each Excel file keeps its own log on a <b>Change Log</b> sheet (added automatically the first time something is saved). This tab shows the logs of every file you have open; filter by person, file, day or text. Hover a change to see the exact sheet and cell.</p>"],
-  me: ["My schedule", "<p>One person's month as a calendar, from their department's plan: flights (with the planned time), duties, ground programme, leave and cell comments. Pick anyone from the open department files. View only; edit on the Planner.</p>" +
-    "<ul><li>Coloured chips use the activity colours. " + sw("#991b1b", "#fff", "DOWN-CHIT") + " not cleared to fly yet. CXL: flight cancelled in the Ops Room.</li><li>The cards on top count the month's flights, ground duty, squadron duty, leave and days away.</li></ul>"],
+  lode: ["My Lodestar", "<p>Your own page: today, the next 7 days, your status and what changed. View only.</p>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p>Currency checks per person from the rules on this tab (on hold for now). Red = lapsed, amber = due soon; the same badges show next to names on the Planner.</p>"],
@@ -4647,7 +4583,7 @@ document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.onclick = ()
   if (b.dataset.v === "codes") renderCodes();
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + b.dataset.v));
   if (b.dataset.v === "cur") renderCur();
-  if (b.dataset.v === "me") renderMe();
+  if (b.dataset.v === "lode") renderLode();
   if (b.dataset.v === "log") renderLog();
   if (b.dataset.v === "syl") renderSyl();
   if (b.dataset.v === "ops") opsFit();

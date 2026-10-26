@@ -1289,7 +1289,7 @@ function renderAtom() {
   let h = (stale ? "<div class='astale " + stale + "'>" + (stale === "red" ? "This ATOM export is " + age + " days old. Export it again before you rely on it." : "This ATOM export is " + age + " days old.") + " Data as of " + esc(atomAsOf(f)) + ".</div>" : "");
   h += "<div class='card atomhead'><b>ATOM currencies</b><span class='asof'>" + (ATOMS.length > 1 ? "<select id='atomSel'>" + ATOMS.map((x, i) => "<option value='" + i + "'" + (i === (cur.atom || 0) ? " selected" : "") + ">" + esc(x.name) + "</option>").join("") + "</select>" : esc(f.name)) +
     " , data as of <input id='atomAsOf' type='datetime-local' value='" + esc(atomAsOf(f).replace(" ", "T")) + "'></span><span style='flex:1'></span>" +
-    "<label>Due window <select id='atomDue'>" + [7, 14, 21, 30].map(n => "<option" + (n === win ? " selected" : "") + ">" + n + "</option>").join("") + "</select> days</label><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
+    "<label>Due window <select id='atomDue'>" + [7, 14, 21, 30].map(n => "<option" + (n === win ? " selected" : "") + ">" + n + "</option>").join("") + "</select> days</label><button class='btn' id='atomAdd'>Add ATOM export</button>" + (OPS && books.some(k => k.S.kind === "ops") ? "<button class='btn primary' id='atomPublish' title='Save this export for every dashboard (replaces the data shared yesterday)'>Publish to everyone</button>" : "") + "<input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
   h += "<div class='atombar'><span class='seg'>" + ["All"].concat(ATOM_DEPTS).map(d => "<button data-d='" + d + "' class='" + (d === dept ? "on" : "") + "'>" + d + "</button>").join("") + "</span>" +
     "<label><input type='checkbox' id='atomOnly'" + (only ? " checked" : "") + "> Only crew with a problem</label><span class='muted'>Sorted worst first</span>" +
     "<span class='cnt'><span class='c r'><b>" + lap + "</b> expired</span><span class='c a'><b>" + due + "</b> expire within " + win + " days</span><span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
@@ -1311,6 +1311,33 @@ function renderAtom() {
   }
   b.innerHTML = h; atomWire();
 }
+// ---------- ATOM currency: publishing to everyone (sheet "ATOM Currency" in the Ops Room file, written only in the Ops Room view)
+const ATOM_SHEET = "ATOM Currency", ATOM_SHEET_ROW0 = 8, ATOM_SHEET_N = 500, ATOM_DEPT_ORDER = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"];
+const ATOM_SHEET_HEAD = ["Initials", "Department", "CAT", "Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Clocked hours (month)"];
+const ATOM_SHEET_TITLE = "Written by the Lodestar dashboard from an ATOM export. Replaced every day. Do not edit.";
+const ATOM_SHEET_COLS = '<col min="1" max="1" width="16" customWidth="1"/><col min="2" max="3" width="13" customWidth="1"/><col min="4" max="8" width="12" customWidth="1"/><col min="9" max="9" width="20" customWidth="1"/>';
+function atomPublish(f) {   // writes every person of the export into the sheet, replacing what was there; true when written
+  const oi = books.findIndex(b => b.S.kind === "ops"); if (oi < 0 || !OPS || !f) return false;
+  const b = books[oi], people = [];
+  for (const d of ATOM_DEPT_ORDER) for (const r of f.sheets[d] || []) people.push([r, d]);
+  if (people.length > ATOM_SHEET_N) { alert("This ATOM export has " + people.length + " people; the shared sheet holds " + ATOM_SHEET_N + "."); return false; }
+  let last = b.S.atomPubLast || ATOM_SHEET_ROW0 - 1;   // the last row that may hold data from before (in the file, or published earlier and not saved yet)
+  if (b.WB.paths[ATOM_SHEET]) for (const k in readCellsOf(b.WB.files, b.WB.paths[ATOM_SHEET], b.WB.sst)) { const r = +k.match(/\d+/)[0]; if (r >= ATOM_SHEET_ROW0) last = Math.max(last, r); }
+  const asOf = atomAsOf(f), val = c => c.k === "date" ? c.iso : c.k === "none" ? "-" : c.k === "na" ? "N/A" : c.k === "blank" ? "" : c.raw;
+  withBook(oi, () => {
+    const set = (ref, v) => put(ATOM_SHEET, ref, v);
+    set("A1", ATOM_SHEET_TITLE);
+    [["As of", asOf], ["Source file", f.name], ["Hours month", asOf.slice(0, 7)], ["Published by", SP.user && SP.user.Title || ""]].forEach(([k, v], n) => { set("A" + (2 + n), k); set("B" + (2 + n), v); });
+    ATOM_SHEET_HEAD.forEach((h, n) => set("ABCDEFGHI"[n] + "7", h));
+    people.forEach(([r, d], n) => {
+      const row = ATOM_SHEET_ROW0 + n;
+      [r.name, d, r.cat, ...ATOM_CUR.map(c => r.cells[c] ? val(r.cells[c]) : ""), typeof r.hours === "number" ? r.hours : ""].forEach((v, k) => set("ABCDEFGHI"[k] + row, v));
+    });
+    for (let row = ATOM_SHEET_ROW0 + people.length; row <= last; row++) for (const L of "ABCDEFGHI") set(L + row, "");   // yesterday's extra rows
+  });
+  b.S.atomPubLast = Math.max(last, ATOM_SHEET_ROW0 + people.length - 1); b.S.atomPub = { name: f.name, asOf, count: people.length };
+  return true;
+}
 function atomFixOpen() { cur.atomFix = true; renderAtom(); }
 function atomFixClose() { cur.atomFix = false; renderAtom(); }
 function atomFixHtml(f) {
@@ -1327,6 +1354,7 @@ function atomFixHtml(f) {
 }
 function atomWire() {
   const q = id => document.getElementById(id);
+  if (q("atomPublish")) q("atomPublish").onclick = () => { if (confirm("Publish this ATOM export to everyone? It replaces the data shared before.")) { const f = ATOMS[cur.atom || 0]; if (atomPublish(f)) toast("Published to everyone: " + f.name + ", " + books.find(k => k.S.kind === "ops").S.atomPub.count + " people. Save to Excel to share it."); } };
   if (q("atomAdd")) q("atomAdd").onclick = () => { q("atomFile").value = ""; q("atomFile").click(); };
   if (q("atomFile")) q("atomFile").onchange = async e => { const x = e.target.files[0]; if (x) { try { atomLoad(await x.arrayBuffer(), x.name); } catch (err) { alert(err.message || err); } } };
   if (q("atomSel")) q("atomSel").onchange = e => { cur.atom = +e.target.value; renderAll(); };
@@ -2018,6 +2046,7 @@ function setCell(xml, ref, val) {
 function buildXlsx() {
   const bySheet = {};
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
+  if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
     const p = WB.paths[sheet]; if (!p || !files[p]) continue; let x = td.decode(files[p]);
@@ -2049,7 +2078,7 @@ function buildXlsx() {
 const unsaved = () => books.reduce((n, b) => n + b.dirty.size, 0);
 // ---------- change log: every save adds one line per changed cell to the file's own 'Change Log' sheet
 // (time, who, file, what changed in words, before, after, cell). On SharePoint "who" is the signed-in person.
-const LOG_SHEET = "Change Log", LOG_SKIP = new Set(["Currency", LOG_SHEET]), LOG_SHIFTS = ["AM", "PM", "NIGHT"], LOG_SLOTS = ["AM 1", "AM 2", "PM 1", "PM 2", "NIGHT 1", "NIGHT 2"];
+const LOG_SHEET = "Change Log", LOG_SKIP = new Set(["Currency", LOG_SHEET, ATOM_SHEET]), LOG_SHIFTS = ["AM", "PM", "NIGHT"], LOG_SLOTS = ["AM 1", "AM 2", "PM 1", "PM 2", "NIGHT 1", "NIGHT 2"];
 const LOG_HEAD = ["Time", "Name", "Email", "File", "Change", "Before", "After", "Cell"];
 const logWho = () => SP.user ? SP.user.Title : "Offline (" + (books[0] ? books[0].WB.name : "") + ")";
 const logTime = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()); };
@@ -2084,6 +2113,7 @@ function logLines(b, sent) {
     const w = logWhat(b, e.sheet, e.ref, sent, files);
     out.push([t, who, mail, b.S.dept, w.what, logVal(before, w.head), logVal(e.val, w.head), e.sheet + "!" + e.ref]);
   }
+  if (b.S.atomPub && [...sent.values()].some(e => e.sheet === ATOM_SHEET)) out.push([t, who, mail, b.S.dept, "ATOM published: " + b.S.atomPub.name + ", as of " + b.S.atomPub.asOf, "", "", ATOM_SHEET]);   // one line, not one per cell
   return out;
 }
 // add the Change Log sheet to a workbook that has none (files is changed in place)

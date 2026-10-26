@@ -334,6 +334,52 @@ test("no_atom_name_badge", async ({ page }) => {
   assert.strictEqual(n, 0);
 }, { atom: [FULL()], fresh: true });
 
+// ---- v2 Task 4: publish into the ATOM Currency sheet
+const PUB2 = { atom: [FULL(), atomFixture({ variant: "partial", name: "ATOM_partial" })], fresh: true };
+const sheetCells = page => page.evaluate(() => { const bi = books.findIndex(b => b.S.kind === "ops"), out = withBook(bi, () => buildXlsx()), files = fflate.unzipSync(out.bytes), paths = sheetPaths(files);
+  return paths["ATOM Currency"] ? readCellsOf(files, paths["ATOM Currency"], parseSST(files)) : null; });
+test("publish_writes_sheet_and_reads_back", async ({ page }) => {
+  await opsMode(page);
+  assert.ok(await page.evaluate(() => atomPublish(ATOMS[0])));
+  const c = await sheetCells(page), f = await page.evaluate(() => ({ asOf: atomAsOf(ATOMS[0]), month: ATOMS[0].hoursMonth }));
+  assert.deepStrictEqual([c.A8, c.B8, c.D8, c.E8, c.F8, c.I8], ["A NGO", "Pilot", c.D8, "2026-11-16", "-", 3.9]);
+  assert.strictEqual(c.B2, f.asOf); assert.strictEqual(c.B3, "ATOM_Export_full_default.xlsx"); assert.strictEqual(c.B4, f.month);
+  assert.ok(Object.keys(c).every(r => /^[A-I]\d+$/.test(r)), "a column beyond I");
+  assert.ok(!JSON.stringify(c).includes("FAKE personal remark"));
+}, PUB2);
+test("publish_replaces_and_leaves_no_stale_rows", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { atomPublish(ATOMS[0]); const full = Object.keys(books.find(b => b.S.kind === "ops").dirty).length; atomPublish(ATOMS[1]); return null; });
+  const c = await sheetCells(page), names = Object.keys(c).filter(k => /^A\d+$/.test(k) && +k.slice(1) >= 8).map(k => c[k]);
+  assert.deepStrictEqual(names, ["A NGO", "HO KM", "S LIM JH", "SAMY", "TEO WK", "V TAN", "H LIM", "O NG"]);   // the partial export: Pilot and SUP 2 only
+  assert.strictEqual(c.B3, "ATOM_partial.xlsx");
+}, PUB2);
+test("publish_only_in_ops_room_view", async ({ page }) => {
+  const r = await page.evaluate(() => { OPS = false; const ob = books.find(b => b.S.kind === "ops"), n = ob.dirty.size, ok = atomPublish(ATOMS[0]); return [ok, ob.dirty.size - n]; });
+  assert.deepStrictEqual(r, [false, 0]);
+}, PUB2);
+test("publish_sheet_created_after_a_merge", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { const bi = books.findIndex(b => b.S.kind === "ops"), b = books[bi], pristine = Object.assign({}, b.WB.files);
+    atomPublish(ATOMS[0]); b.WB.files = pristine; b.WB.paths = sheetPaths(pristine);   // another user saved first: our copy was replaced
+    const out = withBook(bi, () => buildXlsx()), files = fflate.unzipSync(out.bytes), paths = sheetPaths(files);
+    return { stray: Object.keys(files).filter(k => /undefined/.test(k)), a8: paths["ATOM Currency"] ? readCellsOf(files, paths["ATOM Currency"], parseSST(files)).A8 : null }; });
+  assert.deepStrictEqual(r, { stray: [], a8: "A NGO" });
+}, PUB2);
+test("publish_logs_one_line", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { atomPublish(ATOMS[0]); const b = books.find(b => b.S.kind === "ops"); return logLines(b, b.dirty).map(l => [l[4], l[7]]); });
+  assert.strictEqual(r.length, 1); assert.ok(/^ATOM published: ATOM_Export_full_default\.xlsx, as of /.test(r[0][0]), r[0][0]);
+}, PUB2);
+test("publish_stores_only_allowed_fields", async ({ page }) => {
+  await opsMode(page);
+  await page.evaluate(() => atomPublish(ATOMS[0]));
+  const c = await sheetCells(page), heads = "ABCDEFGHI".split("").map(L => c[L + "7"]);
+  assert.deepStrictEqual(heads, ["Initials", "Department", "CAT", "Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Clocked hours (month)"]);
+  const names = await page.evaluate(() => books.filter(b => !b.S.kind).flatMap(b => b.S.roster.map(p => p.name)).filter(n => n && n.length > 4));
+  const text = JSON.stringify(c); for (const n of names) assert.ok(!text.includes(n), n);
+}, PUB2);
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

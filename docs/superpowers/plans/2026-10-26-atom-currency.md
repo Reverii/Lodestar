@@ -22,9 +22,9 @@
 - Matching: ATOM `Name` equals the roster `Initials` (`p.ini`), ignoring capitals and extra spaces. Nothing else is tried; nothing is stored.
 - "As of" = the export's `docProps/core.xml` created time (local), changeable per file and remembered in the browser. Stale: amber banner after 7 days, red after 30. Never pick a file by name.
 - No Excel layout change and no layout stamp bump. The only new sheet is `ATOM Needs`, created in the Ops Room file on first edit (as `Change Log` is).
-- Rule 5: the status view covers all five departments; planner warnings (red corner, name badge) apply to SUP 2 only. 121 SQN is one squadron; plain wording.
+- Scaled up 2026-10-26: all five departments share one template, so the status view and the planner warnings (red corner, name badge) cover every department. 121 SQN is one squadron; plain wording.
 - Tests use synthetic exports only. Never copy Brandon's exports into the repo (it is public).
-- Bump the version `2026-10-25 z90` to `z91` in both places in `.dashboard_source.html`.
+- Bump the version `2026-10-25 z91` to `z92` in both places in `.dashboard_source.html`.
 
 ## Review Focus
 
@@ -163,10 +163,10 @@ Shared types (defined in Task 2):
 
 **Interfaces:**
 - Consumes: `atomIssues` (Task 4).
-- Produces: in the Planner (SUP 2 only, `S.dept === "SUP 2"`) the name cell shows an extra `<i class='curb bad' data-cur='1'>` "ATOM ⚠ n" (lapsed) or `due` "ATOM ! n" (due) when ATOM has issues for that person today; the tooltip lists the currencies and dates; clicking opens the Currency tab (existing handler).
+- Produces: in the Planner (every department) the name cell shows an extra `<i class='curb bad' data-cur='1'>` "ATOM ⚠ n" (lapsed) or `due` "ATOM ! n" (due) when ATOM has issues for that person today; the tooltip lists the currencies and dates; clicking opens the Currency tab (existing handler).
 - Produces: `lodeCards(...).cur` uses ATOM when the person matches: `level` bad/due/ok from `atomIssues(bi, i, iso)`, `text` "<Currency> lapsed 16 Oct" or "<Currency> due 27 Oct" or "All current", `sub` "from ATOM, data as of <date>"; with no ATOM data the existing flight-based text stays.
 
-- [ ] **Step 1: Write the failing tests:** `planner_badge_for_atom_lapse` (a matched SUP 2 person with a lapsed currency has the badge; another dept does not), `planner_badge_absent_without_atom`, `my_lodestar_uses_atom_when_matched`, `my_lodestar_falls_back_without_atom`.
+- [ ] **Step 1: Write the failing tests:** `planner_badge_for_atom_lapse` (a matched person with a lapsed currency has the badge in any department's planner), `planner_badge_absent_without_atom`, `my_lodestar_uses_atom_when_matched`, `my_lodestar_falls_back_without_atom`.
 - [ ] **Step 2: Run.** Expected: FAIL.
 - [ ] **Step 3: Implement** both hooks.
 - [ ] **Step 4: Rebuild and run, plus `node tests/my_lodestar.test.js`.** Expected: all PASS.
@@ -198,10 +198,10 @@ Shared types (defined in Task 2):
 
 **Interfaces:**
 - Consumes: `atomNeedsFor` (Task 8), `atomFor`, `atomState`.
-- Produces: `atomWarn(bi: number, i: number, code: string, mtype: string, iso: string) -> { lines: string[] } | null`. For a flight cell it returns the needed currencies (seat `Any`) that are `lap` on `iso`, each as "Night Curr ended 27 Oct", else `null`. Only SUP 2 and only when a matched ATOM row exists.
+- Produces: `atomWarn(bi: number, i: number, code: string, mtype: string, iso: string) -> { lines: string[] } | null`. For a flight cell it returns the needed currencies (seat `Any`) that are `lap` on `iso`, each as "Night Curr ended 27 Oct", else `null`. Any department, only when a matched ATOM row exists.
 - Produces: in the Planner cell loop, `W.push(["⚠ NOT CURRENT (ATOM)", "bad"])`, a red corner class `atomw` on the cell, and a tooltip with the lines and "From ATOM, data as of <date>. A flight planned earlier does not extend it here." The name badge from Task 7 adds the count of warned flights this month ("▲ n").
 
-- [ ] **Step 1: Write the failing tests:** `warn_when_expired_by_flight_day` (a person whose Night Curr ends 27 Oct, NVG-2.0 on 5 Nov: warned; on 25 Oct: not), `warn_lists_every_missing_currency`, `warn_only_for_flights`, `warn_only_sup2`, `warn_none_when_unmatched_or_no_needs`, `corner_and_tooltip_render`, `name_badge_counts_warned_flights`, `block_of_days_over_flights_is_not_warned_twice` (a Block of days that puts a non-flight code never warns).
+- [ ] **Step 1: Write the failing tests:** `warn_when_expired_by_flight_day` (a person whose Night Curr ends 27 Oct, NVG-2.0 on 5 Nov: warned; on 25 Oct: not), `warn_lists_every_missing_currency`, `warn_only_for_flights`, `warn_none_when_unmatched_or_no_needs`, `corner_and_tooltip_render`, `name_badge_counts_warned_flights`, `block_of_days_over_flights_is_not_warned_twice` (a Block of days that puts a non-flight code never warns).
 - [ ] **Step 2: Run.** Expected: FAIL.
 - [ ] **Step 3: Implement** `atomWarn` and the render hooks; the corner uses a CSS `::after` triangle.
 - [ ] **Step 4: Rebuild, run, and screenshot against `previews/ATOM_currency_mockup_planner.png`.** Expected: PASS.
@@ -230,9 +230,9 @@ Shared types (defined in Task 2):
 - Test: `tests/atom.test.js`
 
 **Interfaces:**
-- Produces: help text for the Currency tab covering the ATOM grid, as-of, Names to fix and the flight-needs table; version `z91`.
+- Produces: help text for the Currency tab covering the ATOM grid, as-of, Names to fix and the flight-needs table; version `z92`.
 
-- [ ] **Step 1: Write the failing tests:** `help_mentions_atom` (press the help button on the Currency tab), `version_is_z91` (both places).
+- [ ] **Step 1: Write the failing tests:** `help_mentions_atom` (press the help button on the Currency tab), `version_is_z92` (both places).
 - [ ] **Step 2: Run.** Expected: FAIL.
 - [ ] **Step 3: Implement** the help text and version bump; update `HANDOFF.md` (what was built, how it matches, what is not built: layer 3 projection, SATR, hours), `PROJECT_CHECKLIST.md` (take Currency off hold, tick the ATOM lines), and `CLAUDE.md` (version line, `tests/` note for `atom.test.js`).
 - [ ] **Step 4: Rebuild with `python3 .lodestar_build.py dashboard`; run `node tests/atom.test.js` and `node tests/my_lodestar.test.js`.** Expected: both all PASS, no page errors.

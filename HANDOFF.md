@@ -9,8 +9,8 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
-- Scope: SUP 2 only for new changes. SUP 1 / TACCO / Loadmaster / Pilot are on the older layout (no Jan next year, no
-  syllabus) until Brandon says scale up.
+- Scope: scaled up 2026-10-26 (z91). All five department files use the SUP 2 template (Jan next year, Syllabus sheets with placeholder
+  items for SUP 1 / TACCO / Loadmaster / Pilot). Demo files rebuilt; no real plans existed to migrate.
 - Dev mode stays on (red DEV badge, "Open every file (dev)", Master Planner editable in dev). No release build for Brandon.
 - Brandon still has to upload the current set to SharePoint "Program" (dashboard + 8 xlsx) and test there.
 

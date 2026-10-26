@@ -271,7 +271,7 @@ req.freeze_panes = "A6"; req.sheet_properties.tabColor = "D97706"
 
 # ---------------------------------------------------------------- Syllabus Log (SUP 2): one row per syllabus attempt. The items are on the Syllabus Items sheet below;
 # the dashboard's Syllabus tab counts attempts and chances from these rows. It never changes the Cat Status on the Roster.
-if DEPT == "SUP 2":
+if True:
     SYL_N = 1000
     syl = wb.create_sheet("Syllabus Log", wb.sheetnames.index("Requests") + 1)
     banner(syl, f"SYLLABUS LOG  |  {DEPT.upper()}", "One row per attempt at a syllabus item. Enter results on the dashboard (Planner > Syllabus Tracking, or the Planner cell picker), or type a row here.", 8)
@@ -313,8 +313,8 @@ if DEPT == "SUP 2":
     syl.sheet_properties.tabColor = "CA8A04"
 
 # ---------------------------------------------------------------- Syllabus definition (in each department's own file): settings, stages and items.
-# Each department keeps its own syllabus (SUP 1 / SUP 2 / TACCO Mission Crew, Pilot, Loadmaster). Built for SYL_DEPTS only until the scale-up.
-SYL_DEPTS = {"SUP 2"}
+# Each department keeps its own syllabus (SUP 1 / SUP 2 / TACCO Mission Crew, Pilot, Loadmaster). Built for every department since the 26 Oct scale-up.
+SYL_DEPTS = {"SUP 1", "SUP 2", "TACCO", "Loadmaster", "Pilot"}
 SYL_KIND = {"SUP 1": "Mission Crew", "SUP 2": "Mission Crew", "TACCO": "Mission Crew", "Pilot": "Pilot", "Loadmaster": "Loadmaster"}.get(DEPT, "Mission Crew")
 SYL_STAGES = [("OCU", "CAT D", "Operational Conversion Unit. Passing it makes a TRAINEE a CAT D."), ("CAT C", "CAT C", ""), ("CAT B", "CAT B", ""), ("CAT A", "CAT A", ""),
               ("Instructor", "Instructor", "Gives the Instructor Role on the Roster (not a Cat Status).")]

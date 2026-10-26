@@ -953,7 +953,7 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z90</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z91</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1282,7 +1282,7 @@ function renderSyl() {
   if (!$("v-syl").classList.contains("on")) return;
   const { Y, b, st, ed } = sylCtx();
   if (!st) { $("sylWrap").innerHTML = "<div class='sylempty'><h3>Open your planner</h3><p>Syllabus Tracking shows your department's crew from your own planner file.</p></div>"; return; }
-  if (!Y) { $("sylWrap").innerHTML = "<div class='sylempty'><h3>No syllabus in " + esc(st.dept) + "'s planner yet</h3><p>The syllabus lives in each department's own planner file (sheets <b>Syllabus Settings</b>, <b>Syllabus Stages</b>, <b>Syllabus Items</b> and <b>Syllabus Log</b>). For now only SUP 2's file has them.</p></div>"; return; }
+  if (!Y) { $("sylWrap").innerHTML = "<div class='sylempty'><h3>No syllabus in " + esc(st.dept) + "'s planner yet</h3><p>The syllabus lives in each department's own planner file (sheets <b>Syllabus Settings</b>, <b>Syllabus Stages</b>, <b>Syllabus Items</b> and <b>Syllabus Log</b>). Upload the new planner file for this department to get them.</p></div>"; return; }
   const crew = st.roster.map((p, i) => ({ p, i })).filter(x => x.p.name && !/inactive/i.test(x.p.status));
   const P = crew.map(x => Object.assign(x, { path: sylPath(Y, st, x.p) }));
   if (!P.some(x => same(x.p.id, sylSel.id))) sylSel = { id: P[0] ? P[0].p.id : null, stage: null, code: null };
@@ -2561,7 +2561,7 @@ function syncCodes() {
 function renderCur() {
   const tbtn = document.querySelector("nav.tabs button[data-v='cur']");
   if (S.kind || !S.hasCur) {
-    $("curNote").innerHTML = S.kind ? "Open a department's planner to see its crew currency." : "<b>" + esc(S.dept) + "'s file has no currency rules yet.</b> Currency checks are in the SUP 2 file for now; the other departments get them when the template is rolled out.";
+    $("curNote").innerHTML = S.kind ? "Open a department's planner to see its crew currency." : "<b>" + esc(S.dept) + "'s file has no currency rules yet.</b> Upload the new planner file for this department (from the project folder) to get the currency rules.";
     $("curTable").innerHTML = ""; $("ruleTable").innerHTML = ""; return;
   }
   const C = computeCurrency(), ed = cur.b === 0 || OPS, R = S.rules, on = R.map(ruleOn), cols = R.map((r, k) => k).filter(k => on[k]);
@@ -2641,7 +2641,7 @@ function renderPlanner() {
     "<b style='color:#15803d'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and ground programme match" : "flights match") + " the Master Planner.</b>";
   if (mb && mb.S.year === S.year) { const cn = codeDiffN(codeDiffs(S, mb.S)); if (cn) $("mpNote").innerHTML += " <span style='color:#b45309'>Flight codes differ from the Master Planner (" + cn + "); see the Activities tab.</span>"; }
   const A = actIndex(), mi = cur.m, st = monthStats(mi, A), y = S.year, dim = st.dim, M = S.m[mi];
-  const FLN = S.dept === "SUP 2" ? opsFlown() : null, NT = FLN ? 6 : 5;   // Flown Hrs (SUP 2 only): actual hours from the Ops Room's ATD / ATA
+  const FLN = opsFlown(), NT = FLN ? 6 : 5;   // Flown Hrs (every department): actual hours from the Ops Room's ATD / ATA
   const hol = new Set(S.hols.map(h => h.d));
   const dayInfo = []; for (let d = 0; d < dim; d++) { const dt = new Date(y, mi, d + 1), iso = isoOf(y, mi, d); dayInfo.push({ dow: dt.toLocaleDateString("en-GB", { weekday: "short" }), wk: dt.getDay() === 0 || dt.getDay() === 6, hol: hol.has(iso) }); }
   const kp = [["Total Flights", st.flights, "var(--blue)"], ["Total Planned Hrs", st.hrs.toFixed(1), "var(--teal)"], ["Ground Duties", st.gd, "var(--amber)"], [hasPlan(S, "BDO") ? "Duty Planned" : "SDO Planned", st.sdo, "var(--rose)"],
@@ -2919,7 +2919,7 @@ function renderSdo() {
   const allDiffs = !ownRoster && rb ? sdoDiffs(books[dutyBi()], rb) : [];
   const syncBtn = allDiffs.length ? " <button class='btn primary' id='sdoSync' style='margin-left:6px;padding:5px 10px'>Copy my duty days from the Duty Roster (" + allDiffs.length + ")</button>" : "";
   if (noDuty) {
-    note = "<b>" + esc(own.dept) + " has no " + D + " days in its file.</b> " + (D === "SDO" && !doesSdo(own) ? "Only " + SDO_DEPTS.join(", ") + " are rostered for SDO. " : "Its Excel has no " + D + " Plan sheet yet (only SUP 2 has one so far). ") + "The calendar shows the roster for reference." + syncBtn;
+    note = "<b>" + esc(own.dept) + " has no " + D + " days in its file.</b> " + (D === "SDO" && !doesSdo(own) ? "Only " + SDO_DEPTS.join(", ") + " are rostered for SDO. " : "Its Excel has no " + D + " Plan sheet yet (upload the new planner file). ") + "The calendar shows the roster for reference." + syncBtn;
   } else if (ownRoster) {
     const off = deptBooks.map(b => ({ b, n: sdoDiffs(b, books[dutyBi()], D).length })).filter(x => x.n);
     note = "Pick the department on " + D + " duty for each day. Save to Excel writes to the Duty Roster only. " +
@@ -4096,7 +4096,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z90 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z91 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

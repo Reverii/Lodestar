@@ -76,8 +76,7 @@ who will not be current on the day of a flight.
 
 ## Scope and rules
 - Reads only. No Excel file layout changes (new sheets are created on first save). Offline, no network. Dev mode first; dev-only code in DEV markers.
-- Rule 5 (SUP 2 only for new features): the status view is a squadron-wide read of an ATOM export and the rosters, so it covers all five
-  departments. Planner warnings (layer 2) apply to SUP 2 until Brandon says "scale up". **To confirm with Brandon.**
+- Scaled up 2026-10-26: all five departments share the SUP 2 template, so the status view and the Planner warnings (layer 2) cover every department.
 - Privacy: the export carries names. It stays in the same SharePoint folder and access as the other files. Lodestar keeps no copy and reads
   currency columns only.
 

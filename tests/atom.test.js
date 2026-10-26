@@ -434,6 +434,57 @@ test("dept_cannot_write_the_ops_room_file", async ({ page }) => {
   assert.deepStrictEqual(r, [0, false]);
 });
 
+// ---- v2 Task 7: Planner layer 1 (expiry-day marker) and layer 2 (alert)
+const planMonth = (page, mi, edits) => page.evaluate(([mi, edits]) => { useBook(0); cur.m = mi; edits.forEach(([ix, shift, day, code]) => { S.m[mi].grid[ix * 3 + shift][day - 1] = code; }); renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [mi, edits]);
+const cellAt = (page, ix, shift, day) => page.evaluate(([ix, shift, day]) => { const td = document.querySelector("#plan td[data-k='g:" + (ix * 3 + shift) + ":" + (day - 1) + "']"); return td ? { cls: td.className, title: td.title, txt: td.innerText } : null; }, [ix, shift, day]);
+const L7 = { atom: [FULL()], fresh: true };
+test("marker_on_expiry_day_only", async ({ page }) => {   // V TAN (SUP 2, 0): Night Curr expires 27 Oct
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await planMonth(page, 9, []);
+  const n = await cellAt(page, ix, 2, 27), before = await cellAt(page, ix, 2, 26), after = await cellAt(page, ix, 2, 28), am = await cellAt(page, ix, 0, 27), pm = await cellAt(page, ix, 1, 27);
+  assert.ok(/l1end/.test(n.cls) && /Night Curr expires/.test(n.txt) && /Night Curr expires 27 Oct/.test(n.title), JSON.stringify(n));
+  for (const c of [before, after, am, pm]) assert.ok(!/l1end/.test(c.cls), JSON.stringify(c));
+}, L7);
+test("marker_day_rows", async ({ page }) => {   // O NG (SUP 2, 2): Day Curr expires 5 Nov -> AM and PM
+  const [bi, ix] = await setIni(page, "SUP 2", 2, "O NG"); await planMonth(page, 10, []);
+  const am = await cellAt(page, ix, 0, 5), pm = await cellAt(page, ix, 1, 5), nt = await cellAt(page, ix, 2, 5);
+  assert.ok(/l1end/.test(am.cls) && /l1end/.test(pm.cls) && !/l1end/.test(nt.cls), JSON.stringify([am.cls, pm.cls, nt.cls]));
+  assert.ok(/Day Curr expires/.test(am.txt) && !/Day Curr expires/.test(pm.txt), "the label is on the AM row only");
+}, L7);
+test("capt_marker_is_outline_and_never_alerts", async ({ page }) => {   // A NGO (Pilot, 0): Night Capt expired 16 Oct, Night Curr valid to 27 Oct
+  const [bi, ix] = await setIni(page, "Pilot", 0, "A NGO");
+  await page.evaluate(() => { useBook(books.findIndex(b => !b.S.kind && b.S.dept === "Pilot")); }); await planMonth(page, 9, [[ix, 2, 20, "NVG-2.0"]]);
+  const m = await cellAt(page, ix, 2, 16), f = await cellAt(page, ix, 2, 20);
+  assert.ok(/l1end/.test(m.cls) && /capt/.test(m.cls) && /Night Capt expires/.test(m.txt), JSON.stringify(m));
+  assert.ok(!/atomw/.test(f.cls), JSON.stringify(f));
+}, L7);
+test("alert_on_and_after_expiry", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await planMonth(page, 9, [[ix, 2, 27, "NVG-2.0"], [ix, 2, 28, "NVG-2.0"]]);
+  const on = await cellAt(page, ix, 2, 27), next = await cellAt(page, ix, 2, 28);
+  assert.ok(!/atomw/.test(on.cls) && /l1end/.test(on.cls), JSON.stringify(on));
+  assert.ok(/atomw/.test(next.cls) && /NOT CURRENT/.test(next.txt) && /Night Curr expired 27 Oct/.test(next.title) && /From ATOM, data as of 2026-10-25/.test(next.title), JSON.stringify(next));
+}, L7);
+test("alert_uses_the_shift_row", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await planMonth(page, 9, [[ix, 0, 29, "FLT-2.0"], [ix, 2, 29, "NVG-2.0"]]);   // Day Curr valid, Night Curr expired 27 Oct
+  assert.ok(!/atomw/.test((await cellAt(page, ix, 0, 29)).cls)); assert.ok(/atomw/.test((await cellAt(page, ix, 2, 29)).cls));
+}, L7);
+test("pure_marks_for_odd_values", async ({ page }) => {
+  const r = await page.evaluate(() => { const row = k => ({ cells: { "Day Curr": { k, iso: null, raw: "" }, "Night Curr": { k, iso: null, raw: "" }, IRT: { k: "date", iso: "2026-10-27", raw: "" } } });
+    return ["none", "na", "blank", "text"].map(k => atomDayMarks(row(k), "2026-10-28", 0, true)).concat([atomDayMarks(row("none"), "2026-10-27", 0, true)]).map(x => [x.marks.length, !!x.alert]); });
+  assert.deepStrictEqual(r, [[0, false], [0, false], [0, false], [0, false], [0, false]]);   // IRT never marks or alerts in the Planner either
+}, L7);
+test("cancelled_or_non_flight_not_alerted", async ({ page }) => {
+  const r = await page.evaluate(() => { const row = { cells: { "Night Curr": { k: "date", iso: "2026-10-27", raw: "" } } }; return [!!atomDayMarks(row, "2026-10-28", 2, false).alert, !!atomDayMarks(row, "2026-10-28", 2, true).alert]; });
+  assert.deepStrictEqual(r, [false, true]);
+}, L7);
+test("no_tint_after_expiry", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await planMonth(page, 9, []);
+  for (const d of [28, 29, 30]) assert.ok(!/l1/.test((await cellAt(page, ix, 2, d)).cls), "day " + d);
+}, L7);
+test("legend_has_new_chips", async ({ page }) => {
+  await planMonth(page, 9, []);
+  const t = await page.innerText("#legend"); assert.ok(/expires/i.test(t) && /Not current/i.test(t), t);
+}, L7);
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

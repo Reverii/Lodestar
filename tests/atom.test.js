@@ -124,6 +124,36 @@ test("match_within_department_only", async ({ page }) => {
   assert.deepStrictEqual(r, { row: null, ao: true });
 });
 
+// ---- Task 4: status and issues
+const AO = { atom: [FULL()] };
+const dcell = iso => ({ k: "date", iso, raw: iso });
+test("state_boundaries", async ({ page }) => {
+  const r = await page.evaluate(() => { const D = "2026-10-26", st = iso => atomState({ k: "date", iso, raw: iso }, D);
+    const a = ["2026-10-25", "2026-10-26", "2026-11-09", "2026-11-10"].map(st); atomSetDue(7); const b = ["2026-11-02", "2026-11-03"].map(st); atomSetDue(14); return [a, b, atomDue()]; });
+  assert.deepStrictEqual(r, [["lap", "due", "due", "ok"], ["due", "ok"], 14]);
+}, AO);
+test("state_kinds", async ({ page }) => {
+  const r = await page.evaluate(() => ["none", "na", "blank", "text"].map(k => atomState({ k, iso: null, raw: "" }, "2026-10-26")));
+  assert.deepStrictEqual(r, ["nh", "nh", "nr", "nr"]);
+});
+test("cells_hide_not_held_and_carry_group", async ({ page }) => {
+  const r = await page.evaluate(() => { const row = ATOMS[0].sheets.Pilot[0]; return atomCells(row, "2026-10-26").map(c => [c.col, c.group, c.state, c.days]).filter(x => ["Day Capt", "Day Curr", "IRT", "Instructor Check", "ACE", "APT", "Night Curr"].includes(x[0])); });
+  assert.deepStrictEqual(r, [["Day Capt", "Flight Currencies", "lap", -10], ["Day Curr", "Flight Currencies", "ok", 21], ["Night Curr", "Flight Currencies", "due", 1], ["ACE", "LSS Currencies", "nr", null], ["APT", "LSS Currencies", "nr", null]]);
+});
+test("issues_for_matched_person", async ({ page }) => {
+  const [b, i] = await setIni(page, "Pilot", 0, "A NGO");
+  const r = await page.evaluate(([b, i]) => { const x = atomIssues(b, i, "2026-10-26"); return [x.lap.map(c => c.col), x.due.map(c => c.col)]; }, [b, i]);
+  assert.deepStrictEqual(r, [["Day Capt", "Night Capt"], ["Night Curr"]]);
+});
+test("issues_empty_for_unmatched", async ({ page }) => {
+  const [b, i] = await setIni(page, "Pilot", 1, "NOBODY");
+  assert.deepStrictEqual(await page.evaluate(([b, i]) => atomIssues(b, i, "2026-10-26"), [b, i]), { lap: [], due: [] });
+});
+test("stale_thresholds", async ({ page }) => {
+  const r = await page.evaluate(() => { const f = ATOMS[0], t = "2026-10-26", o = {}; for (const [k, d] of [["6", "2026-10-20 08:00"], ["8", "2026-10-18 08:00"], ["31", "2026-09-25 08:00"]]) { atomSetAsOf(f, d); o[k] = [atomAge(f, t), atomStale(f, t)]; } return o; });
+  assert.deepStrictEqual(r, { "6": [6, ""], "8": [8, "amber"], "31": [31, "red"] });
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); cur.atom = 0; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };
@@ -139,7 +169,7 @@ const ID = (page, dept, n) => page.evaluate(([dept, n]) => { const b = books.fin
     if (only && !t.name.includes(only)) continue;
     ran++;
     try {
-      if (!S || (t.opts && t.opts.fresh)) { if (S) await S.close(); S = await boot(Object.assign({}, t.opts)); await S.page.evaluate(snap); }
+      if (!S || (t.opts && t.opts.fresh)) { if (S) await S.close(); S = await boot(Object.assign({ atom: [FULL()] }, t.opts)); await S.page.evaluate(snap); }
       else await S.page.evaluate(restore);
       await t.fn(S); pass++; console.log("ok   " + t.name);
     } catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 300)); if (S) { await S.close(); S = null; } }

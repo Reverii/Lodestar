@@ -1225,6 +1225,33 @@ function atomMatch(f) {
   const m = { rows, fix }; atomMemo = { f, sig, m }; return m;
 }
 function atomFor(bi, i) { const f = ATOMS[cur.atom || 0]; return f ? atomMatch(f).rows.get(bi + ":" + i) || null : null; }
+const dayDiff = (a, b) => Math.round((Date.parse(a + "T00:00:00Z") - Date.parse(b + "T00:00:00Z")) / 86400000);   // whole days from b to a (ISO dates)
+function atomDue() { const n = +spRecall("atom_due", 14); return n >= 0 ? n : 14; }
+function atomSetDue(n) { spRemember("atom_due", n); }
+// state of one cell on a day: lap (expiry before the day), due (within the due window), ok, nr (not recorded), nh (not held / not applicable)
+function atomState(c, day) {
+  if (c.k === "none" || c.k === "na") return "nh";
+  if (c.k !== "date") return "nr";
+  const d = dayDiff(c.iso, day); return d < 0 ? "lap" : d <= atomDue() ? "due" : "ok";
+}
+function atomCells(row, day) {   // the currencies this person holds, with state on that day
+  const f = ATOMS[cur.atom || 0], out = [];
+  if (!f) return out;
+  for (const g of f.groups) for (const col of g.cols) {
+    const c = row.cells[col]; if (!c) continue;
+    const state = atomState(c, day); if (state === "nh") continue;
+    out.push({ col, group: g.group, state, iso: c.iso, days: c.iso ? dayDiff(c.iso, day) : null });
+  }
+  return out;
+}
+function atomIssues(bi, i, day) {
+  const row = atomFor(bi, i), o = { lap: [], due: [] };
+  if (!row) return o;
+  for (const c of atomCells(row, day)) if (c.state === "lap" || c.state === "due") o[c.state].push({ col: c.col, iso: c.iso });
+  return o;
+}
+function atomAge(f, today) { return dayDiff(today, atomAsOf(f).slice(0, 10)); }
+function atomStale(f, today) { const n = atomAge(f, today); return n > 30 ? "red" : n > 7 ? "amber" : ""; }
 function atomAsOf(f) { return spRecall("atom_asof_" + f.name) || f.created; }
 function atomSetAsOf(f, s) { spRemember("atom_asof_" + f.name, s); }
 function loadWorkbook(buf, name, handle, other) {

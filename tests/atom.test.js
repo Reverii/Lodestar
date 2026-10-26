@@ -287,7 +287,7 @@ test("needs_roundtrip", async ({ page }) => {
   const r = await page.evaluate(() => { atomNeedsSet(0, "NVG-*", ["Night Curr", "Night Capt"], "Any"); atomNeedsSet(1, "TRG", ["SIM"], "Captain");
     const bi = books.findIndex(b => b.S.kind === "ops"); const out = withBook(bi, () => buildXlsx());
     const files = fflate.unzipSync(out.bytes), keep = WB; WB = { files, paths: sheetPaths(files), sst: parseSST(files), name: "copy.xlsx" };
-    try { const st = readOps("copy.xlsx"); return { has: st.atomNeeds.has, rows: st.atomNeeds.rows.map(x => [x.match, x.needs.join("|"), x.seat]) }; } finally { WB = keep; } });
+    try { const st = readOps("copy.xlsx"); return { has: st.atomNeeds.has, rows: st.atomNeeds.rows.filter(x => x.match).map(x => [x.match, x.needs.join("|"), x.seat]) }; } finally { WB = keep; } });
   assert.deepStrictEqual(r, { has: true, rows: [["NVG-*", "Night Curr|Night Capt", "Any"], ["TRG", "SIM", "Captain"]] });
 });
 test("needs_matching", async ({ page }) => {
@@ -312,8 +312,8 @@ test("needs_disabled_without_ops_mode", async ({ page }) => {
 });
 
 // A shared session is reused between tests; snapshot once, restore before each following test
-const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); };
-const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };
+const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
+const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };
 // setIni("SUP 2", n, "V TAN") sets the Initials of the nth person on that roster (empty slots skipped); returns [bookIndex, rosterIndex]
 const setIni = (page, dept, n, ini, cat) => page.evaluate(([dept, n, ini, cat]) => { const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept); const ix = books[bi].S.roster.map((p, i) => (p.name || p.id) ? i : -1).filter(i => i >= 0)[n]; books[bi].S.roster[ix].ini = ini; if (cat) books[bi].S.roster[ix].cat = cat; return [bi, ix]; }, [dept, n, ini, cat]);
 const ID = (page, dept, n) => page.evaluate(([dept, n]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept); return b.S.roster.filter(p => p.name || p.id)[n].id; }, [dept, n]);

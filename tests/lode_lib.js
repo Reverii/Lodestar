@@ -3,6 +3,8 @@
 // the tests do not save, but keep a scratch copy anyway.
 const { chromium } = require("playwright");
 const path = require("path");
+const os = require("os");
+const { execFileSync } = require("child_process");
 const ROOT = path.resolve(__dirname, "..");
 const FILES = process.env.LODE_FILES ? path.resolve(process.env.LODE_FILES) : ROOT;
 const OTHERS = ["Duty_Roster", "Master_Planner", "Ops_Room", "Flight_Ops_Planner_SUP1", "Flight_Ops_Planner_TACCO", "Flight_Ops_Planner_Loadmaster", "Flight_Ops_Planner_Pilot"];
@@ -25,7 +27,21 @@ async function boot(o = {}) {
     await page.setInputFiles("#fileInputMore", rest);
     await page.waitForFunction(n => books.length >= n, rest.length + 1, { timeout: 30000 });
   }
+  if (o.atom && o.atom.length) {   // ATOM exports (made-up ones from tests/make_atom_fixture.py): opened last, through the same file input
+    await page.setInputFiles("#fileInputMore", o.atom);
+    await page.waitForFunction(n => typeof ATOMS !== "undefined" && ATOMS.length >= n, o.atom.length, { timeout: 20000 });
+  }
   if (o.title !== undefined) await page.evaluate(t => { SP.user = { Title: t, Email: "" }; }, o.title);
   return { page, errs, close: () => browser.close() };
 }
-module.exports = { boot, ROOT };
+// atomFixture({ variant, created, name }) -> path of a synthetic ATOM export in the temp folder
+function atomFixture(o = {}) {
+  const dir = path.join(os.tmpdir(), "lodestar_atom_fixtures"); require("fs").mkdirSync(dir, { recursive: true });
+  const f = path.join(dir, (o.name || "ATOM_Export_" + (o.variant || "full") + "_" + String(o.created || "default").replace(/\W/g, "")) + ".xlsx");
+  const args = [path.join(__dirname, "make_atom_fixture.py"), f];
+  if (o.variant) args.push("--variant", o.variant);
+  if (o.created) args.push("--created", o.created);
+  execFileSync("python3", args);
+  return f;
+}
+module.exports = { boot, ROOT, atomFixture };

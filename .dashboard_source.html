@@ -886,6 +886,7 @@ body.opsfs #opsSize{display:none}
     <div class="card"><h2 id="ovCrewTitle">Crew totals</h2><table class="ov" id="ovCrew"></table></div>
   </section>
   <section class="view" id="v-cur">
+    <div id="atomBox"></div>
     <div id="curNote" class="note"></div>
     <div class="card"><div class="curhead"><h2>Crew currency</h2><label><input type="checkbox" id="curBaseEd"> Edit the dates before the planner</label><label><input type="checkbox" id="curOnlyBad"> Only show flagged crew</label></div><div class="curwrap"><table class="curt" id="curTable"></table></div></div>
     <div class="card"><h2>Rules</h2><div class="muted" style="font-size:12px;margin-bottom:6px">One rule per row, for pilots and non-pilots alike. Applies to: All, or Role / Cat Status / Status / Callsigns with the values in Who (comma separated). Counts: Any flight, a Mission type from the Activities tab (e.g. MSN), or Flight codes (e.g. NVG-2.0, MSN-3.0). At least: blank = 1; a 2xFLT code counts as 2.</div><div style="overflow:auto"><table class="edit" id="ruleTable"></table></div></div>
@@ -1057,6 +1058,9 @@ let WB = null;    // {files, paths:{sheetName:path}, sst:[], name, handle}
 let S = null;     // planner state
 let dirty = new Map();
 let OPS = false;   // all-departments mode: every open department file can be edited and saved
+// ---------- ATOM currency (read-only exports from ATOM; never books, never saved)
+let ATOMS = [];   // AtomFile list, see atomParse
+function renderAtom() { const b = $("atomBox"); if (!b) return; b.innerHTML = ""; }
 let books = [];   // [{WB, S, dirty}]: books[0] is your own file (editable), the rest are other departments (read-only)
 let cur = { m: new Date().getMonth(), sel: null, clip: null, b: 0 };
 function useBook(i) { const k = books[i]; WB = k.WB; S = k.S; dirty = k.dirty; cur.b = i; }
@@ -2559,6 +2563,7 @@ function syncCodes() {
   toast("Copied the flight codes from the Master Planner" + (keep.length ? "; kept " + keep.map(a => a.code).join(", ") + " because the plans still use " + (keep.length === 1 ? "it" : "them") : "") + (drop.length ? "; removed " + drop.map(a => a.code).join(", ") : "") + ". Click Save to Excel to keep it.", 6000);
 }
 function renderCur() {
+  renderAtom();
   const tbtn = document.querySelector("nav.tabs button[data-v='cur']");
   if (S.kind || !S.hasCur) {
     $("curNote").innerHTML = S.kind ? "Open a department's planner to see its crew currency." : "<b>" + esc(S.dept) + "'s file has no currency rules yet.</b> Upload the new planner file for this department (from the project folder) to get the currency rules.";

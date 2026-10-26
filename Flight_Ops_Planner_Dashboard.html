@@ -1206,8 +1206,8 @@ function atomAdd(files, name) {
 function atomLoad(buf, name) { atomAdd(fflate.unzipSync(new Uint8Array(buf)), name); }
 function atomKey(s) { return String(s == null ? "" : s).toLowerCase().trim().replace(/\s+/g, " "); }   // "" for blank: a blank never matches
 function atomCatKey(s) { const t = String(s || "").toUpperCase().replace(/^CAT\s*/, "").trim(); return /^[A-D]$/.test(t) ? t : ""; }   // only comparable when it is a single letter
-function atomRosterSig() {
-  let g = ""; for (const b of books) { if (b.S.kind) continue; g += "|" + b.S.dept; for (const p of b.S.roster) g += "," + (p.name || p.id ? p.ini + "/" + p.cat : ""); }
+function atomRosterSig() {   // changes when any book is opened, closed or moved, or any Initials / CAT is edited
+  let g = ""; books.forEach((b, bi) => { g += "|" + bi + (b.S.kind ? "k" : b.S.dept); if (b.S.kind) return; for (const p of b.S.roster) g += "," + (p.name || p.id ? p.ini + "/" + p.cat : ""); });
   return g;
 }
 // atomMatch(f): ATOM rows <-> roster people by exact Initials, per department. rows: "bookIndex:rosterIndex" -> AtomRow. fix: what needs attention.
@@ -1322,6 +1322,7 @@ function atomBadge(bi, i) {   // "ATOM ⚠ n" (lapsed) or "ATOM ! n" (due) besid
 }
 // ---------- ATOM currency: what each flight needs (sheet "ATOM Needs" in the Ops Room file, created on first edit)
 const ATOM_NEEDS = "ATOM Needs", ATOM_NEEDS_HEAD = ["Flight code or mission type", "Currencies needed", "Seat"], ATOM_NEEDS_N = 60;
+const ATOM_NEEDS_COLS = '<col min="1" max="1" width="30" customWidth="1"/><col min="2" max="2" width="50" customWidth="1"/><col min="3" max="3" width="12" customWidth="1"/>';
 const atomNeedsRows = () => { const b = opsBook(); return b && b.S.atomNeeds ? b.S.atomNeeds.rows.filter(r => r.match) : []; };
 function atomNeedsFor(code, mtype, seat) {   // currencies a flight needs: every matching row; Captain-only rows only for the captain seat
   const c = atomKey(code), m = atomKey(mtype), out = [];
@@ -1335,7 +1336,7 @@ function atomNeedsFor(code, mtype, seat) {   // currencies a flight needs: every
 function atomNeedsSet(n, match, needs, seat) {   // row n (0-based) of the table; an empty match clears it
   const bi = books.findIndex(b => b.S.kind === "ops"); if (bi < 0 || !OPS) return false;
   const b = books[bi];
-  sheetEnsure(b.WB, ATOM_NEEDS, ATOM_NEEDS_HEAD, '<col min="1" max="1" width="30" customWidth="1"/><col min="2" max="2" width="50" customWidth="1"/><col min="3" max="3" width="12" customWidth="1"/>');
+  sheetEnsure(b.WB, ATOM_NEEDS, ATOM_NEEDS_HEAD, ATOM_NEEDS_COLS);
   const r = n + 2, vals = match ? [match, needs.join(", "), seat === "Captain" ? "Captain" : "Any"] : ["", "", ""];
   withBook(bi, () => vals.forEach((v, i) => put(ATOM_NEEDS, "ABC"[i] + r, v)));
   const an = b.S.atomNeeds || (b.S.atomNeeds = { rows: [], has: true }); an.has = true;
@@ -2091,9 +2092,10 @@ function setCell(xml, ref, val) {
 function buildXlsx() {
   const bySheet = {};
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
+  if (bySheet[ATOM_NEEDS]) sheetEnsure(WB, ATOM_NEEDS, ATOM_NEEDS_HEAD, ATOM_NEEDS_COLS);   // our copy may have been replaced by a newer one without the sheet
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
-    const p = WB.paths[sheet]; let x = td.decode(files[p]);
+    const p = WB.paths[sheet]; if (!p || !files[p]) continue; let x = td.decode(files[p]);
     for (const e of list) x = setCell(x, e.ref, e.val);
     files[p] = te.encode(x);
   }
@@ -4368,7 +4370,7 @@ async function openOps(list) {   // list: [{name, buf, handle}]
   const late = n => /sdo_?roster|duty_?roster|flight_?programme|master_?planner|ops_?room/i.test(n);
   const order = list.slice().sort((a, b) => late(a.name) - late(b.name));   // a planner first, the Duty Roster and Master Planner last
   for (const f of order) {
-    try { loadWorkbook(f.buf, f.name, f.handle, !first); first = false; } catch (e) { errs.push(f.name + ": " + (e.message || e)); }
+    try { loadWorkbook(f.buf, f.name, f.handle, !first); if (books.length) first = false; /* an ATOM export is not a book: the next file is still the first */ } catch (e) { errs.push(f.name + ": " + (e.message || e)); }
   }
   if (first) { alert(errs.join("\n") || "No files opened."); return; }
   OPS = true; renderAll();
@@ -5147,7 +5149,7 @@ const HELP = {
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> Press <b>Add ATOM export</b> and pick the Excel you exported from ATOM. Lodestar only reads it: it never saves it or changes it. Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = lapsed (expiry before today), amber = due within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown; change it if the export is older than its file date. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>What each flight needs</b> says which ATOM currencies a flight code (NVG-* for a family) or mission type needs. It is saved in the Ops Room file and edited in the Ops Room view. A Planner cell gets a red corner when the person's currency has already ended on that day; an Ops Room seat gets a CURR mark (the Aircraft Captain seat also checks the Captain rules). These only warn.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],
+    "<ul><li>Red = lapsed (expiry before today), amber = due within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown; change it if the export is older than its file date. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>What each flight needs</b> says which ATOM currencies a flight code (NVG-* for a family) or mission type needs. It is saved in the Ops Room file and edited in the Ops Room view; the Planner and Ops Room only show these warnings while the Ops Room file is open. A Planner cell gets a red corner when the person's currency has already ended on that day; an Ops Room seat gets a CURR mark (the Aircraft Captain seat also checks the Captain rules). These only warn.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],
   acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (Seats filled, MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li><li>Timeline shows the same flights as bars on the day's clock (brief, then ETD to ETA) with a line at the time now; click a bar to open it in the table.</li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +

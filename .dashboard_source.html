@@ -1194,6 +1194,37 @@ function atomAdd(files, name) {
   if (books.length) renderAll(); else renderAtom();
 }
 function atomLoad(buf, name) { atomAdd(fflate.unzipSync(new Uint8Array(buf)), name); }
+function atomKey(s) { return String(s == null ? "" : s).toLowerCase().trim().replace(/\s+/g, " "); }   // "" for blank: a blank never matches
+function atomCatKey(s) { const t = String(s || "").toUpperCase().replace(/^CAT\s*/, "").trim(); return /^[A-D]$/.test(t) ? t : ""; }   // only comparable when it is a single letter
+function atomRosterSig() {
+  let g = ""; for (const b of books) { if (b.S.kind) continue; g += "|" + b.S.dept; for (const p of b.S.roster) g += "," + (p.name || p.id ? p.ini + "/" + p.cat : ""); }
+  return g;
+}
+// atomMatch(f): ATOM rows <-> roster people by exact Initials, per department. rows: "bookIndex:rosterIndex" -> AtomRow. fix: what needs attention.
+let atomMemo = null;
+function atomMatch(f) {
+  const sig = ATOMS.indexOf(f) + atomRosterSig();
+  if (atomMemo && atomMemo.f === f && atomMemo.sig === sig) return atomMemo.m;
+  const rows = new Map(), fix = { atomOnly: [], rosterOnly: [], dupes: [], cat: [], closed: [] };
+  for (const dept in f.sheets) {
+    const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept);
+    if (bi < 0) { fix.closed.push(dept); continue; }
+    const ro = books[bi].S.roster, byKey = new Map(), atomBy = new Map();
+    ro.forEach((p, i) => { const k = atomKey(p.ini); if (!k || !(p.name || p.id)) return; if (!byKey.has(k)) byKey.set(k, []); byKey.get(k).push(i); });
+    for (const r of f.sheets[dept]) { const k = atomKey(r.name); if (k && !atomBy.has(k)) atomBy.set(k, r); }
+    for (const [k, ix] of byKey) {
+      if (ix.length > 1) { fix.dupes.push({ dept, ini: ro[ix[0]].ini.trim(), ids: ix.map(i => ro[i].id || ro[i].name) }); continue; }
+      const r = atomBy.get(k);
+      if (!r) { fix.rosterOnly.push({ dept, id: ro[ix[0]].id, name: ro[ix[0]].name }); continue; }
+      rows.set(bi + ":" + ix[0], r);
+      const a = atomCatKey(r.cat), c = atomCatKey(ro[ix[0]].cat);
+      if (a && c && a !== c) fix.cat.push({ dept, id: ro[ix[0]].id, atom: r.cat, roster: ro[ix[0]].cat });
+    }
+    for (const [k, r] of atomBy) if (!byKey.has(k)) fix.atomOnly.push({ name: r.name, dept });
+  }
+  const m = { rows, fix }; atomMemo = { f, sig, m }; return m;
+}
+function atomFor(bi, i) { const f = ATOMS[cur.atom || 0]; return f ? atomMatch(f).rows.get(bi + ":" + i) || null : null; }
 function atomAsOf(f) { return spRecall("atom_asof_" + f.name) || f.created; }
 function atomSetAsOf(f, s) { spRemember("atom_asof_" + f.name, s); }
 function loadWorkbook(buf, name, handle, other) {

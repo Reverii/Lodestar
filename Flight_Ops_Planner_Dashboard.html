@@ -1291,7 +1291,7 @@ function renderAtom() {
   const cols = f.groups.map(g => ({ group: g.group, cols: g.cols.filter(c => rows.some(r => r.row.cells[c])) })).filter(g => g.cols.length);
   let lap = 0, due = 0, bad = 0; for (const r of allRows) { lap += r.lap; due += r.due; if (r.lap || r.due) bad++; }
   const fix = atomFixCount(f), win = atomDue();
-  let h = (stale ? "<div class='astale " + stale + "'>" + (stale === "red" ? "This ATOM export is " + age + " days old. Export it again before you rely on it." : "This ATOM export is " + age + " days old.") + " Data as of " + esc(atomAsOf(f)) + ".</div>" : "");
+  let h = (f.missing && f.missing.length ? "<div class='astale amber'>This ATOM export has no data for " + esc(f.missing.join(", ")) + ".</div>" : "") + (stale ? "<div class='astale " + stale + "'>" + (stale === "red" ? "This ATOM export is " + age + " days old. Export it again before you rely on it." : "This ATOM export is " + age + " days old.") + " Data as of " + esc(atomAsOf(f)) + ".</div>" : "");
   const sh = atomShared(), opts = (sh ? [["-1", "Shared from the Ops Room"]] : []).concat(ATOMS.map((x, i) => [String(i), x.name]));
   const src = f.source === "shared" ? "Shared from the Ops Room" + (f.by ? ", published by " + esc(f.by) : "") : "File added by you (not shared)";
   h += "<div class='card atomhead'><b>ATOM currencies</b><span class='asof'>" + src + ": " + (opts.length > 1 ? "<select id='atomSel'>" + opts.map(o => "<option value='" + o[0] + "'" + (o[0] === String(f.source === "shared" ? -1 : ATOMS.indexOf(f)) ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select>" : esc(f.source === "shared" ? (f.file || "ATOM export") : f.name)) +
@@ -1343,10 +1343,15 @@ function atomFromShared(c) {   // the cells of the ATOM Currency sheet -> the sa
   out.missing = ATOM_DEPT_ORDER.filter(d => !out.sheets[d]);
   return out;
 }
+function atomPublishSummary(f) {   // what a publish would write, in words
+  const count = ATOM_DEPT_ORDER.reduce((n, d) => n + (f.sheets[d] || []).length, 0), missing = ATOM_DEPT_ORDER.filter(d => !(f.sheets[d] || []).length);
+  return { count, missing, text: "Publish " + count + " people from " + f.name + " to everyone? It replaces the data shared before." + (missing.length ? "\n\nThis export has no data for " + missing.join(", ") + ", so those departments will have no ATOM data until an export with them is published." : "") };
+}
 function atomPublish(f) {   // writes every person of the export into the sheet, replacing what was there; true when written
   const oi = books.findIndex(b => b.S.kind === "ops"); if (oi < 0 || !OPS || !f) return false;
   const b = books[oi], people = [];
   for (const d of ATOM_DEPT_ORDER) for (const r of f.sheets[d] || []) people.push([r, d]);
+  if (!people.length) return false;   // never replace everyone's data with nothing
   if (people.length > ATOM_SHEET_N) { alert("This ATOM export has " + people.length + " people; the shared sheet holds " + ATOM_SHEET_N + "."); return false; }
   let last = b.S.atomPubLast || ATOM_SHEET_ROW0 - 1;   // the last row that may hold data from before (in the file, or published earlier and not saved yet)
   if (b.WB.paths[ATOM_SHEET]) for (const k in readCellsOf(b.WB.files, b.WB.paths[ATOM_SHEET], b.WB.sst)) { const r = +k.match(/\d+/)[0]; if (r >= ATOM_SHEET_ROW0) last = Math.max(last, r); }
@@ -1402,7 +1407,7 @@ function atomFixHtml(f) {
 }
 function atomWire() {
   const q = id => document.getElementById(id);
-  if (q("atomPublish")) q("atomPublish").onclick = () => { if (confirm("Publish this ATOM export to everyone? It replaces the data shared before.")) { const f = atomCurrent(); if (atomPublish(f)) toast("Published to everyone: " + f.name + ", " + books.find(k => k.S.kind === "ops").S.atomPub.count + " people. Save to Excel to share it."); } };
+  if (q("atomPublish")) q("atomPublish").onclick = () => { { const f = atomCurrent(), sm = atomPublishSummary(f); if (!sm.count) { alert("This export has no people in it, so there is nothing to publish."); return; } if (!confirm(sm.text)) return; if (atomPublish(f)) { cur.atom = -1; renderAll(); toast("Published to everyone: " + f.name + ", " + books.find(k => k.S.kind === "ops").S.atomPub.count + " people. Save to Excel to share it."); } } };
   if (q("atomAdd")) q("atomAdd").onclick = () => { q("atomFile").value = ""; q("atomFile").click(); };
   if (q("atomFile")) q("atomFile").onchange = async e => { const x = e.target.files[0]; if (x) { try { atomLoad(await x.arrayBuffer(), x.name); } catch (err) { alert(err.message || err); } } };
   if (q("atomSel")) q("atomSel").onchange = e => { cur.atom = +e.target.value; renderAll(); };
@@ -2042,7 +2047,7 @@ function undo(back = true) {
   if (popKey) closePop(true);
   const st = from.pop(); if (st.length !== books.length) { undoReset(); return; }
   to.push(undoBase || snapAll());
-  st.forEach((x, i) => { books[i].S = structuredClone(x.S); books[i].dirty = new Map(x.dirty); undoSaved(books[i], x); });
+  st.forEach((x, i) => { if (i !== 0 && !OPS) return; books[i].S = structuredClone(x.S); books[i].dirty = new Map(x.dirty); undoSaved(books[i], x); });   // a read-only file (the Ops Room seen from a department) is never rolled back
   undoBase = st; useBook(cur.b); OPS_CXL_CACHE = null; CHIT_GEN++;
   renderAll(); updateUndo(); toast(back ? "Undone" : "Redone", 1000);
 }
@@ -2297,7 +2302,7 @@ async function autoRun() {
 }
 // pull other people's saves: every 15 seconds, and when you come back to this window
 async function liveCheck() {
-  if (liveBusy || autoBusy || !SP.on || !books.length) return; liveBusy = true; const got = [];
+  if (liveBusy || autoBusy || !SP.on || !books.length) return; liveBusy = true; const got = [], gotIx = [];
   try {
     for (const b of books.slice()) {
       const h = b.WB.handle; if (!h || !h.sp || b.dirty.size) continue;
@@ -2306,12 +2311,13 @@ async function liveCheck() {
         if (j.d.TimeLastModified === h.modified || b.dirty.size) continue;
         const buf = await spFetch({ Name: h.name, ServerRelativeUrl: h.url });
         const i = books.indexOf(b); if (i < 0 || b.dirty.size) continue;
-        reparseBook(i, buf); h.modified = j.d.TimeLastModified; got.push(b.S.dept); liveHeal(b);
+        reparseBook(i, buf); h.modified = j.d.TimeLastModified; got.push(b.S.dept); gotIx.push(i); liveHeal(b);
       } catch (e) { console.warn("live", e); }
     }
   } finally { liveBusy = false; }
-  if (got.length) { undoReset(); liveRedraw(); toast("Updated from SharePoint: " + got.join(", "), 2500); }
+  if (got.length) { liveDone(gotIx); liveRedraw(); toast("Updated from SharePoint: " + got.join(", "), 2500); }
 }
+function liveDone(ix) { if (ix.some(i => i === 0 || OPS)) undoReset(); }   // history starts again only when a file you can edit was re-read; a read-only one (the Ops Room seen from a department) leaves it alone
 // two saves at the same moment: the later one can miss the earlier one's cells. Cells this dashboard saved in the last
 // two minutes that are missing from the fresh file are written again.
 function liveHeal(b) {
@@ -2931,7 +2937,7 @@ function renderControls() {
   $("month").innerHTML = monOpts(cur.m, S.year, S.nx);
   $("legend").innerHTML = S.cats.map((c, i) => '<span class="chip cat' + i + '">' + esc(c) + "</span>").join("") +
     '<span class="chip shAM">AM</span><span class="chip shPM">PM</span><span class="chip shNIGHT">NIGHT</span><span class="chip" style="background:var(--s700);color:#fcd34d">Weekend</span><span class="chip" style="background:#9f1239;color:#fff">Holiday</span>' +
-    (atomCurrent() ? "<span class='chip l1chip' title='ATOM: the day a Day / Night currency expires'>Currency expires</span><span class='chip l1chip capt' title='ATOM: a Captain currency expires (only matters on the Aircraft Captain seat)'>Captain currency expires</span><span class='chip' style='background:#fee2e2;color:#b91c1c' title='ATOM: a flight planned on or after the expiry day'>⚠ Not current</span>" : "");
+    (atomCurrent() ? "<span class='chip l1chip' title='ATOM: the day a Day / Night currency expires'>Currency expires</span><span class='chip l1chip capt' title='ATOM: a Captain currency expires (only matters on the Aircraft Captain seat)'>Captain currency expires</span><span class='chip' style='background:#fee2e2;color:#b91c1c' title='ATOM: a flight planned after the expiry day'>⚠ Not current</span>" : "");
 }
 function visibleCrew() {
   const q = $("search").value.trim().toLowerCase(), hide = $("hideInactive").checked, out = [];
@@ -3080,7 +3086,7 @@ function renderPlanner() {
         if (rest) W.push(["⚠ REST DAY " + rn, "rest"]);
         if (ol) W.push(["⚠ NOT ON LIST", "bad"]);
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) CL.get(i).get(d).forEach(w => W.push(w));
-        let l1cls = "", l1 = "";   // ATOM: the day a currency expires is marked (layer 1); a flight on or after it alerts (layer 2)
+        let l1cls = "", l1 = "";   // ATOM: the day a currency expires is marked (layer 1); a flight after it alerts (layer 2)
         const am = AR ? atomDayMarks(AR, isoOf(y, mi, d), s, !!(a && a.ci === CAT_FLIGHT && !cx)) : null;
         if (am && am.marks.length) {
           const kind = am.marks.some(z => z.kind === "curr") ? "curr" : "capt", diso = isoOf(y, mi, d);
@@ -5152,7 +5158,7 @@ const HELP = {
     "<h3>Colours and marks</h3><ul><li>Activity colours follow the categories in the legend (Flight, Sim, Ground Duty, Squadron Duty, Leave, Off, Admin, Medical, Oversea Duty).</li>" +
     "<li>" + sw("#dcfce7", "#166534", "3 ✓") + " shift covered, " + sw("#fef3c7", "#92400e", "! 2") + " short of crew, " + sw("#fee2e2", "#991b1b", "⚠ 1") + " flights but nobody flying, " + sw("#e2e8f0", "#475569", "NO FLY") + " no-flying day.</li>" +
     "<li>Amber outline: differs from the Master Planner. Purple corner: the cell has a comment. Red dashed outline: on a duty they aren't on the crew list for.</li>" +
-    "<li>" + sw("#ea580c", "#fff", "REST") + " flying 5+ days in a row. " + sw("#dc2626", "#fff", "⚠ 1") + " / " + sw("#f59e0b", "#111", "! 1") + " currency lapsed / due.</li>" +
+    "<li>" + sw("#ea580c", "#fff", "REST") + " flying 5+ days in a row. " + "Currency (from ATOM): the day a currency expires is marked in the row, and a flight after it shows a red corner. See the Currency tab help.</li>" +
     "<li>" + sw("#991b1b", "#fff", "DOWN") + " down-chitted after MC: not cleared to fly. Striped red cells are the down-chit days; a flight on them gets a red box. Click DOWN (or Up-chit… in the cell list) to up-chit.</li>" +
     "<li>Struck-through flight: cancelled in the Ops Room. Blue column: today. Weekends dark, public holidays red.</li></ul>" +
     "<h3>Tools</h3><ul><li><b>Find in this month</b>: outlines matching codes, times, comments and names; Enter jumps to the next.</li><li><b>Today</b>: jumps to today's month and column.</li><li><b>Block of days…</b> (bottom of the cell list): one activity over a date range, e.g. a course or detachment.</li><li><b>↶ ↷</b> (top right) or Ctrl+Z / Ctrl+Y: undo and redo before you save.</li></ul>"],
@@ -5169,7 +5175,7 @@ const HELP = {
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned on or after it shows a red corner and \"NOT CURRENT\". The Ops Room marks a seat \"CURR\", and the Aircraft Captain seat also checks the Captain currency. These only warn. IRT is shown here and on My Lodestar only.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
+    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". The Ops Room marks a seat \"CURR\", and the Aircraft Captain seat also checks the Captain currency. These only warn. IRT is shown here and on My Lodestar only.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (Seats filled, MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li><li>Timeline shows the same flights as bars on the day's clock (brief, then ETD to ETA) with a line at the time now; click a bar to open it in the table.</li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +

@@ -58,6 +58,7 @@ Last updated: 21 Oct 2026 (evening review). Tell Claude in this thread when some
 - [ ] ⏸ ON HOLD (21 Oct): Who may see Personnel Info on SharePoint? (personal data; may need its own restricted file)
 
 ## 4. Currency (off hold 26 Oct: ATOM export drives it)
+- [x] ATOM currency v2 (z94, 26 Oct): the Ops Room publishes the daily export into an `ATOM Currency` sheet in the Ops Room file; five currencies (Day Capt, Day Curr, IRT, Night Capt, Night Curr) and clocked hours; Planner expiry-day marker then alert; Ops Room seat check; ATOM clocked hours in Flown Hrs and My Lodestar. Open: IRT in the Planner. (older z92 line follows)
 - [x] ATOM currency (z92, 26 Oct): Currency tab reads an ATOM export (matched by roster Initials), Names to fix, flight-needs table (ATOM Needs sheet in the Ops Room file), Planner red corner + name badge, Ops Room CURR mark, My Lodestar currency card. Later: projection of planned flights (layer 3)
 
 - [~] Currency Rules sheet (open rule system for pilots and non-pilots, up to 12 rules) and Currency sheet (every department)

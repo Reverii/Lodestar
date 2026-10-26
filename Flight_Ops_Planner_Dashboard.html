@@ -21,6 +21,9 @@
 .atomgrid td{height:24px;text-align:center;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--s100);padding:0 3px;font-variant-numeric:tabular-nums}.atomgrid td.nm{font-size:12.5px}.atomgrid td.nm b{margin-right:6px}.atomgrid td.nm span{color:var(--s500);font-size:11.5px}
 .atomgrid .gs{border-left:1px solid var(--s200)}.atomgrid td.lap{background:#fee2e2;color:#b91c1c;font-weight:700}.atomgrid td.due{background:#fef3c7;color:#92400e;font-weight:700}.atomgrid td.ok{color:var(--s600)}.atomgrid td.nh{color:var(--s300)}.atomgrid td.nr{color:var(--s400);font-style:italic;background:repeating-linear-gradient(135deg,#fff 0 4px,#f1f5f9 4px 8px)}
 .atomneeds{border-collapse:collapse;width:100%}.atomneeds th{font-size:11px;text-align:left;color:var(--s500);padding:2px 4px}.atomneeds td{padding:2px 4px}.atomneeds input{width:100%;font:inherit;font-size:12px;padding:3px 5px;border:1px solid var(--s300);border-radius:4px}
+#plan td.l1end{position:relative}#plan td.l1end.curr{box-shadow:inset -4px 0 0 #ea580c;background:#ffedd5!important}#plan td.l1end.capt{box-shadow:inset -4px 0 0 #ea580c,inset 0 0 0 1.5px #fdba74;background:#fff!important}
+#plan .l1lab{position:absolute;left:2px;top:2px;font-size:9px;font-weight:800;color:#c2410c;background:#fff;border-radius:3px;padding:0 3px;white-space:normal;line-height:1.05;max-width:74px;z-index:2}
+.chip.l1chip{background:#ffedd5;color:#c2410c;box-shadow:inset -4px 0 0 #ea580c}.chip.l1chip.capt{background:#fff;box-shadow:inset -4px 0 0 #ea580c,inset 0 0 0 1.5px #fdba74}
 .atomw{position:relative}.atomw::after{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 8px 8px 0;border-color:transparent #dc2626 transparent transparent}
 .atomfix{max-height:260px;overflow:auto}.atomfix h3,.atomfix h4{margin:4px 0}.atomfixhd{display:flex;align-items:center;gap:10px}.atomfix ul{margin:2px 0 6px;padding-left:18px;columns:2}.atomfix a{color:var(--blue);cursor:pointer;margin-left:6px;font-size:11.5px}
 .acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#16a34a}.acat.C{background:#d99a06}.acat.D{background:#dc2626}
@@ -969,7 +972,7 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z93</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z94</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1361,6 +1364,27 @@ function atomPublish(f) {   // writes every person of the export into the sheet,
   });
   b.S.atomShared = atomFromShared(cells); b.S.atomPubLast = Math.max(last, ATOM_SHEET_ROW0 + people.length - 1); b.S.atomPub = { name: f.name, asOf, count: people.length };
   return true;
+}
+function atomHours(bi, i, mi) {   // ATOM's clocked hours for a person, only for the month the export belongs to
+  const f = atomCurrent(), row = f && atomFor(bi, i); if (!row || typeof row.hours !== "number") return null;
+  const asOf = atomAsOf(f); return asOf.slice(0, 7) === isoOf(books[bi].S.year, mi, 0).slice(0, 7) ? { h: row.hours, asOf } : null;
+}
+function atomSeatWarn(r, c, k) {   // Ops Room seat: the Day / Night Curr of the flight's shift, and for the Aircraft Captain seat (k = 0) the matching Capt, expired before the flight's day
+  if (!atomCurrent() || !c || !r.x || r.x.sb) return null;
+  const bi = books.findIndex(b => !b.S.kind && same(b.S.dept, c.dept)); if (bi < 0) return null;
+  const i = books[bi].S.roster.findIndex(p => p.id && p.id === c.id); if (i < 0) return null;
+  const row = atomFor(bi, i); if (!row) return null;
+  const iso = opsDay(cur.opsDay).iso, part = r.x.s === 2 ? "Night" : "Day", lines = [];
+  for (const col of k === 0 ? [part + " Curr", part + " Capt"] : [part + " Curr"]) { const cell = row.cells[col]; if (cell && cell.k === "date" && cell.iso < iso) lines.push(col + " expired " + atomFmt(cell.iso, iso)); }
+  return lines.length ? { lines } : null;
+}
+function atomDayMarks(row, iso, s, flight) {   // one Planner cell: s = shift row (0 AM, 1 PM, 2 NIGHT); flight = the cell holds an uncancelled flight
+  const out = { marks: [], alert: null }; if (!row) return out;
+  const part = s === 2 ? "Night" : "Day", curK = part + " Curr", captK = part + " Capt";
+  for (const [col, kind] of [[curK, "curr"], [captK, "capt"]]) { const c = row.cells[col]; if (c && c.k === "date" && c.iso === iso) out.marks.push({ col, kind, label: col + " expires" }); }   // the expiry day is marked; nothing after it
+  const c = row.cells[curK];
+  if (flight && c && c.k === "date" && c.iso < iso) out.alert = { lines: [curK + " expired " + atomFmt(c.iso, iso)] };   // Capt and IRT never alert in the Planner
+  return out;
 }
 function atomFixOpen() { cur.atomFix = true; renderAtom(); }
 function atomFixClose() { cur.atomFix = false; renderAtom(); }
@@ -2906,7 +2930,8 @@ function renderControls() {
   if (cur.m === NX_MI && !S.nx) cur.m = 11;
   $("month").innerHTML = monOpts(cur.m, S.year, S.nx);
   $("legend").innerHTML = S.cats.map((c, i) => '<span class="chip cat' + i + '">' + esc(c) + "</span>").join("") +
-    '<span class="chip shAM">AM</span><span class="chip shPM">PM</span><span class="chip shNIGHT">NIGHT</span><span class="chip" style="background:var(--s700);color:#fcd34d">Weekend</span><span class="chip" style="background:#9f1239;color:#fff">Holiday</span>';
+    '<span class="chip shAM">AM</span><span class="chip shPM">PM</span><span class="chip shNIGHT">NIGHT</span><span class="chip" style="background:var(--s700);color:#fcd34d">Weekend</span><span class="chip" style="background:#9f1239;color:#fff">Holiday</span>' +
+    (atomCurrent() ? "<span class='chip l1chip' title='ATOM: the day a Day / Night currency expires'>Currency expires</span><span class='chip l1chip capt' title='ATOM: a Captain currency expires (only matters on the Aircraft Captain seat)'>Captain currency expires</span><span class='chip' style='background:#fee2e2;color:#b91c1c' title='ATOM: a flight planned on or after the expiry day'>⚠ Not current</span>" : "");
 }
 function visibleCrew() {
   const q = $("search").value.trim().toLowerCase(), hide = $("hideInactive").checked, out = [];
@@ -3024,6 +3049,7 @@ function renderPlanner() {
   for (const i of vis) {
     const p = S.roster[i], t = st.crew[i], inact = p.status.toLowerCase() === "inactive", ns = isSans(p);
     if (ns && !sep) { sep = true; h += "<tr class='sansSep'><td colspan='" + (dim + 3 + NT) + "'><span style='position:sticky;left:10px'>SANS / NSMEN</span></td></tr>"; }
+    const AR = atomCurrent() ? atomFor(cur.b, i) : null;   // this person's ATOM row, looked up once
     for (let s = 0; s < 3; s++) {
       h += "<tr class='" + (s === 2 ? "blkend" : "") + (inact ? " inactive" : "") + (ns ? " sans" : "") + "'>";
       if (s === 0) h += "<td class='stk1 idc' rowspan=3>" + esc(p.id) + "</td><td class='stk2 who' rowspan=3 title='" + esc([p.cat, p.role, p.status].filter(Boolean).join(" | ")) + "'><b class='" + catCls(p.cat) + "'>" + esc(p.name) + "</b>" + (RS && (() => { const k0 = dayOfYear(S.year, mi, 0), L = []; for (let d = 0; d < dim; d++) if (RS[i].run[k0 + d] >= REST_DAYS) L.push(d + 1); return L.length ? "<i class='curb rest' title='" + esc("Crew rest: flying " + REST_DAYS + "+ days in a row on " + MONTHS[mi] + " " + L.join(", ")) + "'>REST</i>" : ""; })() || "") + (CH && (() => { const D = CH[i].down, L = []; for (let d = 0; d < dim; d++) if (D[ck0 + d]) L.push(d); if (!L.length) return ""; const now = L.includes(tD), last = L[L.length - 1];
@@ -3054,11 +3080,19 @@ function renderPlanner() {
         if (rest) W.push(["⚠ REST DAY " + rn, "rest"]);
         if (ol) W.push(["⚠ NOT ON LIST", "bad"]);
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) CL.get(i).get(d).forEach(w => W.push(w));
+        let l1cls = "", l1 = "";   // ATOM: the day a currency expires is marked (layer 1); a flight on or after it alerts (layer 2)
+        const am = AR ? atomDayMarks(AR, isoOf(y, mi, d), s, !!(a && a.ci === CAT_FLIGHT && !cx)) : null;
+        if (am && am.marks.length) {
+          const kind = am.marks.some(z => z.kind === "curr") ? "curr" : "capt", diso = isoOf(y, mi, d);
+          l1cls = " l1end " + kind; if (s === 0 || s === 2) l1 = "<div class='l1lab " + kind + "'>" + esc(am.marks.find(z => z.kind === kind).label) + "</div>";
+          tip = am.marks.map(z => z.col + " expires " + atomFmt(diso, diso)).join("\n") + (tip ? "\n" + tip : "");
+        }
+        if (am && am.alert) { W.push(["⚠ NOT CURRENT", "bad"]); l1cls += " atomw"; tip = am.alert.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent()) + (tip ? "\n" + tip : ""); }
         if (a && CN.has(i)) { const t = dateSerial(y, mi, d); CN.get(i).forEach(([n, k]) => { const R = S.rules[k], key = i + ":" + k; if (n === t && !cnDone.has(key) && ruleMatch(R, a, v)) { cnDone.add(key); W.push(["⚠ NOT CURRENT", "bad"]); tip = (tip ? tip + "\n" : "") + "Not current for " + R.name + " when this flight is planned (" + curIssues(CC, i).filter(x => x.startsWith(R.name)).join("; ") + ")"; } }); }
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) tip = (tip ? tip + "\n" : "") + "Currency: " + CL.get(i).get(d).map(w => w[2]).join("; ");
-        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + "' data-k='g:" + (i * 3 + s) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
+        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (i * 3 + s) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
       }
-      if (s === 0) h += "<td class='tot' rowspan=3>" + (t.fl || "-") + "</td><td class='tot' rowspan=3>" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=3 title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=3>" + (t.gd || "-") + "</td><td class='tot' rowspan=3>" + (t.sdo || "-") + "</td><td class='tot' rowspan=3>" + (t.lv || "-") + "</td>";
+      if (s === 0) h += "<td class='tot' rowspan=3>" + (t.fl || "-") + "</td><td class='tot' rowspan=3>" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const ah = atomHours(cur.b, i, mi); if (ah) return "<td class='tot flown' rowspan=3 title='" + esc("Clocked this month, from ATOM, as of " + ah.asOf) + "'>" + ah.h.toFixed(1) + "</td>"; const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=3 title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=3>" + (t.gd || "-") + "</td><td class='tot' rowspan=3>" + (t.sdo || "-") + "</td><td class='tot' rowspan=3>" + (t.lv || "-") + "</td>";
       h += "</tr>";
     }
   }
@@ -3563,10 +3597,10 @@ function opsCrewCell(r, k, ed) {
   const c = r.seats[k], dep = OPS_SEATS[k][1];
   if (!c) return "<td class='oc miss'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc((deptOpen(dep) ? "Nobody planned from " + dep : dep + " file not open") + (r.urg ? ". The flight is due soon." : "") + (ed ? "\nClick to pick someone." : "")) + "'><span class='seatp" + (r.urg ? " urg" : "") + (deptOpen(dep) ? "" : " nf") + "'>" + (deptOpen(dep) ? "+" : "?") + "</span>" + opsXtraHtml(r, k) + "</td>";
   const mc = r.o && same(r.o.mc, c.id), cr = r.o && same(r.o.crmo, c.id), off = c.code && !sameCode(c.code, r.x.code);
-  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso);
+  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso), aw = atomSeatWarn(r, c, k);
   const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.note ? "\nComment: " + c.note : "") + (c.set ? "\nSet in the Ops Room" : "");
   return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b>" +
-    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
+    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (aw ? "<i class='opsb atomx' title='" + esc(aw.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent())) + "'>CURR</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
 }
 function opsTail(r, ed, one) {
   // shown as plain text: the actual tail in bold, the standby tail small under it; click the cell to pick from the fleet
@@ -4388,7 +4422,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z93 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z94 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -4965,15 +4999,15 @@ function lodeMonth(who, mi) {
     const st = S, A = actIndex(), t = monthStats(mi, A).crew[who.i], G = st.m[mi].grid, dim = daysIn(st.year, mi), pre = isoOf(st.year, mi, 0).slice(0, 7);
     let cancelled = 0;
     for (let d = 0; d < dim; d++) for (let s = 0; s < 3; s++) { const v = G[who.i * 3 + s][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && cxlOf(st, who.p.id, mi, d, s)) cancelled++; }
-    const f = opsFlown().get([st.dept, who.p.id, mi].join("|").toUpperCase());
-    return { flights: t.fl, cancelled, hrsFlown: f ? f.h : 0, hrsPlanned: t.hrs, ground: t.gd, duty: t.sdo, leave: t.lv, sylPassed: (st.syl || []).filter(x => same(x.id, who.p.id) && x.res === "Pass" && x.iso.slice(0, 7) === pre).length };
+    const f = opsFlown().get([st.dept, who.p.id, mi].join("|").toUpperCase()), ah = atomHours(who.bi, who.i, mi);
+    return { flights: t.fl, cancelled, hrsFlown: ah ? ah.h : f ? f.h : 0, hrsSrc: ah ? "ATOM" : "", hrsAsOf: ah ? ah.asOf : "", hrsPlanned: t.hrs, ground: t.gd, duty: t.sdo, leave: t.lv, sylPassed: (st.syl || []).filter(x => same(x.id, who.p.id) && x.res === "Pass" && x.iso.slice(0, 7) === pre).length };
   });
 }
 function lodeMonthHtml(who, iso) {
   const st = books[who.bi].S, q = ymd(iso, st.year); if (q.y !== st.year || (q.mi === NX_MI && !st.nx)) return "";
   const m = lodeMonth(who, q.mi), tile = (b, k, sub) => "<div><b>" + b + "</b><span>" + k + "</span><small>" + esc(sub) + "</small></div>";
   return "<div class='lcard'><h3>" + MONTHS_FULL[q.mi % 12] + " so far<a id='lodeToPlanner' data-mi='" + q.mi + "'>Month in the Planner ›</a></h3><div class='sum'>" +
-    tile(m.flights, "FLIGHTS", m.cancelled ? m.cancelled + " cancelled" : "none cancelled") + tile(m.hrsFlown.toFixed(1), "HRS FLOWN", "of " + m.hrsPlanned.toFixed(1) + " planned") + tile(m.ground, "GROUND DUTY", "days") +
+    tile(m.flights, "FLIGHTS", m.cancelled ? m.cancelled + " cancelled" : "none cancelled") + tile(m.hrsFlown.toFixed(1), "HRS FLOWN", "of " + m.hrsPlanned.toFixed(1) + " planned" + (m.hrsSrc ? " · from ATOM, as of " + m.hrsAsOf.slice(0, 10) : "")) + tile(m.ground, "GROUND DUTY", "days") +
     tile(m.duty, "SDO / BDO", "days") + tile(m.leave, "LEAVE", "days") + (st.hasSyl ? tile(m.sylPassed, "SYLLABUS", "passed this month") : "") + "</div></div>";
 }
 const LODE_SEAT = { "Aircraft Captain": "AC", Pilot: "Co-Pilot", Loadmaster: "LM", TACCO: "TACCO", "SUP 1": "SUP 1", "SUP 2": "SUP 2", "Additional crew": "Extra" };
@@ -5133,9 +5167,9 @@ const HELP = {
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
-  cur: ["Currency", "<p><b>ATOM currencies.</b> Press <b>Add ATOM export</b> and pick the Excel you exported from ATOM. Lodestar only reads it: it never saves it or changes it. Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = lapsed (expiry before today), amber = due within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown; change it if the export is older than its file date. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>What each flight needs</b> says which ATOM currencies a flight code (NVG-* for a family) or mission type needs. It is saved in the Ops Room file and edited in the Ops Room view; the Planner and Ops Room only show these warnings while the Ops Room file is open. A Planner cell gets a red corner when the person's currency has already ended on that day; an Ops Room seat gets a CURR mark (the Aircraft Captain seat also checks the Captain rules). These only warn.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],
-  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
+  cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
+    "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
+    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned on or after it shows a red corner and \"NOT CURRENT\". The Ops Room marks a seat \"CURR\", and the Aircraft Captain seat also checks the Captain currency. These only warn. IRT is shown here and on My Lodestar only.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (Seats filled, MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li><li>Timeline shows the same flights as bars on the day's clock (brief, then ETD to ETA) with a line at the time now; click a bar to open it in the table.</li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +

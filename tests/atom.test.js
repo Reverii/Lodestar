@@ -297,12 +297,13 @@ test("ops_room_still_renders_without_atom", async ({ page, errs }) => {
 test("help_mentions_atom", async ({ page }) => {
   await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cur']").click(); document.getElementById("helpBtn").click(); });
   const t = await page.innerText("#helpBody");
-  for (const w of ["ATOM", "Initials", "Names to fix", "What each flight needs"]) assert.ok(t.includes(w), w);
+  for (const w of ["ATOM", "Initials", "Names to fix", "Publish to everyone", "expires", "clocked hours"]) assert.ok(t.includes(w), w);
+  assert.ok(!t.includes("What each flight needs"));
 });
-test("version_is_z93", async ({ page }) => {
+test("version_is_z94", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z93 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-26 z93 "));
+  assert.ok(/ z94 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-26 z94 "));
 });
 
 // ---- Final review fixes

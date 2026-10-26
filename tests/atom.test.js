@@ -142,8 +142,8 @@ test("state_kinds", async ({ page }) => {
   assert.deepStrictEqual(r, ["nh", "nh", "nr", "nr"]);
 });
 test("cells_hide_not_held_and_carry_group", async ({ page }) => {
-  const r = await page.evaluate(() => { const row = ATOMS[0].sheets.Pilot[0]; return atomCells(row, "2026-10-26").map(c => [c.col, c.group, c.state, c.days]).filter(x => ["Day Capt", "Day Curr", "IRT", "Instructor Check", "ACE", "APT", "Night Curr"].includes(x[0])); });
-  assert.deepStrictEqual(r, [["Day Capt", "Flight Currencies", "lap", -10], ["Day Curr", "Flight Currencies", "ok", 21], ["Night Curr", "Flight Currencies", "due", 1], ["ACE", "LSS Currencies", "nr", null], ["APT", "LSS Currencies", "nr", null]]);
+  const r = await page.evaluate(() => { const row = ATOMS[0].sheets.Pilot[0]; return atomCells(row, "2026-10-26").map(c => [c.col, c.group, c.state, c.days]); });
+  assert.deepStrictEqual(r, [["Day Capt", "Flight Currencies", "lap", -10], ["Day Curr", "Flight Currencies", "ok", 21], ["Night Capt", "Flight Currencies", "lap", -10], ["Night Curr", "Flight Currencies", "due", 1]]);   // IRT is '-' (not held): hidden
 });
 test("issues_for_matched_person", async ({ page }) => {
   const [b, i] = await setIni(page, "Pilot", 0, "A NGO");
@@ -170,16 +170,27 @@ test("grid_rows_sorted_worst_first", async ({ page }) => {
   assert.deepStrictEqual(r, [["A NGO", 2, 1], ["S LIM JH", 1, 2], ["HO KM", 0, 0]]);
   assert.deepStrictEqual(await page.evaluate(d => atomGridRows("Pilot", true, d).map(x => x.row.name), D0), ["A NGO", "S LIM JH"]);
 });
+test("grid_has_five_columns_and_hours", async ({ page }) => {
+  await setIni(page, "Pilot", 0, "A NGO"); await setIni(page, "SUP 2", 0, "V TAN"); await openCur(page);
+  const heads = dept => page.evaluate(d => { spRemember("atom_dept", d); renderAtom(); return [...document.querySelectorAll("#atomGrid thead tr:last-child th")].map(x => x.textContent.replace(/\s+/g, " ").trim()); }, dept);
+  assert.deepStrictEqual(await heads("Pilot"), ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Hours (month)"]);
+  assert.deepStrictEqual(await heads("SUP 2"), ["Day Curr", "Night Curr", "Hours (month)"]);
+});
 test("grid_columns_follow_file", async ({ page }) => {
   await setIni(page, "Pilot", 0, "A NGO"); await openCur(page);
-  const t = await page.innerText("#atomGrid");
-  assert.ok(/NVG\s*Curr/i.test(t), t.slice(0, 200));
+  const t = await page.evaluate(() => { spRemember("atom_dept", "Pilot"); renderAtom(); return [...document.querySelectorAll("#atomGrid thead tr:last-child th")].map(x => x.textContent.replace(/\s+/g, " ").trim()); });
+  assert.deepStrictEqual(t, ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Hours (month)"]);   // reordered columns and the extra NVG Curr in the file change nothing
 }, { atom: [atomFixture({ variant: "moved" })], others: true, fresh: true });
 test("grid_hides_not_held_and_formats_dates", async ({ page }) => {
   await setIni(page, "Pilot", 0, "A NGO"); await openCur(page);
-  const r = await page.evaluate(() => { const th = [...document.querySelectorAll("#atomGrid thead tr:last-child th")].map(x => x.textContent.replace(/\s+/g, " ").trim()), tds = [...document.querySelectorAll("#atomGrid tbody tr:first-child td")];
-    const at = n => { const i = th.indexOf(n); return tds[i + 1]; }; return { irt: [at("IRT").className, at("IRT").textContent], dc: at("Day Curr").textContent, mas: at("MAS").textContent, ace: [at("ACE").className, at("ACE").textContent], lap: at("Day Capt").className.includes("lap") }; });
-  assert.deepStrictEqual(r, { irt: ["nh", "–"], dc: "16 Nov", mas: "30 Jun 31", ace: ["nr gs", "?"], lap: true });
+  const r = await page.evaluate(() => { spRemember("atom_dept", "Pilot"); renderAtom(); const th = [...document.querySelectorAll("#atomGrid thead tr:last-child th")].map(x => x.textContent.replace(/\s+/g, " ").trim()), tds = [...document.querySelectorAll("#atomGrid tbody tr:first-child td")];
+    const at = n => tds[th.indexOf(n) + 1]; return { irt: [at("IRT").className, at("IRT").textContent], dc: at("Day Curr").textContent, lap: at("Day Capt").className.includes("lap"), hrs: at("Hours (month)").textContent }; });
+  assert.deepStrictEqual(r, { irt: ["nh", "–"], dc: "16 Nov", lap: true, hrs: "3.9" });
+});
+test("grid_no_hours_shows_dash", async ({ page }) => {
+  await setIni(page, "Pilot", 2, "S LIM JH"); await openCur(page);   // S LIM JH has no hours in ATOM ('-')
+  const t = await page.evaluate(() => { spRemember("atom_dept", "Pilot"); renderAtom(); return [...document.querySelectorAll("#atomGrid tbody tr")].map(tr => [...tr.querySelectorAll("td")].pop().textContent); });
+  assert.deepStrictEqual(t, ["–"]);
 });
 test("grid_counts_match_cells", async ({ page }) => {
   await matchAll(page); await openCur(page);
@@ -248,12 +259,16 @@ test("fix_panel_empty_state", async ({ page }) => {
 const badgeFor = (page, dept, id) => page.evaluate(([dept, id]) => { const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept); useBook(bi); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click();
   const td = [...document.querySelectorAll("#plan td.idc")].find(x => x.textContent.trim() === id); const b = td && td.nextElementSibling.querySelector("i.curb[data-atom]"); return b ? [b.className, b.textContent, b.title] : null; }, [dept, id]);
 test("my_lodestar_uses_atom_when_matched", async ({ page }) => {
-  const id = await ID(page, "SUP 2", 0); await setIni(page, "SUP 2", 0, "V TAN");
-  const c = await page.evaluate(([id, iso]) => lodeCards(mePeople().find(z => z.p.id === id && z.dept === "SUP 2"), iso).cur, [id, "2026-10-26"]);
-  assert.strictEqual(c.level, "bad"); assert.strictEqual(c.text, "MAS lapsed 16 Oct"); assert.ok(/from ATOM, data as of 2026-10-25/.test(c.sub), c.sub);
-  const ok = await ID(page, "SUP 2", 1); await setIni(page, "SUP 2", 1, "H LIM");
-  const d = await page.evaluate(([id, iso]) => lodeCards(mePeople().find(z => z.p.id === id && z.dept === "SUP 2"), iso).cur, [ok, "2026-10-26"]);
-  assert.deepStrictEqual([d.level, d.text], ["ok", "All current"]);
+  const id = await ID(page, "SUP 2", 0); await setIni(page, "SUP 2", 0, "V TAN");   // V TAN: Night Curr expires 27 Oct (due)
+  const card = (dept, id) => page.evaluate(([dept, id, iso]) => lodeCards(mePeople().find(z => z.p.id === id && z.dept === dept), iso).cur, [dept, id, "2026-10-26"]);
+  const c = await card("SUP 2", id);
+  assert.deepStrictEqual([c.level, c.text], ["due", "Night Curr expires 27 Oct"]); assert.ok(/from ATOM, data as of 2026-10-25/.test(c.sub), c.sub);
+  const ok = await ID(page, "SUP 2", 1); await setIni(page, "SUP 2", 1, "HO KM-NOT-HERE");   // unmatched: falls back, not ATOM
+  const pid = await ID(page, "Pilot", 0); await setIni(page, "Pilot", 0, "A NGO");
+  const d = await card("Pilot", pid);
+  assert.deepStrictEqual([d.level, d.text], ["bad", "Day Capt expired 16 Oct"]);
+  const hid = await ID(page, "SUP 2", 2); await setIni(page, "SUP 2", 2, "H LIM");
+  const e = await card("SUP 2", hid); assert.deepStrictEqual([e.level, e.text], ["ok", "All current"]);
 });
 test("my_lodestar_falls_back_without_atom", async ({ page }) => {
   const c = await page.evaluate(() => { ATOMS = []; return lodeCards(mePeople().find(z => z.dept === "SUP 2"), "2026-10-26").cur; });
@@ -312,12 +327,12 @@ test("needs_table_is_gone", async ({ page }) => {
   assert.ok(await page.evaluate(() => typeof atomNeedsFor === "undefined" && typeof atomNeedsSet === "undefined"));
   await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cur']").click(); renderAtom(); });
   assert.ok(await page.evaluate(() => !document.getElementById("atomNeeds")));
-});
+}, { atom: [FULL()], fresh: true });
 test("no_atom_name_badge", async ({ page }) => {
   await setIni(page, "Pilot", 0, "A NGO");
   const n = await page.evaluate(() => { useBook(books.findIndex(b => !b.S.kind && b.S.dept === "Pilot")); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); return document.querySelectorAll("#plan i.curb[data-atom], #plan i.atomw").length; });
   assert.strictEqual(n, 0);
-});
+}, { atom: [FULL()], fresh: true });
 
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };

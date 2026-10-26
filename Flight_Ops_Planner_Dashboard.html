@@ -1294,12 +1294,12 @@ function renderAtom() {
     "<label>Due window <select id='atomDue'>" + [7, 14, 21, 30].map(n => "<option" + (n === win ? " selected" : "") + ">" + n + "</option>").join("") + "</select> days</label><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
   h += "<div class='atombar'><span class='seg'>" + ["All"].concat(ATOM_DEPTS).map(d => "<button data-d='" + d + "' class='" + (d === dept ? "on" : "") + "'>" + d + "</button>").join("") + "</span>" +
     "<label><input type='checkbox' id='atomOnly'" + (only ? " checked" : "") + "> Only crew with a problem</label><span class='muted'>Sorted worst first</span>" +
-    "<span class='cnt'><span class='c r'><b>" + lap + "</b> lapsed</span><span class='c a'><b>" + due + "</b> due in " + win + " days</span><span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
+    "<span class='cnt'><span class='c r'><b>" + lap + "</b> expired</span><span class='c a'><b>" + due + "</b> expire within " + win + " days</span><span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
   if (cur.atomFix) h += atomFixHtml(f);
   if (!allRows.length) h += "<div class='card muted'>Nobody matched yet. An ATOM name is matched to a person's <b>Initials</b> on the Crew Roster; open the department planners and fill the Initials in. " + fix + " to fix.</div>";
   else {
-    h += "<div class='atomgrid' id='atomGrid'><table><thead><tr><th class='nm' rowspan='2'>Crew</th>" + cols.map(g => "<th class='g gs' colspan='" + g.cols.length + "'>" + esc(g.group.replace(" Currencies", "")) + "</th>").join("") + "</tr><tr>" +
-      cols.map(g => g.cols.map((c, k) => "<th" + (k === 0 ? " class='gs'" : "") + ">" + esc(c) + "</th>").join("")).join("") + "</tr></thead><tbody>";
+    h += "<div class='atomgrid' id='atomGrid'><table><thead><tr><th class='nm' rowspan='2'>Crew</th>" + cols.map(g => "<th class='g gs' colspan='" + g.cols.length + "'>" + esc(g.group.replace(" Currencies", "")) + "</th>").join("") + "<th class='g gs'>Flying</th></tr><tr>" +
+      cols.map(g => g.cols.map((c, k) => "<th" + (k === 0 ? " class='gs'" : "") + ">" + esc(c) + "</th>").join("")).join("") + "<th class='gs'>Hours (month)</th></tr></thead><tbody>";
     for (const r of rows) {
       const p = books[r.bi].S.roster[r.i], cat = atomCatKey(p.cat) || "T";
       h += "<tr><td class='nm'><i class='acat " + cat + "'></i><b>" + esc(p.id || r.row.name) + "</b><span>" + esc(p.name) + "</span></td>";
@@ -1307,9 +1307,9 @@ function renderAtom() {
         const cell = r.row.cells[c], st = cell ? atomState(cell, today) : "nh", gs = k === 0 ? " gs" : "";
         h += "<td class='" + st + gs + "'" + (cell && cell.raw ? " title='" + esc(c + ": " + cell.raw) + "'" : "") + ">" + (st === "nh" ? "–" : st === "nr" ? "?" : atomFmt(cell.iso, today)) + "</td>";
       });
-      h += "</tr>";
+      h += "<td class='ok gs' title='Clocked hours this month, from ATOM'>" + (typeof r.row.hours === "number" ? r.row.hours.toFixed(1) : "–") + "</td></tr>";
     }
-    h += "</tbody></table></div><div class='atomleg'><span><i class='lapx'></i>Lapsed (expiry before today)</span><span><i class='duex'></i>Due in " + win + " days</span><span><i class='okx'></i>OK</span><span><i class='nrx'></i>Not recorded</span><span>– not held</span></div>";
+    h += "</tbody></table></div><div class='atomleg'><span><i class='lapx'></i>Expired (before today)</span><span><i class='duex'></i>Expires within " + win + " days</span><span><i class='okx'></i>OK</span><span><i class='nrx'></i>Not recorded</span><span>– not held</span></div>";
   }
   b.innerHTML = h; atomWire();
 }
@@ -4847,7 +4847,7 @@ function lodeCards(who, iso) {
     if (arow) {   // ATOM knows this person: it replaces the flight-based rules
       const x = atomIssues(who.bi, i, iso), n = atomCells(arow, iso).length, f = ATOMS[cur.atom || 0], first = x.lap[0] || x.due[0];
       curc = { level: x.lap.length ? "bad" : x.due.length ? "due" : "ok", sub: "from ATOM, data as of " + atomAsOf(f).slice(0, 10) + (n ? " · " + (n - x.lap.length - x.due.length) + " of " + n + " current" : ""),
-        text: x.lap.length ? x.lap[0].col + " lapsed " + atomFmt(x.lap[0].iso, iso) : x.due.length ? x.due[0].col + " due " + atomFmt(first.iso, iso) : "All current" };
+        text: x.lap.length ? x.lap[0].col + " expired " + atomFmt(x.lap[0].iso, iso) : x.due.length ? x.due[0].col + " expires " + atomFmt(first.iso, iso) : "All current" };
     }
     let syl = null;
     if (st.hasSyl && st.sylDef) {

@@ -514,6 +514,35 @@ test("seat_ops_room_renders_without_atom", async ({ page, errs }) => {
   assert.deepStrictEqual(errs.filter(e => /PAGEERROR/.test(e)), []);
 }, L8);
 
+// ---- v2 Task 9: clocked hours (ATOM is the truth)
+const L9 = { atom: [FULL()], fresh: true };
+const flownCell = (page, id) => page.evaluate(id => { const td = [...document.querySelectorAll("#plan td.idc")].find(x => x.textContent.trim() === id); const c = td && td.closest("tr").querySelector("td.flown"); return c ? { txt: c.textContent.trim(), title: c.title } : null; }, id);
+test("hours_show_for_the_export_month", async ({ page }) => {   // A NGO: 3.9 h clocked; the export is from October
+  const [bi, ix] = await setIni(page, "Pilot", 0, "A NGO"), id = await ID(page, "Pilot", 0);
+  await planMonth(page, 9, [], "Pilot");
+  const c = await flownCell(page, id); assert.ok(c && c.txt === "3.9" && /from ATOM, as of 2026-10-25/.test(c.title), JSON.stringify(c));
+}, L9);
+test("hours_not_shown_for_another_month", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "Pilot", 0, "A NGO"), id = await ID(page, "Pilot", 0);
+  await planMonth(page, 10, [], "Pilot");
+  const c = await flownCell(page, id); assert.ok(c && c.txt !== "3.9" && !/ATOM/.test(c.title), JSON.stringify(c));
+}, L9);
+test("hours_year_boundary", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "Pilot", 0, "A NGO");
+  const r = await page.evaluate(([bi, ix]) => { atomSetAsOf(ATOMS[0], "2026-12-31 23:00"); return [atomHours(bi, ix, 11) && atomHours(bi, ix, 11).h, atomHours(bi, ix, 0), atomHours(bi, ix, 12), atomHours(bi, ix, 9)]; }, [bi, ix]);
+  assert.deepStrictEqual(r, [3.9, null, null, null]);   // Dec of the plan year only; not Jan, not the next Jan, not Oct
+}, L9);
+test("hours_my_lodestar", async ({ page }) => {
+  await setIni(page, "Pilot", 0, "A NGO"); const id = await ID(page, "Pilot", 0);
+  const r = await page.evaluate(id => { const who = mePeople().find(z => z.p.id === id && z.dept === "Pilot"); const m = lodeMonth(who, 9); return [m.hrsFlown, m.hrsSrc, /from ATOM, as of 2026-10-25/.test(lodeMonthHtml(who, "2026-10-14"))]; }, id);
+  assert.deepStrictEqual(r, [3.9, "ATOM", true]);
+}, L9);
+test("hours_without_atom_unchanged", async ({ page }) => {
+  await setIni(page, "Pilot", 0, "A NGO"); const id = await ID(page, "Pilot", 0);
+  const r = await page.evaluate(id => { ATOMS = []; cur.atom = 0; const who = mePeople().find(z => z.p.id === id && z.dept === "Pilot"), m = lodeMonth(who, 9); return [atomHours(books.findIndex(b => !b.S.kind && b.S.dept === "Pilot"), who.i, 9), m.hrsSrc || null, typeof m.hrsFlown]; }, id);
+  assert.deepStrictEqual(r, [null, null, "number"]);
+}, L9);
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

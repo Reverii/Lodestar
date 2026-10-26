@@ -1363,6 +1363,10 @@ function atomPublish(f) {   // writes every person of the export into the sheet,
   b.S.atomShared = atomFromShared(cells); b.S.atomPubLast = Math.max(last, ATOM_SHEET_ROW0 + people.length - 1); b.S.atomPub = { name: f.name, asOf, count: people.length };
   return true;
 }
+function atomHours(bi, i, mi) {   // ATOM's clocked hours for a person, only for the month the export belongs to
+  const f = atomCurrent(), row = f && atomFor(bi, i); if (!row || typeof row.hours !== "number") return null;
+  const asOf = atomAsOf(f); return asOf.slice(0, 7) === isoOf(books[bi].S.year, mi, 0).slice(0, 7) ? { h: row.hours, asOf } : null;
+}
 function atomSeatWarn(r, c, k) {   // Ops Room seat: the Day / Night Curr of the flight's shift, and for the Aircraft Captain seat (k = 0) the matching Capt, expired before the flight's day
   if (!atomCurrent() || !c || !r.x || r.x.sb) return null;
   const bi = books.findIndex(b => !b.S.kind && same(b.S.dept, c.dept)); if (bi < 0) return null;
@@ -3086,7 +3090,7 @@ function renderPlanner() {
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) tip = (tip ? tip + "\n" : "") + "Currency: " + CL.get(i).get(d).map(w => w[2]).join("; ");
         h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (i * 3 + s) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
       }
-      if (s === 0) h += "<td class='tot' rowspan=3>" + (t.fl || "-") + "</td><td class='tot' rowspan=3>" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=3 title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=3>" + (t.gd || "-") + "</td><td class='tot' rowspan=3>" + (t.sdo || "-") + "</td><td class='tot' rowspan=3>" + (t.lv || "-") + "</td>";
+      if (s === 0) h += "<td class='tot' rowspan=3>" + (t.fl || "-") + "</td><td class='tot' rowspan=3>" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const ah = atomHours(cur.b, i, mi); if (ah) return "<td class='tot flown' rowspan=3 title='" + esc("Clocked this month, from ATOM, as of " + ah.asOf) + "'>" + ah.h.toFixed(1) + "</td>"; const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=3 title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=3>" + (t.gd || "-") + "</td><td class='tot' rowspan=3>" + (t.sdo || "-") + "</td><td class='tot' rowspan=3>" + (t.lv || "-") + "</td>";
       h += "</tr>";
     }
   }
@@ -4993,15 +4997,15 @@ function lodeMonth(who, mi) {
     const st = S, A = actIndex(), t = monthStats(mi, A).crew[who.i], G = st.m[mi].grid, dim = daysIn(st.year, mi), pre = isoOf(st.year, mi, 0).slice(0, 7);
     let cancelled = 0;
     for (let d = 0; d < dim; d++) for (let s = 0; s < 3; s++) { const v = G[who.i * 3 + s][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && cxlOf(st, who.p.id, mi, d, s)) cancelled++; }
-    const f = opsFlown().get([st.dept, who.p.id, mi].join("|").toUpperCase());
-    return { flights: t.fl, cancelled, hrsFlown: f ? f.h : 0, hrsPlanned: t.hrs, ground: t.gd, duty: t.sdo, leave: t.lv, sylPassed: (st.syl || []).filter(x => same(x.id, who.p.id) && x.res === "Pass" && x.iso.slice(0, 7) === pre).length };
+    const f = opsFlown().get([st.dept, who.p.id, mi].join("|").toUpperCase()), ah = atomHours(who.bi, who.i, mi);
+    return { flights: t.fl, cancelled, hrsFlown: ah ? ah.h : f ? f.h : 0, hrsSrc: ah ? "ATOM" : "", hrsAsOf: ah ? ah.asOf : "", hrsPlanned: t.hrs, ground: t.gd, duty: t.sdo, leave: t.lv, sylPassed: (st.syl || []).filter(x => same(x.id, who.p.id) && x.res === "Pass" && x.iso.slice(0, 7) === pre).length };
   });
 }
 function lodeMonthHtml(who, iso) {
   const st = books[who.bi].S, q = ymd(iso, st.year); if (q.y !== st.year || (q.mi === NX_MI && !st.nx)) return "";
   const m = lodeMonth(who, q.mi), tile = (b, k, sub) => "<div><b>" + b + "</b><span>" + k + "</span><small>" + esc(sub) + "</small></div>";
   return "<div class='lcard'><h3>" + MONTHS_FULL[q.mi % 12] + " so far<a id='lodeToPlanner' data-mi='" + q.mi + "'>Month in the Planner ›</a></h3><div class='sum'>" +
-    tile(m.flights, "FLIGHTS", m.cancelled ? m.cancelled + " cancelled" : "none cancelled") + tile(m.hrsFlown.toFixed(1), "HRS FLOWN", "of " + m.hrsPlanned.toFixed(1) + " planned") + tile(m.ground, "GROUND DUTY", "days") +
+    tile(m.flights, "FLIGHTS", m.cancelled ? m.cancelled + " cancelled" : "none cancelled") + tile(m.hrsFlown.toFixed(1), "HRS FLOWN", "of " + m.hrsPlanned.toFixed(1) + " planned" + (m.hrsSrc ? " · from ATOM, as of " + m.hrsAsOf.slice(0, 10) : "")) + tile(m.ground, "GROUND DUTY", "days") +
     tile(m.duty, "SDO / BDO", "days") + tile(m.leave, "LEAVE", "days") + (st.hasSyl ? tile(m.sylPassed, "SYLLABUS", "passed this month") : "") + "</div></div>";
 }
 const LODE_SEAT = { "Aircraft Captain": "AC", Pilot: "Co-Pilot", Loadmaster: "LM", TACCO: "TACCO", "SUP 1": "SUP 1", "SUP 2": "SUP 2", "Additional crew": "Extra" };

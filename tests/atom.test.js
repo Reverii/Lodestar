@@ -352,6 +352,33 @@ test("name_badge_counts_warned_flights", async ({ page }) => {
   assert.deepStrictEqual(t, ["▲ 2"]);
 });
 
+// ---- Task 10: Ops Room seat mark (2026-10-26 FLT-2.0: captain ADDER, pilot SIDEWINDER, loadmaster TITAN)
+const opsMarks = page => page.evaluate(() => { cur.opsDay = "2026-10-26"; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps();
+  return [...document.querySelectorAll("#v-ops td.oc")].filter(td => td.querySelector("i.opsb.atomx")).map(td => [td.querySelector("b").textContent.trim(), td.querySelector("i.opsb.atomx").title]); });
+const idOf = (page, dept, id) => page.evaluate(([dept, id]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept); return b.S.roster.findIndex(p => p.id === id); }, [dept, id]);
+const iniOf = async (page, dept, id, ini) => { await page.evaluate(([dept, id, ini]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept); b.S.roster.find(p => p.id === id).ini = ini; }, [dept, id, ini]); };
+test("seat_mark_for_captain_currency", async ({ page }) => {
+  await iniOf(page, "Pilot", "ADDER", "A NGO"); await iniOf(page, "Pilot", "SIDEWINDER", "S LIM JH");
+  await rule(page, [["FLT-*", ["Day Capt"], "Captain"], ["FLT-*", ["Night Curr"], "Any"]]);
+  const m = await opsMarks(page);
+  assert.strictEqual(m.length, 2, JSON.stringify(m));
+  const cap = m.find(x => /Day Capt ended 16 Oct/.test(x[1])), pil = m.find(x => /Night Curr ended 25 Oct/.test(x[1]));
+  assert.ok(cap && pil && !/Day Capt/.test(pil[1]), JSON.stringify(m));
+});
+test("seat_mark_for_any_currency_only", async ({ page }) => {
+  await iniOf(page, "Pilot", "SIDEWINDER", "S LIM JH"); await rule(page, [["FLT-*", ["Night Curr"], "Any"]]);
+  const m = await opsMarks(page);
+  assert.strictEqual(m.length, 1, JSON.stringify(m));
+});
+test("no_mark_when_current_or_unmatched", async ({ page }) => {
+  await iniOf(page, "Pilot", "ADDER", "HO KM"); await rule(page, [["FLT-*", ["Day Capt"], "Captain"]]);
+  assert.deepStrictEqual(await opsMarks(page), []);
+});
+test("ops_room_still_renders_without_atom", async ({ page, errs }) => {
+  await page.evaluate(() => { ATOMS = []; }); assert.deepStrictEqual(await opsMarks(page), []);
+  assert.deepStrictEqual(errs.filter(e => /PAGEERROR/.test(e)), []);
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

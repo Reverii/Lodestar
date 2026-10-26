@@ -1363,6 +1363,15 @@ function atomPublish(f) {   // writes every person of the export into the sheet,
   b.S.atomShared = atomFromShared(cells); b.S.atomPubLast = Math.max(last, ATOM_SHEET_ROW0 + people.length - 1); b.S.atomPub = { name: f.name, asOf, count: people.length };
   return true;
 }
+function atomSeatWarn(r, c, k) {   // Ops Room seat: the Day / Night Curr of the flight's shift, and for the Aircraft Captain seat (k = 0) the matching Capt, expired before the flight's day
+  if (!atomCurrent() || !c || !r.x || r.x.sb) return null;
+  const bi = books.findIndex(b => !b.S.kind && same(b.S.dept, c.dept)); if (bi < 0) return null;
+  const i = books[bi].S.roster.findIndex(p => p.id && p.id === c.id); if (i < 0) return null;
+  const row = atomFor(bi, i); if (!row) return null;
+  const iso = opsDay(cur.opsDay).iso, part = r.x.s === 2 ? "Night" : "Day", lines = [];
+  for (const col of k === 0 ? [part + " Curr", part + " Capt"] : [part + " Curr"]) { const cell = row.cells[col]; if (cell && cell.k === "date" && cell.iso < iso) lines.push(col + " expired " + atomFmt(cell.iso, iso)); }
+  return lines.length ? { lines } : null;
+}
 function atomDayMarks(row, iso, s, flight) {   // one Planner cell: s = shift row (0 AM, 1 PM, 2 NIGHT); flight = the cell holds an uncancelled flight
   const out = { marks: [], alert: null }; if (!row) return out;
   const part = s === 2 ? "Night" : "Day", curK = part + " Curr", captK = part + " Capt";
@@ -3582,10 +3591,10 @@ function opsCrewCell(r, k, ed) {
   const c = r.seats[k], dep = OPS_SEATS[k][1];
   if (!c) return "<td class='oc miss'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc((deptOpen(dep) ? "Nobody planned from " + dep : dep + " file not open") + (r.urg ? ". The flight is due soon." : "") + (ed ? "\nClick to pick someone." : "")) + "'><span class='seatp" + (r.urg ? " urg" : "") + (deptOpen(dep) ? "" : " nf") + "'>" + (deptOpen(dep) ? "+" : "?") + "</span>" + opsXtraHtml(r, k) + "</td>";
   const mc = r.o && same(r.o.mc, c.id), cr = r.o && same(r.o.crmo, c.id), off = c.code && !sameCode(c.code, r.x.code);
-  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso);
+  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso), aw = atomSeatWarn(r, c, k);
   const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.note ? "\nComment: " + c.note : "") + (c.set ? "\nSet in the Ops Room" : "");
   return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b>" +
-    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
+    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (aw ? "<i class='opsb atomx' title='" + esc(aw.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent())) + "'>CURR</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
 }
 function opsTail(r, ed, one) {
   // shown as plain text: the actual tail in bold, the standby tail small under it; click the cell to pick from the fleet

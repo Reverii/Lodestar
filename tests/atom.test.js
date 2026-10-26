@@ -204,6 +204,41 @@ test("no_put_calls", async ({ page }) => {
   assert.deepStrictEqual(r, [0, true]);
 });
 
+// ---- Task 6: Names to fix panel
+const fixText = page => page.evaluate(() => { atomFixOpen(); return document.getElementById("atomFixPanel").innerText; });
+const liCount = (page, sec) => page.evaluate(sec => document.querySelectorAll("#atomFixPanel [data-sec='" + sec + "'] li").length, sec);
+test("fix_panel_sections_and_counts", async ({ page }) => {
+  await setIni(page, "SUP 2", 0, "V TAN", "CAT B"); await setIni(page, "SUP 2", 1, "dupe"); await setIni(page, "SUP 2", 2, "DUPE");
+  const t = await fixText(page);
+  for (const h of ["In ATOM, but no roster Initials match", "Same Initials twice on a roster", "CAT differs from the roster", "On the roster, Initials not in ATOM"]) assert.ok(t.includes(h), h);
+  const f = await page.evaluate(() => atomMatch(ATOMS[0]).fix);
+  assert.strictEqual(await liCount(page, "atomOnly"), f.atomOnly.length); assert.strictEqual(await liCount(page, "dupes"), 1);
+  assert.strictEqual(await liCount(page, "cat"), 1); assert.strictEqual(await liCount(page, "rosterOnly"), f.rosterOnly.length);
+  assert.strictEqual(await page.evaluate(() => +document.querySelector("#atomFix b").textContent), f.atomOnly.length + f.rosterOnly.length + 1 + 1);
+});
+test("fix_closed_department_line", async ({ page }) => {
+  await page.evaluate(() => { books = books.filter(b => b.S.kind || b.S.dept !== "Loadmaster"); });
+  assert.ok((await fixText(page)).includes("Open the Loadmaster file to match its names"));
+});
+test("fix_link_opens_crew_roster", async ({ page }) => {
+  await fixText(page);
+  const bi = await page.evaluate(() => { const a = document.querySelector("#atomFixPanel a[data-bi]"); const n = +a.dataset.bi; a.click(); return n; });
+  assert.ok(await page.evaluate(() => document.getElementById("v-roster").classList.contains("on")));
+  assert.strictEqual(await page.evaluate(() => cur.b), bi);
+});
+test("fix_clears_when_initials_fixed", async ({ page }) => {
+  const n0 = await page.evaluate(() => atomFixCount(ATOMS[0]));
+  await setIni(page, "SUP 2", 0, "H LIM");
+  const r = await page.evaluate(() => { atomFixOpen(); return [atomFixCount(ATOMS[0]), atomMatch(ATOMS[0]).fix.atomOnly.some(x => x.name === "H LIM")]; });
+  assert.ok(r[0] < n0 && r[1] === false, JSON.stringify([n0, r]));   // H LIM leaves 'in ATOM only' (VIPER's CAT A vs ATOM B shows up as one new CAT line)
+});
+test("fix_panel_empty_state", async ({ page }) => {
+  const CATS = { Pilot: "ABACA", Loadmaster: "AB", TACCO: "AC", "SUP 1": "AB", "SUP 2": "ABC" };   // the CAT column of the fixture
+  for (const d in NAMES) for (let n = 0; n < NAMES[d].length; n++) await setIni(page, d, n, NAMES[d][n], "CAT " + CATS[d][n]);
+  await page.evaluate(NAMES => { for (const d in NAMES) { const b = books.find(b => !b.S.kind && b.S.dept === d); b.S.roster.filter(p => p.name || p.id).slice(NAMES[d].length).forEach(p => { p.ini = ""; }); } }, NAMES);
+  assert.ok((await fixText(page)).includes("Nothing to fix"));
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); cur.atom = 0; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

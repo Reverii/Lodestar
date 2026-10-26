@@ -20,6 +20,7 @@
 .atomgrid th.g{font-size:10.5px;font-weight:800;color:var(--s900);background:var(--s100);border-left:1px solid var(--s200)}.atomgrid th.nm,.atomgrid td.nm{text-align:left;padding-left:10px;min-width:170px}
 .atomgrid td{height:24px;text-align:center;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--s100);padding:0 3px;font-variant-numeric:tabular-nums}.atomgrid td.nm{font-size:12.5px}.atomgrid td.nm b{margin-right:6px}.atomgrid td.nm span{color:var(--s500);font-size:11.5px}
 .atomgrid .gs{border-left:1px solid var(--s200)}.atomgrid td.lap{background:#fee2e2;color:#b91c1c;font-weight:700}.atomgrid td.due{background:#fef3c7;color:#92400e;font-weight:700}.atomgrid td.ok{color:var(--s600)}.atomgrid td.nh{color:var(--s300)}.atomgrid td.nr{color:var(--s400);font-style:italic;background:repeating-linear-gradient(135deg,#fff 0 4px,#f1f5f9 4px 8px)}
+.atomfix{max-height:260px;overflow:auto}.atomfix h3,.atomfix h4{margin:4px 0}.atomfixhd{display:flex;align-items:center;gap:10px}.atomfix ul{margin:2px 0 6px;padding-left:18px;columns:2}.atomfix a{color:var(--blue);cursor:pointer;margin-left:6px;font-size:11.5px}
 .acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#16a34a}.acat.C{background:#d99a06}.acat.D{background:#dc2626}
 .atomleg{display:flex;gap:16px;color:var(--s500);font-size:11.5px;align-items:center}.atomleg i{display:inline-block;width:22px;height:11px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid var(--s200)}.atomleg .lapx{background:#fee2e2}.atomleg .duex{background:#fef3c7}.atomleg .okx{background:#fff}.atomleg .nrx{background:repeating-linear-gradient(135deg,#fff 0 3px,#e2e8f0 3px 6px)}
 *{box-sizing:border-box}
@@ -1291,6 +1292,7 @@ function renderAtom() {
   h += "<div class='atombar'><span class='seg'>" + ["All"].concat(ATOM_DEPTS).map(d => "<button data-d='" + d + "' class='" + (d === dept ? "on" : "") + "'>" + d + "</button>").join("") + "</span>" +
     "<label><input type='checkbox' id='atomOnly'" + (only ? " checked" : "") + "> Only crew with a problem</label><span class='muted'>Sorted worst first</span>" +
     "<span class='cnt'><span class='c r'><b>" + lap + "</b> lapsed</span><span class='c a'><b>" + due + "</b> due in " + win + " days</span><span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
+  if (cur.atomFix) h += atomFixHtml(f);
   if (!allRows.length) h += "<div class='card muted'>Nobody matched yet. An ATOM name is matched to a person's <b>Initials</b> on the Crew Roster; open the department planners and fill the Initials in. " + fix + " to fix.</div>";
   else {
     h += "<div class='atomgrid' id='atomGrid'><table><thead><tr><th class='nm' rowspan='2'>Crew</th>" + cols.map(g => "<th class='g gs' colspan='" + g.cols.length + "'>" + esc(g.group.replace(" Currencies", "")) + "</th>").join("") + "</tr><tr>" +
@@ -1308,6 +1310,20 @@ function renderAtom() {
   }
   b.innerHTML = h; atomWire();
 }
+function atomFixOpen() { cur.atomFix = true; renderAtom(); }
+function atomFixClose() { cur.atomFix = false; renderAtom(); }
+function atomFixHtml(f) {
+  const x = atomMatch(f).fix, bi = d => books.findIndex(b => !b.S.kind && b.S.dept === d);
+  const go = d => "<a data-bi='" + bi(d) + "'>" + esc(d) + " Crew Roster</a>";
+  const sec = (key, title, items, li) => items.length ? "<div data-sec='" + key + "'><h4>" + title + " <span class='muted'>(" + items.length + ")</span></h4><ul>" + items.map(li).join("") + "</ul></div>" : "";
+  let h = "<div class='card atomfix' id='atomFixPanel'><div class='atomfixhd'><h3>Names to fix</h3><span class='muted'>Fix them on the Crew Roster: an ATOM name must equal the person's Initials there.</span><span style='flex:1'></span><button class='btn' id='atomFixClose'>Close</button></div>";
+  h += x.closed.map(d => "<div class='muted'>Open the " + esc(d) + " file to match its names.</div>").join("");
+  const body = sec("atomOnly", "In ATOM, but no roster Initials match", x.atomOnly, i => "<li><b>" + esc(i.name) + "</b> (" + esc(i.dept) + ") " + go(i.dept) + "</li>") +
+    sec("dupes", "Same Initials twice on a roster", x.dupes, i => "<li><b>" + esc(i.ini) + "</b> (" + esc(i.dept) + "): " + esc(i.ids.join(", ")) + " " + go(i.dept) + "</li>") +
+    sec("cat", "CAT differs from the roster", x.cat, i => "<li><b>" + esc(i.id) + "</b> (" + esc(i.dept) + "): ATOM " + esc(i.atom) + ", roster " + esc(i.roster) + " " + go(i.dept) + "</li>") +
+    sec("rosterOnly", "On the roster, Initials not in ATOM", x.rosterOnly, i => "<li><b>" + esc(i.id || i.name) + "</b> (" + esc(i.dept) + ") " + go(i.dept) + "</li>");
+  return h + (body || "<div>Nothing to fix.</div>") + "</div>";
+}
 function atomWire() {
   const q = id => document.getElementById(id);
   if (q("atomAdd")) q("atomAdd").onclick = () => { q("atomFile").value = ""; q("atomFile").click(); };
@@ -1317,7 +1333,9 @@ function atomWire() {
   if (q("atomDue")) q("atomDue").onchange = e => { atomSetDue(+e.target.value); renderAll(); };
   if (q("atomOnly")) q("atomOnly").onclick = e => { spRemember("atom_only", e.target.checked); renderAtom(); };
   document.querySelectorAll("#atomBox .seg button").forEach(bt => bt.onclick = () => { spRemember("atom_dept", bt.dataset.d); renderAtom(); });
-  if (q("atomFix")) q("atomFix").onclick = () => { if (typeof atomFixOpen === "function") atomFixOpen(); };
+  if (q("atomFix")) q("atomFix").onclick = () => atomFixOpen();
+  if (q("atomFixClose")) q("atomFixClose").onclick = () => atomFixClose();
+  document.querySelectorAll("#atomFixPanel a[data-bi]").forEach(a => a.onclick = () => { const i = +a.dataset.bi; if (i < 0) return; useBook(i); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='roster']").click(); });
 }
 function atomAsOf(f) { return spRecall("atom_asof_" + f.name) || f.created; }
 function atomSetAsOf(f, s) { spRemember("atom_asof_" + f.name, s); }

@@ -7,7 +7,7 @@ record of what z92 does today.
 ## Purpose
 ATOM, the squadron's closed-network system, is the real truth for currency. Lodestar cannot connect to it. Once a day the Ops Room exports ATOM to
 Excel. Lodestar reads that export once, shares what it needs with every other dashboard through the Ops Room file, and shows planners (1) where a
-currency expires before they plan, and (2) an alert if they plan a flight on or after it.
+currency expires before they plan, and (2) an alert if they plan a flight after the expiry day.
 
 ## Decisions (Brandon, 2026-10-26)
 - **ATOM is the truth.** Lodestar shows ATOM's numbers and does not work out its own for these items.
@@ -15,7 +15,7 @@ currency expires before they plan, and (2) an alert if they plan a flight on or 
   Everything else in the export (SIM, LSS and Mission currencies, Instructor Check, PAFI, SATR, I-SATR, FDT, sorties, SIM package) is ignored and never stored.
 - **The Ops Room adds the export once a day** from the dashboard; the data is **pushed to every section** by being saved in a new sheet
   **`ATOM Currency` in `Ops_Room.xlsx`**. The next day the Ops Room adds the new export and it **replaces** the old data.
-- **Two layers in the Planner:** 1 preventive (the day a currency expires is marked before anything is planned), 2 reactive (a flight on or after the
+- **Two layers in the Planner:** 1 preventive (the day a currency expires is marked before anything is planned), 2 reactive (a flight after the
   expiry day alerts). No tint after the expiry day (felt intrusive). Wording is "expires" / "expired".
 - **Names stay clean:** no currency badge on a person's name in the Planner (option 2).
 - **General flying currency (45 / 90 / 180 days since last flown) is a different thing**, comes from the planned flights (the existing Currency rules), and is
@@ -62,7 +62,7 @@ Day versus night follows the **shift row** the flight is in (AM, PM = Day; NIGHT
 - **Layer 1, preventive (before you plan).** On the day a currency expires, the cell is marked with a coloured edge and a short label ("Day Curr expires",
   "Night Curr expires"), in the rows it applies to: Day Curr on AM and PM, Night Curr on NIGHT. Capt currencies ("Day Capt expires", "Night Capt expires") get a
   lighter outline in the same rows, and are only a heads-up: the Planner does not know the seat. Nothing is tinted after the expiry day. Hover gives the full line.
-- **Layer 2, reactive (once planned).** A flight in a Day shift row on or after the Day Curr expiry day, or in the NIGHT row on or after the Night Curr
+- **Layer 2, reactive (once planned).** A flight in a Day shift row after the Day Curr expiry day, or in the NIGHT row after the Night Curr
   expiry day, gets the red corner and "⚠ NOT CURRENT"; hover says "Night Curr expired 5 Nov. From ATOM, data as of …". A flight is not alerted before the expiry day.
   Capt currencies never alert in the Planner.
 - A currency that is `-`, `N/A` or not recorded produces no mark and no alert (v1 rule).

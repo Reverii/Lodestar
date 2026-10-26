@@ -546,14 +546,20 @@ test("hours_without_atom_unchanged", async ({ page }) => {
 
 // ---- final review fixes (v2)
 test("undo_survives_a_read_only_book_reread", async ({ page }) => {
-  const r = await page.evaluate(() => { useBook(0); undoReset(); return new Promise(res => setTimeout(() => {
-    put("Jan", "D27", "LL"); setTimeout(() => { const before = undoSt.length, oi = books.findIndex(b => b.S.kind === "ops"), sh = { marker: 1 }; books[oi].S.atomShared = sh;
-      liveDone([oi]); const afterRo = undoSt.length; undo(); const same = books[oi].S.atomShared === sh || (books[oi].S.atomShared && books[oi].S.atomShared.marker === 1);
-      res([before, afterRo, same]); }, 50); }, 50)); });
+  await page.evaluate(() => { useBook(0); undoReset(); });
+  await page.waitForTimeout(100);
+  await page.evaluate(() => { put("Jan", "D27", "LL"); });
+  await page.waitForTimeout(100);
+  const r = await page.evaluate(() => { try { const before = undoSt.length, oi = books.findIndex(b => b.S.kind === "ops"); books[oi].S.atomShared = { marker: 1 };
+    liveDone([oi]); const afterRo = undoSt.length; undo(); return [before, afterRo, !!(books[oi].S.atomShared && books[oi].S.atomShared.marker === 1)]; } catch (e) { return String(e.message); } });
   assert.deepStrictEqual(r, [1, 1, true]);   // re-reading the read-only Ops Room keeps the undo step, and undo leaves that book alone
 }, { atom: [FULL()], fresh: true });
 test("undo_resets_when_an_editable_book_is_reread", async ({ page }) => {
-  const r = await page.evaluate(() => { useBook(0); undoReset(); return new Promise(res => setTimeout(() => { put("Jan", "D27", "LL"); setTimeout(() => { const before = undoSt.length; liveDone([0]); res([before, undoSt.length]); }, 50); }, 50)); });
+  await page.evaluate(() => { useBook(0); undoReset(); });
+  await page.waitForTimeout(100);
+  await page.evaluate(() => { put("Jan", "D27", "LL"); });
+  await page.waitForTimeout(100);
+  const r = await page.evaluate(() => { try { const before = undoSt.length; liveDone([0]); return [before, undoSt.length]; } catch (e) { return String(e.message); } });
   assert.deepStrictEqual(r, [1, 0]);
 }, { atom: [FULL()], fresh: true });
 test("publish_summary_names_missing_departments", async ({ page }) => {

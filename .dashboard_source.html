@@ -1060,7 +1060,14 @@ let dirty = new Map();
 let OPS = false;   // all-departments mode: every open department file can be edited and saved
 // ---------- ATOM currency (read-only exports from ATOM; never books, never saved)
 let ATOMS = [];   // AtomFile list, see atomParse
-function renderAtom() { const b = $("atomBox"); if (!b) return; b.innerHTML = ""; }
+function renderAtom() {
+  const b = $("atomBox"); if (!b) return;
+  const f = ATOMS[cur.atom || 0];
+  b.innerHTML = "<div class='card' style='display:flex;gap:10px;align-items:center'><b>ATOM currencies</b>" + (f ? "<span class='muted'>" + esc(f.name) + ", data as of " + esc(atomAsOf(f)) + "</span>" : "<span class='muted'>Add an ATOM export to see everyone's currencies</span>") +
+    "<span style='flex:1'></span><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
+  $("atomAdd").onclick = () => { $("atomFile").value = ""; $("atomFile").click(); };
+  $("atomFile").onchange = async e => { const x = e.target.files[0]; if (x) { try { atomLoad(await x.arrayBuffer(), x.name); } catch (err) { alert(err.message || err); } } };
+}
 let books = [];   // [{WB, S, dirty}]: books[0] is your own file (editable), the rest are other departments (read-only)
 let cur = { m: new Date().getMonth(), sel: null, clip: null, b: 0 };
 function useBook(i) { const k = books[i]; WB = k.WB; S = k.S; dirty = k.dirty; cur.b = i; }
@@ -1096,14 +1103,17 @@ function parseSST(files) {
 }
 function readCells(name) {
   const p = WB.paths[name]; if (!p || !WB.files[p]) throw new Error("Sheet '" + name + "' not found in this workbook.");
-  const x = td.decode(WB.files[p]), cells = {};
+  return readCellsOf(WB.files, p, WB.sst);
+}
+function readCellsOf(files, p, sst) {   // the cells of one sheet file: refs -> value (formulas skipped)
+  const x = td.decode(files[p]), cells = {};
   for (const m of x.matchAll(/<c r="([A-Z]+\d+)"((?:\s+[\w:]+="[^"]*")*)\s*(?:\/>|>([\s\S]*?)<\/c>)/g)) {
     const ref = m[1], attrs = m[2], body = m[3] || "";
     if (/<f[\s>]/.test(body)) continue; // formulas are Excel's job
     const t = (attrs.match(/\bt="([^"]+)"/) || [])[1];
     let v = null;
     if (t === "inlineStr") { v = ""; for (const tt of body.matchAll(/<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g)) v += xmlText(tt[1]); }
-    else { const vm = body.match(/<v>([\s\S]*?)<\/v>/); if (vm) { const raw = xmlText(vm[1]); v = t === "s" ? WB.sst[+raw] : (t === "str" || t === "e") ? raw : t === "b" ? raw === "1" : +raw; } }
+    else { const vm = body.match(/<v>([\s\S]*?)<\/v>/); if (vm) { const raw = xmlText(vm[1]); v = t === "s" ? sst[+raw] : (t === "str" || t === "e") ? raw : t === "b" ? raw === "1" : +raw; } }
     if (v !== null && v !== "") cells[ref] = v;
   }
   return cells;
@@ -1114,9 +1124,82 @@ const num = v => (v === "" || v == null || isNaN(+v)) ? null : +v;
 function timeStr(v) { if (typeof v !== "number") return str(v); if (v > 0 && v < 1) { const m = Math.round(v * 1440); return String(Math.floor(m / 60)).padStart(2, "0") + String(m % 60).padStart(2, "0"); } return String(v).padStart(4, "0"); }
 function serialToISO(n) { const d = new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000); return d.toISOString().slice(0, 10); }
 
+// ---------- ATOM currency: reading an export (read-only; the file is never saved or kept)
+const ATOM_DEPT = { PILOT: "Pilot", ACS: "Loadmaster", TACCO: "TACCO", SUP1: "SUP 1", SUP2: "SUP 2" };   // sheet -> department
+const ATOM_GROUPS = ["Flight Currencies", "SIM Currencies", "LSS Currencies", "Mission Currencies"];   // the only groups we read
+const ATOM_MON = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+function isAtomExport(paths) {
+  return Object.keys(ATOM_DEPT).some(n => paths[n]) && !["Dashboard", "Roster", "Flight Crew", "Departments", "Flight Codes"].some(n => paths[n]);
+}
+function colNum(L) { let n = 0; for (const ch of L) n = n * 26 + ch.charCodeAt(0) - 64; return n; }
+function atomCell(v) {   // one currency cell -> { k: date|none|na|blank|text, iso, raw }
+  if (v === undefined || v === null || (typeof v === "string" && !v.trim())) return { k: "blank", iso: null, raw: "" };
+  if (typeof v === "number") return v > 20000 && v < 80000 ? { k: "date", iso: serialToISO(v), raw: String(v) } : { k: "text", iso: null, raw: String(v) };
+  const t = String(v).trim();
+  if (t === "-") return { k: "none", iso: null, raw: t };
+  if (/^n\/a$/i.test(t)) return { k: "na", iso: null, raw: t };
+  const m = t.match(/^(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{2}|\d{4})$/);
+  if (m && ATOM_MON[m[2].toLowerCase()] !== undefined) {
+    const y = m[3].length === 2 ? 2000 + +m[3] : +m[3], d = new Date(Date.UTC(y, ATOM_MON[m[2].toLowerCase()], +m[1]));
+    if (d.getUTCDate() === +m[1]) return { k: "date", iso: d.toISOString().slice(0, 10), raw: t };
+  }
+  return { k: "text", iso: null, raw: t };
+}
+function atomCreated(files) {   // export time (UTC in the file) as local "YYYY-MM-DD HH:MM"
+  const f = files["docProps/core.xml"]; if (!f) return "";
+  const m = td.decode(f).match(/<dcterms:created[^>]*>([^<]+)</); if (!m) return "";
+  const d = new Date(m[1]); if (isNaN(d)) return "";
+  const p = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function atomParse(files, name) {
+  const paths = sheetPaths(files), sst = parseSST(files);
+  const out = { name, created: atomCreated(files), groups: [], sheets: {}, missing: [] };
+  const gi = {};   // group -> index in out.groups
+  for (const sn in ATOM_DEPT) {
+    const dept = ATOM_DEPT[sn], p = paths[sn];
+    if (!p || !files[p]) { out.missing.push(dept); continue; }
+    const c = readCellsOf(files, p, sst);
+    let maxC = 0, maxR = 0; for (const ref in c) { const m = ref.match(/^([A-Z]+)(\d+)$/); maxC = Math.max(maxC, colNum(m[1])); maxR = Math.max(maxR, +m[2]); }
+    let grp = "", nameL = null, statusL = null, catL = null, instL = null; const cols = [];   // cols: { L, group, name }
+    for (let n = 1; n <= maxC; n++) {
+      const L = colL(n), g = str(c[L + "1"]), h = str(c[L + "2"]);
+      if (g) grp = g;
+      if (!h) continue;
+      if (h === "Name") nameL = L; else if (h === "Status") statusL = L; else if (h === "CAT") catL = L; else if (h === "Instructor CAT") instL = L;
+      else if (ATOM_GROUPS.includes(grp)) cols.push({ L, group: grp, name: h });
+    }
+    if (!nameL) { out.missing.push(dept); continue; }
+    for (const k of cols) {
+      let g = gi[k.group]; if (g === undefined) { g = gi[k.group] = out.groups.length; out.groups.push({ group: k.group, cols: [] }); }
+      if (!out.groups[g].cols.includes(k.name)) out.groups[g].cols.push(k.name);
+    }
+    const rows = [];
+    for (let r = 3; r <= maxR; r++) {
+      const nm = str(c[nameL + r]); if (!nm) continue;   // band rows (" -> Active") have no Name
+      const cells = {}; for (const k of cols) cells[k.name] = atomCell(c[k.L + r]);
+      rows.push({ name: nm, status: statusL ? str(c[statusL + r]) : "", cat: catL ? str(c[catL + r]) : "", instCat: instL ? str(c[instL + r]) : "", cells });
+    }
+    out.sheets[dept] = rows;
+  }
+  if (!Object.keys(out.sheets).length) throw new Error(name + " has no ATOM sheets (PILOT, ACS, TACCO, SUP1, SUP2) with a Name column.");
+  return out;
+}
+function atomAdd(files, name) {
+  const f = atomParse(files, name);
+  const i = ATOMS.findIndex(x => x.name === name);
+  if (i >= 0) ATOMS[i] = f; else ATOMS.push(f);
+  cur.atom = i >= 0 ? i : ATOMS.length - 1;
+  toast("ATOM export loaded: " + name);
+  if (books.length) renderAll(); else renderAtom();
+}
+function atomLoad(buf, name) { atomAdd(fflate.unzipSync(new Uint8Array(buf)), name); }
+function atomAsOf(f) { return spRecall("atom_asof_" + f.name) || f.created; }
+function atomSetAsOf(f, s) { spRemember("atom_asof_" + f.name, s); }
 function loadWorkbook(buf, name, handle, other) {
-  const files = fflate.unzipSync(new Uint8Array(buf));
-  WB = { files, paths: sheetPaths(files), sst: parseSST(files), name, handle };
+  const files = fflate.unzipSync(new Uint8Array(buf)), paths = sheetPaths(files);
+  if (isAtomExport(paths)) return atomAdd(files, name);   // an ATOM export is not a book: never touches WB, never saved
+  WB = { files, paths, sst: parseSST(files), name, handle };
   if (WB.paths["Flight Crew"] && !WB.paths["Jan"]) return addBook(readOps(name), other, name, handle);
   if (WB.paths["Departments"] && WB.paths["SDO Plan"] && !WB.paths["Jan"]) return addBook(readRoster(name), other, name, handle);
   if (WB.paths["Programme"] && !WB.paths["Jan"]) throw new Error(name + " is the old Flight Programme, which is no longer used: the Master Planner is the one list of flights.");

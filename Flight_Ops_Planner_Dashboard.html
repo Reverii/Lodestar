@@ -4465,6 +4465,13 @@ async function spOpenOps() {
   await openOps(list); toast("Opened all departments");
   if (errs.length) alert(errs.join("\n"));
 }
+function spDeptExtras(key) {   // the files opened beside a department's own: the Duty Roster, the Master Planner and the Ops Room (all read-only here; the Ops Room carries the shared ATOM data)
+  const extra = key === "dutyroster" || key === "masterplanner" ? SP_DEPTS.filter(d => d[1] !== key && d[1] !== "dutyroster" && d[1] !== "masterplanner").map(d => spFileFor(d[1])) :
+    [spFileFor("dutyroster")];
+  extra.push(spFileFor(SP_MASTER));   // everyone sees the Master Planner (read-only)
+  extra.push(spFileFor("opsroom"));
+  return extra;
+}
 async function spOpenDept(lab) {
   const key = SP_DEPTS.find(d => d[0] === lab)[1], f = spFileFor(key);
   if (!f) return;
@@ -4475,9 +4482,7 @@ async function spOpenDept(lab) {
     spRemember("dept", lab); spRemember("mine", f.Name);
     const errs = [];
     // the Duty Planner plans with every department's file alongside; departments get the Duty Roster to copy their BDO / SDO days from
-    const extra = key === "dutyroster" || key === "masterplanner" ? SP_DEPTS.filter(d => d[1] !== key && d[1] !== "dutyroster" && d[1] !== "masterplanner").map(d => spFileFor(d[1])) :
-      [spFileFor("dutyroster")];
-    extra.push(spFileFor(SP_MASTER));   // everyone sees the Master Planner (read-only)
+    const extra = spDeptExtras(key);
     for (const x of extra) if (x && x.Name !== f.Name) { try { loadWorkbook(await spFetch(x), x.Name, spHandle(x), true); } catch (e) { errs.push(x.Name + ": " + (e.message || e)); } }
     $("spPick").style.display = "none"; renderAll(); toast("Opened " + f.Name);
     if (errs.length) alert(errs.join("\n"));

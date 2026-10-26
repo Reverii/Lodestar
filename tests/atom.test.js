@@ -247,24 +247,6 @@ test("fix_panel_empty_state", async ({ page }) => {
 // ---- Task 7: name badge and My Lodestar card
 const badgeFor = (page, dept, id) => page.evaluate(([dept, id]) => { const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept); useBook(bi); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click();
   const td = [...document.querySelectorAll("#plan td.idc")].find(x => x.textContent.trim() === id); const b = td && td.nextElementSibling.querySelector("i.curb[data-atom]"); return b ? [b.className, b.textContent, b.title] : null; }, [dept, id]);
-test("planner_badge_for_atom_lapse", async ({ page }) => {
-  const id = await ID(page, "SUP 2", 0); await setIni(page, "SUP 2", 0, "V TAN");   // V TAN: MAS lapsed 16 Oct, Night Curr due 27 Oct
-  const b = await badgeFor(page, "SUP 2", id);
-  assert.ok(b && /bad/.test(b[0]) && b[1] === "ATOM ⚠ 1" && /MAS/.test(b[2]), JSON.stringify(b));
-  const pid = await ID(page, "Pilot", 0); await setIni(page, "Pilot", 0, "A NGO");   // scaled up: any department
-  const c = await badgeFor(page, "Pilot", pid);
-  assert.ok(c && c[1] === "ATOM ⚠ 2", JSON.stringify(c));
-});
-test("planner_badge_due_only", async ({ page }) => {
-  const id = await ID(page, "SUP 2", 2); await setIni(page, "SUP 2", 2, "O NG");   // O NG: Day Curr due only
-  const b = await badgeFor(page, "SUP 2", id);
-  assert.ok(b && /due/.test(b[0]) && b[1] === "ATOM ! 1", JSON.stringify(b));
-});
-test("planner_badge_absent_without_atom", async ({ page }) => {
-  const id = await ID(page, "SUP 2", 0); await setIni(page, "SUP 2", 0, "V TAN");
-  await page.evaluate(() => { ATOMS = []; });
-  assert.strictEqual(await badgeFor(page, "SUP 2", id), null);
-});
 test("my_lodestar_uses_atom_when_matched", async ({ page }) => {
   const id = await ID(page, "SUP 2", 0); await setIni(page, "SUP 2", 0, "V TAN");
   const c = await page.evaluate(([id, iso]) => lodeCards(mePeople().find(z => z.p.id === id && z.dept === "SUP 2"), iso).cur, [id, "2026-10-26"]);
@@ -281,104 +263,16 @@ test("my_lodestar_falls_back_without_atom", async ({ page }) => {
 // ---- Task 8: the flight-needs table (ATOM Needs sheet in Ops_Room.xlsx)
 const opsBi = page => page.evaluate(() => books.findIndex(b => b.S.kind === "ops"));
 const opsMode = page => page.evaluate(() => { OPS = true; });
-test("needs_sheet_created_on_first_edit", async ({ page }) => {
-  await opsMode(page);
-  const r = await page.evaluate(() => { const bi = books.findIndex(b => b.S.kind === "ops"), had = !!books[bi].WB.paths["ATOM Needs"]; atomNeedsSet(0, "NVG-*", ["Night Curr"], "Any");
-    const b = books[bi]; return [had, !!b.WB.paths["ATOM Needs"], [...b.dirty.keys()].filter(k => k.startsWith("ATOM Needs!")).sort(), books.filter(x => x.WB.paths["Change Log"] || true).length > 0]; });
-  assert.deepStrictEqual(r.slice(0, 3), [false, true, ["ATOM Needs!A2", "ATOM Needs!B2", "ATOM Needs!C2"]]);
-});
-test("needs_roundtrip", async ({ page }) => {
-  await opsMode(page);
-  const r = await page.evaluate(() => { atomNeedsSet(0, "NVG-*", ["Night Curr", "Night Capt"], "Any"); atomNeedsSet(1, "TRG", ["SIM"], "Captain");
-    const bi = books.findIndex(b => b.S.kind === "ops"); const out = withBook(bi, () => buildXlsx());
-    const files = fflate.unzipSync(out.bytes), keep = WB; WB = { files, paths: sheetPaths(files), sst: parseSST(files), name: "copy.xlsx" };
-    try { const st = readOps("copy.xlsx"); return { has: st.atomNeeds.has, rows: st.atomNeeds.rows.filter(x => x.match).map(x => [x.match, x.needs.join("|"), x.seat]) }; } finally { WB = keep; } });
-  assert.deepStrictEqual(r, { has: true, rows: [["NVG-*", "Night Curr|Night Capt", "Any"], ["TRG", "SIM", "Captain"]] });
-});
-test("needs_matching", async ({ page }) => {
-  await opsMode(page);
-  const r = await page.evaluate(() => { atomNeedsSet(0, "NVG-*", ["Night Curr"], "Any"); atomNeedsSet(1, "TRG", ["SIM"], "Any"); atomNeedsSet(2, "FLT-*", ["Day Capt"], "Captain"); atomNeedsSet(3, "NVG-2.0", ["Night Capt"], "Captain");
-    return [atomNeedsFor("NVG-2.0", "", "Any"), atomNeedsFor("NVG-2.0", "", "Captain"), atomNeedsFor("PLT-TRG", "TRG", "Any"), atomNeedsFor("FLT-1.5", "GEN", "Any"), atomNeedsFor("FLT-1.5", "GEN", "Captain"), atomNeedsFor("EIS", "", "Any")]; });
-  assert.deepStrictEqual(r, [["Night Curr"], ["Night Curr", "Night Capt"], ["SIM"], [], ["Day Capt"], []]);
-});
-test("needs_empty_means_no_needs", async ({ page }) => {
-  assert.deepStrictEqual(await page.evaluate(() => atomNeedsFor("NVG-2.0", "NIGHT", "Captain")), []);
-});
-test("needs_delete_blanks_the_row", async ({ page }) => {
-  await opsMode(page);
-  const r = await page.evaluate(() => { atomNeedsSet(0, "NVG-*", ["Night Curr"], "Any"); atomNeedsDel(0); return [atomNeedsFor("NVG-2.0", "", "Any"), atomNeedsRows().length]; });
-  assert.deepStrictEqual(r, [[], 0]);
-});
-test("needs_disabled_without_ops_mode", async ({ page }) => {
-  await page.evaluate(() => { OPS = false; document.querySelector("nav.tabs button[data-v='cur']").click(); renderAtom(); });
-  const t = await page.innerText("#atomBox");
-  assert.ok(/Open the Ops Room file to save these rules/.test(t), t.slice(-300));
-  assert.ok(await page.evaluate(() => !document.querySelector("#atomNeeds input:not([disabled])")));
-});
-
 // ---- Task 9: Planner warnings
 // V TAN (SUP 2, roster person 0): Night Curr ends 27 Oct, MAS ended 16 Oct. Rule: NVG-* needs Night Curr (and MAS in the second rule).
 const rule = (page, rows) => page.evaluate(rows => { OPS = true; rows.forEach((r, n) => atomNeedsSet(n, r[0], r[1], r[2] || "Any")); }, rows);
 const plan = async (page, ix, shift, day, code) => page.evaluate(([ix, shift, day, code]) => { useBook(0); cur.m = 9; S.m[9].grid[ix * 3 + shift][day - 1] = code; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [ix, shift, day, code]);
 const cellOf = (page, ix, shift, day) => page.evaluate(([ix, shift, day]) => { const td = document.querySelector("#plan td[data-k='g:" + (ix * 3 + shift) + ":" + (day - 1) + "']"); return td ? { cls: td.className, title: td.title, txt: td.innerText } : null; }, [ix, shift, day]);
-test("warn_when_expired_by_flight_day", async ({ page }) => {
-  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]]]);
-  const r = await page.evaluate(([bi, ix]) => [atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-28"), atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-25"), atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-27")], [bi, ix]);
-  assert.deepStrictEqual(r, [{ lines: ["Night Curr ended 27 Oct"] }, null, null]);
-});
-test("warn_lists_every_missing_currency", async ({ page }) => {
-  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]], ["NVG-2.0", ["MAS", "SIM"]]]);
-  const r = await page.evaluate(([bi, ix]) => atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-28").lines, [bi, ix]);
-  assert.deepStrictEqual(r, ["Night Curr ended 27 Oct", "MAS ended 16 Oct"]);
-});
-test("warn_none_when_unmatched_or_no_needs", async ({ page }) => {
-  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN");
-  assert.strictEqual(await page.evaluate(([bi, ix]) => atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-28"), [bi, ix]), null);   // no rules yet
-  await rule(page, [["NVG-*", ["Night Curr"]]]);
-  const [b2, i2] = await setIni(page, "SUP 2", 1, "NOBODY");
-  assert.strictEqual(await page.evaluate(([b, i]) => atomWarn(b, i, "NVG-2.0", "NIGHT", "2026-10-28"), [b2, i2]), null);
-});
-test("corner_and_tooltip_render", async ({ page }) => {
-  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]]]);
-  await plan(page, ix, 2, 28, "NVG-2.0");
-  const c = await cellOf(page, ix, 2, 28);
-  assert.ok(/atomw/.test(c.cls) && /Night Curr ended 27 Oct/.test(c.title) && /From ATOM, data as of 2026-10-25/.test(c.title) && /NOT CURRENT/.test(c.txt), JSON.stringify(c));
-});
-test("warn_only_for_flights", async ({ page }) => {
-  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]], ["LV", ["Night Curr"]]]);
-  await plan(page, ix, 0, 28, "LV");
-  const c = await cellOf(page, ix, 0, 28);
-  assert.ok(!/atomw/.test(c.cls), JSON.stringify(c));
-});
-test("name_badge_counts_warned_flights", async ({ page }) => {
-  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]]]);
-  await plan(page, ix, 2, 28, "NVG-2.0"); await plan(page, ix, 2, 29, "NVG-2.0"); await plan(page, ix, 2, 25, "NVG-2.0");
-  const t = await page.evaluate(() => [...document.querySelectorAll("#plan i.curb.atomw")].map(x => x.textContent));
-  assert.deepStrictEqual(t, ["▲ 2"]);
-});
-
 // ---- Task 10: Ops Room seat mark (2026-10-26 FLT-2.0: captain ADDER, pilot SIDEWINDER, loadmaster TITAN)
 const opsMarks = page => page.evaluate(() => { cur.opsDay = "2026-10-26"; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps();
   return [...document.querySelectorAll("#v-ops td.oc")].filter(td => td.querySelector("i.opsb.atomx")).map(td => [td.querySelector("b").textContent.trim(), td.querySelector("i.opsb.atomx").title]); });
 const idOf = (page, dept, id) => page.evaluate(([dept, id]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept); return b.S.roster.findIndex(p => p.id === id); }, [dept, id]);
 const iniOf = async (page, dept, id, ini) => { await page.evaluate(([dept, id, ini]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept); b.S.roster.find(p => p.id === id).ini = ini; }, [dept, id, ini]); };
-test("seat_mark_for_captain_currency", async ({ page }) => {
-  await iniOf(page, "Pilot", "ADDER", "A NGO"); await iniOf(page, "Pilot", "SIDEWINDER", "S LIM JH");
-  await rule(page, [["FLT-*", ["Day Capt"], "Captain"], ["FLT-*", ["Night Curr"], "Any"]]);
-  const m = await opsMarks(page);
-  assert.strictEqual(m.length, 2, JSON.stringify(m));
-  const cap = m.find(x => /Day Capt ended 16 Oct/.test(x[1])), pil = m.find(x => /Night Curr ended 25 Oct/.test(x[1]));
-  assert.ok(cap && pil && !/Day Capt/.test(pil[1]), JSON.stringify(m));
-});
-test("seat_mark_for_any_currency_only", async ({ page }) => {
-  await iniOf(page, "Pilot", "SIDEWINDER", "S LIM JH"); await rule(page, [["FLT-*", ["Night Curr"], "Any"]]);
-  const m = await opsMarks(page);
-  assert.strictEqual(m.length, 1, JSON.stringify(m));
-});
-test("no_mark_when_current_or_unmatched", async ({ page }) => {
-  await iniOf(page, "Pilot", "ADDER", "HO KM"); await rule(page, [["FLT-*", ["Day Capt"], "Captain"]]);
-  assert.deepStrictEqual(await opsMarks(page), []);
-});
 test("ops_room_still_renders_without_atom", async ({ page, errs }) => {
   await page.evaluate(() => { ATOMS = []; }); assert.deepStrictEqual(await opsMarks(page), []);
   assert.deepStrictEqual(errs.filter(e => /PAGEERROR/.test(e)), []);
@@ -405,16 +299,6 @@ test("closing_a_tab_keeps_matches_and_does_not_crash", async ({ page, errs }) =>
   assert.deepStrictEqual(r, { before: ["A NGO"], after: ["A NGO"], err: "" });
   assert.deepStrictEqual(errs, []);
 });
-test("needs_sheet_is_added_at_save_time_after_a_merge", async ({ page }) => {
-  await opsMode(page);
-  const r = await page.evaluate(() => { const bi = books.findIndex(b => b.S.kind === "ops"), b = books[bi], pristine = Object.assign({}, b.WB.files);
-    atomNeedsSet(0, "NVG-*", ["Night Curr"], "Any");
-    b.WB.files = pristine; b.WB.paths = sheetPaths(pristine);   // another user saved the file in between: our copy is replaced by theirs
-    const out = withBook(bi, () => buildXlsx()), files = fflate.unzipSync(out.bytes), keep = WB;
-    WB = { files, paths: sheetPaths(files), sst: parseSST(files), name: "copy.xlsx" };
-    try { const st = readOps("copy.xlsx"); return { stray: Object.keys(files).filter(k => /undefined/.test(k)), rows: st.atomNeeds.rows.filter(x => x.match).map(x => [x.match, x.needs.join("|")]) }; } finally { WB = keep; } });
-  assert.deepStrictEqual(r, { stray: [], rows: [["NVG-*", "Night Curr"]] });
-});
 test("atom_file_picked_first_with_ops_room_still_opens_the_app", async ({ page }) => {
   const f = atomFixture();
   await page.setInputFiles("#fileInputOps", [f, path.join(ROOT, "Flight_Ops_Planner_SUP2.xlsx"), path.join(ROOT, "Ops_Room.xlsx")]);
@@ -422,6 +306,18 @@ test("atom_file_picked_first_with_ops_room_still_opens_the_app", async ({ page }
   const r = await page.evaluate(() => ({ welcome: getComputedStyle(document.getElementById("welcome")).display, n: books.length, atoms: ATOMS.length, first: books[0].S.dept, ops: OPS }));
   assert.deepStrictEqual(r, { welcome: "none", n: 2, atoms: 1, first: "SUP 2", ops: true });
 }, { blank: true, fresh: true });
+
+// ---- v2 Task 2: the v1 needs table and name badges are gone
+test("needs_table_is_gone", async ({ page }) => {
+  assert.ok(await page.evaluate(() => typeof atomNeedsFor === "undefined" && typeof atomNeedsSet === "undefined"));
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cur']").click(); renderAtom(); });
+  assert.ok(await page.evaluate(() => !document.getElementById("atomNeeds")));
+});
+test("no_atom_name_badge", async ({ page }) => {
+  await setIni(page, "Pilot", 0, "A NGO");
+  const n = await page.evaluate(() => { useBook(books.findIndex(b => !b.S.kind && b.S.dept === "Pilot")); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); return document.querySelectorAll("#plan i.curb[data-atom], #plan i.atomw").length; });
+  assert.strictEqual(n, 0);
+});
 
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };

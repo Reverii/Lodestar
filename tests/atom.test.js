@@ -379,6 +379,18 @@ test("ops_room_still_renders_without_atom", async ({ page, errs }) => {
   assert.deepStrictEqual(errs.filter(e => /PAGEERROR/.test(e)), []);
 });
 
+// ---- Task 11: help and version
+test("help_mentions_atom", async ({ page }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cur']").click(); document.getElementById("helpBtn").click(); });
+  const t = await page.innerText("#helpBody");
+  for (const w of ["ATOM", "Initials", "Names to fix", "What each flight needs"]) assert.ok(t.includes(w), w);
+});
+test("version_is_z92", async ({ page }) => {
+  const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
+  assert.ok(/ z92 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-26 z92 "));
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

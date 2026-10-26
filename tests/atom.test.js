@@ -544,6 +544,40 @@ test("hours_without_atom_unchanged", async ({ page }) => {
   assert.deepStrictEqual(r, [null, null, "number"]);
 }, L9);
 
+// ---- final review fixes (v2)
+test("undo_survives_a_read_only_book_reread", async ({ page }) => {
+  const r = await page.evaluate(() => { useBook(0); undoReset(); return new Promise(res => setTimeout(() => {
+    put("Jan", "D27", "LL"); setTimeout(() => { const before = undoSt.length, oi = books.findIndex(b => b.S.kind === "ops"), sh = { marker: 1 }; books[oi].S.atomShared = sh;
+      liveDone([oi]); const afterRo = undoSt.length; undo(); const same = books[oi].S.atomShared === sh || (books[oi].S.atomShared && books[oi].S.atomShared.marker === 1);
+      res([before, afterRo, same]); }, 50); }, 50)); });
+  assert.deepStrictEqual(r, [1, 1, true]);   // re-reading the read-only Ops Room keeps the undo step, and undo leaves that book alone
+}, { atom: [FULL()], fresh: true });
+test("undo_resets_when_an_editable_book_is_reread", async ({ page }) => {
+  const r = await page.evaluate(() => { useBook(0); undoReset(); return new Promise(res => setTimeout(() => { put("Jan", "D27", "LL"); setTimeout(() => { const before = undoSt.length; liveDone([0]); res([before, undoSt.length]); }, 50); }, 50)); });
+  assert.deepStrictEqual(r, [1, 0]);
+}, { atom: [FULL()], fresh: true });
+test("publish_summary_names_missing_departments", async ({ page }) => {
+  const r = await page.evaluate(() => { const s = atomPublishSummary(ATOMS[1]); return [s.count, s.missing, /Loadmaster, TACCO, SUP 1/.test(s.text) && /5 people|8 people/.test(s.text)]; });
+  assert.deepStrictEqual(r, [8, ["Loadmaster", "TACCO", "SUP 1"], true]);
+}, { atom: [FULL(), atomFixture({ variant: "partial", name: "ATOM_partial" })], fresh: true });
+test("publish_refuses_an_empty_export", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { const ob = books.find(b => b.S.kind === "ops"), n = ob.dirty.size; const ok = atomPublish({ name: "empty.xlsx", created: "2026-10-26 08:00", sheets: {}, missing: [], groups: [], hoursMonth: "2026-10", source: "export" }); return [ok, ob.dirty.size - n]; });
+  assert.deepStrictEqual(r, [false, 0]);
+}, { atom: [FULL()], fresh: true });
+test("currency_tab_names_missing_departments", async ({ page }) => {
+  await page.evaluate(() => { cur.atom = 1; document.querySelector("nav.tabs button[data-v='cur']").click(); renderAtom(); });
+  const t = await page.innerText("#atomBox"); assert.ok(/no data for Loadmaster, TACCO, SUP 1/.test(t), t.slice(0, 300));
+}, { atom: [FULL(), atomFixture({ variant: "partial", name: "ATOM_partial" })], fresh: true });
+test("wording_after_the_expiry_day", async ({ page }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cur']").click(); document.getElementById("helpBtn").click(); });
+  const t = await page.innerText("#helpBody"); assert.ok(!/on or after/.test(t) && !/lapsed \/ due/.test(t), t.slice(0, 200));
+  const chip = await page.evaluate(() => { cur.m = 9; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); return [...document.querySelectorAll("#legend .chip")].map(c => c.title).join("|"); });
+  assert.ok(!/on or after/.test(chip), chip);
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='plan']").click(); document.getElementById("helpBtn").click(); });
+  assert.ok(!/currency lapsed \/ due/.test(await page.innerText("#helpBody")));
+}, { atom: [FULL()], fresh: true });
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); window.__sh = books.map(b => b.S.atomShared || null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.S.atomShared = window.__sh[i]; b.S.atomPub = null; b.S.atomPubLast = 0; b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

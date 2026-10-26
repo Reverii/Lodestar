@@ -154,6 +154,56 @@ test("stale_thresholds", async ({ page }) => {
   assert.deepStrictEqual(r, { "6": [6, ""], "8": [8, "amber"], "31": [31, "red"] });
 });
 
+// ---- Task 5: Currency tab grid
+const NAMES = { Pilot: ["A NGO", "HO KM", "S LIM JH", "SAMY", "TEO WK"], Loadmaster: ["L CHEW", "M SOH"], TACCO: ["T LEE", "R KOH"], "SUP 1": ["P YEO", "Q ONG"], "SUP 2": ["V TAN", "H LIM", "O NG"] };
+const matchAll = async page => { for (const d in NAMES) for (let n = 0; n < NAMES[d].length; n++) await setIni(page, d, n, NAMES[d][n]); };
+const openCur = async page => { await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cur']").click(); renderAtom(); }); };
+const D0 = "2026-10-26";
+test("grid_rows_sorted_worst_first", async ({ page }) => {
+  await setIni(page, "Pilot", 0, "A NGO"); await setIni(page, "Pilot", 1, "HO KM"); await setIni(page, "Pilot", 2, "S LIM JH");
+  const r = await page.evaluate(d => atomGridRows("Pilot", false, d).map(x => [x.row.name, x.lap, x.due]), D0);
+  assert.deepStrictEqual(r, [["A NGO", 2, 1], ["S LIM JH", 1, 2], ["HO KM", 0, 0]]);
+  assert.deepStrictEqual(await page.evaluate(d => atomGridRows("Pilot", true, d).map(x => x.row.name), D0), ["A NGO", "S LIM JH"]);
+});
+test("grid_columns_follow_file", async ({ page }) => {
+  await setIni(page, "Pilot", 0, "A NGO"); await openCur(page);
+  const t = await page.innerText("#atomGrid");
+  assert.ok(/NVG\s*Curr/i.test(t), t.slice(0, 200));
+}, { atom: [atomFixture({ variant: "moved" })], others: true, fresh: true });
+test("grid_hides_not_held_and_formats_dates", async ({ page }) => {
+  await setIni(page, "Pilot", 0, "A NGO"); await openCur(page);
+  const r = await page.evaluate(() => { const th = [...document.querySelectorAll("#atomGrid thead tr:last-child th")].map(x => x.textContent.replace(/\s+/g, " ").trim()), tds = [...document.querySelectorAll("#atomGrid tbody tr:first-child td")];
+    const at = n => { const i = th.indexOf(n); return tds[i + 1]; }; return { irt: [at("IRT").className, at("IRT").textContent], dc: at("Day Curr").textContent, mas: at("MAS").textContent, ace: [at("ACE").className, at("ACE").textContent], lap: at("Day Capt").className.includes("lap") }; });
+  assert.deepStrictEqual(r, { irt: ["nh", "–"], dc: "16 Nov", mas: "30 Jun 31", ace: ["nr gs", "?"], lap: true });
+});
+test("grid_counts_match_cells", async ({ page }) => {
+  await matchAll(page); await openCur(page);
+  const r = await page.evaluate(() => ({ lap: document.querySelectorAll("#atomGrid td.lap").length, due: document.querySelectorAll("#atomGrid td.due").length, chips: [...document.querySelectorAll("#atomBox .cnt .c b")].map(b => +b.textContent) }));
+  assert.ok(r.lap > 0 && r.due > 0);
+  assert.strictEqual(r.chips[0], r.lap); assert.strictEqual(r.chips[1], r.due);
+});
+test("stale_banner_amber_and_red", async ({ page }) => {
+  const f = async d => { await page.evaluate(d => { atomSetAsOf(ATOMS[0], d); window.OPS_TODAY = "2026-10-26"; renderAtom(); }, d); return page.evaluate(() => { const b = document.querySelector("#atomBox .astale"); return b ? b.className : ""; }); };
+  assert.ok((await f("2026-10-18 08:00")).includes("amber")); assert.ok((await f("2026-09-10 08:00")).includes("red")); assert.strictEqual(await f("2026-10-25 08:00"), "");
+});
+test("empty_state_message", async ({ page }) => {
+  await page.evaluate(() => { ATOMS = []; renderAtom(); });
+  assert.ok(/Add an ATOM export/.test(await page.innerText("#atomBox")));
+});
+test("fits_1280x720", async ({ page }) => {
+  await matchAll(page); await openCur(page);
+  const r = await page.evaluate(() => { const g = document.getElementById("atomGrid").getBoundingClientRect(); return [Math.round(g.bottom), document.documentElement.scrollHeight]; });
+  assert.ok(r[0] <= 720 && r[1] <= 720, JSON.stringify(r));
+});
+test("no_put_calls", async ({ page }) => {
+  await matchAll(page);
+  const r = await page.evaluate(() => { let n = 0; const keep = window.put; window.put = (...a) => { n++; return keep(...a); };
+    document.querySelector("nav.tabs button[data-v='cur']").click(); renderAtom();
+    for (const b of document.querySelectorAll("#atomBox .seg button")) b.click();
+    const o = document.getElementById("atomOnly"); if (o) o.click(); window.put = keep; return [n, books.every(b => b.dirty.size === 0)]; });
+  assert.deepStrictEqual(r, [0, true]);
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); cur.atom = 0; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

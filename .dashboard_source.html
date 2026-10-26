@@ -11,6 +11,17 @@
   --blue:#1d4ed8;--teal:#0f766e;--amber:#b45309;--rose:#be123c;--red:#dc2626;--green:#15803d;
   --c0bg:#dbeafe;--c0fg:#1e3a8a;--c1bg:#cffafe;--c1fg:#164e63;--c2bg:#fef3c7;--c2fg:#78350f;--c3bg:#fecdd3;--c3fg:#881337;--c4bg:#e2e8f0;--c4fg:#64748b;--c5bg:#f1f5f9;--c5fg:#94a3b8;
 }
+.atomhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 12px}.atomhead input,.atomhead select{font:inherit;font-size:12px}
+.astale{border-radius:6px;padding:7px 12px;font-weight:600;border:1px solid #f59e0b;background:#fffbeb;color:#78350f}.astale.red{border-color:#dc2626;background:#fef2f2;color:#991b1b}
+.atombar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.atombar .seg{display:inline-flex;border:1px solid var(--s300);border-radius:5px;overflow:hidden}.atombar .seg button{border:0;background:#fff;padding:5px 11px;font-weight:600;font-size:12px;color:var(--s500);cursor:pointer}.atombar .seg button.on{background:var(--s900);color:#fff}
+.atombar .cnt{display:flex;gap:6px;margin-left:auto}.atombar .c{display:flex;align-items:baseline;gap:5px;border-radius:999px;padding:3px 11px;border:1px solid var(--s200);background:#fff;font-size:12px}.atombar .c b{font-size:15px}.atombar .c.r{border-color:#fca5a5;background:#fef2f2;color:var(--red)}.atombar .c.a{border-color:#fcd34d;background:#fffbeb;color:var(--amber)}
+.atomgrid{background:#fff;border:1px solid var(--s200);border-radius:8px;overflow:auto;max-height:calc(100vh - 250px)}
+.atomgrid table{border-collapse:collapse;width:100%}.atomgrid th{font-size:10px;font-weight:600;color:var(--s500);padding:3px 4px;text-align:center;border-bottom:1px solid var(--s200);position:sticky;top:0;background:#fff}
+.atomgrid th.g{font-size:10.5px;font-weight:800;color:var(--s900);background:var(--s100);border-left:1px solid var(--s200)}.atomgrid th.nm,.atomgrid td.nm{text-align:left;padding-left:10px;min-width:170px}
+.atomgrid td{height:24px;text-align:center;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--s100);padding:0 3px;font-variant-numeric:tabular-nums}.atomgrid td.nm{font-size:12.5px}.atomgrid td.nm b{margin-right:6px}.atomgrid td.nm span{color:var(--s500);font-size:11.5px}
+.atomgrid .gs{border-left:1px solid var(--s200)}.atomgrid td.lap{background:#fee2e2;color:#b91c1c;font-weight:700}.atomgrid td.due{background:#fef3c7;color:#92400e;font-weight:700}.atomgrid td.ok{color:var(--s600)}.atomgrid td.nh{color:var(--s300)}.atomgrid td.nr{color:var(--s400);font-style:italic;background:repeating-linear-gradient(135deg,#fff 0 4px,#f1f5f9 4px 8px)}
+.acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#16a34a}.acat.C{background:#d99a06}.acat.D{background:#dc2626}
+.atomleg{display:flex;gap:16px;color:var(--s500);font-size:11.5px;align-items:center}.atomleg i{display:inline-block;width:22px;height:11px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid var(--s200)}.atomleg .lapx{background:#fee2e2}.atomleg .duex{background:#fef3c7}.atomleg .okx{background:#fff}.atomleg .nrx{background:repeating-linear-gradient(135deg,#fff 0 3px,#e2e8f0 3px 6px)}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font-family:"Segoe UI",Arial,Helvetica,sans-serif;font-size:14px;color:var(--s900);background:var(--s100);display:flex;flex-direction:column}
@@ -1060,14 +1071,7 @@ let dirty = new Map();
 let OPS = false;   // all-departments mode: every open department file can be edited and saved
 // ---------- ATOM currency (read-only exports from ATOM; never books, never saved)
 let ATOMS = [];   // AtomFile list, see atomParse
-function renderAtom() {
-  const b = $("atomBox"); if (!b) return;
-  const f = ATOMS[cur.atom || 0];
-  b.innerHTML = "<div class='card' style='display:flex;gap:10px;align-items:center'><b>ATOM currencies</b>" + (f ? "<span class='muted'>" + esc(f.name) + ", data as of " + esc(atomAsOf(f)) + "</span>" : "<span class='muted'>Add an ATOM export to see everyone's currencies</span>") +
-    "<span style='flex:1'></span><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
-  $("atomAdd").onclick = () => { $("atomFile").value = ""; $("atomFile").click(); };
-  $("atomFile").onchange = async e => { const x = e.target.files[0]; if (x) { try { atomLoad(await x.arrayBuffer(), x.name); } catch (err) { alert(err.message || err); } } };
-}
+// renderAtom is defined with the ATOM grid below
 let books = [];   // [{WB, S, dirty}]: books[0] is your own file (editable), the rest are other departments (read-only)
 let cur = { m: new Date().getMonth(), sel: null, clip: null, b: 0 };
 function useBook(i) { const k = books[i]; WB = k.WB; S = k.S; dirty = k.dirty; cur.b = i; }
@@ -1252,6 +1256,67 @@ function atomIssues(bi, i, day) {
 }
 function atomAge(f, today) { return dayDiff(today, atomAsOf(f).slice(0, 10)); }
 function atomStale(f, today) { const n = atomAge(f, today); return n > 30 ? "red" : n > 7 ? "amber" : ""; }
+// ---------- ATOM currency: the Currency tab grid
+const ATOM_DEPTS = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"];
+function atomGridRows(dept, onlyProblems, day) {   // matched people, worst first
+  const f = ATOMS[cur.atom || 0], out = [];
+  if (!f) return out;
+  for (const [key, row] of atomMatch(f).rows) {
+    const [bi, i] = key.split(":").map(Number), d = books[bi].S.dept;
+    if (dept !== "All" && d !== dept) continue;
+    const cs = atomCells(row, day), lap = cs.filter(c => c.state === "lap").length, due = cs.filter(c => c.state === "due").length;
+    if (onlyProblems && !lap && !due) continue;
+    out.push({ bi, i, dept: d, row, lap, due });
+  }
+  return out.sort((a, b) => b.lap - a.lap || b.due - a.due || a.row.name.localeCompare(b.row.name));
+}
+const ATOM_MS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function atomFmt(iso, day) { const [y, m, d] = iso.split("-").map(Number); return d + " " + ATOM_MS[m - 1] + (dayDiff(iso, day) > 366 || dayDiff(iso, day) < -366 ? " " + String(y).slice(2) : ""); }
+function atomFixCount(f) { const x = atomMatch(f).fix; return x.atomOnly.length + x.rosterOnly.length + x.dupes.length + x.cat.length; }
+function renderAtom() {
+  const b = $("atomBox"); if (!b) return;
+  const f = ATOMS[cur.atom || 0], today = opsToday();
+  if (!f) { b.innerHTML = "<div class='card atomhead'><b>ATOM currencies</b><span class='muted'>Add an ATOM export to see everyone's currencies</span><span style='flex:1'></span><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>"; atomWire(); return; }
+  const dept = spRecall("atom_dept", "All"), only = !!spRecall("atom_only", false), age = atomAge(f, today), stale = atomStale(f, today);
+  const rows = atomGridRows(dept, only, today), allRows = atomGridRows(dept, false, today);
+  const cols = f.groups.map(g => ({ group: g.group, cols: g.cols.filter(c => rows.some(r => r.row.cells[c])) })).filter(g => g.cols.length);
+  let lap = 0, due = 0, bad = 0; for (const r of allRows) { lap += r.lap; due += r.due; if (r.lap || r.due) bad++; }
+  const fix = atomFixCount(f), win = atomDue();
+  let h = (stale ? "<div class='astale " + stale + "'>" + (stale === "red" ? "This ATOM export is " + age + " days old. Export it again before you rely on it." : "This ATOM export is " + age + " days old.") + " Data as of " + esc(atomAsOf(f)) + ".</div>" : "");
+  h += "<div class='card atomhead'><b>ATOM currencies</b><span class='asof'>" + (ATOMS.length > 1 ? "<select id='atomSel'>" + ATOMS.map((x, i) => "<option value='" + i + "'" + (i === (cur.atom || 0) ? " selected" : "") + ">" + esc(x.name) + "</option>").join("") + "</select>" : esc(f.name)) +
+    " , data as of <input id='atomAsOf' type='datetime-local' value='" + esc(atomAsOf(f).replace(" ", "T")) + "'></span><span style='flex:1'></span>" +
+    "<label>Due window <select id='atomDue'>" + [7, 14, 21, 30].map(n => "<option" + (n === win ? " selected" : "") + ">" + n + "</option>").join("") + "</select> days</label><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
+  h += "<div class='atombar'><span class='seg'>" + ["All"].concat(ATOM_DEPTS).map(d => "<button data-d='" + d + "' class='" + (d === dept ? "on" : "") + "'>" + d + "</button>").join("") + "</span>" +
+    "<label><input type='checkbox' id='atomOnly'" + (only ? " checked" : "") + "> Only crew with a problem</label><span class='muted'>Sorted worst first</span>" +
+    "<span class='cnt'><span class='c r'><b>" + lap + "</b> lapsed</span><span class='c a'><b>" + due + "</b> due in " + win + " days</span><span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
+  if (!allRows.length) h += "<div class='card muted'>Nobody matched yet. An ATOM name is matched to a person's <b>Initials</b> on the Crew Roster; open the department planners and fill the Initials in. " + fix + " to fix.</div>";
+  else {
+    h += "<div class='atomgrid' id='atomGrid'><table><thead><tr><th class='nm' rowspan='2'>Crew</th>" + cols.map(g => "<th class='g gs' colspan='" + g.cols.length + "'>" + esc(g.group.replace(" Currencies", "")) + "</th>").join("") + "</tr><tr>" +
+      cols.map(g => g.cols.map((c, k) => "<th" + (k === 0 ? " class='gs'" : "") + ">" + esc(c) + "</th>").join("")).join("") + "</tr></thead><tbody>";
+    for (const r of rows) {
+      const p = books[r.bi].S.roster[r.i], cat = atomCatKey(p.cat) || "T";
+      h += "<tr><td class='nm'><i class='acat " + cat + "'></i><b>" + esc(p.id || r.row.name) + "</b><span>" + esc(p.name) + "</span></td>";
+      for (const g of cols) g.cols.forEach((c, k) => {
+        const cell = r.row.cells[c], st = cell ? atomState(cell, today) : "nh", gs = k === 0 ? " gs" : "";
+        h += "<td class='" + st + gs + "'" + (cell && cell.raw ? " title='" + esc(c + ": " + cell.raw) + "'" : "") + ">" + (st === "nh" ? "–" : st === "nr" ? "?" : atomFmt(cell.iso, today)) + "</td>";
+      });
+      h += "</tr>";
+    }
+    h += "</tbody></table></div><div class='atomleg'><span><i class='lapx'></i>Lapsed (expiry before today)</span><span><i class='duex'></i>Due in " + win + " days</span><span><i class='okx'></i>OK</span><span><i class='nrx'></i>Not recorded</span><span>– not held</span></div>";
+  }
+  b.innerHTML = h; atomWire();
+}
+function atomWire() {
+  const q = id => document.getElementById(id);
+  if (q("atomAdd")) q("atomAdd").onclick = () => { q("atomFile").value = ""; q("atomFile").click(); };
+  if (q("atomFile")) q("atomFile").onchange = async e => { const x = e.target.files[0]; if (x) { try { atomLoad(await x.arrayBuffer(), x.name); } catch (err) { alert(err.message || err); } } };
+  if (q("atomSel")) q("atomSel").onchange = e => { cur.atom = +e.target.value; renderAll(); };
+  if (q("atomAsOf")) q("atomAsOf").onchange = e => { if (e.target.value) { atomSetAsOf(ATOMS[cur.atom || 0], e.target.value.replace("T", " ")); renderAll(); } };
+  if (q("atomDue")) q("atomDue").onchange = e => { atomSetDue(+e.target.value); renderAll(); };
+  if (q("atomOnly")) q("atomOnly").onclick = e => { spRemember("atom_only", e.target.checked); renderAtom(); };
+  document.querySelectorAll("#atomBox .seg button").forEach(bt => bt.onclick = () => { spRemember("atom_dept", bt.dataset.d); renderAtom(); });
+  if (q("atomFix")) q("atomFix").onclick = () => { if (typeof atomFixOpen === "function") atomFixOpen(); };
+}
 function atomAsOf(f) { return spRecall("atom_asof_" + f.name) || f.created; }
 function atomSetAsOf(f, s) { spRemember("atom_asof_" + f.name, s); }
 function loadWorkbook(buf, name, handle, other) {

@@ -380,6 +380,45 @@ test("publish_stores_only_allowed_fields", async ({ page }) => {
   const text = JSON.stringify(c); for (const n of names) assert.ok(!text.includes(n), n);
 }, PUB2);
 
+// ---- v2 Task 5: read the shared sheet
+const SH = { atom: [FULL(), atomFixture({ variant: "partial", name: "ATOM_partial" })], fresh: true };
+const cardText = page => page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cur']").click(); renderAtom(); return document.getElementById("atomBox").innerText; });
+test("shared_sheet_read_into_same_shape", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { atomPublish(ATOMS[0]); const bi = books.findIndex(b => b.S.kind === "ops"), out = withBook(bi, () => buildXlsx()), files = fflate.unzipSync(out.bytes), keep = WB;
+    WB = { files, paths: sheetPaths(files), sst: parseSST(files), name: "copy.xlsx" };
+    try { const sh = readOps("copy.xlsx").atomShared, shape = f => ATOM_DEPT_ORDER.map(d => (f.sheets[d] || []).map(r => [r.name, r.cat, r.hours, ATOM_CUR.map(c => r.cells[c] ? [r.cells[c].k, r.cells[c].iso] : null)]));
+      return { same: JSON.stringify(shape(sh)) === JSON.stringify(shape(ATOMS[0])), src: sh.source, month: sh.hoursMonth, created: sh.created === atomAsOf(ATOMS[0]) }; } finally { WB = keep; } });
+  assert.deepStrictEqual(r, { same: true, src: "shared", month: "2026-10", created: true });
+}, SH);
+test("shared_used_when_nothing_added", async ({ page }) => {
+  await opsMode(page); await setIni(page, "Pilot", 0, "A NGO");
+  await page.evaluate(() => { atomPublish(ATOMS[0]); ATOMS = []; cur.atom = 0; });
+  const t = await cardText(page), n = await page.evaluate(() => atomGridRows("Pilot", false, "2026-10-26").map(x => x.row.name));
+  assert.ok(/Shared from the Ops Room/.test(t), t.slice(0, 200)); assert.deepStrictEqual(n, ["A NGO"]);
+}, SH);
+test("hand_added_wins_and_is_labelled", async ({ page }) => {
+  await opsMode(page);
+  await page.evaluate(() => { atomPublish(ATOMS[0]); cur.atom = 1; });   // the partial file, added by hand
+  assert.ok(/File added by you/.test(await cardText(page)));
+  await page.evaluate(() => { cur.atom = -1; });
+  assert.ok(/Shared from the Ops Room/.test(await cardText(page)));
+}, SH);
+test("shared_missing_message", async ({ page }) => {
+  await page.evaluate(() => { ATOMS = []; cur.atom = 0; });
+  const t = await cardText(page); assert.ok(/has not shared ATOM data/.test(t), t.slice(0, 200));
+  assert.deepStrictEqual(await page.evaluate(() => [atomCurrent(), atomMatch.length >= 0]), [null, true]);
+}, SH);
+test("shared_without_ops_room_book", async ({ page, errs }) => {
+  await page.evaluate(() => { ATOMS = []; cur.atom = 0; books = books.filter(b => b.S.kind !== "ops"); renderAll(); });
+  assert.ok(/has not shared ATOM data/.test(await cardText(page))); assert.deepStrictEqual(errs.filter(e => /PAGEERROR/.test(e)), []);
+}, SH);
+test("shared_refresh_follows_the_latest_publish", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { atomPublish(ATOMS[0]); cur.atom = -1; const first = Object.keys(atomCurrent().sheets); atomPublish(ATOMS[1]); return [first, Object.keys(atomCurrent().sheets)]; });
+  assert.deepStrictEqual(r, [["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"], ["Pilot", "SUP 2"]]);
+}, SH);
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

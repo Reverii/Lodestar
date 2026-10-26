@@ -12,7 +12,7 @@ const OTHERS = ["Duty_Roster", "Master_Planner", "Ops_Room", "Flight_Ops_Planner
 // boot({ today: "2026-10-26", title: "Sarah Lim", mine: "Flight_Ops_Planner_SUP2", others: true }) -> { page, errs, close }
 async function boot(o = {}) {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, acceptDownloads: true });
+  const page = await browser.newPage({ viewport: o.viewport || { width: 1280, height: 720 }, acceptDownloads: true });
   const errs = [];
   page.on("pageerror", e => errs.push("PAGEERROR " + e.message));
   page.on("console", m => { if (m.type() === "error") errs.push("console.error " + m.text()); });

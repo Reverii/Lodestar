@@ -12,6 +12,8 @@ who will not be current on the day of a flight.
 - The 7 sample exports are ATOM as it stood on different dates in October. The 12:41 file has the newest data (every expiry is
   the same or later than in the other six); the other six were exported later but hold older data.
 - The `ACS` sheet is the Loadmaster department.
+- **Initials are the key.** In the release build, each person's Initials on the Crew Roster are the same as their name in ATOM (`A NGO`,
+  `HO KM`, `SAMY`). Brandon assigns them on the roster list. Matching is an exact lookup, not a guess.
 - This takes the Currency work off hold. The three sample rules on the Currency tab are placeholders; the real list is in ATOM.
 
 ## What an ATOM export looks like (from the 7 sanitized samples)
@@ -42,12 +44,12 @@ who will not be current on the day of a flight.
 
 **Matching people**
 - Sheet to department: `PILOT` = Pilot, `ACS` = Loadmaster, `TACCO`, `SUP1`, `SUP2`.
-- Match ATOM names to the roster of that department by surname and initials in either order (`TAN WM`, `W TAN`), then by Initials,
-  then by Callsign; a single name matches a callsign or the first name. Anything unmatched, or matching two people, goes in a short
-  "Match these names" list the user fixes once.
-- The remembered matches are saved in a sheet the dashboard creates in `Ops_Room.xlsx` on first save (the same way it creates
-  `Change Log`), so no builder change and no layout stamp bump. If the Ops Room file is not open they are kept in the browser only,
-  with a note.
+- An ATOM name is matched to the **Initials** on that department's Crew Roster, ignoring capitals and extra spaces. Nothing else is tried:
+  no surname guessing, no callsign or name matching. The matching is done in memory each time; no mapping is saved anywhere.
+- A short **Names to fix** list shows what needs attention, and fixing it is done on the Crew Roster tab (the list links there):
+  ATOM names with no matching Initials, roster people whose Initials are not in ATOM, two roster people with the same Initials, and
+  ATOM CAT against the roster's Cat status.
+- Until a person matches, they simply have no ATOM currencies shown; the grid and the Planner never guess.
 
 **Reading a cell**
 - Date before the as-of day: **Lapsed**. Within 14 days after it: **Due** (the 14 can be changed, remembered in the browser).
@@ -60,10 +62,10 @@ who will not be current on the day of a flight.
 - **Planner (SUP 2):** the red and amber marks beside names include ATOM lapses.
 - **My Lodestar:** the currency card uses ATOM when a file is open; the existing flight-based rules stay as the fallback.
 - **Ops Room:** a small red mark on a seat when the person lacks a currency that flight needs (layer 2 table).
-- Cheap checks shown in the Match list: ATOM CAT against the roster's Cat status, and roster people missing from ATOM.
+- The same **Names to fix** list also catches CAT differences and roster people missing from ATOM (see Matching people).
 
 ## Layer 2: planning check
-- A small table, kept in a dashboard-created sheet `ATOM Needs` in `Ops_Room.xlsx`, says which currencies a flight needs: by flight code or
+- A small table, kept in a dashboard-created sheet `ATOM Needs` in `Ops_Room.xlsx` (created on first save, as `Change Log` is), says which currencies a flight needs: by flight code or
   mission type (for example `NVG-*` needs Night Curr; `FLT-*` needs Day Curr; `MAS TRG` needs MAS). Edited on the Currency tab.
 - When a flight code is put in a Planner cell (or a Block of days over a flight), and the person's currency has expired by that day,
   the cell gets a red corner and a note such as "Night Curr ended 27 Oct". It warns; it never blocks.
@@ -80,15 +82,15 @@ who will not be current on the day of a flight.
   currency columns only.
 
 ## Edge cases
-- Stale file, no file open, a sheet missing, header names changed, two people with the same name, a person on two sheets, a date in an
+- Stale file, no file open, a sheet missing, header names changed, two roster people with the same Initials, a blank Initials cell, a person on two sheets, a date in an
   unexpected format (shown as "not recorded" with the raw text), `NIL` callsigns, an export that has only some departments.
 - Several files open at once: the grid uses the one marked current; the others can be shown side by side later.
 
 ## Testing
 - Synthetic exports built in the test script with openpyxl, matching the structure above (merged group row, band rows, all value kinds,
   odd names). Brandon's exports are **not** copied into the public repo.
-- Checks: header-based reading; moved and extra columns; each value kind; status at several as-of days; name matching (both orders, single
-  names, ambiguous, unmatched); stale banner; the Planner warning appears and clears; nothing is written to any file by the view.
+- Checks: header-based reading; moved and extra columns; each value kind; status at several as-of days; Initials matching (case, spaces,
+  unmatched, duplicated, blank); stale banner; the Planner warning appears and clears; nothing is written to any file by the view.
 - A later backtest (layer 3) will compare an older snapshot plus the flying logged since against a newer snapshot.
 
 ## Next steps

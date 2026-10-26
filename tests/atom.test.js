@@ -239,6 +239,40 @@ test("fix_panel_empty_state", async ({ page }) => {
   assert.ok((await fixText(page)).includes("Nothing to fix"));
 });
 
+// ---- Task 7: name badge and My Lodestar card
+const badgeFor = (page, dept, id) => page.evaluate(([dept, id]) => { const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept); useBook(bi); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click();
+  const td = [...document.querySelectorAll("#plan td.idc")].find(x => x.textContent.trim() === id); const b = td && td.nextElementSibling.querySelector("i.curb[data-atom]"); return b ? [b.className, b.textContent, b.title] : null; }, [dept, id]);
+test("planner_badge_for_atom_lapse", async ({ page }) => {
+  const id = await ID(page, "SUP 2", 0); await setIni(page, "SUP 2", 0, "V TAN");   // V TAN: MAS lapsed 16 Oct, Night Curr due 27 Oct
+  const b = await badgeFor(page, "SUP 2", id);
+  assert.ok(b && /bad/.test(b[0]) && b[1] === "ATOM ⚠ 1" && /MAS/.test(b[2]), JSON.stringify(b));
+  const pid = await ID(page, "Pilot", 0); await setIni(page, "Pilot", 0, "A NGO");   // scaled up: any department
+  const c = await badgeFor(page, "Pilot", pid);
+  assert.ok(c && c[1] === "ATOM ⚠ 2", JSON.stringify(c));
+});
+test("planner_badge_due_only", async ({ page }) => {
+  const id = await ID(page, "SUP 2", 2); await setIni(page, "SUP 2", 2, "O NG");   // O NG: Day Curr due only
+  const b = await badgeFor(page, "SUP 2", id);
+  assert.ok(b && /due/.test(b[0]) && b[1] === "ATOM ! 1", JSON.stringify(b));
+});
+test("planner_badge_absent_without_atom", async ({ page }) => {
+  const id = await ID(page, "SUP 2", 0); await setIni(page, "SUP 2", 0, "V TAN");
+  await page.evaluate(() => { ATOMS = []; });
+  assert.strictEqual(await badgeFor(page, "SUP 2", id), null);
+});
+test("my_lodestar_uses_atom_when_matched", async ({ page }) => {
+  const id = await ID(page, "SUP 2", 0); await setIni(page, "SUP 2", 0, "V TAN");
+  const c = await page.evaluate(([id, iso]) => lodeCards(mePeople().find(z => z.p.id === id && z.dept === "SUP 2"), iso).cur, [id, "2026-10-26"]);
+  assert.strictEqual(c.level, "bad"); assert.strictEqual(c.text, "MAS lapsed 16 Oct"); assert.ok(/from ATOM, data as of 2026-10-25/.test(c.sub), c.sub);
+  const ok = await ID(page, "SUP 2", 1); await setIni(page, "SUP 2", 1, "H LIM");
+  const d = await page.evaluate(([id, iso]) => lodeCards(mePeople().find(z => z.p.id === id && z.dept === "SUP 2"), iso).cur, [ok, "2026-10-26"]);
+  assert.deepStrictEqual([d.level, d.text], ["ok", "All current"]);
+});
+test("my_lodestar_falls_back_without_atom", async ({ page }) => {
+  const c = await page.evaluate(() => { ATOMS = []; return lodeCards(mePeople().find(z => z.dept === "SUP 2"), "2026-10-26").cur; });
+  assert.ok(!/ATOM/.test(c.sub), c.sub);
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); cur.atom = 0; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

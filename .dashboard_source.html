@@ -1308,6 +1308,12 @@ function renderAtom() {
   }
   b.innerHTML = h; atomWire();
 }
+function atomBadge(bi, i) {   // "ATOM ⚠ n" (lapsed) or "ATOM ! n" (due) beside a name in the Planner; "" without ATOM data
+  if (!ATOMS.length) return "";
+  const day = opsToday(), x = atomIssues(bi, i, day); if (!x.lap.length && !x.due.length) return "";
+  const lines = x.lap.map(c => c.col + " lapsed " + atomFmt(c.iso, day)).concat(x.due.map(c => c.col + " due " + atomFmt(c.iso, day)));
+  return "<i class='curb " + (x.lap.length ? "bad" : "due") + "' data-cur='1' data-atom='1' title='" + esc(lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(ATOMS[cur.atom || 0]) + ". Click for the Currency tab") + "'>ATOM " + (x.lap.length ? "⚠ " + x.lap.length : "! " + x.due.length) + "</i>";
+}
 function atomFixOpen() { cur.atomFix = true; renderAtom(); }
 function atomFixClose() { cur.atomFix = false; renderAtom(); }
 function atomFixHtml(f) {
@@ -2964,7 +2970,7 @@ function renderPlanner() {
     if (ns && !sep) { sep = true; h += "<tr class='sansSep'><td colspan='" + (dim + 3 + NT) + "'><span style='position:sticky;left:10px'>SANS / NSMEN</span></td></tr>"; }
     for (let s = 0; s < 3; s++) {
       h += "<tr class='" + (s === 2 ? "blkend" : "") + (inact ? " inactive" : "") + (ns ? " sans" : "") + "'>";
-      if (s === 0) h += "<td class='stk1 idc' rowspan=3>" + esc(p.id) + "</td><td class='stk2 who' rowspan=3 title='" + esc([p.cat, p.role, p.status].filter(Boolean).join(" | ")) + "'><b class='" + catCls(p.cat) + "'>" + esc(p.name) + "</b>" + (CC && (CC[i].bad || CC[i].due) ? "<i class='curb " + (CC[i].bad ? "bad" : "due") + "' data-cur='1' title='" + esc(curIssues(CC, i).join("\n") + "\nClick for the Currency tab") + "'>" + (CC[i].bad ? "⚠ " + CC[i].bad : "! " + CC[i].due) + "</i>" : "") + (RS && (() => { const k0 = dayOfYear(S.year, mi, 0), L = []; for (let d = 0; d < dim; d++) if (RS[i].run[k0 + d] >= REST_DAYS) L.push(d + 1); return L.length ? "<i class='curb rest' title='" + esc("Crew rest: flying " + REST_DAYS + "+ days in a row on " + MONTHS[mi] + " " + L.join(", ")) + "'>REST</i>" : ""; })() || "") + (CH && (() => { const D = CH[i].down, L = []; for (let d = 0; d < dim; d++) if (D[ck0 + d]) L.push(d); if (!L.length) return ""; const now = L.includes(tD), last = L[L.length - 1];
+      if (s === 0) h += "<td class='stk1 idc' rowspan=3>" + esc(p.id) + "</td><td class='stk2 who' rowspan=3 title='" + esc([p.cat, p.role, p.status].filter(Boolean).join(" | ")) + "'><b class='" + catCls(p.cat) + "'>" + esc(p.name) + "</b>" + atomBadge(cur.b, i) + (CC && (CC[i].bad || CC[i].due) ? "<i class='curb " + (CC[i].bad ? "bad" : "due") + "' data-cur='1' title='" + esc(curIssues(CC, i).join("\n") + "\nClick for the Currency tab") + "'>" + (CC[i].bad ? "⚠ " + CC[i].bad : "! " + CC[i].due) + "</i>" : "") + (RS && (() => { const k0 = dayOfYear(S.year, mi, 0), L = []; for (let d = 0; d < dim; d++) if (RS[i].run[k0 + d] >= REST_DAYS) L.push(d + 1); return L.length ? "<i class='curb rest' title='" + esc("Crew rest: flying " + REST_DAYS + "+ days in a row on " + MONTHS[mi] + " " + L.join(", ")) + "'>REST</i>" : ""; })() || "") + (CH && (() => { const D = CH[i].down, L = []; for (let d = 0; d < dim; d++) if (D[ck0 + d]) L.push(d); if (!L.length) return ""; const now = L.includes(tD), last = L[L.length - 1];
         const runs = []; L.forEach(d => { const r = runs[runs.length - 1]; if (r && r[1] === d - 1) r[1] = d; else runs.push([d, d]); });
         return "<i class='curb " + (now || tD < 0 ? "down" : "downx") + "' data-upchit='" + cur.b + "|" + i + "|" + isoOf(y, mi, now ? tD : last) + "' title='" + esc("Down-chitted (MC), not cleared to fly: " + runs.map(r => (r[0] + 1) + (r[1] > r[0] ? "-" + (r[1] + 1) : "")).join(", ") + " " + MONTHS[mi] + (canEdit ? "\nClick to up-chit" : "")) + "'>DOWN</i>"; })() || "") + "<span>" + esc(p.role + (ns ? "  |  " + p.status.toUpperCase() : "")) + "</span></td>";
       h += "<td class='stk3 sh sh" + SHIFTS[s] + "'>" + SHIFTS[s] + "</td>";
@@ -4834,6 +4840,12 @@ function lodeCards(who, iso) {
         curc = { level: bad ? "bad" : due ? "due" : "ok", sub: ok + " of " + list.length + " rules current" + (iso !== opsToday() ? " · as of today" : ""),
           text: bad ? (/^LAPSED/i.test(bad.r.text) ? bad.name + " lapsed" : bad.name + ": no record") : due ? due.name + " due " + serShort(due.r.lapse) : "All current" };
       }
+    }
+    const arow = atomFor(who.bi, i);
+    if (arow) {   // ATOM knows this person: it replaces the flight-based rules
+      const x = atomIssues(who.bi, i, iso), n = atomCells(arow, iso).length, f = ATOMS[cur.atom || 0], first = x.lap[0] || x.due[0];
+      curc = { level: x.lap.length ? "bad" : x.due.length ? "due" : "ok", sub: "from ATOM, data as of " + atomAsOf(f).slice(0, 10) + (n ? " · " + (n - x.lap.length - x.due.length) + " of " + n + " current" : ""),
+        text: x.lap.length ? x.lap[0].col + " lapsed " + atomFmt(x.lap[0].iso, iso) : x.due.length ? x.due[0].col + " due " + atomFmt(first.iso, iso) : "All current" };
     }
     let syl = null;
     if (st.hasSyl && st.sylDef) {

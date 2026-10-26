@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Where things stand
 
-- **Dashboard z92** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
+- **Dashboard z94** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
@@ -14,15 +14,22 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Dev mode stays on (red DEV badge, "Open every file (dev)", Master Planner editable in dev). No release build for Brandon.
 - Brandon still has to upload the current set to SharePoint "Program" (dashboard + 8 xlsx) and test there.
 
-## ATOM currency (z92, built 2026-10-26, spec `docs/superpowers/specs/2026-10-26-atom-currency-design.md`)
+## ATOM currency (v2, z94, built 2026-10-26; spec `docs/superpowers/specs/2026-10-26-atom-currency-v2-design.md`, plan `docs/superpowers/plans/2026-10-26-atom-currency-v2.md`)
 
-- Currency tab reads an ATOM Excel export (read-only, never saved): squadron grid, due window, stale banner, Names to fix.
-  People are matched to ATOM by exact roster Initials (case and spaces ignored). Not built: layer 3 (projection of a planned
-  flight extending an expiry), SATR, hours.
-- "What each flight needs" table lives in a dashboard-created sheet `ATOM Needs` in `Ops_Room.xlsx` (created on first edit in the
-  Ops Room view). Planner cells get a red corner and the name a badge; Ops Room seats get a CURR mark. Warnings only.
-- Tests: `node tests/atom.test.js` (synthetic exports only; never copy Brandon's exports into the public repo).
-- Open: Brandon must fill the roster Initials to match ATOM before anything shows; the three sample Currency rules are still samples.
+- ATOM is the truth. The Ops Room adds the ATOM export once a day (Currency tab, "Add ATOM export", then "Publish to everyone" in the Ops Room view);
+  that writes a dashboard-created sheet **`ATOM Currency`** in `Ops_Room.xlsx` (Initials, department, CAT, Day Capt, Day Curr, IRT, Night Capt, Night Curr,
+  clocked hours for the month, plus as-of / source / published-by lines), replacing yesterday's. Department dashboards open the Ops Room file read-only in the
+  background and read it. A file added by hand still works (session only, labelled "File added by you"). Only the five currencies and the hours are read; nothing else
+  from the export is stored; no names.
+- Matching is by exact roster Initials (case and spaces ignored); the Names to fix panel lists what does not match.
+- Planner: layer 1 marks the day a Day / Night currency expires (Capt as a lighter outline), layer 2 gives a red corner "NOT CURRENT" on a flight on or after it.
+  No tint after the expiry day, no name badges. The Ops Room marks a seat "CURR" (the Aircraft Captain seat also checks Capt). Warnings only.
+- Hours: Planner "Flown Hrs" and My Lodestar show ATOM's clocked hours for the export's month.
+- **Open:** what IRT should do in the Planner (read and shown on the Currency tab and My Lodestar only for now); the general flying rules (45 / 90 / 180) are still the
+  three sample rules; real unsanitised exports from another generator have not been tried; roster Initials must be filled to match ATOM.
+- Removed from v1: the "What each flight needs" table and its `ATOM Needs` sheet, mission / LSS handling, the name badges.
+- Tests: `node tests/atom.test.js` (synthetic exports only; several minutes), `node tests/my_lodestar.test.js`. Dummy-name test set from real Initials:
+  `tests/make_atom_demo_input.py` (output goes to the git-ignored `atom_test/`).
 
 ## What was built (short history)
 

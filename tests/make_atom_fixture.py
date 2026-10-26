@@ -20,7 +20,7 @@ PILOT_COLS = [("Flight Currencies", ["Day Capt", "Day Curr", "IRT", "Instructor 
 OTHER_COLS = [("Flight Currencies", ["Day Curr", "Night Curr"]), ("SIM Currencies", ["SIM"]), ("LSS Currencies", ["ACE", "APT"]), ("Mission Currencies", ["MAS", "SAL"]),
               ("SIM Package (Oct 25 - Oct 26)", ["SIM Package"]), ("Flying Hours Clocked", ["Current Month"]), ("SATR Details", ["Level", "Remarks"])]
 if variant == "moved":   # an added column first in a group, a reordered group
-    PILOT_COLS = [("Flight Currencies", ["NVG Curr"] + PILOT_COLS[0][1]), PILOT_COLS[3], PILOT_COLS[1], PILOT_COLS[2]] + PILOT_COLS[4:]
+    PILOT_COLS = [("Flight Currencies", ["NVG Curr"] + PILOT_COLS[0][1][::-1]), PILOT_COLS[3], PILOT_COLS[1], PILOT_COLS[2]] + PILOT_COLS[4:]
 
 D = lambda s: s   # text date such as '16 Nov 26'
 XL = dt.datetime(2027, 1, 22)   # stored as a real Excel date
@@ -31,13 +31,14 @@ PEOPLE = {
               ("Active", "HO KM", "B", {"Day Capt": OK, "Day Curr": OK, "IRT": OK, "Instructor Check": OK, "Night Capt": OK, "Night Curr": OK, "SIM": OK, "ACE": OK, "APT": OK, "SVT": OK, "MAS": OK, "SAL": OK, "NVG Curr": OK}),
               ("Active", "S LIM JH", "A", {"Day Capt": DUE, "Day Curr": DUE, "Night Curr": "25 Oct 26", "SIM": OK, "MAS": "N/A"}),
               ("Active", "SAMY", "C", {"Day Curr": OK, "Night Curr": OK, "SIM": OK}),
-              ("NSmen", "TEO WK", "A", {"Day Curr": OK, "Night Curr": "01 Oct 26"})],
+              ("NSmen", "TEO WK", "A", {"Day Curr": "N/A", "Night Curr": "01 Oct 26", "Day Capt": XL, "IRT": "soon", "Night Capt": " "})],
     "ACS": [("Active", "L CHEW", "A", {"Day Curr": OK, "Night Curr": LAP, "SIM": OK, "MAS": DUE}), ("Active", "M SOH", "B", {"Day Curr": OK, "Night Curr": OK, "SIM": OK})],
     "TACCO": [("Active", "T LEE", "A", {"Day Curr": OK, "Night Curr": OK, "SIM": LAP, "APT": DUE}), ("Active", "R KOH", "C", {"Day Curr": OK, "Night Curr": OK, "SIM": OK})],
     "SUP1": [("Active", "P YEO", "A", {"Day Curr": OK, "Night Curr": OK, "SIM": OK}), ("Active", "Q ONG", "B", {"Day Curr": LAP, "Night Curr": OK, "SIM": OK})],
     "SUP2": [("Active", "V TAN", "A", {"Day Curr": OK, "Night Curr": "27 Oct 26", "SIM": OK, "MAS": LAP}), ("Active", "H LIM", "B", {"Day Curr": OK, "Night Curr": OK, "SIM": OK}),
              ("Staff/Assigned", "O NG", "C", {"Day Curr": DUE, "Night Curr": OK, "SIM": OK})],
 }
+HOURS = {"A NGO": 3.9, "HO KM": 8.2, "S LIM JH": "-", "SAMY": 0, "V TAN": 5.5, "H LIM": 1.0}
 sheets = ["PILOT", "ACS", "TACCO", "SUP1", "SUP2"]
 if variant == "partial": sheets = ["PILOT", "SUP2"]
 
@@ -67,6 +68,7 @@ for sn in sheets:
                     else: ws.cell(r, c, v)
                 elif n == "Remarks": ws.cell(r, c, "FAKE personal remark")
                 elif n == "Level": ws.cell(r, c, "TL 3")
+                elif n == "Current Month": ws.cell(r, c, HOURS.get(name, 4.5))
                 else: ws.cell(r, c, 4.5)
                 c += 1
         r += 1

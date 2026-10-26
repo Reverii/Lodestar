@@ -39,7 +39,7 @@ existing macro-heavy ops tool (Oracle).
    Brandon prefers plain English, full sentences, no jargon from the code.
 8. **Not required** (Brandon decided, don't build or suggest again): double-booking check, fair share view, print layouts,
    postings dates, aircraft availability, weekly CO summary, leave balance, actual flying hours tracking beyond the Ops
-   Room, Aborted / Re-plan, duplicate-tail warning, pairing rules, SDO person assignment / swap / fairness, PDF export,
+   Room (ATOM's clocked hours for the month are shown since 2026-10-26, nothing more), Aborted / Re-plan, duplicate-tail warning, pairing rules, SDO person assignment / swap / fairness, PDF export,
    phone view, .ics export, look-ahead panel, copy last week, notes for the day, Ops Room P1/P2 alert windows (resolved by the 1 Set / 2 Set button, 2026-10-25).
 9. Ask before anything irreversible or outward-facing. Brandon uploads to SharePoint himself.
 
@@ -111,7 +111,7 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 2`. The dashboard has
   `const LAYOUT = { dept: 2, master: 2, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
   lower or missing = checked sheet by sheet and listed as "older layout". Bump both sides together when cells move.
-- Dashboard version string: `Dashboard version 2026-10-26 z92` (two places in `.dashboard_source.html`: `#wDiag` and
+- Dashboard version string: `Dashboard version 2026-10-26 z94` (two places in `.dashboard_source.html`: `#wDiag` and
   `spDiag`). Bump the `zNN` number on each change you ship so Brandon can tell builds apart.
 
 ## Key cell layout (department file; full detail in the builders and dashboard constants)
@@ -126,6 +126,7 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - Master Planner Flights rows 6..1005 (A date, B shift, C code, D time, E crew override, F comment); Flight Codes
   (E crew tags P L T S1 S2, H syllabus tag); Day Status one row per date from row 6 (to row 402 with next Jan).
 - Every save appends to the file's own `Change Log` sheet (created on first save by the dashboard).
+- `Ops_Room.xlsx` also carries a dashboard-created sheet `ATOM Currency` (the Ops Room publishes the daily ATOM export there; rows from 8, Initials in A; no names stored).
 
 ## Testing
 

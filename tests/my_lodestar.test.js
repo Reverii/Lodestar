@@ -204,9 +204,9 @@ test("syl_progress_and_next", async ({ page }) => {
   assert.deepStrictEqual([o.syl.label, o.syl.text, o.syl.sub], ["Syllabus · OCU", "Flight 2", "Planned Tue 27 Oct NIGHT · 8 of 13 passed"]);
   assert.strictEqual((await cards(page, "HAWK", "2026-10-26")).syl.text, "Path complete");
 });
-test("syl_null_for_older_layout", async ({ page }) => {
+test("syl_card_for_every_department_since_scale_up", async ({ page }) => {
   const id = await page.evaluate(() => mePeople().find(z => z.dept === "SUP 1").p.id);
-  assert.strictEqual((await cards(page, id, "2026-10-26", "SUP 1")).syl, null);
+  assert.notStrictEqual((await cards(page, id, "2026-10-26", "SUP 1")).syl, null);
 });
 
 // ---- Task 5: the page
@@ -348,10 +348,10 @@ test("help_text_present", async ({ page }) => {
   const t = await page.innerText("#helpBody");
   assert.ok(/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));
 });
-test("version_is_z90", async ({ page }) => {
+test("version_is_z92", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z90 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-25 z90 "), "start screen version");
+  assert.ok(/ z92 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-26 z92 "), "start screen version");
 });
 
 // ---- Regression: the rest of the dashboard still works around My Lodestar

@@ -50,8 +50,8 @@ def excel(outdir, data, only):
     env = {"LODESTAR_INPUT": os.path.abspath(data)} if data else {}
     o = lambda n: os.path.join(outdir, n)
     if "sup2" in only: run(tmp, ["build_planner.py", o("Flight_Ops_Planner_SUP2.xlsx"), "SUP 2"], env)
-    if "others" in only:   # older layout on purpose: SUP 2-only scope until Brandon says scale up
-        for dept, n in OTHER_DEPTS: run(tmp, ["build_planner_other_depts.py", o(f"Flight_Ops_Planner_{n}.xlsx"), dept], env)
+    if "others" in only:   # scaled up 2026-10-26: every department is built from the same template (build_planner.py)
+        for dept, n in OTHER_DEPTS: run(tmp, ["build_planner.py", o(f"Flight_Ops_Planner_{n}.xlsx"), dept], env)
     if "master" in only: run(tmp, ["build_master_planner.py", o("Master_Planner.xlsx")], env)
     if "duty" in only: run(tmp, ["build_duty_roster.py", o("Duty_Roster.xlsx")], env)
     if "ops" in only: run(tmp, ["build_ops_room.py", o("Ops_Room.xlsx")], env)

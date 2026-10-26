@@ -11,6 +11,20 @@
   --blue:#1d4ed8;--teal:#0f766e;--amber:#b45309;--rose:#be123c;--red:#dc2626;--green:#15803d;
   --c0bg:#dbeafe;--c0fg:#1e3a8a;--c1bg:#cffafe;--c1fg:#164e63;--c2bg:#fef3c7;--c2fg:#78350f;--c3bg:#fecdd3;--c3fg:#881337;--c4bg:#e2e8f0;--c4fg:#64748b;--c5bg:#f1f5f9;--c5fg:#94a3b8;
 }
+.atomhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 12px}.atomhead input,.atomhead select{font:inherit;font-size:12px}
+.astale{border-radius:6px;padding:7px 12px;font-weight:600;border:1px solid #f59e0b;background:#fffbeb;color:#78350f}.astale.red{border-color:#dc2626;background:#fef2f2;color:#991b1b}
+.atombar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.atombar .seg{display:inline-flex;border:1px solid var(--s300);border-radius:5px;overflow:hidden}.atombar .seg button{border:0;background:#fff;padding:5px 11px;font-weight:600;font-size:12px;color:var(--s500);cursor:pointer}.atombar .seg button.on{background:var(--s900);color:#fff}
+.atombar .cnt{display:flex;gap:6px;margin-left:auto}.atombar .c{display:flex;align-items:baseline;gap:5px;border-radius:999px;padding:3px 11px;border:1px solid var(--s200);background:#fff;font-size:12px}.atombar .c b{font-size:15px}.atombar .c.r{border-color:#fca5a5;background:#fef2f2;color:var(--red)}.atombar .c.a{border-color:#fcd34d;background:#fffbeb;color:var(--amber)}
+.atomgrid{background:#fff;border:1px solid var(--s200);border-radius:8px;overflow:auto;max-height:calc(100vh - 250px)}
+.atomgrid table{border-collapse:collapse;width:100%}.atomgrid th{font-size:10px;font-weight:600;color:var(--s500);padding:3px 4px;text-align:center;border-bottom:1px solid var(--s200);position:sticky;top:0;background:#fff}
+.atomgrid th.g{font-size:10.5px;font-weight:800;color:var(--s900);background:var(--s100);border-left:1px solid var(--s200)}.atomgrid th.nm,.atomgrid td.nm{text-align:left;padding-left:10px;min-width:170px}
+.atomgrid td{height:24px;text-align:center;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--s100);padding:0 3px;font-variant-numeric:tabular-nums}.atomgrid td.nm{font-size:12.5px}.atomgrid td.nm b{margin-right:6px}.atomgrid td.nm span{color:var(--s500);font-size:11.5px}
+.atomgrid .gs{border-left:1px solid var(--s200)}.atomgrid td.lap{background:#fee2e2;color:#b91c1c;font-weight:700}.atomgrid td.due{background:#fef3c7;color:#92400e;font-weight:700}.atomgrid td.ok{color:var(--s600)}.atomgrid td.nh{color:var(--s300)}.atomgrid td.nr{color:var(--s400);font-style:italic;background:repeating-linear-gradient(135deg,#fff 0 4px,#f1f5f9 4px 8px)}
+.atomneeds{border-collapse:collapse;width:100%}.atomneeds th{font-size:11px;text-align:left;color:var(--s500);padding:2px 4px}.atomneeds td{padding:2px 4px}.atomneeds input{width:100%;font:inherit;font-size:12px;padding:3px 5px;border:1px solid var(--s300);border-radius:4px}
+.atomw{position:relative}.atomw::after{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 8px 8px 0;border-color:transparent #dc2626 transparent transparent}
+.atomfix{max-height:260px;overflow:auto}.atomfix h3,.atomfix h4{margin:4px 0}.atomfixhd{display:flex;align-items:center;gap:10px}.atomfix ul{margin:2px 0 6px;padding-left:18px;columns:2}.atomfix a{color:var(--blue);cursor:pointer;margin-left:6px;font-size:11.5px}
+.acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#16a34a}.acat.C{background:#d99a06}.acat.D{background:#dc2626}
+.atomleg{display:flex;gap:16px;color:var(--s500);font-size:11.5px;align-items:center}.atomleg i{display:inline-block;width:22px;height:11px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid var(--s200)}.atomleg .lapx{background:#fee2e2}.atomleg .duex{background:#fef3c7}.atomleg .okx{background:#fff}.atomleg .nrx{background:repeating-linear-gradient(135deg,#fff 0 3px,#e2e8f0 3px 6px)}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font-family:"Segoe UI",Arial,Helvetica,sans-serif;font-size:14px;color:var(--s900);background:var(--s100);display:flex;flex-direction:column}
@@ -632,6 +646,7 @@ td.who i.curb.bad{background:#dc2626;color:#fff}td.who i.curb.rest{background:#e
 td.who i.curb.down{background:#991b1b;color:#fff}td.who i.curb.downx{background:#fecaca;color:#991b1b}
 #plan td.dnd{background-image:repeating-linear-gradient(135deg,rgba(220,38,38,.16) 0 4px,transparent 4px 9px)}
 #plan td.dnf{box-shadow:inset 0 0 0 3px #dc2626!important}
+.opsb.atomx{background:#dc2626;color:#fff}
 .opsb.down{background:#991b1b;color:#fff}td.oc.odown{background:#fee2e2!important}
 button.upc{border:1px solid #dc2626;background:#fff;color:#b91c1c;border-radius:5px;font-size:11px;font-weight:700;padding:1px 7px;cursor:pointer;margin-left:4px}
 #chitPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
@@ -886,6 +901,7 @@ body.opsfs #opsSize{display:none}
     <div class="card"><h2 id="ovCrewTitle">Crew totals</h2><table class="ov" id="ovCrew"></table></div>
   </section>
   <section class="view" id="v-cur">
+    <div id="atomBox"></div>
     <div id="curNote" class="note"></div>
     <div class="card"><div class="curhead"><h2>Crew currency</h2><label><input type="checkbox" id="curBaseEd"> Edit the dates before the planner</label><label><input type="checkbox" id="curOnlyBad"> Only show flagged crew</label></div><div class="curwrap"><table class="curt" id="curTable"></table></div></div>
     <div class="card"><h2>Rules</h2><div class="muted" style="font-size:12px;margin-bottom:6px">One rule per row, for pilots and non-pilots alike. Applies to: All, or Role / Cat Status / Status / Callsigns with the values in Who (comma separated). Counts: Any flight, a Mission type from the Activities tab (e.g. MSN), or Flight codes (e.g. NVG-2.0, MSN-3.0). At least: blank = 1; a 2xFLT code counts as 2.</div><div style="overflow:auto"><table class="edit" id="ruleTable"></table></div></div>
@@ -953,7 +969,7 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-25 z90</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z92</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1057,6 +1073,9 @@ let WB = null;    // {files, paths:{sheetName:path}, sst:[], name, handle}
 let S = null;     // planner state
 let dirty = new Map();
 let OPS = false;   // all-departments mode: every open department file can be edited and saved
+// ---------- ATOM currency (read-only exports from ATOM; never books, never saved)
+let ATOMS = [];   // AtomFile list, see atomParse
+// renderAtom is defined with the ATOM grid below
 let books = [];   // [{WB, S, dirty}]: books[0] is your own file (editable), the rest are other departments (read-only)
 let cur = { m: new Date().getMonth(), sel: null, clip: null, b: 0 };
 function useBook(i) { const k = books[i]; WB = k.WB; S = k.S; dirty = k.dirty; cur.b = i; }
@@ -1092,14 +1111,17 @@ function parseSST(files) {
 }
 function readCells(name) {
   const p = WB.paths[name]; if (!p || !WB.files[p]) throw new Error("Sheet '" + name + "' not found in this workbook.");
-  const x = td.decode(WB.files[p]), cells = {};
+  return readCellsOf(WB.files, p, WB.sst);
+}
+function readCellsOf(files, p, sst) {   // the cells of one sheet file: refs -> value (formulas skipped)
+  const x = td.decode(files[p]), cells = {};
   for (const m of x.matchAll(/<c r="([A-Z]+\d+)"((?:\s+[\w:]+="[^"]*")*)\s*(?:\/>|>([\s\S]*?)<\/c>)/g)) {
     const ref = m[1], attrs = m[2], body = m[3] || "";
     if (/<f[\s>]/.test(body)) continue; // formulas are Excel's job
     const t = (attrs.match(/\bt="([^"]+)"/) || [])[1];
     let v = null;
     if (t === "inlineStr") { v = ""; for (const tt of body.matchAll(/<t(?:\s[^>]*)?>([\s\S]*?)<\/t>/g)) v += xmlText(tt[1]); }
-    else { const vm = body.match(/<v>([\s\S]*?)<\/v>/); if (vm) { const raw = xmlText(vm[1]); v = t === "s" ? WB.sst[+raw] : (t === "str" || t === "e") ? raw : t === "b" ? raw === "1" : +raw; } }
+    else { const vm = body.match(/<v>([\s\S]*?)<\/v>/); if (vm) { const raw = xmlText(vm[1]); v = t === "s" ? sst[+raw] : (t === "str" || t === "e") ? raw : t === "b" ? raw === "1" : +raw; } }
     if (v !== null && v !== "") cells[ref] = v;
   }
   return cells;
@@ -1110,9 +1132,290 @@ const num = v => (v === "" || v == null || isNaN(+v)) ? null : +v;
 function timeStr(v) { if (typeof v !== "number") return str(v); if (v > 0 && v < 1) { const m = Math.round(v * 1440); return String(Math.floor(m / 60)).padStart(2, "0") + String(m % 60).padStart(2, "0"); } return String(v).padStart(4, "0"); }
 function serialToISO(n) { const d = new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000); return d.toISOString().slice(0, 10); }
 
+// ---------- ATOM currency: reading an export (read-only; the file is never saved or kept)
+const ATOM_DEPT = { PILOT: "Pilot", ACS: "Loadmaster", TACCO: "TACCO", SUP1: "SUP 1", SUP2: "SUP 2" };   // sheet -> department
+const ATOM_GROUPS = ["Flight Currencies", "SIM Currencies", "LSS Currencies", "Mission Currencies"];   // the only groups we read
+const ATOM_MON = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+function isAtomExport(paths) {
+  return Object.keys(ATOM_DEPT).some(n => paths[n]) && !["Dashboard", "Roster", "Flight Crew", "Departments", "Flight Codes"].some(n => paths[n]);
+}
+function colNum(L) { let n = 0; for (const ch of L) n = n * 26 + ch.charCodeAt(0) - 64; return n; }
+function atomCell(v) {   // one currency cell -> { k: date|none|na|blank|text, iso, raw }
+  if (v === undefined || v === null || (typeof v === "string" && !v.trim())) return { k: "blank", iso: null, raw: "" };
+  if (typeof v === "number") return v > 20000 && v < 80000 ? { k: "date", iso: serialToISO(v), raw: String(v) } : { k: "text", iso: null, raw: String(v) };
+  const t = String(v).trim();
+  if (t === "-") return { k: "none", iso: null, raw: t };
+  if (/^n\/a$/i.test(t)) return { k: "na", iso: null, raw: t };
+  const m = t.match(/^(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{2}|\d{4})$/);
+  if (m && ATOM_MON[m[2].toLowerCase()] !== undefined) {
+    const y = m[3].length === 2 ? 2000 + +m[3] : +m[3], d = new Date(Date.UTC(y, ATOM_MON[m[2].toLowerCase()], +m[1]));
+    if (d.getUTCDate() === +m[1]) return { k: "date", iso: d.toISOString().slice(0, 10), raw: t };
+  }
+  return { k: "text", iso: null, raw: t };
+}
+function atomCreated(files) {   // export time (UTC in the file) as local "YYYY-MM-DD HH:MM"
+  const f = files["docProps/core.xml"]; if (!f) return "";
+  const m = td.decode(f).match(/<dcterms:created[^>]*>([^<]+)</); if (!m) return "";
+  const d = new Date(m[1]); if (isNaN(d)) return "";
+  const p = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function atomParse(files, name) {
+  const paths = sheetPaths(files), sst = parseSST(files);
+  const out = { name, created: atomCreated(files), groups: [], sheets: {}, missing: [] };
+  const gi = {};   // group -> index in out.groups
+  for (const sn in ATOM_DEPT) {
+    const dept = ATOM_DEPT[sn], p = paths[sn];
+    if (!p || !files[p]) { out.missing.push(dept); continue; }
+    const c = readCellsOf(files, p, sst);
+    let maxC = 0, maxR = 0; for (const ref in c) { const m = ref.match(/^([A-Z]+)(\d+)$/); maxC = Math.max(maxC, colNum(m[1])); maxR = Math.max(maxR, +m[2]); }
+    let grp = "", nameL = null, statusL = null, catL = null, instL = null; const cols = [];   // cols: { L, group, name }
+    for (let n = 1; n <= maxC; n++) {
+      const L = colL(n), g = str(c[L + "1"]), h = str(c[L + "2"]);
+      if (g) grp = g;
+      if (!h) continue;
+      if (h === "Name") nameL = L; else if (h === "Status") statusL = L; else if (h === "CAT") catL = L; else if (h === "Instructor CAT") instL = L;
+      else if (ATOM_GROUPS.includes(grp)) cols.push({ L, group: grp, name: h });
+    }
+    if (!nameL) { out.missing.push(dept); continue; }
+    for (const k of cols) {
+      let g = gi[k.group]; if (g === undefined) { g = gi[k.group] = out.groups.length; out.groups.push({ group: k.group, cols: [] }); }
+      if (!out.groups[g].cols.includes(k.name)) out.groups[g].cols.push(k.name);
+    }
+    const rows = [];
+    for (let r = 3; r <= maxR; r++) {
+      const nm = str(c[nameL + r]); if (!nm) continue;   // band rows (" -> Active") have no Name
+      const cells = {}; for (const k of cols) cells[k.name] = atomCell(c[k.L + r]);
+      rows.push({ name: nm, status: statusL ? str(c[statusL + r]) : "", cat: catL ? str(c[catL + r]) : "", instCat: instL ? str(c[instL + r]) : "", cells });
+    }
+    out.sheets[dept] = rows;
+  }
+  if (!Object.keys(out.sheets).length) throw new Error(name + " has no ATOM sheets (PILOT, ACS, TACCO, SUP1, SUP2) with a Name column.");
+  return out;
+}
+function atomAdd(files, name) {
+  const f = atomParse(files, name);
+  const i = ATOMS.findIndex(x => x.name === name);
+  if (i >= 0) ATOMS[i] = f; else ATOMS.push(f);
+  cur.atom = i >= 0 ? i : ATOMS.length - 1;
+  toast("ATOM export loaded: " + name);
+  if (books.length) renderAll(); else renderAtom();
+}
+function atomLoad(buf, name) { atomAdd(fflate.unzipSync(new Uint8Array(buf)), name); }
+function atomKey(s) { return String(s == null ? "" : s).toLowerCase().trim().replace(/\s+/g, " "); }   // "" for blank: a blank never matches
+function atomCatKey(s) { const t = String(s || "").toUpperCase().replace(/^CAT\s*/, "").trim(); return /^[A-D]$/.test(t) ? t : ""; }   // only comparable when it is a single letter
+function atomRosterSig() {   // changes when any book is opened, closed or moved, or any Initials / CAT is edited
+  let g = ""; books.forEach((b, bi) => { g += "|" + bi + (b.S.kind ? "k" : b.S.dept); if (b.S.kind) return; for (const p of b.S.roster) g += "," + (p.name || p.id ? p.ini + "/" + p.cat : ""); });
+  return g;
+}
+// atomMatch(f): ATOM rows <-> roster people by exact Initials, per department. rows: "bookIndex:rosterIndex" -> AtomRow. fix: what needs attention.
+let atomMemo = null;
+function atomMatch(f) {
+  const sig = ATOMS.indexOf(f) + atomRosterSig();
+  if (atomMemo && atomMemo.f === f && atomMemo.sig === sig) return atomMemo.m;
+  const rows = new Map(), fix = { atomOnly: [], rosterOnly: [], dupes: [], cat: [], closed: [] };
+  for (const dept in f.sheets) {
+    const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept);
+    if (bi < 0) { fix.closed.push(dept); continue; }
+    const ro = books[bi].S.roster, byKey = new Map(), atomBy = new Map();
+    ro.forEach((p, i) => { const k = atomKey(p.ini); if (!k || !(p.name || p.id)) return; if (!byKey.has(k)) byKey.set(k, []); byKey.get(k).push(i); });
+    for (const r of f.sheets[dept]) { const k = atomKey(r.name); if (k && !atomBy.has(k)) atomBy.set(k, r); }
+    for (const [k, ix] of byKey) {
+      if (ix.length > 1) { fix.dupes.push({ dept, ini: ro[ix[0]].ini.trim(), ids: ix.map(i => ro[i].id || ro[i].name) }); continue; }
+      const r = atomBy.get(k);
+      if (!r) { fix.rosterOnly.push({ dept, id: ro[ix[0]].id, name: ro[ix[0]].name }); continue; }
+      rows.set(bi + ":" + ix[0], r);
+      const a = atomCatKey(r.cat), c = atomCatKey(ro[ix[0]].cat);
+      if (a && c && a !== c) fix.cat.push({ dept, id: ro[ix[0]].id, atom: r.cat, roster: ro[ix[0]].cat });
+    }
+    for (const [k, r] of atomBy) if (!byKey.has(k)) fix.atomOnly.push({ name: r.name, dept });
+  }
+  const m = { rows, fix }; atomMemo = { f, sig, m }; return m;
+}
+function atomFor(bi, i) { const f = ATOMS[cur.atom || 0]; return f ? atomMatch(f).rows.get(bi + ":" + i) || null : null; }
+const dayDiff = (a, b) => Math.round((Date.parse(a + "T00:00:00Z") - Date.parse(b + "T00:00:00Z")) / 86400000);   // whole days from b to a (ISO dates)
+function atomDue() { const n = +spRecall("atom_due", 14); return n >= 0 ? n : 14; }
+function atomSetDue(n) { spRemember("atom_due", n); }
+// state of one cell on a day: lap (expiry before the day), due (within the due window), ok, nr (not recorded), nh (not held / not applicable)
+function atomState(c, day) {
+  if (c.k === "none" || c.k === "na") return "nh";
+  if (c.k !== "date") return "nr";
+  const d = dayDiff(c.iso, day); return d < 0 ? "lap" : d <= atomDue() ? "due" : "ok";
+}
+function atomCells(row, day) {   // the currencies this person holds, with state on that day
+  const f = ATOMS[cur.atom || 0], out = [];
+  if (!f) return out;
+  for (const g of f.groups) for (const col of g.cols) {
+    const c = row.cells[col]; if (!c) continue;
+    const state = atomState(c, day); if (state === "nh") continue;
+    out.push({ col, group: g.group, state, iso: c.iso, days: c.iso ? dayDiff(c.iso, day) : null });
+  }
+  return out;
+}
+function atomIssues(bi, i, day) {
+  const row = atomFor(bi, i), o = { lap: [], due: [] };
+  if (!row) return o;
+  for (const c of atomCells(row, day)) if (c.state === "lap" || c.state === "due") o[c.state].push({ col: c.col, iso: c.iso });
+  return o;
+}
+function atomAge(f, today) { return dayDiff(today, atomAsOf(f).slice(0, 10)); }
+function atomStale(f, today) { const n = atomAge(f, today); return n > 30 ? "red" : n > 7 ? "amber" : ""; }
+// ---------- ATOM currency: the Currency tab grid
+const ATOM_DEPTS = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"];
+function atomGridRows(dept, onlyProblems, day) {   // matched people, worst first
+  const f = ATOMS[cur.atom || 0], out = [];
+  if (!f) return out;
+  for (const [key, row] of atomMatch(f).rows) {
+    const [bi, i] = key.split(":").map(Number), d = books[bi].S.dept;
+    if (dept !== "All" && d !== dept) continue;
+    const cs = atomCells(row, day), lap = cs.filter(c => c.state === "lap").length, due = cs.filter(c => c.state === "due").length;
+    if (onlyProblems && !lap && !due) continue;
+    out.push({ bi, i, dept: d, row, lap, due });
+  }
+  return out.sort((a, b) => b.lap - a.lap || b.due - a.due || a.row.name.localeCompare(b.row.name));
+}
+const ATOM_MS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function atomFmt(iso, day) { const [y, m, d] = iso.split("-").map(Number); return d + " " + ATOM_MS[m - 1] + (dayDiff(iso, day) > 366 || dayDiff(iso, day) < -366 ? " " + String(y).slice(2) : ""); }
+function atomFixCount(f) { const x = atomMatch(f).fix; return x.atomOnly.length + x.rosterOnly.length + x.dupes.length + x.cat.length; }
+function renderAtom() {
+  const b = $("atomBox"); if (!b) return;
+  const f = ATOMS[cur.atom || 0], today = opsToday();
+  if (!f) { b.innerHTML = "<div class='card atomhead'><b>ATOM currencies</b><span class='muted'>Add an ATOM export to see everyone's currencies</span><span style='flex:1'></span><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>"; atomWire(); return; }
+  const dept = spRecall("atom_dept", "All"), only = !!spRecall("atom_only", false), age = atomAge(f, today), stale = atomStale(f, today);
+  const rows = atomGridRows(dept, only, today), allRows = atomGridRows(dept, false, today);
+  const cols = f.groups.map(g => ({ group: g.group, cols: g.cols.filter(c => rows.some(r => r.row.cells[c])) })).filter(g => g.cols.length);
+  let lap = 0, due = 0, bad = 0; for (const r of allRows) { lap += r.lap; due += r.due; if (r.lap || r.due) bad++; }
+  const fix = atomFixCount(f), win = atomDue();
+  let h = (stale ? "<div class='astale " + stale + "'>" + (stale === "red" ? "This ATOM export is " + age + " days old. Export it again before you rely on it." : "This ATOM export is " + age + " days old.") + " Data as of " + esc(atomAsOf(f)) + ".</div>" : "");
+  h += "<div class='card atomhead'><b>ATOM currencies</b><span class='asof'>" + (ATOMS.length > 1 ? "<select id='atomSel'>" + ATOMS.map((x, i) => "<option value='" + i + "'" + (i === (cur.atom || 0) ? " selected" : "") + ">" + esc(x.name) + "</option>").join("") + "</select>" : esc(f.name)) +
+    " , data as of <input id='atomAsOf' type='datetime-local' value='" + esc(atomAsOf(f).replace(" ", "T")) + "'></span><span style='flex:1'></span>" +
+    "<label>Due window <select id='atomDue'>" + [7, 14, 21, 30].map(n => "<option" + (n === win ? " selected" : "") + ">" + n + "</option>").join("") + "</select> days</label><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
+  h += "<div class='atombar'><span class='seg'>" + ["All"].concat(ATOM_DEPTS).map(d => "<button data-d='" + d + "' class='" + (d === dept ? "on" : "") + "'>" + d + "</button>").join("") + "</span>" +
+    "<label><input type='checkbox' id='atomOnly'" + (only ? " checked" : "") + "> Only crew with a problem</label><span class='muted'>Sorted worst first</span>" +
+    "<span class='cnt'><span class='c r'><b>" + lap + "</b> lapsed</span><span class='c a'><b>" + due + "</b> due in " + win + " days</span><span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
+  if (cur.atomFix) h += atomFixHtml(f);
+  if (!allRows.length) h += "<div class='card muted'>Nobody matched yet. An ATOM name is matched to a person's <b>Initials</b> on the Crew Roster; open the department planners and fill the Initials in. " + fix + " to fix.</div>";
+  else {
+    h += "<div class='atomgrid' id='atomGrid'><table><thead><tr><th class='nm' rowspan='2'>Crew</th>" + cols.map(g => "<th class='g gs' colspan='" + g.cols.length + "'>" + esc(g.group.replace(" Currencies", "")) + "</th>").join("") + "</tr><tr>" +
+      cols.map(g => g.cols.map((c, k) => "<th" + (k === 0 ? " class='gs'" : "") + ">" + esc(c) + "</th>").join("")).join("") + "</tr></thead><tbody>";
+    for (const r of rows) {
+      const p = books[r.bi].S.roster[r.i], cat = atomCatKey(p.cat) || "T";
+      h += "<tr><td class='nm'><i class='acat " + cat + "'></i><b>" + esc(p.id || r.row.name) + "</b><span>" + esc(p.name) + "</span></td>";
+      for (const g of cols) g.cols.forEach((c, k) => {
+        const cell = r.row.cells[c], st = cell ? atomState(cell, today) : "nh", gs = k === 0 ? " gs" : "";
+        h += "<td class='" + st + gs + "'" + (cell && cell.raw ? " title='" + esc(c + ": " + cell.raw) + "'" : "") + ">" + (st === "nh" ? "–" : st === "nr" ? "?" : atomFmt(cell.iso, today)) + "</td>";
+      });
+      h += "</tr>";
+    }
+    h += "</tbody></table></div><div class='atomleg'><span><i class='lapx'></i>Lapsed (expiry before today)</span><span><i class='duex'></i>Due in " + win + " days</span><span><i class='okx'></i>OK</span><span><i class='nrx'></i>Not recorded</span><span>– not held</span></div>";
+  }
+  h += atomNeedsHtml();
+  b.innerHTML = h; atomWire(); atomNeedsWire();
+}
+function atomBadge(bi, i) {   // "ATOM ⚠ n" (lapsed) or "ATOM ! n" (due) beside a name in the Planner; "" without ATOM data
+  if (!ATOMS.length) return "";
+  const day = opsToday(), x = atomIssues(bi, i, day); if (!x.lap.length && !x.due.length) return "";
+  const lines = x.lap.map(c => c.col + " lapsed " + atomFmt(c.iso, day)).concat(x.due.map(c => c.col + " due " + atomFmt(c.iso, day)));
+  return "<i class='curb " + (x.lap.length ? "bad" : "due") + "' data-cur='1' data-atom='1' title='" + esc(lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(ATOMS[cur.atom || 0]) + ". Click for the Currency tab") + "'>ATOM " + (x.lap.length ? "⚠ " + x.lap.length : "! " + x.due.length) + "</i>";
+}
+// ---------- ATOM currency: what each flight needs (sheet "ATOM Needs" in the Ops Room file, created on first edit)
+const ATOM_NEEDS = "ATOM Needs", ATOM_NEEDS_HEAD = ["Flight code or mission type", "Currencies needed", "Seat"], ATOM_NEEDS_N = 60;
+const ATOM_NEEDS_COLS = '<col min="1" max="1" width="30" customWidth="1"/><col min="2" max="2" width="50" customWidth="1"/><col min="3" max="3" width="12" customWidth="1"/>';
+const atomNeedsRows = () => { const b = opsBook(); return b && b.S.atomNeeds ? b.S.atomNeeds.rows.filter(r => r.match) : []; };
+function atomNeedsFor(code, mtype, seat) {   // currencies a flight needs: every matching row; Captain-only rows only for the captain seat
+  const c = atomKey(code), m = atomKey(mtype), out = [];
+  for (const r of atomNeedsRows()) {
+    if (r.seat === "Captain" && seat !== "Captain") continue;
+    const k = atomKey(r.match), hit = k.endsWith("*") ? c.startsWith(k.slice(0, -1)) : k === c || (m && k === m);
+    if (hit) for (const n of r.needs) if (!out.some(o => atomKey(o) === atomKey(n))) out.push(n);
+  }
+  return out;
+}
+function atomNeedsSet(n, match, needs, seat) {   // row n (0-based) of the table; an empty match clears it
+  const bi = books.findIndex(b => b.S.kind === "ops"); if (bi < 0 || !OPS) return false;
+  const b = books[bi];
+  sheetEnsure(b.WB, ATOM_NEEDS, ATOM_NEEDS_HEAD, ATOM_NEEDS_COLS);
+  const r = n + 2, vals = match ? [match, needs.join(", "), seat === "Captain" ? "Captain" : "Any"] : ["", "", ""];
+  withBook(bi, () => vals.forEach((v, i) => put(ATOM_NEEDS, "ABC"[i] + r, v)));
+  const an = b.S.atomNeeds || (b.S.atomNeeds = { rows: [], has: true }); an.has = true;
+  an.rows[n] = { match: match || "", needs: match ? needs.slice() : [], seat: match ? (seat === "Captain" ? "Captain" : "Any") : "Any", row: r };
+  return true;
+}
+const atomNeedsDel = n => atomNeedsSet(n, "", [], "Any");
+function atomNeedsHtml() {
+  const b = opsBook(), can = !!b && OPS, rows = atomNeedsRows(), dis = can ? "" : " disabled";
+  const all = b && b.S.atomNeeds ? b.S.atomNeeds.rows : [];
+  let n = 0; while (n < all.length && all[n] && all[n].match) n++;
+  let h = "<div class='card' id='atomNeeds'><div class='atomfixhd'><h3>What each flight needs</h3><span class='muted'>A flight code (end with * for a family, e.g. NVG-*) or a mission type, and the ATOM currencies it needs. Captain = only checked on the Aircraft Captain seat.</span></div>";
+  if (!can) h += "<div class='muted'>Open the Ops Room file to save these rules (they are edited in the Ops Room view).</div>";
+  h += "<table class='atomneeds'><thead><tr><th>Flight code or mission type</th><th>Currencies needed (comma separated)</th><th>Seat</th><th></th></tr></thead><tbody>";
+  all.forEach((r, i) => { if (!r || !r.match) return;
+    h += "<tr data-n='" + i + "'><td><input class='nm' value='" + esc(r.match) + "'" + dis + "></td><td><input class='nd' value='" + esc(r.needs.join(", ")) + "'" + dis + "></td><td><select class='ns'" + dis + "><option" + (r.seat === "Any" ? " selected" : "") + ">Any</option><option" + (r.seat === "Captain" ? " selected" : "") + ">Captain</option></select></td><td><button class='btn nx'" + dis + ">Remove</button></td></tr>"; });
+  h += "<tr data-n='" + n + "' class='new'><td><input class='nm' placeholder='NVG-*'" + dis + "></td><td><input class='nd' placeholder='Night Curr'" + dis + "></td><td><select class='ns'" + dis + "><option>Any</option><option>Captain</option></select></td><td><button class='btn nadd'" + dis + ">Add</button></td></tr></tbody></table></div>";
+  return h;
+}
+function atomNeedsWire() {
+  document.querySelectorAll("#atomNeeds tr[data-n]").forEach(tr => {
+    const n = +tr.dataset.n, get = () => [tr.querySelector(".nm").value.trim(), tr.querySelector(".nd").value.split(",").map(x => x.trim()).filter(Boolean), tr.querySelector(".ns").value];
+    const save = () => { const [m, d, s] = get(); if (m && d.length) { atomNeedsSet(n, m, d, s); renderAtom(); } };
+    if (tr.classList.contains("new")) tr.querySelector(".nadd").onclick = save; else { tr.querySelectorAll("input,select").forEach(x => x.onchange = save); tr.querySelector(".nx").onclick = () => { atomNeedsDel(n); renderAtom(); }; }
+  });
+}
+function atomWarn(bi, i, code, mtype, iso, seat) {   // flight code in a Planner cell: needed currencies already ended on that day -> { lines } or null
+  const row = atomFor(bi, i); if (!row) return null;
+  const needs = atomNeedsFor(code, mtype, seat || "Any"); if (!needs.length) return null;
+  const lines = [];
+  for (const n of needs) {
+    const col = Object.keys(row.cells).find(k => atomKey(k) === atomKey(n)), c = col && row.cells[col];
+    if (c && atomState(c, iso) === "lap") lines.push(col + " ended " + atomFmt(c.iso, iso));
+  }
+  return lines.length ? { lines } : null;
+}
+function atomWarnCount(M, A, i, y, mi, dim) {   // flights this month with an ATOM warning for person i
+  let n = 0;
+  for (let s = 0; s < 3; s++) for (let d = 0; d < dim; d++) { const v = M.grid[i * 3 + s][d], a = v && A.get(v.toUpperCase()); if (a && a.ci === CAT_FLIGHT && atomWarn(cur.b, i, v, a.mtype, isoOf(y, mi, d))) n++; }
+  return n;
+}
+function atomSeatWarn(r, c, k) {   // Ops Room seat: needed currencies ended on the flight's day (the Aircraft Captain seat also checks the captain rows)
+  if (!ATOMS.length || !c || !r.x) return null;
+  const bi = books.findIndex(b => !b.S.kind && same(b.S.dept, c.dept)); if (bi < 0) return null;
+  const S2 = books[bi].S, i = S2.roster.findIndex(p => p.id && p.id === c.id); if (i < 0) return null;
+  const a = S2.acts.find(x => same(x.code, r.x.code));
+  return atomWarn(bi, i, r.x.code, a ? a.mtype : "", opsDay(cur.opsDay).iso, k === 0 ? "Captain" : "Any");
+}
+function atomFixOpen() { cur.atomFix = true; renderAtom(); }
+function atomFixClose() { cur.atomFix = false; renderAtom(); }
+function atomFixHtml(f) {
+  const x = atomMatch(f).fix, bi = d => books.findIndex(b => !b.S.kind && b.S.dept === d);
+  const go = d => "<a data-bi='" + bi(d) + "'>" + esc(d) + " Crew Roster</a>";
+  const sec = (key, title, items, li) => items.length ? "<div data-sec='" + key + "'><h4>" + title + " <span class='muted'>(" + items.length + ")</span></h4><ul>" + items.map(li).join("") + "</ul></div>" : "";
+  let h = "<div class='card atomfix' id='atomFixPanel'><div class='atomfixhd'><h3>Names to fix</h3><span class='muted'>Fix them on the Crew Roster: an ATOM name must equal the person's Initials there.</span><span style='flex:1'></span><button class='btn' id='atomFixClose'>Close</button></div>";
+  h += x.closed.map(d => "<div class='muted'>Open the " + esc(d) + " file to match its names.</div>").join("");
+  const body = sec("atomOnly", "In ATOM, but no roster Initials match", x.atomOnly, i => "<li><b>" + esc(i.name) + "</b> (" + esc(i.dept) + ") " + go(i.dept) + "</li>") +
+    sec("dupes", "Same Initials twice on a roster", x.dupes, i => "<li><b>" + esc(i.ini) + "</b> (" + esc(i.dept) + "): " + esc(i.ids.join(", ")) + " " + go(i.dept) + "</li>") +
+    sec("cat", "CAT differs from the roster", x.cat, i => "<li><b>" + esc(i.id) + "</b> (" + esc(i.dept) + "): ATOM " + esc(i.atom) + ", roster " + esc(i.roster) + " " + go(i.dept) + "</li>") +
+    sec("rosterOnly", "On the roster, Initials not in ATOM", x.rosterOnly, i => "<li><b>" + esc(i.id || i.name) + "</b> (" + esc(i.dept) + ") " + go(i.dept) + "</li>");
+  return h + (body || "<div>Nothing to fix.</div>") + "</div>";
+}
+function atomWire() {
+  const q = id => document.getElementById(id);
+  if (q("atomAdd")) q("atomAdd").onclick = () => { q("atomFile").value = ""; q("atomFile").click(); };
+  if (q("atomFile")) q("atomFile").onchange = async e => { const x = e.target.files[0]; if (x) { try { atomLoad(await x.arrayBuffer(), x.name); } catch (err) { alert(err.message || err); } } };
+  if (q("atomSel")) q("atomSel").onchange = e => { cur.atom = +e.target.value; renderAll(); };
+  if (q("atomAsOf")) q("atomAsOf").onchange = e => { if (e.target.value) { atomSetAsOf(ATOMS[cur.atom || 0], e.target.value.replace("T", " ")); renderAll(); } };
+  if (q("atomDue")) q("atomDue").onchange = e => { atomSetDue(+e.target.value); renderAll(); };
+  if (q("atomOnly")) q("atomOnly").onclick = e => { spRemember("atom_only", e.target.checked); renderAtom(); };
+  document.querySelectorAll("#atomBox .seg button").forEach(bt => bt.onclick = () => { spRemember("atom_dept", bt.dataset.d); renderAtom(); });
+  if (q("atomFix")) q("atomFix").onclick = () => atomFixOpen();
+  if (q("atomFixClose")) q("atomFixClose").onclick = () => atomFixClose();
+  document.querySelectorAll("#atomFixPanel a[data-bi]").forEach(a => a.onclick = () => { const i = +a.dataset.bi; if (i < 0) return; useBook(i); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='roster']").click(); });
+}
+function atomAsOf(f) { return spRecall("atom_asof_" + f.name) || f.created; }
+function atomSetAsOf(f, s) { spRemember("atom_asof_" + f.name, s); }
 function loadWorkbook(buf, name, handle, other) {
-  const files = fflate.unzipSync(new Uint8Array(buf));
-  WB = { files, paths: sheetPaths(files), sst: parseSST(files), name, handle };
+  const files = fflate.unzipSync(new Uint8Array(buf)), paths = sheetPaths(files);
+  if (isAtomExport(paths)) return atomAdd(files, name);   // an ATOM export is not a book: never touches WB, never saved
+  WB = { files, paths, sst: parseSST(files), name, handle };
   if (WB.paths["Flight Crew"] && !WB.paths["Jan"]) return addBook(readOps(name), other, name, handle);
   if (WB.paths["Departments"] && WB.paths["SDO Plan"] && !WB.paths["Jan"]) return addBook(readRoster(name), other, name, handle);
   if (WB.paths["Programme"] && !WB.paths["Jan"]) throw new Error(name + " is the old Flight Programme, which is no longer used: the Master Planner is the one list of flights.");
@@ -1282,7 +1585,7 @@ function renderSyl() {
   if (!$("v-syl").classList.contains("on")) return;
   const { Y, b, st, ed } = sylCtx();
   if (!st) { $("sylWrap").innerHTML = "<div class='sylempty'><h3>Open your planner</h3><p>Syllabus Tracking shows your department's crew from your own planner file.</p></div>"; return; }
-  if (!Y) { $("sylWrap").innerHTML = "<div class='sylempty'><h3>No syllabus in " + esc(st.dept) + "'s planner yet</h3><p>The syllabus lives in each department's own planner file (sheets <b>Syllabus Settings</b>, <b>Syllabus Stages</b>, <b>Syllabus Items</b> and <b>Syllabus Log</b>). For now only SUP 2's file has them.</p></div>"; return; }
+  if (!Y) { $("sylWrap").innerHTML = "<div class='sylempty'><h3>No syllabus in " + esc(st.dept) + "'s planner yet</h3><p>The syllabus lives in each department's own planner file (sheets <b>Syllabus Settings</b>, <b>Syllabus Stages</b>, <b>Syllabus Items</b> and <b>Syllabus Log</b>). Upload the new planner file for this department to get them.</p></div>"; return; }
   const crew = st.roster.map((p, i) => ({ p, i })).filter(x => x.p.name && !/inactive/i.test(x.p.status));
   const P = crew.map(x => Object.assign(x, { path: sylPath(Y, st, x.p) }));
   if (!P.some(x => same(x.p.id, sylSel.id))) sylSel = { id: P[0] ? P[0].p.id : null, stage: null, code: null };
@@ -1787,9 +2090,10 @@ function setCell(xml, ref, val) {
 function buildXlsx() {
   const bySheet = {};
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
+  if (bySheet[ATOM_NEEDS]) sheetEnsure(WB, ATOM_NEEDS, ATOM_NEEDS_HEAD, ATOM_NEEDS_COLS);   // our copy may have been replaced by a newer one without the sheet
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
-    const p = WB.paths[sheet]; let x = td.decode(files[p]);
+    const p = WB.paths[sheet]; if (!p || !files[p]) continue; let x = td.decode(files[p]);
     for (const e of list) x = setCell(x, e.ref, e.val);
     files[p] = te.encode(x);
   }
@@ -1856,25 +2160,28 @@ function logLines(b, sent) {
   return out;
 }
 // add the Change Log sheet to a workbook that has none (files is changed in place)
-function logEnsure(W) {
-  if (W.paths[LOG_SHEET]) return;
+// adds an empty sheet (header row 1, frozen) to a workbook's files in memory; cols = the <cols> xml
+function sheetEnsure(W, name, heads, cols) {
+  if (W.paths[name]) return;
   const f = W.files; let n = 0;
   for (const k in f) { const m = /^xl\/worksheets\/sheet(\d+)\.xml$/.exec(k); if (m) n = Math.max(n, +m[1]); }
   const path = "xl/worksheets/sheet" + (n + 1) + ".xml";
   let wb = td.decode(f["xl/workbook.xml"]), rels = td.decode(f["xl/_rels/workbook.xml.rels"]);
-  const ids = [...wb.matchAll(/sheetId="(\d+)"/g)].map(m => +m[1]), rid = "rIdLog" + (n + 1);
+  const ids = [...wb.matchAll(/sheetId="(\d+)"/g)].map(m => +m[1]), rid = "rIdNew" + (n + 1);
   const tgt = /Target="\/xl\/worksheets\//.test(rels) ? "/" + path : path.slice(3);
   rels = rels.replace("</Relationships>", '<Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="' + tgt + '" Id="' + rid + '"/></Relationships>');
-  wb = wb.replace("</sheets>", '<sheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" name="' + LOG_SHEET + '" sheetId="' + (Math.max(0, ...ids) + 1) + '" state="visible" r:id="' + rid + '"/></sheets>');
+  wb = wb.replace("</sheets>", '<sheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" name="' + name + '" sheetId="' + (Math.max(0, ...ids) + 1) + '" state="visible" r:id="' + rid + '"/></sheets>');
   const ctp = "[Content_Types].xml"; let ct = td.decode(f[ctp]);
   if (!ct.includes('PartName="/' + path + '"')) ct = ct.replace("</Types>", '<Override PartName="/' + path + '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
-  const head = "<row r=\"1\">" + LOG_HEAD.map((h, i) => cellXml(colL(i + 1) + "1", "", h)).join("") + "</row>";
+  const head = "<row r=\"1\">" + heads.map((h, i) => cellXml(colL(i + 1) + "1", "", h)).join("") + "</row>";
   const ws = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>' +
-    '<cols><col min="1" max="1" width="19" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/><col min="3" max="3" width="26" customWidth="1"/><col min="4" max="4" width="13" customWidth="1"/><col min="5" max="5" width="44" customWidth="1"/><col min="6" max="7" width="20" customWidth="1"/><col min="8" max="8" width="14" customWidth="1"/></cols>' +
+    '<cols>' + cols + '</cols>' +
     "<sheetData>" + head + "</sheetData></worksheet>";
   f["xl/workbook.xml"] = te.encode(wb); f["xl/_rels/workbook.xml.rels"] = te.encode(rels); f[ctp] = te.encode(ct); f[path] = te.encode(ws);
   W.paths = sheetPaths(f);
 }
+const LOG_COLS = '<col min="1" max="1" width="19" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/><col min="3" max="3" width="26" customWidth="1"/><col min="4" max="4" width="13" customWidth="1"/><col min="5" max="5" width="44" customWidth="1"/><col min="6" max="7" width="20" customWidth="1"/><col min="8" max="8" width="14" customWidth="1"/>';
+function logEnsure(W) { sheetEnsure(W, LOG_SHEET, LOG_HEAD, LOG_COLS); }
 // a copy of the workbook's files with the lines added at the bottom of the Change Log
 function logApply(b, lines) {
   if (!lines.length) return null;
@@ -2559,9 +2866,10 @@ function syncCodes() {
   toast("Copied the flight codes from the Master Planner" + (keep.length ? "; kept " + keep.map(a => a.code).join(", ") + " because the plans still use " + (keep.length === 1 ? "it" : "them") : "") + (drop.length ? "; removed " + drop.map(a => a.code).join(", ") : "") + ". Click Save to Excel to keep it.", 6000);
 }
 function renderCur() {
+  renderAtom();
   const tbtn = document.querySelector("nav.tabs button[data-v='cur']");
   if (S.kind || !S.hasCur) {
-    $("curNote").innerHTML = S.kind ? "Open a department's planner to see its crew currency." : "<b>" + esc(S.dept) + "'s file has no currency rules yet.</b> Currency checks are in the SUP 2 file for now; the other departments get them when the template is rolled out.";
+    $("curNote").innerHTML = S.kind ? "Open a department's planner to see its crew currency." : "<b>" + esc(S.dept) + "'s file has no currency rules yet.</b> Upload the new planner file for this department (from the project folder) to get the currency rules.";
     $("curTable").innerHTML = ""; $("ruleTable").innerHTML = ""; return;
   }
   const C = computeCurrency(), ed = cur.b === 0 || OPS, R = S.rules, on = R.map(ruleOn), cols = R.map((r, k) => k).filter(k => on[k]);
@@ -2641,7 +2949,7 @@ function renderPlanner() {
     "<b style='color:#15803d'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and ground programme match" : "flights match") + " the Master Planner.</b>";
   if (mb && mb.S.year === S.year) { const cn = codeDiffN(codeDiffs(S, mb.S)); if (cn) $("mpNote").innerHTML += " <span style='color:#b45309'>Flight codes differ from the Master Planner (" + cn + "); see the Activities tab.</span>"; }
   const A = actIndex(), mi = cur.m, st = monthStats(mi, A), y = S.year, dim = st.dim, M = S.m[mi];
-  const FLN = S.dept === "SUP 2" ? opsFlown() : null, NT = FLN ? 6 : 5;   // Flown Hrs (SUP 2 only): actual hours from the Ops Room's ATD / ATA
+  const FLN = opsFlown(), NT = FLN ? 6 : 5;   // Flown Hrs (every department): actual hours from the Ops Room's ATD / ATA
   const hol = new Set(S.hols.map(h => h.d));
   const dayInfo = []; for (let d = 0; d < dim; d++) { const dt = new Date(y, mi, d + 1), iso = isoOf(y, mi, d); dayInfo.push({ dow: dt.toLocaleDateString("en-GB", { weekday: "short" }), wk: dt.getDay() === 0 || dt.getDay() === 6, hol: hol.has(iso) }); }
   const kp = [["Total Flights", st.flights, "var(--blue)"], ["Total Planned Hrs", st.hrs.toFixed(1), "var(--teal)"], ["Ground Duties", st.gd, "var(--amber)"], [hasPlan(S, "BDO") ? "Duty Planned" : "SDO Planned", st.sdo, "var(--rose)"],
@@ -2735,7 +3043,7 @@ function renderPlanner() {
     if (ns && !sep) { sep = true; h += "<tr class='sansSep'><td colspan='" + (dim + 3 + NT) + "'><span style='position:sticky;left:10px'>SANS / NSMEN</span></td></tr>"; }
     for (let s = 0; s < 3; s++) {
       h += "<tr class='" + (s === 2 ? "blkend" : "") + (inact ? " inactive" : "") + (ns ? " sans" : "") + "'>";
-      if (s === 0) h += "<td class='stk1 idc' rowspan=3>" + esc(p.id) + "</td><td class='stk2 who' rowspan=3 title='" + esc([p.cat, p.role, p.status].filter(Boolean).join(" | ")) + "'><b class='" + catCls(p.cat) + "'>" + esc(p.name) + "</b>" + (CC && (CC[i].bad || CC[i].due) ? "<i class='curb " + (CC[i].bad ? "bad" : "due") + "' data-cur='1' title='" + esc(curIssues(CC, i).join("\n") + "\nClick for the Currency tab") + "'>" + (CC[i].bad ? "⚠ " + CC[i].bad : "! " + CC[i].due) + "</i>" : "") + (RS && (() => { const k0 = dayOfYear(S.year, mi, 0), L = []; for (let d = 0; d < dim; d++) if (RS[i].run[k0 + d] >= REST_DAYS) L.push(d + 1); return L.length ? "<i class='curb rest' title='" + esc("Crew rest: flying " + REST_DAYS + "+ days in a row on " + MONTHS[mi] + " " + L.join(", ")) + "'>REST</i>" : ""; })() || "") + (CH && (() => { const D = CH[i].down, L = []; for (let d = 0; d < dim; d++) if (D[ck0 + d]) L.push(d); if (!L.length) return ""; const now = L.includes(tD), last = L[L.length - 1];
+      if (s === 0) h += "<td class='stk1 idc' rowspan=3>" + esc(p.id) + "</td><td class='stk2 who' rowspan=3 title='" + esc([p.cat, p.role, p.status].filter(Boolean).join(" | ")) + "'><b class='" + catCls(p.cat) + "'>" + esc(p.name) + "</b>" + atomBadge(cur.b, i) + (ATOMS.length && atomWarnCount(M, A, i, y, mi, dim) ? "<i class='curb atomw' data-cur='1' data-atom='1' title='Flights this month where ATOM shows a needed currency has already ended'>▲ " + atomWarnCount(M, A, i, y, mi, dim) + "</i>" : "") + (CC && (CC[i].bad || CC[i].due) ? "<i class='curb " + (CC[i].bad ? "bad" : "due") + "' data-cur='1' title='" + esc(curIssues(CC, i).join("\n") + "\nClick for the Currency tab") + "'>" + (CC[i].bad ? "⚠ " + CC[i].bad : "! " + CC[i].due) + "</i>" : "") + (RS && (() => { const k0 = dayOfYear(S.year, mi, 0), L = []; for (let d = 0; d < dim; d++) if (RS[i].run[k0 + d] >= REST_DAYS) L.push(d + 1); return L.length ? "<i class='curb rest' title='" + esc("Crew rest: flying " + REST_DAYS + "+ days in a row on " + MONTHS[mi] + " " + L.join(", ")) + "'>REST</i>" : ""; })() || "") + (CH && (() => { const D = CH[i].down, L = []; for (let d = 0; d < dim; d++) if (D[ck0 + d]) L.push(d); if (!L.length) return ""; const now = L.includes(tD), last = L[L.length - 1];
         const runs = []; L.forEach(d => { const r = runs[runs.length - 1]; if (r && r[1] === d - 1) r[1] = d; else runs.push([d, d]); });
         return "<i class='curb " + (now || tD < 0 ? "down" : "downx") + "' data-upchit='" + cur.b + "|" + i + "|" + isoOf(y, mi, now ? tD : last) + "' title='" + esc("Down-chitted (MC), not cleared to fly: " + runs.map(r => (r[0] + 1) + (r[1] > r[0] ? "-" + (r[1] + 1) : "")).join(", ") + " " + MONTHS[mi] + (canEdit ? "\nClick to up-chit" : "")) + "'>DOWN</i>"; })() || "") + "<span>" + esc(p.role + (ns ? "  |  " + p.status.toUpperCase() : "")) + "</span></td>";
       h += "<td class='stk3 sh sh" + SHIFTS[s] + "'>" + SHIFTS[s] + "</td>";
@@ -2763,9 +3071,11 @@ function renderPlanner() {
         if (rest) W.push(["⚠ REST DAY " + rn, "rest"]);
         if (ol) W.push(["⚠ NOT ON LIST", "bad"]);
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) CL.get(i).get(d).forEach(w => W.push(w));
+        const aw = ATOMS.length && a && a.ci === CAT_FLIGHT && !cx ? atomWarn(cur.b, i, v, a.mtype, isoOf(y, mi, d)) : null;
+        if (aw) { W.push(["⚠ NOT CURRENT", "bad"]); tip = aw.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(ATOMS[cur.atom || 0]) + ". A flight planned earlier does not extend it here." + (tip ? "\n" + tip : ""); }
         if (a && CN.has(i)) { const t = dateSerial(y, mi, d); CN.get(i).forEach(([n, k]) => { const R = S.rules[k], key = i + ":" + k; if (n === t && !cnDone.has(key) && ruleMatch(R, a, v)) { cnDone.add(key); W.push(["⚠ NOT CURRENT", "bad"]); tip = (tip ? tip + "\n" : "") + "Not current for " + R.name + " when this flight is planned (" + curIssues(CC, i).filter(x => x.startsWith(R.name)).join("; ") + ")"; } }); }
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) tip = (tip ? tip + "\n" : "") + "Currency: " + CL.get(i).get(d).map(w => w[2]).join("; ");
-        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + "' data-k='g:" + (i * 3 + s) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
+        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (aw ? " atomw" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + "' data-k='g:" + (i * 3 + s) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
       }
       if (s === 0) h += "<td class='tot' rowspan=3>" + (t.fl || "-") + "</td><td class='tot' rowspan=3>" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=3 title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=3>" + (t.gd || "-") + "</td><td class='tot' rowspan=3>" + (t.sdo || "-") + "</td><td class='tot' rowspan=3>" + (t.lv || "-") + "</td>";
       h += "</tr>";
@@ -2919,7 +3229,7 @@ function renderSdo() {
   const allDiffs = !ownRoster && rb ? sdoDiffs(books[dutyBi()], rb) : [];
   const syncBtn = allDiffs.length ? " <button class='btn primary' id='sdoSync' style='margin-left:6px;padding:5px 10px'>Copy my duty days from the Duty Roster (" + allDiffs.length + ")</button>" : "";
   if (noDuty) {
-    note = "<b>" + esc(own.dept) + " has no " + D + " days in its file.</b> " + (D === "SDO" && !doesSdo(own) ? "Only " + SDO_DEPTS.join(", ") + " are rostered for SDO. " : "Its Excel has no " + D + " Plan sheet yet (only SUP 2 has one so far). ") + "The calendar shows the roster for reference." + syncBtn;
+    note = "<b>" + esc(own.dept) + " has no " + D + " days in its file.</b> " + (D === "SDO" && !doesSdo(own) ? "Only " + SDO_DEPTS.join(", ") + " are rostered for SDO. " : "Its Excel has no " + D + " Plan sheet yet (upload the new planner file). ") + "The calendar shows the roster for reference." + syncBtn;
   } else if (ownRoster) {
     const off = deptBooks.map(b => ({ b, n: sdoDiffs(b, books[dutyBi()], D).length })).filter(x => x.n);
     note = "Pick the department on " + D + " duty for each day. Save to Excel writes to the Duty Roster only. " +
@@ -3012,6 +3322,8 @@ function readOps(name) {
   const st = { kind: "ops", year: null, dept: "Ops Room", roster: [], acts: [], cats: [], hols: [], m: [], sdo: {}, fc: new Map(), fcNext: OPS_ROW0 };
   const dash = readCells("Dashboard"); st.year = num(dash.A5) || new Date().getFullYear();
   st.nx = (+((/layout\s+(\d+)/i.exec(str(dash.Z2)) || [])[1] || 0)) >= 2;   // layout 2: Day Board rows run to 31 Jan of the next year
+  st.atomNeeds = { rows: [], has: !!WB.paths[ATOM_NEEDS] };   // what each flight needs from ATOM (sheet created by the dashboard on first edit)
+  if (st.atomNeeds.has) { const an = readCells(ATOM_NEEDS); for (let r = 2; r < 2 + ATOM_NEEDS_N; r++) { const m = str(an["A" + r]); st.atomNeeds.rows.push({ match: m, needs: str(an["B" + r]).split(",").map(x => x.trim()).filter(Boolean), seat: /^captain$/i.test(str(an["C" + r])) ? "Captain" : "Any", row: r }); } }
   const c = readCells("Flight Crew");
   for (let r = OPS_ROW0; r < OPS_ROW0 + OPS_N; r++) {
     const a = c["A" + r]; if (a == null && !str(c["C" + r])) continue;
@@ -3271,10 +3583,10 @@ function opsCrewCell(r, k, ed) {
   const c = r.seats[k], dep = OPS_SEATS[k][1];
   if (!c) return "<td class='oc miss'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc((deptOpen(dep) ? "Nobody planned from " + dep : dep + " file not open") + (r.urg ? ". The flight is due soon." : "") + (ed ? "\nClick to pick someone." : "")) + "'><span class='seatp" + (r.urg ? " urg" : "") + (deptOpen(dep) ? "" : " nf") + "'>" + (deptOpen(dep) ? "+" : "?") + "</span>" + opsXtraHtml(r, k) + "</td>";
   const mc = r.o && same(r.o.mc, c.id), cr = r.o && same(r.o.crmo, c.id), off = c.code && !sameCode(c.code, r.x.code);
-  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso);
+  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso), aw = atomSeatWarn(r, c, k);
   const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.note ? "\nComment: " + c.note : "") + (c.set ? "\nSet in the Ops Room" : "");
   return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b>" +
-    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
+    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (aw ? "<i class='opsb atomx' title='" + esc(aw.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(ATOMS[cur.atom || 0])) + "'>CURR</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
 }
 function opsTail(r, ed, one) {
   // shown as plain text: the actual tail in bold, the standby tail small under it; click the cell to pick from the fleet
@@ -4056,7 +4368,7 @@ async function openOps(list) {   // list: [{name, buf, handle}]
   const late = n => /sdo_?roster|duty_?roster|flight_?programme|master_?planner|ops_?room/i.test(n);
   const order = list.slice().sort((a, b) => late(a.name) - late(b.name));   // a planner first, the Duty Roster and Master Planner last
   for (const f of order) {
-    try { loadWorkbook(f.buf, f.name, f.handle, !first); first = false; } catch (e) { errs.push(f.name + ": " + (e.message || e)); }
+    try { loadWorkbook(f.buf, f.name, f.handle, !first); if (books.length) first = false; /* an ATOM export is not a book: the next file is still the first */ } catch (e) { errs.push(f.name + ": " + (e.message || e)); }
   }
   if (first) { alert(errs.join("\n") || "No files opened."); return; }
   OPS = true; renderAll();
@@ -4096,7 +4408,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-25 z90 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z92 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -4606,6 +4918,12 @@ function lodeCards(who, iso) {
           text: bad ? (/^LAPSED/i.test(bad.r.text) ? bad.name + " lapsed" : bad.name + ": no record") : due ? due.name + " due " + serShort(due.r.lapse) : "All current" };
       }
     }
+    const arow = atomFor(who.bi, i);
+    if (arow) {   // ATOM knows this person: it replaces the flight-based rules
+      const x = atomIssues(who.bi, i, iso), n = atomCells(arow, iso).length, f = ATOMS[cur.atom || 0], first = x.lap[0] || x.due[0];
+      curc = { level: x.lap.length ? "bad" : x.due.length ? "due" : "ok", sub: "from ATOM, data as of " + atomAsOf(f).slice(0, 10) + (n ? " · " + (n - x.lap.length - x.due.length) + " of " + n + " current" : ""),
+        text: x.lap.length ? x.lap[0].col + " lapsed " + atomFmt(x.lap[0].iso, iso) : x.due.length ? x.due[0].col + " due " + atomFmt(first.iso, iso) : "All current" };
+    }
     let syl = null;
     if (st.hasSyl && st.sylDef) {
       const P = sylPath(st.sylDef, st, who.p), w = P.stages[P.wk];
@@ -4828,7 +5146,8 @@ const HELP = {
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
-  cur: ["Currency", "<p>Currency checks per person from the rules on this tab (on hold for now). Red = lapsed, amber = due soon; the same badges show next to names on the Planner.</p>"],
+  cur: ["Currency", "<p><b>ATOM currencies.</b> Press <b>Add ATOM export</b> and pick the Excel you exported from ATOM. Lodestar only reads it: it never saves it or changes it. Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
+    "<ul><li>Red = lapsed (expiry before today), amber = due within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown; change it if the export is older than its file date. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>What each flight needs</b> says which ATOM currencies a flight code (NVG-* for a family) or mission type needs. It is saved in the Ops Room file and edited in the Ops Room view; the Planner and Ops Room only show these warnings while the Ops Room file is open. A Planner cell gets a red corner when the person's currency has already ended on that day; an Ops Room seat gets a CURR mark (the Aircraft Captain seat also checks the Captain rules). These only warn.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],
   acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (Seats filled, MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li><li>Timeline shows the same flights as bars on the day's clock (brief, then ETD to ETA) with a line at the time now; click a bar to open it in the table.</li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +

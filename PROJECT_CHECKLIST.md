@@ -57,7 +57,8 @@ Last updated: 21 Oct 2026 (evening review). Tell Claude in this thread when some
 - [-] ~~Postings in and out: date a person joins/leaves so they only appear in the months they're in the unit~~ Not required (21 Oct)
 - [ ] ⏸ ON HOLD (21 Oct): Who may see Personnel Info on SharePoint? (personal data; may need its own restricted file)
 
-## 4. Currency (⏸ whole section ON HOLD, 21 Oct)
+## 4. Currency (off hold 26 Oct: ATOM export drives it)
+- [x] ATOM currency (z92, 26 Oct): Currency tab reads an ATOM export (matched by roster Initials), Names to fix, flight-needs table (ATOM Needs sheet in the Ops Room file), Planner red corner + name badge, Ops Room CURR mark, My Lodestar currency card. Later: projection of planned flights (layer 3)
 
 - [~] Currency Rules sheet (open rule system for pilots and non-pilots, up to 12 rules) and Currency sheet (every department)
 - [~] Currency tab, red/amber badges on names, warning in the cell picker (every department)
@@ -124,13 +125,13 @@ Last updated: 21 Oct 2026 (evening review). Tell Claude in this thread when some
 - [x] Build TACCO and Pilot from the SUP 2 template (22 Oct; SUP 1 and Loadmaster rebuilt too)
 - [ ] Data migration: a way to move data already typed into an old-layout file into the new template, so scale-up or later layout changes don't lose work
 - [x] Ready to scale: Brandon said go on 22 Oct
-- Rule since 23 Oct: new changes go into SUP 2 only until you say scale up again. The other 4 department files catch up at the next scale-up
+- Scaled up again 26 Oct (z91): all 5 department files are on the SUP 2 template; new changes go to every department
 
 ## 11. Running it long term
 
 - [x] Year rollover: "Start new year" built 23 Oct; files are now year-agnostic
 - [x] Plan next January while still in December (built 24 Oct, z83): 'Jan (next year)' tab after Dec (SUP 2 file; other departments get it when scaled up), Master Planner, Duty Roster and Ops Room take next-January dates, the planner month list goes on to January of next year, crew rest and the Master copy run across 31 Dec; Start new year moves it into the new January without retyping
-- [ ] Add the 'Jan (next year)' tab to SUP 1, TACCO, Loadmaster and Pilot (waits for your next scale-up go-ahead)
+- [x] Add the 'Jan (next year)' tab to SUP 1, TACCO, Loadmaster and Pilot (scale-up 26 Oct, z91)
 - [ ] Backups: where old versions are kept (SharePoint version history may be enough; confirm it's on)
 - [ ] ⏸ ON HOLD (22 Oct): Change log: who changed what and when (at least "last saved by / at" per file)
 - [x] Version check (z18): a banner lists any open file with an older layout and what's missing; a red warning (and a confirm before Save) if a file is newer than the dashboard. New files carry a layout stamp on the Dashboard sheet

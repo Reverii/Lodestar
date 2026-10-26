@@ -28,9 +28,8 @@ existing macro-heavy ops tool (Oracle).
 4. **STAY IN DEV MODE** (Brandon, 2026-10-25): ship the dev build in this folder. Do not hand Brandon the `release/`
    copy or switch to a release build until he says so. Keep any new dev-only code inside `/*DEV*/ ... /*/DEV*/` or
    `<!--DEV--> ... <!--/DEV-->` markers so the release build can strip it later.
-5. **SUP 2 only** (since 2026-10-23): new features go into SUP 2's file (and the shared Master / Duty / Ops files and the
-   dashboard). SUP 1, TACCO, Loadmaster and Pilot stay on their older layout (built by `.build_planner_other_depts.py`) and
-   show "older layout" in the dashboard until Brandon says "scale up".
+5. **Scaled up** (Brandon, 2026-10-26): all five department files are built from the same template (`.build_planner.py <out.xlsx> "<dept>"`).
+   New features go into every department. `.build_planner_other_depts.py` is dead (older layout).
 6. **Real data is loaded** (2026-10-25). The live files hold Brandon's real crew and codes. **Rebuilding an Excel file
    from a builder produces a fresh file with empty plans and wipes whatever was typed into it.** Never overwrite a live
    `.xlsx` in this folder without Brandon's explicit go-ahead; build into another folder and let him decide. If a layout
@@ -54,7 +53,7 @@ existing macro-heavy ops tool (Oracle).
 | `Flight_Ops_Planner_Dashboard.html` | **the dev build Brandon uses** (~6 MB; embeds SUP 2 as template + the other files as samples) |
 | `release/Flight_Ops_Planner_Dashboard.html` | release build (dev code stripped). Not for Brandon yet |
 | `input/LODESTAR_Data_Input.xlsx` | Brandon's filled real-data workbook (Crew, Flight Codes, Activities, Lists, Public Holidays) |
-| `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, needs the dashboard built first); `LODE_FILES=<folder>` points them at another set of xlsx files |
+| `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, `node tests/atom.test.js` (ATOM currency, synthetic exports from `tests/make_atom_fixture.py`), needs the dashboard built first; the ATOM file takes several minutes); `LODE_FILES=<folder>` points them at another set of xlsx files |
 | `docs/superpowers/` | design specs and implementation plans (My Lodestar) |
 | `specs/SUP2_syllabus_items.csv` | real SUP 2 syllabus (47 items); embedded in `.build_planner.py` as `SYL_REAL` |
 | `deck/LODESTAR.pptx` | CO reveal deck, Brandon's edited master copy |
@@ -71,7 +70,7 @@ Hidden (dotted) source files, so they don't clutter SharePoint:
 | `.assemble_dashboard.py` | inlines fflate + base64 sample xlsx into the source -> dashboard html; `--release` strips DEV blocks |
 | `.fflate_umd.js` | fflate 0.8.2 UMD (MIT), inlined by the assembler (extracted from the built dashboard on 2026-10-25) |
 | `.build_planner.py` | SUP 2 department planner builder (`<out.xlsx> "SUP 2"`) |
-| `.build_planner_other_depts.py` | the older-layout builder used for SUP 1 / TACCO / Loadmaster / Pilot |
+| `.build_planner_other_depts.py` | dead: the older-layout builder (until the 26 Oct scale-up) |
 | `.build_master_planner.py`, `.build_duty_roster.py`, `.build_ops_room.py` | shared-file builders (`<out.xlsx>`) |
 | `.seedplan.py` | demo data shared by all builders; switches to real data when `realdata.ON` |
 | `.realdata.py` | reads `LODESTAR_Data_Input.xlsx` when env `LODESTAR_INPUT` points at it |
@@ -112,7 +111,7 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 2`. The dashboard has
   `const LAYOUT = { dept: 2, master: 2, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
   lower or missing = checked sheet by sheet and listed as "older layout". Bump both sides together when cells move.
-- Dashboard version string: `Dashboard version 2026-10-25 z90` (two places in `.dashboard_source.html`: `#wDiag` and
+- Dashboard version string: `Dashboard version 2026-10-26 z92` (two places in `.dashboard_source.html`: `#wDiag` and
   `spDiag`). Bump the `zNN` number on each change you ship so Brandon can tell builds apart.
 
 ## Key cell layout (department file; full detail in the builders and dashboard constants)

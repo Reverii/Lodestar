@@ -5,14 +5,24 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Where things stand
 
-- **Dashboard z90** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
+- **Dashboard z92** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
-- Scope: SUP 2 only for new changes. SUP 1 / TACCO / Loadmaster / Pilot are on the older layout (no Jan next year, no
-  syllabus) until Brandon says scale up.
+- Scope: scaled up 2026-10-26 (z91). All five department files use the SUP 2 template (Jan next year, Syllabus sheets with placeholder
+  items for SUP 1 / TACCO / Loadmaster / Pilot). Demo files rebuilt; no real plans existed to migrate.
 - Dev mode stays on (red DEV badge, "Open every file (dev)", Master Planner editable in dev). No release build for Brandon.
 - Brandon still has to upload the current set to SharePoint "Program" (dashboard + 8 xlsx) and test there.
+
+## ATOM currency (z92, built 2026-10-26, spec `docs/superpowers/specs/2026-10-26-atom-currency-design.md`)
+
+- Currency tab reads an ATOM Excel export (read-only, never saved): squadron grid, due window, stale banner, Names to fix.
+  People are matched to ATOM by exact roster Initials (case and spaces ignored). Not built: layer 3 (projection of a planned
+  flight extending an expiry), SATR, hours.
+- "What each flight needs" table lives in a dashboard-created sheet `ATOM Needs` in `Ops_Room.xlsx` (created on first edit in the
+  Ops Room view). Planner cells get a red corner and the name a badge; Ops Room seats get a CURR mark. Warnings only.
+- Tests: `node tests/atom.test.js` (synthetic exports only; never copy Brandon's exports into the public repo).
+- Open: Brandon must fill the roster Initials to match ATOM before anything shows; the three sample Currency rules are still samples.
 
 ## What was built (short history)
 
@@ -50,6 +60,9 @@ Waiting on Brandon:
 - Compact layout check at 1920x1200 / 150%.
 - Syllabus tracker: his test; Pilot and Loadmaster syllabus lists to send.
 - Scale-up go-ahead (brings the other 4 departments to the SUP 2 layout incl. Jan next year and syllabus).
+
+ATOM currency data (2026-10-26): spec `docs/superpowers/specs/2026-10-26-atom-currency-design.md` written (read ATOM Excel exports, status view then
+planning check); waiting on Brandon to read it, then a mock-up and "build it". Takes the Currency work off hold.
 
 Not started:
 - Data migration from an old-layout file into a new template (needed before any layout change once real planning starts).

@@ -386,10 +386,10 @@ test("help_mentions_atom", async ({ page }) => {
   const t = await page.innerText("#helpBody");
   for (const w of ["ATOM", "Initials", "Names to fix", "What each flight needs"]) assert.ok(t.includes(w), w);
 });
-test("version_is_z92", async ({ page }) => {
+test("version_is_z93", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z92 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-26 z92 "));
+  assert.ok(/ z93 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-26 z93 "));
 });
 
 // ---- Final review fixes

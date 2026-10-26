@@ -966,10 +966,10 @@ body.opsfs #opsSize{display:none}
       <button class="btn" id="wOps" title="For the SDO and AOS on duty: every department's planner, the Master Planner, the Duty Roster and the Ops Room file, to run the day's flights">Ops Room</button>
       <button class="btn" id="wSample">Try with the built-in sample</button>
     </div>
-    <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button>
+    <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z92</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z93</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4410,7 +4410,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z92 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z93 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5090,7 +5090,7 @@ const devGet = k => { try { return localStorage.getItem("fop_dev_" + k); } catch
 const devSet = (k, v) => { try { localStorage.setItem("fop_dev_" + k, v); } catch (e) { } };
 function devIdb(mode, fn) { return new Promise((ok, no) => { const r = indexedDB.open("lodestar_dev", 1); r.onupgradeneeded = () => r.result.createObjectStore("h"); r.onerror = () => no(r.error);
   r.onsuccess = () => { const t = r.result.transaction("h", mode), q = fn(t.objectStore("h")); t.oncomplete = () => ok(q && q.result); t.onerror = () => no(t.error); }; }); }
-async function devOpen() {
+async function devOpen(pick) {
   const mine = devGet("mine") || "SUP 2";   // the department that opens first (its tab is "yours")
   let list = [];
   if (SP.on) {
@@ -5098,7 +5098,7 @@ async function devOpen() {
     $("spPick").style.display = "none"; toast("Dev mode: opening " + SP.files.length + " files…", 15000);
     for (const f of SP.files) { try { list.push({ name: f.Name, buf: await spFetch(f), handle: spHandle(f) }); } catch (e) { console.warn(f.Name, e); } }
   } else if (window.showDirectoryPicker) {
-    let dir = null; try { dir = await devIdb("readonly", s => s.get("dir")); } catch (e) { }
+    let dir = null; if (pick !== true) { try { dir = await devIdb("readonly", s => s.get("dir")); } catch (e) { } }   // pick === true: choose a different folder
     try {
       if (dir && (await dir.requestPermission({ mode: "readwrite" })) !== "granted") dir = null;
       if (!dir) { dir = await window.showDirectoryPicker({ mode: "readwrite" }); try { await devIdb("readwrite", s => s.put(dir, "dir")); } catch (e) { } }
@@ -5120,8 +5120,10 @@ function devUi() {
   $("devStrip").style.display = "";
   $("devAuto").checked = auto; $("devMine").value = devGet("mine") || "SUP 2";
   $("devGo").textContent = SP.on ? "Open every file (dev)" : dn ? "Reopen folder " + dn + " (dev)" : "Open a folder (dev)";
+  $("devPick").style.display = !SP.on && dn && window.showDirectoryPicker ? "" : "none";
 }
-$("devGo").onclick = devOpen;
+$("devGo").onclick = () => devOpen();
+$("devPick").onclick = () => devOpen(true);
 $("devAuto").onchange = e => devSet("auto", e.target.checked ? "1" : "0");
 $("devMine").onchange = e => devSet("mine", e.target.value);
 document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.addEventListener("click", () => { if (document.body.classList.contains("devmode")) devSet("tab", b.dataset.v); }));

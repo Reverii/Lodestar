@@ -1134,7 +1134,8 @@ function serialToISO(n) { const d = new Date(Date.UTC(1899, 11, 30) + Math.round
 
 // ---------- ATOM currency: reading an export (read-only; the file is never saved or kept)
 const ATOM_DEPT = { PILOT: "Pilot", ACS: "Loadmaster", TACCO: "TACCO", SUP1: "SUP 1", SUP2: "SUP 2" };   // sheet -> department
-const ATOM_GROUPS = ["Flight Currencies", "SIM Currencies", "LSS Currencies", "Mission Currencies"];   // the only groups we read
+const ATOM_CUR = ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr"];   // the only currencies we read (Flight Currencies group), in this order
+const ATOM_HOURS_GROUP = "Flying Hours Clocked", ATOM_HOURS_COL = "Current Month";   // and the one hours figure
 const ATOM_MON = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 function isAtomExport(paths) {
   return Object.keys(ATOM_DEPT).some(n => paths[n]) && !["Dashboard", "Roster", "Flight Crew", "Departments", "Flight Codes"].some(n => paths[n]);
@@ -1162,31 +1163,30 @@ function atomCreated(files) {   // export time (UTC in the file) as local "YYYY-
 }
 function atomParse(files, name) {
   const paths = sheetPaths(files), sst = parseSST(files);
-  const out = { name, created: atomCreated(files), groups: [], sheets: {}, missing: [] };
-  const gi = {};   // group -> index in out.groups
+  const created = atomCreated(files), out = { name, created, groups: [{ group: "Flight Currencies", cols: [] }], sheets: {}, missing: [], hoursMonth: created.slice(0, 7), source: "export" };
   for (const sn in ATOM_DEPT) {
     const dept = ATOM_DEPT[sn], p = paths[sn];
     if (!p || !files[p]) { out.missing.push(dept); continue; }
     const c = readCellsOf(files, p, sst);
     let maxC = 0, maxR = 0; for (const ref in c) { const m = ref.match(/^([A-Z]+)(\d+)$/); maxC = Math.max(maxC, colNum(m[1])); maxR = Math.max(maxR, +m[2]); }
-    let grp = "", nameL = null, statusL = null, catL = null, instL = null; const cols = [];   // cols: { L, group, name }
+    let grp = "", nameL = null, statusL = null, catL = null, instL = null, hoursL = null; const cols = [];   // cols: { L, name } for the five currencies
     for (let n = 1; n <= maxC; n++) {
       const L = colL(n), g = str(c[L + "1"]), h = str(c[L + "2"]);
       if (g) grp = g;
       if (!h) continue;
       if (h === "Name") nameL = L; else if (h === "Status") statusL = L; else if (h === "CAT") catL = L; else if (h === "Instructor CAT") instL = L;
-      else if (ATOM_GROUPS.includes(grp)) cols.push({ L, group: grp, name: h });
+      else if (grp === "Flight Currencies" && ATOM_CUR.includes(h)) cols.push({ L, name: h });
+      else if (grp === ATOM_HOURS_GROUP && h === ATOM_HOURS_COL) hoursL = L;
     }
     if (!nameL) { out.missing.push(dept); continue; }
-    for (const k of cols) {
-      let g = gi[k.group]; if (g === undefined) { g = gi[k.group] = out.groups.length; out.groups.push({ group: k.group, cols: [] }); }
-      if (!out.groups[g].cols.includes(k.name)) out.groups[g].cols.push(k.name);
-    }
+    for (const k of cols) if (!out.groups[0].cols.includes(k.name)) out.groups[0].cols.push(k.name);
+    out.groups[0].cols.sort((a, b) => ATOM_CUR.indexOf(a) - ATOM_CUR.indexOf(b));
     const rows = [];
     for (let r = 3; r <= maxR; r++) {
       const nm = str(c[nameL + r]); if (!nm) continue;   // band rows (" -> Active") have no Name
       const cells = {}; for (const k of cols) cells[k.name] = atomCell(c[k.L + r]);
-      rows.push({ name: nm, status: statusL ? str(c[statusL + r]) : "", cat: catL ? str(c[catL + r]) : "", instCat: instL ? str(c[instL + r]) : "", cells });
+      const hv = hoursL ? c[hoursL + r] : undefined;
+      rows.push({ name: nm, status: statusL ? str(c[statusL + r]) : "", cat: catL ? str(c[catL + r]) : "", instCat: instL ? str(c[instL + r]) : "", cells, hours: typeof hv === "number" ? hv : null });
     }
     out.sheets[dept] = rows;
   }

@@ -1213,7 +1213,7 @@ function atomRosterSig() {   // changes when any book is opened, closed or moved
 // atomMatch(f): ATOM rows <-> roster people by exact Initials, per department. rows: "bookIndex:rosterIndex" -> AtomRow. fix: what needs attention.
 let atomMemo = null;
 function atomMatch(f) {
-  const sig = ATOMS.indexOf(f) + atomRosterSig();
+  const sig = (f.source === "shared" ? "S" + f.created : ATOMS.indexOf(f)) + atomRosterSig();
   if (atomMemo && atomMemo.f === f && atomMemo.sig === sig) return atomMemo.m;
   const rows = new Map(), fix = { atomOnly: [], rosterOnly: [], dupes: [], cat: [], closed: [] };
   for (const dept in f.sheets) {
@@ -1234,7 +1234,7 @@ function atomMatch(f) {
   }
   const m = { rows, fix }; atomMemo = { f, sig, m }; return m;
 }
-function atomFor(bi, i) { const f = ATOMS[cur.atom || 0]; return f ? atomMatch(f).rows.get(bi + ":" + i) || null : null; }
+function atomFor(bi, i) { const f = atomCurrent(); return f ? atomMatch(f).rows.get(bi + ":" + i) || null : null; }
 const dayDiff = (a, b) => Math.round((Date.parse(a + "T00:00:00Z") - Date.parse(b + "T00:00:00Z")) / 86400000);   // whole days from b to a (ISO dates)
 function atomDue() { const n = +spRecall("atom_due", 14); return n >= 0 ? n : 14; }
 function atomSetDue(n) { spRemember("atom_due", n); }
@@ -1245,7 +1245,7 @@ function atomState(c, day) {
   const d = dayDiff(c.iso, day); return d < 0 ? "lap" : d <= atomDue() ? "due" : "ok";
 }
 function atomCells(row, day) {   // the currencies this person holds, with state on that day
-  const f = ATOMS[cur.atom || 0], out = [];
+  const f = atomCurrent(), out = [];
   if (!f) return out;
   for (const g of f.groups) for (const col of g.cols) {
     const c = row.cells[col]; if (!c) continue;
@@ -1265,7 +1265,7 @@ function atomStale(f, today) { const n = atomAge(f, today); return n > 30 ? "red
 // ---------- ATOM currency: the Currency tab grid
 const ATOM_DEPTS = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"];
 function atomGridRows(dept, onlyProblems, day) {   // matched people, worst first
-  const f = ATOMS[cur.atom || 0], out = [];
+  const f = atomCurrent(), out = [];
   if (!f) return out;
   for (const [key, row] of atomMatch(f).rows) {
     const [bi, i] = key.split(":").map(Number), d = books[bi].S.dept;
@@ -1281,17 +1281,19 @@ function atomFmt(iso, day) { const [y, m, d] = iso.split("-").map(Number); retur
 function atomFixCount(f) { const x = atomMatch(f).fix; return x.atomOnly.length + x.rosterOnly.length + x.dupes.length + x.cat.length; }
 function renderAtom() {
   const b = $("atomBox"); if (!b) return;
-  const f = ATOMS[cur.atom || 0], today = opsToday();
-  if (!f) { b.innerHTML = "<div class='card atomhead'><b>ATOM currencies</b><span class='muted'>Add an ATOM export to see everyone's currencies</span><span style='flex:1'></span><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>"; atomWire(); return; }
+  const f = atomCurrent(), today = opsToday();
+  if (!f) { b.innerHTML = "<div class='card atomhead'><b>ATOM currencies</b><span class='muted'>The Ops Room has not shared ATOM data here yet. You can add an ATOM export to look at it yourself.</span><span style='flex:1'></span><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>"; atomWire(); return; }
   const dept = spRecall("atom_dept", "All"), only = !!spRecall("atom_only", false), age = atomAge(f, today), stale = atomStale(f, today);
   const rows = atomGridRows(dept, only, today), allRows = atomGridRows(dept, false, today);
   const cols = f.groups.map(g => ({ group: g.group, cols: g.cols.filter(c => rows.some(r => r.row.cells[c])) })).filter(g => g.cols.length);
   let lap = 0, due = 0, bad = 0; for (const r of allRows) { lap += r.lap; due += r.due; if (r.lap || r.due) bad++; }
   const fix = atomFixCount(f), win = atomDue();
   let h = (stale ? "<div class='astale " + stale + "'>" + (stale === "red" ? "This ATOM export is " + age + " days old. Export it again before you rely on it." : "This ATOM export is " + age + " days old.") + " Data as of " + esc(atomAsOf(f)) + ".</div>" : "");
-  h += "<div class='card atomhead'><b>ATOM currencies</b><span class='asof'>" + (ATOMS.length > 1 ? "<select id='atomSel'>" + ATOMS.map((x, i) => "<option value='" + i + "'" + (i === (cur.atom || 0) ? " selected" : "") + ">" + esc(x.name) + "</option>").join("") + "</select>" : esc(f.name)) +
-    " , data as of <input id='atomAsOf' type='datetime-local' value='" + esc(atomAsOf(f).replace(" ", "T")) + "'></span><span style='flex:1'></span>" +
-    "<label>Due window <select id='atomDue'>" + [7, 14, 21, 30].map(n => "<option" + (n === win ? " selected" : "") + ">" + n + "</option>").join("") + "</select> days</label><button class='btn' id='atomAdd'>Add ATOM export</button><input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
+  const sh = atomShared(), opts = (sh ? [["-1", "Shared from the Ops Room"]] : []).concat(ATOMS.map((x, i) => [String(i), x.name]));
+  const src = f.source === "shared" ? "Shared from the Ops Room" + (f.by ? ", published by " + esc(f.by) : "") : "File added by you (not shared)";
+  h += "<div class='card atomhead'><b>ATOM currencies</b><span class='asof'>" + src + ": " + (opts.length > 1 ? "<select id='atomSel'>" + opts.map(o => "<option value='" + o[0] + "'" + (o[0] === String(f.source === "shared" ? -1 : ATOMS.indexOf(f)) ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select>" : esc(f.source === "shared" ? (f.file || "ATOM export") : f.name)) +
+    ", data as of " + (f.source === "shared" ? "<b>" + esc(atomAsOf(f)) + "</b>" : "<input id='atomAsOf' type='datetime-local' value='" + esc(atomAsOf(f).replace(" ", "T")) + "'>") + "</span><span style='flex:1'></span>" +
+    "<label>Due window <select id='atomDue'>" + [7, 14, 21, 30].map(n => "<option" + (n === win ? " selected" : "") + ">" + n + "</option>").join("") + "</select> days</label><button class='btn' id='atomAdd'>Add ATOM export</button>" + (f.source !== "shared" && OPS && books.some(k => k.S.kind === "ops") ? "<button class='btn primary' id='atomPublish' title='Save this export for every dashboard (replaces the data shared yesterday)'>Publish to everyone</button>" : "") + "<input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
   h += "<div class='atombar'><span class='seg'>" + ["All"].concat(ATOM_DEPTS).map(d => "<button data-d='" + d + "' class='" + (d === dept ? "on" : "") + "'>" + d + "</button>").join("") + "</span>" +
     "<label><input type='checkbox' id='atomOnly'" + (only ? " checked" : "") + "> Only crew with a problem</label><span class='muted'>Sorted worst first</span>" +
     "<span class='cnt'><span class='c r'><b>" + lap + "</b> expired</span><span class='c a'><b>" + due + "</b> expire within " + win + " days</span><span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
@@ -1313,6 +1315,53 @@ function renderAtom() {
   }
   b.innerHTML = h; atomWire();
 }
+// ---------- ATOM currency: publishing to everyone (sheet "ATOM Currency" in the Ops Room file, written only in the Ops Room view)
+const ATOM_SHEET = "ATOM Currency", ATOM_SHEET_ROW0 = 8, ATOM_SHEET_N = 500, ATOM_DEPT_ORDER = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"];
+const ATOM_SHEET_HEAD = ["Initials", "Department", "CAT", "Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Clocked hours (month)"];
+const ATOM_SHEET_TITLE = "Written by the Lodestar dashboard from an ATOM export. Replaced every day. Do not edit.";
+const ATOM_SHEET_COLS = '<col min="1" max="1" width="16" customWidth="1"/><col min="2" max="3" width="13" customWidth="1"/><col min="4" max="8" width="12" customWidth="1"/><col min="9" max="9" width="20" customWidth="1"/>';
+function atomSharedCell(v) {   // a cell of the shared sheet: ISO text is an expiry date
+  if (v === undefined || v === null || (typeof v === "string" && !v.trim())) return { k: "blank", iso: null, raw: "" };
+  const t = String(v).trim();
+  if (t === "-") return { k: "none", iso: null, raw: t };
+  if (/^n\/a$/i.test(t)) return { k: "na", iso: null, raw: t };
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return { k: "date", iso: t, raw: t };
+  return { k: "text", iso: null, raw: t };
+}
+function atomFromShared(c) {   // the cells of the ATOM Currency sheet -> the same AtomFile an export gives (null when nothing was published)
+  const asOf = str(c.B2); if (!asOf) return null;
+  const out = { name: "Shared from the Ops Room", created: asOf, groups: [{ group: "Flight Currencies", cols: ATOM_CUR.slice() }], sheets: {}, missing: [], hoursMonth: str(c.B4), source: "shared", by: str(c.B5), file: str(c.B3) };
+  for (let r = ATOM_SHEET_ROW0; r < ATOM_SHEET_ROW0 + ATOM_SHEET_N; r++) {
+    const nm = str(c["A" + r]); if (!nm) continue;
+    const dept = str(c["B" + r]), cells = {}; ATOM_CUR.forEach((k, n) => { cells[k] = atomSharedCell(c["DEFGH"[n] + r]); });
+    (out.sheets[dept] = out.sheets[dept] || []).push({ name: nm, status: "", cat: str(c["C" + r]), instCat: "", cells, hours: typeof c["I" + r] === "number" ? c["I" + r] : null });
+  }
+  for (const d in out.sheets) for (const k of ATOM_CUR) if (out.sheets[d].every(r => r.cells[k].k === "na")) out.sheets[d].forEach(r => { delete r.cells[k]; });   // a column that department's ATOM sheet does not have
+  out.missing = ATOM_DEPT_ORDER.filter(d => !out.sheets[d]);
+  return out;
+}
+function atomPublish(f) {   // writes every person of the export into the sheet, replacing what was there; true when written
+  const oi = books.findIndex(b => b.S.kind === "ops"); if (oi < 0 || !OPS || !f) return false;
+  const b = books[oi], people = [];
+  for (const d of ATOM_DEPT_ORDER) for (const r of f.sheets[d] || []) people.push([r, d]);
+  if (people.length > ATOM_SHEET_N) { alert("This ATOM export has " + people.length + " people; the shared sheet holds " + ATOM_SHEET_N + "."); return false; }
+  let last = b.S.atomPubLast || ATOM_SHEET_ROW0 - 1;   // the last row that may hold data from before (in the file, or published earlier and not saved yet)
+  if (b.WB.paths[ATOM_SHEET]) for (const k in readCellsOf(b.WB.files, b.WB.paths[ATOM_SHEET], b.WB.sst)) { const r = +k.match(/\d+/)[0]; if (r >= ATOM_SHEET_ROW0) last = Math.max(last, r); }
+  const cells = {}, asOf = atomAsOf(f), val = c => c.k === "date" ? c.iso : c.k === "none" ? "-" : c.k === "na" ? "N/A" : c.k === "blank" ? "" : c.raw;
+  withBook(oi, () => {
+    const set = (ref, v) => { put(ATOM_SHEET, ref, v); if (v !== "" && v != null) cells[ref] = v; };
+    set("A1", ATOM_SHEET_TITLE);
+    [["As of", asOf], ["Source file", f.name], ["Hours month", asOf.slice(0, 7)], ["Published by", SP.user && SP.user.Title || ""]].forEach(([k, v], n) => { set("A" + (2 + n), k); set("B" + (2 + n), v); });
+    ATOM_SHEET_HEAD.forEach((h, n) => set("ABCDEFGHI"[n] + "7", h));
+    people.forEach(([r, d], n) => {
+      const row = ATOM_SHEET_ROW0 + n;
+      [r.name, d, r.cat, ...ATOM_CUR.map(c => r.cells[c] ? val(r.cells[c]) : "N/A"), typeof r.hours === "number" ? r.hours : ""].forEach((v, k) => set("ABCDEFGHI"[k] + row, v));
+    });
+    for (let row = ATOM_SHEET_ROW0 + people.length; row <= last; row++) for (const L of "ABCDEFGHI") set(L + row, "");   // yesterday's extra rows
+  });
+  b.S.atomShared = atomFromShared(cells); b.S.atomPubLast = Math.max(last, ATOM_SHEET_ROW0 + people.length - 1); b.S.atomPub = { name: f.name, asOf, count: people.length };
+  return true;
+}
 function atomFixOpen() { cur.atomFix = true; renderAtom(); }
 function atomFixClose() { cur.atomFix = false; renderAtom(); }
 function atomFixHtml(f) {
@@ -1329,10 +1378,11 @@ function atomFixHtml(f) {
 }
 function atomWire() {
   const q = id => document.getElementById(id);
+  if (q("atomPublish")) q("atomPublish").onclick = () => { if (confirm("Publish this ATOM export to everyone? It replaces the data shared before.")) { const f = atomCurrent(); if (atomPublish(f)) toast("Published to everyone: " + f.name + ", " + books.find(k => k.S.kind === "ops").S.atomPub.count + " people. Save to Excel to share it."); } };
   if (q("atomAdd")) q("atomAdd").onclick = () => { q("atomFile").value = ""; q("atomFile").click(); };
   if (q("atomFile")) q("atomFile").onchange = async e => { const x = e.target.files[0]; if (x) { try { atomLoad(await x.arrayBuffer(), x.name); } catch (err) { alert(err.message || err); } } };
   if (q("atomSel")) q("atomSel").onchange = e => { cur.atom = +e.target.value; renderAll(); };
-  if (q("atomAsOf")) q("atomAsOf").onchange = e => { if (e.target.value) { atomSetAsOf(ATOMS[cur.atom || 0], e.target.value.replace("T", " ")); renderAll(); } };
+  if (q("atomAsOf")) q("atomAsOf").onchange = e => { if (e.target.value && atomCurrent().source !== "shared") { atomSetAsOf(atomCurrent(), e.target.value.replace("T", " ")); renderAll(); } };
   if (q("atomDue")) q("atomDue").onchange = e => { atomSetDue(+e.target.value); renderAll(); };
   if (q("atomOnly")) q("atomOnly").onclick = e => { spRemember("atom_only", e.target.checked); renderAtom(); };
   document.querySelectorAll("#atomBox .seg button").forEach(bt => bt.onclick = () => { spRemember("atom_dept", bt.dataset.d); renderAtom(); });
@@ -1340,7 +1390,9 @@ function atomWire() {
   if (q("atomFixClose")) q("atomFixClose").onclick = () => atomFixClose();
   document.querySelectorAll("#atomFixPanel a[data-bi]").forEach(a => a.onclick = () => { const i = +a.dataset.bi; if (i < 0) return; useBook(i); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='roster']").click(); });
 }
-function atomAsOf(f) { return spRecall("atom_asof_" + f.name) || f.created; }
+function atomShared() { const ob = books.find(b => b.S.kind === "ops"); return ob && ob.S.atomShared || null; }   // the data the Ops Room published, read from its ATOM Currency sheet
+function atomCurrent() { const a = cur.atom === undefined ? 0 : cur.atom; if (a >= 0 && ATOMS[a]) return ATOMS[a]; return atomShared(); }   // a file added by hand wins; -1 = the shared data
+function atomAsOf(f) { return f.source === "shared" ? f.created : spRecall("atom_asof_" + f.name) || f.created; }
 function atomSetAsOf(f, s) { spRemember("atom_asof_" + f.name, s); }
 function loadWorkbook(buf, name, handle, other) {
   const files = fflate.unzipSync(new Uint8Array(buf)), paths = sheetPaths(files);
@@ -2020,6 +2072,7 @@ function setCell(xml, ref, val) {
 function buildXlsx() {
   const bySheet = {};
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
+  if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
     const p = WB.paths[sheet]; if (!p || !files[p]) continue; let x = td.decode(files[p]);
@@ -2051,7 +2104,7 @@ function buildXlsx() {
 const unsaved = () => books.reduce((n, b) => n + b.dirty.size, 0);
 // ---------- change log: every save adds one line per changed cell to the file's own 'Change Log' sheet
 // (time, who, file, what changed in words, before, after, cell). On SharePoint "who" is the signed-in person.
-const LOG_SHEET = "Change Log", LOG_SKIP = new Set(["Currency", LOG_SHEET]), LOG_SHIFTS = ["AM", "PM", "NIGHT"], LOG_SLOTS = ["AM 1", "AM 2", "PM 1", "PM 2", "NIGHT 1", "NIGHT 2"];
+const LOG_SHEET = "Change Log", LOG_SKIP = new Set(["Currency", LOG_SHEET, ATOM_SHEET]), LOG_SHIFTS = ["AM", "PM", "NIGHT"], LOG_SLOTS = ["AM 1", "AM 2", "PM 1", "PM 2", "NIGHT 1", "NIGHT 2"];
 const LOG_HEAD = ["Time", "Name", "Email", "File", "Change", "Before", "After", "Cell"];
 const logWho = () => SP.user ? SP.user.Title : "Offline (" + (books[0] ? books[0].WB.name : "") + ")";
 const logTime = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()); };
@@ -2086,6 +2139,7 @@ function logLines(b, sent) {
     const w = logWhat(b, e.sheet, e.ref, sent, files);
     out.push([t, who, mail, b.S.dept, w.what, logVal(before, w.head), logVal(e.val, w.head), e.sheet + "!" + e.ref]);
   }
+  if (b.S.atomPub && [...sent.values()].some(e => e.sheet === ATOM_SHEET)) out.push([t, who, mail, b.S.dept, "ATOM published: " + b.S.atomPub.name + ", as of " + b.S.atomPub.asOf, "", "", ATOM_SHEET]);   // one line, not one per cell
   return out;
 }
 // add the Change Log sheet to a workbook that has none (files is changed in place)
@@ -3249,6 +3303,7 @@ function readOps(name) {
   const st = { kind: "ops", year: null, dept: "Ops Room", roster: [], acts: [], cats: [], hols: [], m: [], sdo: {}, fc: new Map(), fcNext: OPS_ROW0 };
   const dash = readCells("Dashboard"); st.year = num(dash.A5) || new Date().getFullYear();
   st.nx = (+((/layout\s+(\d+)/i.exec(str(dash.Z2)) || [])[1] || 0)) >= 2;   // layout 2: Day Board rows run to 31 Jan of the next year
+  st.atomShared = WB.paths[ATOM_SHEET] ? atomFromShared(readCells(ATOM_SHEET)) : null;   // what the Ops Room published from ATOM
   const c = readCells("Flight Crew");
   for (let r = OPS_ROW0; r < OPS_ROW0 + OPS_N; r++) {
     const a = c["A" + r]; if (a == null && !str(c["C" + r])) continue;
@@ -4845,7 +4900,7 @@ function lodeCards(who, iso) {
     }
     const arow = atomFor(who.bi, i);
     if (arow) {   // ATOM knows this person: it replaces the flight-based rules
-      const x = atomIssues(who.bi, i, iso), n = atomCells(arow, iso).length, f = ATOMS[cur.atom || 0], first = x.lap[0] || x.due[0];
+      const x = atomIssues(who.bi, i, iso), n = atomCells(arow, iso).length, f = atomCurrent(), first = x.lap[0] || x.due[0];
       curc = { level: x.lap.length ? "bad" : x.due.length ? "due" : "ok", sub: "from ATOM, data as of " + atomAsOf(f).slice(0, 10) + (n ? " · " + (n - x.lap.length - x.due.length) + " of " + n + " current" : ""),
         text: x.lap.length ? x.lap[0].col + " expired " + atomFmt(x.lap[0].iso, iso) : x.due.length ? x.due[0].col + " expires " + atomFmt(first.iso, iso) : "All current" };
     }

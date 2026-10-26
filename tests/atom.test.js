@@ -435,7 +435,7 @@ test("dept_cannot_write_the_ops_room_file", async ({ page }) => {
 });
 
 // ---- v2 Task 7: Planner layer 1 (expiry-day marker) and layer 2 (alert)
-const planMonth = (page, mi, edits) => page.evaluate(([mi, edits]) => { useBook(0); cur.m = mi; edits.forEach(([ix, shift, day, code]) => { S.m[mi].grid[ix * 3 + shift][day - 1] = code; }); renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [mi, edits]);
+const planMonth = (page, mi, edits, dept) => page.evaluate(([mi, edits, dept]) => { useBook(dept ? books.findIndex(b => !b.S.kind && b.S.dept === dept) : 0); cur.sel = null; cur.m = mi; edits.forEach(([ix, shift, day, code]) => { S.m[mi].grid[ix * 3 + shift][day - 1] = code; }); renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [mi, edits, dept || null]);
 const cellAt = (page, ix, shift, day) => page.evaluate(([ix, shift, day]) => { const td = document.querySelector("#plan td[data-k='g:" + (ix * 3 + shift) + ":" + (day - 1) + "']"); return td ? { cls: td.className, title: td.title, txt: td.innerText } : null; }, [ix, shift, day]);
 const L7 = { atom: [FULL()], fresh: true };
 test("marker_on_expiry_day_only", async ({ page }) => {   // V TAN (SUP 2, 0): Night Curr expires 27 Oct
@@ -452,7 +452,7 @@ test("marker_day_rows", async ({ page }) => {   // O NG (SUP 2, 2): Day Curr exp
 }, L7);
 test("capt_marker_is_outline_and_never_alerts", async ({ page }) => {   // A NGO (Pilot, 0): Night Capt expired 16 Oct, Night Curr valid to 27 Oct
   const [bi, ix] = await setIni(page, "Pilot", 0, "A NGO");
-  await page.evaluate(() => { useBook(books.findIndex(b => !b.S.kind && b.S.dept === "Pilot")); }); await planMonth(page, 9, [[ix, 2, 20, "NVG-2.0"]]);
+  await planMonth(page, 9, [[ix, 2, 20, "NVG-2.0"]], "Pilot");
   const m = await cellAt(page, ix, 2, 16), f = await cellAt(page, ix, 2, 20);
   assert.ok(/l1end/.test(m.cls) && /capt/.test(m.cls) && /Night Capt expires/.test(m.txt), JSON.stringify(m));
   assert.ok(!/atomw/.test(f.cls), JSON.stringify(f));

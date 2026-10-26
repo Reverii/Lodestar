@@ -51,6 +51,9 @@ Waiting on Brandon:
 - Syllabus tracker: his test; Pilot and Loadmaster syllabus lists to send.
 - Scale-up go-ahead (brings the other 4 departments to the SUP 2 layout incl. Jan next year and syllabus).
 
+ATOM currency data (2026-10-26): spec `docs/superpowers/specs/2026-10-26-atom-currency-design.md` written (read ATOM Excel exports, status view then
+planning check); waiting on Brandon to read it, then a mock-up and "build it". Takes the Currency work off hold.
+
 Not started:
 - Data migration from an old-layout file into a new template (needed before any layout change once real planning starts).
 - Backups: confirm SharePoint version history is on.

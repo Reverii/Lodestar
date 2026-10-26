@@ -419,6 +419,21 @@ test("shared_refresh_follows_the_latest_publish", async ({ page }) => {
   assert.deepStrictEqual(r, [["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"], ["Pilot", "SUP 2"]]);
 }, SH);
 
+// ---- v2 Task 6: department dashboards open the Ops Room file read-only
+test("dept_open_includes_ops_room", async ({ page }) => {
+  const r = await page.evaluate(() => { const keep = window.spFileFor; window.spFileFor = k => ({ Name: k + ".xlsx" }); try { return [spDeptExtras("pilot").map(f => f && f.Name), spDeptExtras("dutyroster").map(f => f && f.Name)]; } finally { window.spFileFor = keep; } });
+  assert.ok(r[0].includes("opsroom.xlsx") && r[0].includes("masterplanner.xlsx") && r[0].includes("dutyroster.xlsx"), JSON.stringify(r));
+  assert.ok(r[1].includes("opsroom.xlsx"), JSON.stringify(r));
+});
+test("dept_without_ops_room_still_works", async ({ page }) => {
+  const r = await page.evaluate(() => { const keep = window.spFileFor; window.spFileFor = k => k === "opsroom" ? undefined : { Name: k + ".xlsx" }; try { return spDeptExtras("pilot").filter(Boolean).map(f => f.Name); } finally { window.spFileFor = keep; } });
+  assert.ok(!r.includes("opsroom.xlsx") && r.length >= 2, JSON.stringify(r));
+});
+test("dept_cannot_write_the_ops_room_file", async ({ page }) => {
+  const r = await page.evaluate(() => { OPS = false; const bi = books.findIndex(b => b.S.kind === "ops"), ob = books[bi], n = ob.dirty.size; useBook(0); withBook(bi, () => put("ATOM Currency", "A1", "x")); const ok = atomPublish(ATOMS[0]); return [ob.dirty.size - n, ok]; });
+  assert.deepStrictEqual(r, [0, false]);
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

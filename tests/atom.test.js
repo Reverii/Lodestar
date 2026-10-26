@@ -30,28 +30,32 @@ const F0 = page => page.evaluate(() => JSON.parse(JSON.stringify(ATOMS[0])));
 test("parse_reads_headers_not_positions", async ({ page }) => {
   const f = await F0(page);
   assert.deepStrictEqual(f.sheets.Pilot.map(r => r.name), ["A NGO", "HO KM", "S LIM JH", "SAMY", "TEO WK"]);
-  const flight = f.groups.find(g => g.group === "Flight Currencies");
-  assert.strictEqual(flight.cols[0], "NVG Curr");
-  const order = f.groups.map(g => g.group);
-  assert.ok(order.indexOf("Mission Currencies") < order.indexOf("SIM Currencies"), order.join());
-  assert.strictEqual(f.sheets.Pilot[0].cells["NVG Curr"].iso, "2027-01-22");
+  assert.deepStrictEqual(f.groups, [{ group: "Flight Currencies", cols: ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr"] }]);   // ATOM_CUR order, the extra NVG Curr column ignored
+  assert.strictEqual(f.sheets.Pilot[0].cells["Night Curr"].iso, "2026-10-27");
+  assert.strictEqual(f.sheets.Pilot[0].hours, 3.9);
 }, MOVED());
-test("parse_ignores_satr_and_hours", async ({ page }) => {
+test("parse_reads_only_the_five", async ({ page }) => {
   const f = await F0(page);
-  assert.deepStrictEqual(f.groups.map(g => g.group).sort(), ["Flight Currencies", "LSS Currencies", "Mission Currencies", "SIM Currencies"]);
-  const all = f.groups.flatMap(g => g.cols);
-  for (const bad of ["Level", "Remarks", "SIM Package", "Current Month"]) assert.ok(!all.includes(bad), bad);
-  assert.ok(!JSON.stringify(f).includes("FAKE personal remark"));
+  assert.deepStrictEqual(f.groups.map(g => g.group), ["Flight Currencies"]);
+  const text = JSON.stringify(f);
+  for (const bad of ["Instructor Check", "SIM Package", "ACE", "APT", "SVT", "MAS", "SAL", "\"SIM\"", "Level", "Remarks", "FAKE personal remark"]) assert.ok(!text.includes(bad), bad);
+  for (const d in f.sheets) for (const r of f.sheets[d]) assert.ok(Object.keys(r.cells).every(k => ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr"].includes(k)), d + ":" + Object.keys(r.cells));
 }, { atom: [FULL()], others: false, fresh: true });
 test("parse_value_kinds", async ({ page }) => {
-  const c = (await F0(page)).sheets.Pilot[0].cells;
-  const k = n => [c[n].k, c[n].iso, c[n].raw];
-  assert.deepStrictEqual(k("Day Curr"), ["date", "2026-11-16", "16 Nov 26"]);
-  assert.strictEqual(c["IRT"].k, "none");
-  assert.strictEqual(c["Instructor Check"].k, "na");
-  assert.strictEqual(c["ACE"].k, "blank");
-  assert.deepStrictEqual([c["APT"].k, c["APT"].iso, c["APT"].raw], ["text", null, "soon"]);
-  assert.deepStrictEqual([c["SVT"].k, c["SVT"].iso], ["date", "2027-01-22"]);
+  const rows = (await F0(page)).sheets.Pilot, a = rows.find(r => r.name === "A NGO").cells, t = rows.find(r => r.name === "TEO WK").cells;
+  assert.deepStrictEqual([a["Day Curr"].k, a["Day Curr"].iso, a["Day Curr"].raw], ["date", "2026-11-16", "16 Nov 26"]);
+  assert.strictEqual(a["IRT"].k, "none");
+  assert.strictEqual(t["Day Curr"].k, "na");
+  assert.strictEqual(t["Night Capt"].k, "blank");
+  assert.deepStrictEqual([t["IRT"].k, t["IRT"].iso, t["IRT"].raw], ["text", null, "soon"]);
+  assert.deepStrictEqual([t["Day Capt"].k, t["Day Capt"].iso], ["date", "2027-01-22"]);   // a real Excel date
+});
+test("parse_hours", async ({ page }) => {
+  const rows = (await F0(page)).sheets.Pilot, h = n => rows.find(r => r.name === n).hours;
+  assert.deepStrictEqual([h("A NGO"), h("HO KM"), h("S LIM JH"), h("SAMY")], [3.9, 8.2, null, 0]);
+});
+test("parse_hours_month", async ({ page }) => {
+  const f = await F0(page); assert.strictEqual(f.hoursMonth, "2026-10"); assert.strictEqual(f.source, "export");
 });
 test("parse_skips_band_rows", async ({ page }) => {
   const f = await F0(page);

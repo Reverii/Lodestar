@@ -311,6 +311,47 @@ test("needs_disabled_without_ops_mode", async ({ page }) => {
   assert.ok(await page.evaluate(() => !document.querySelector("#atomNeeds input:not([disabled])")));
 });
 
+// ---- Task 9: Planner warnings
+// V TAN (SUP 2, roster person 0): Night Curr ends 27 Oct, MAS ended 16 Oct. Rule: NVG-* needs Night Curr (and MAS in the second rule).
+const rule = (page, rows) => page.evaluate(rows => { OPS = true; rows.forEach((r, n) => atomNeedsSet(n, r[0], r[1], r[2] || "Any")); }, rows);
+const plan = async (page, ix, shift, day, code) => page.evaluate(([ix, shift, day, code]) => { useBook(0); cur.m = 9; S.m[9].grid[ix * 3 + shift][day - 1] = code; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [ix, shift, day, code]);
+const cellOf = (page, ix, shift, day) => page.evaluate(([ix, shift, day]) => { const td = document.querySelector("#plan td[data-k='g:" + (ix * 3 + shift) + ":" + (day - 1) + "']"); return td ? { cls: td.className, title: td.title, txt: td.innerText } : null; }, [ix, shift, day]);
+test("warn_when_expired_by_flight_day", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]]]);
+  const r = await page.evaluate(([bi, ix]) => [atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-28"), atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-25"), atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-27")], [bi, ix]);
+  assert.deepStrictEqual(r, [{ lines: ["Night Curr ended 27 Oct"] }, null, null]);
+});
+test("warn_lists_every_missing_currency", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]], ["NVG-2.0", ["MAS", "SIM"]]]);
+  const r = await page.evaluate(([bi, ix]) => atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-28").lines, [bi, ix]);
+  assert.deepStrictEqual(r, ["Night Curr ended 27 Oct", "MAS ended 16 Oct"]);
+});
+test("warn_none_when_unmatched_or_no_needs", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN");
+  assert.strictEqual(await page.evaluate(([bi, ix]) => atomWarn(bi, ix, "NVG-2.0", "NIGHT", "2026-10-28"), [bi, ix]), null);   // no rules yet
+  await rule(page, [["NVG-*", ["Night Curr"]]]);
+  const [b2, i2] = await setIni(page, "SUP 2", 1, "NOBODY");
+  assert.strictEqual(await page.evaluate(([b, i]) => atomWarn(b, i, "NVG-2.0", "NIGHT", "2026-10-28"), [b2, i2]), null);
+});
+test("corner_and_tooltip_render", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]]]);
+  await plan(page, ix, 2, 28, "NVG-2.0");
+  const c = await cellOf(page, ix, 2, 28);
+  assert.ok(/atomw/.test(c.cls) && /Night Curr ended 27 Oct/.test(c.title) && /From ATOM, data as of 2026-10-25/.test(c.title) && /NOT CURRENT/.test(c.txt), JSON.stringify(c));
+});
+test("warn_only_for_flights", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]], ["LV", ["Night Curr"]]]);
+  await plan(page, ix, 0, 28, "LV");
+  const c = await cellOf(page, ix, 0, 28);
+  assert.ok(!/atomw/.test(c.cls), JSON.stringify(c));
+});
+test("name_badge_counts_warned_flights", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await rule(page, [["NVG-*", ["Night Curr"]]]);
+  await plan(page, ix, 2, 28, "NVG-2.0"); await plan(page, ix, 2, 29, "NVG-2.0"); await plan(page, ix, 2, 25, "NVG-2.0");
+  const t = await page.evaluate(() => [...document.querySelectorAll("#plan i.curb.atomw")].map(x => x.textContent));
+  assert.deepStrictEqual(t, ["▲ 2"]);
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
 const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };

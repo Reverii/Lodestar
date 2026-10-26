@@ -204,7 +204,7 @@ test("stale_banner_amber_and_red", async ({ page }) => {
 });
 test("empty_state_message", async ({ page }) => {
   await page.evaluate(() => { ATOMS = []; renderAtom(); });
-  assert.ok(/Add an ATOM export/.test(await page.innerText("#atomBox")));
+  assert.ok(/has not shared ATOM data/.test(await page.innerText("#atomBox")));
 });
 test("fits_1280x720", async ({ page }) => {
   await matchAll(page); await openCur(page);
@@ -545,8 +545,8 @@ test("hours_without_atom_unchanged", async ({ page }) => {
 }, L9);
 
 // A shared session is reused between tests; snapshot once, restore before each following test
-const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };
-const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };
+const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); window.__sh = books.map(b => b.S.atomShared || null); };
+const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); books.forEach((b, i) => { b.S.atomShared = window.__sh[i]; b.S.atomPub = null; b.S.atomPubLast = 0; b.dirty.clear(); if (window.__an[i]) b.S.atomNeeds = JSON.parse(window.__an[i]); }); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };
 // setIni("SUP 2", n, "V TAN") sets the Initials of the nth person on that roster (empty slots skipped); returns [bookIndex, rosterIndex]
 const setIni = (page, dept, n, ini, cat) => page.evaluate(([dept, n, ini, cat]) => { const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept); const ix = books[bi].S.roster.map((p, i) => (p.name || p.id) ? i : -1).filter(i => i >= 0)[n]; books[bi].S.roster[ix].ini = ini; if (cat) books[bi].S.roster[ix].cat = cat; return [bi, ix]; }, [dept, n, ini, cat]);
 const ID = (page, dept, n) => page.evaluate(([dept, n]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept); return b.S.roster.filter(p => p.name || p.id)[n].id; }, [dept, n]);

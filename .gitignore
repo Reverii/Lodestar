@@ -10,3 +10,5 @@ __pycache__/
 ~$*
 .DS_Store
 Thumbs.db
+# Dummy-name test files that carry real ATOM initials
+atom_test/

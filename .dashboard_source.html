@@ -1318,7 +1318,6 @@ function atomBadge(bi, i) {   // "ATOM ⚠ n" (lapsed) or "ATOM ! n" (due) besid
 }
 // ---------- ATOM currency: what each flight needs (sheet "ATOM Needs" in the Ops Room file, created on first edit)
 const ATOM_NEEDS = "ATOM Needs", ATOM_NEEDS_HEAD = ["Flight code or mission type", "Currencies needed", "Seat"], ATOM_NEEDS_N = 60;
-const opsBook = () => books.find(b => b.S.kind === "ops");
 const atomNeedsRows = () => { const b = opsBook(); return b && b.S.atomNeeds ? b.S.atomNeeds.rows.filter(r => r.match) : []; };
 function atomNeedsFor(code, mtype, seat) {   // currencies a flight needs: every matching row; Captain-only rows only for the captain seat
   const c = atomKey(code), m = atomKey(mtype), out = [];
@@ -2136,7 +2135,7 @@ function logLines(b, sent) {
 }
 // add the Change Log sheet to a workbook that has none (files is changed in place)
 // adds an empty sheet (header row 1, frozen) to a workbook's files in memory; cols = the <cols> xml
-function sheetEnsure(W, name, head, cols) {
+function sheetEnsure(W, name, heads, cols) {
   if (W.paths[name]) return;
   const f = W.files; let n = 0;
   for (const k in f) { const m = /^xl\/worksheets\/sheet(\d+)\.xml$/.exec(k); if (m) n = Math.max(n, +m[1]); }
@@ -2148,7 +2147,7 @@ function sheetEnsure(W, name, head, cols) {
   wb = wb.replace("</sheets>", '<sheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" name="' + name + '" sheetId="' + (Math.max(0, ...ids) + 1) + '" state="visible" r:id="' + rid + '"/></sheets>');
   const ctp = "[Content_Types].xml"; let ct = td.decode(f[ctp]);
   if (!ct.includes('PartName="/' + path + '"')) ct = ct.replace("</Types>", '<Override PartName="/' + path + '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
-  const head = "<row r=\"1\">" + head.map((h, i) => cellXml(colL(i + 1) + "1", "", h)).join("") + "</row>";
+  const head = "<row r=\"1\">" + heads.map((h, i) => cellXml(colL(i + 1) + "1", "", h)).join("") + "</row>";
   const ws = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>' +
     '<cols>' + cols + '</cols>' +
     "<sheetData>" + head + "</sheetData></worksheet>";

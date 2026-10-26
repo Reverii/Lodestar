@@ -2,7 +2,8 @@
 // Run: node tests/atom.test.js [name-filter]   (prints "N/M pass"; exit code 1 if any fail)
 const assert = require("assert");
 const fs = require("fs");
-const { boot, atomFixture } = require("./lode_lib");
+const { boot, atomFixture, ROOT } = require("./lode_lib");
+const path = require("path");
 const tests = [];
 const test = (name, fn, opts) => tests.push({ name, fn, opts });
 const FULL = () => atomFixture();
@@ -390,6 +391,33 @@ test("version_is_z92", async ({ page }) => {
   assert.ok(/ z92 /.test(r + " "), r);
   assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-26 z92 "));
 });
+
+// ---- Final review fixes
+test("closing_a_tab_keeps_matches_and_does_not_crash", async ({ page, errs }) => {
+  await setIni(page, "Pilot", 0, "A NGO");
+  const r = await page.evaluate(() => { const find = () => atomGridRows("Pilot", false, "2026-10-26").map(x => x.row.name);
+    const before = find(); const di = books.findIndex(b => b.S.kind === "roster"); books.splice(di, 1);   // a tab before Pilot is closed: Pilot moves one place
+    let after, err = ""; try { after = find(); renderAll(); } catch (e) { err = e.message; } return { before, after, err }; });
+  assert.deepStrictEqual(r, { before: ["A NGO"], after: ["A NGO"], err: "" });
+  assert.deepStrictEqual(errs, []);
+});
+test("needs_sheet_is_added_at_save_time_after_a_merge", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { const bi = books.findIndex(b => b.S.kind === "ops"), b = books[bi], pristine = Object.assign({}, b.WB.files);
+    atomNeedsSet(0, "NVG-*", ["Night Curr"], "Any");
+    b.WB.files = pristine; b.WB.paths = sheetPaths(pristine);   // another user saved the file in between: our copy is replaced by theirs
+    const out = withBook(bi, () => buildXlsx()), files = fflate.unzipSync(out.bytes), keep = WB;
+    WB = { files, paths: sheetPaths(files), sst: parseSST(files), name: "copy.xlsx" };
+    try { const st = readOps("copy.xlsx"); return { stray: Object.keys(files).filter(k => /undefined/.test(k)), rows: st.atomNeeds.rows.filter(x => x.match).map(x => [x.match, x.needs.join("|")]) }; } finally { WB = keep; } });
+  assert.deepStrictEqual(r, { stray: [], rows: [["NVG-*", "Night Curr"]] });
+});
+test("atom_file_picked_first_with_ops_room_still_opens_the_app", async ({ page }) => {
+  const f = atomFixture();
+  await page.setInputFiles("#fileInputOps", [f, path.join(ROOT, "Flight_Ops_Planner_SUP2.xlsx"), path.join(ROOT, "Ops_Room.xlsx")]);
+  await page.waitForFunction(() => books.length >= 2, null, { timeout: 30000 });
+  const r = await page.evaluate(() => ({ welcome: getComputedStyle(document.getElementById("welcome")).display, n: books.length, atoms: ATOMS.length, first: books[0].S.dept, ops: OPS }));
+  assert.deepStrictEqual(r, { welcome: "none", n: 2, atoms: 1, first: "SUP 2", ops: true });
+}, { blank: true, fresh: true });
 
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); window.__an = books.map(b => b.S.atomNeeds ? JSON.stringify(b.S.atomNeeds) : null); };

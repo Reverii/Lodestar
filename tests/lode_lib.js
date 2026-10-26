@@ -20,6 +20,7 @@ async function boot(o = {}) {
   const today = o.today || "2026-10-26";
   await page.addInitScript(t => { window.OPS_TODAY = t; window.CUR_TODAY = t; window.showSaveFilePicker = undefined; window.showOpenFilePicker = undefined; }, today);
   await page.goto("file://" + path.join(ROOT, "Flight_Ops_Planner_Dashboard.html"));
+  if (o.blank) return { page, errs, close: () => browser.close() };   // nothing opened: the start screen
   if (o.atomFirst) {   // an ATOM export as the very first file opened: nothing else is open yet
     await page.setInputFiles("#fileInput", o.atomFirst);
     await page.waitForFunction(() => typeof ATOMS !== "undefined" && ATOMS.length >= 1, null, { timeout: 20000 });

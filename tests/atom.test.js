@@ -273,9 +273,47 @@ test("my_lodestar_falls_back_without_atom", async ({ page }) => {
   assert.ok(!/ATOM/.test(c.sub), c.sub);
 });
 
+// ---- Task 8: the flight-needs table (ATOM Needs sheet in Ops_Room.xlsx)
+const opsBi = page => page.evaluate(() => books.findIndex(b => b.S.kind === "ops"));
+const opsMode = page => page.evaluate(() => { OPS = true; });
+test("needs_sheet_created_on_first_edit", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { const bi = books.findIndex(b => b.S.kind === "ops"), had = !!books[bi].WB.paths["ATOM Needs"]; atomNeedsSet(0, "NVG-*", ["Night Curr"], "Any");
+    const b = books[bi]; return [had, !!b.WB.paths["ATOM Needs"], [...b.dirty.keys()].filter(k => k.startsWith("ATOM Needs!")).sort(), books.filter(x => x.WB.paths["Change Log"] || true).length > 0]; });
+  assert.deepStrictEqual(r.slice(0, 3), [false, true, ["ATOM Needs!A2", "ATOM Needs!B2", "ATOM Needs!C2"]]);
+});
+test("needs_roundtrip", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { atomNeedsSet(0, "NVG-*", ["Night Curr", "Night Capt"], "Any"); atomNeedsSet(1, "TRG", ["SIM"], "Captain");
+    const bi = books.findIndex(b => b.S.kind === "ops"); const out = withBook(bi, () => buildXlsx());
+    const files = fflate.unzipSync(out.bytes), keep = WB; WB = { files, paths: sheetPaths(files), sst: parseSST(files), name: "copy.xlsx" };
+    try { const st = readOps("copy.xlsx"); return { has: st.atomNeeds.has, rows: st.atomNeeds.rows.map(x => [x.match, x.needs.join("|"), x.seat]) }; } finally { WB = keep; } });
+  assert.deepStrictEqual(r, { has: true, rows: [["NVG-*", "Night Curr|Night Capt", "Any"], ["TRG", "SIM", "Captain"]] });
+});
+test("needs_matching", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { atomNeedsSet(0, "NVG-*", ["Night Curr"], "Any"); atomNeedsSet(1, "TRG", ["SIM"], "Any"); atomNeedsSet(2, "FLT-*", ["Day Capt"], "Captain"); atomNeedsSet(3, "NVG-2.0", ["Night Capt"], "Captain");
+    return [atomNeedsFor("NVG-2.0", "", "Any"), atomNeedsFor("NVG-2.0", "", "Captain"), atomNeedsFor("PLT-TRG", "TRG", "Any"), atomNeedsFor("FLT-1.5", "GEN", "Any"), atomNeedsFor("FLT-1.5", "GEN", "Captain"), atomNeedsFor("EIS", "", "Any")]; });
+  assert.deepStrictEqual(r, [["Night Curr"], ["Night Curr", "Night Capt"], ["SIM"], [], ["Day Capt"], []]);
+});
+test("needs_empty_means_no_needs", async ({ page }) => {
+  assert.deepStrictEqual(await page.evaluate(() => atomNeedsFor("NVG-2.0", "NIGHT", "Captain")), []);
+});
+test("needs_delete_blanks_the_row", async ({ page }) => {
+  await opsMode(page);
+  const r = await page.evaluate(() => { atomNeedsSet(0, "NVG-*", ["Night Curr"], "Any"); atomNeedsDel(0); return [atomNeedsFor("NVG-2.0", "", "Any"), atomNeedsRows().length]; });
+  assert.deepStrictEqual(r, [[], 0]);
+});
+test("needs_disabled_without_ops_mode", async ({ page }) => {
+  await page.evaluate(() => { OPS = false; document.querySelector("nav.tabs button[data-v='cur']").click(); renderAtom(); });
+  const t = await page.innerText("#atomBox");
+  assert.ok(/Open the Ops Room file to save these rules/.test(t), t.slice(-300));
+  assert.ok(await page.evaluate(() => !document.querySelector("#atomNeeds input:not([disabled])")));
+});
+
 // A shared session is reused between tests; snapshot once, restore before each following test
 const snap = () => { window.__bk = books.slice(); window.__ros = books.map(b => b.S.kind ? null : b.S.roster.map(p => [p.ini, p.cat, p.id, p.name])); window.__at = ATOMS.slice(); };
-const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); cur.atom = 0; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };
+const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { if (window.__ros[i]) b.S.roster.forEach((p, j) => { [p.ini, p.cat, p.id, p.name] = window.__ros[i][j]; }); }); ATOMS = window.__at.slice(); cur.atom = 0; OPS = false; useBook(0); Object.keys(localStorage).filter(k => k.startsWith("fop_sp_atom")).forEach(k => localStorage.removeItem(k)); };
 // setIni("SUP 2", n, "V TAN") sets the Initials of the nth person on that roster (empty slots skipped); returns [bookIndex, rosterIndex]
 const setIni = (page, dept, n, ini, cat) => page.evaluate(([dept, n, ini, cat]) => { const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept); const ix = books[bi].S.roster.map((p, i) => (p.name || p.id) ? i : -1).filter(i => i >= 0)[n]; books[bi].S.roster[ix].ini = ini; if (cat) books[bi].S.roster[ix].cat = cat; return [bi, ix]; }, [dept, n, ini, cat]);
 const ID = (page, dept, n) => page.evaluate(([dept, n]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept); return b.S.roster.filter(p => p.name || p.id)[n].id; }, [dept, n]);

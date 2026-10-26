@@ -20,6 +20,7 @@
 .atomgrid th.g{font-size:10.5px;font-weight:800;color:var(--s900);background:var(--s100);border-left:1px solid var(--s200)}.atomgrid th.nm,.atomgrid td.nm{text-align:left;padding-left:10px;min-width:170px}
 .atomgrid td{height:24px;text-align:center;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--s100);padding:0 3px;font-variant-numeric:tabular-nums}.atomgrid td.nm{font-size:12.5px}.atomgrid td.nm b{margin-right:6px}.atomgrid td.nm span{color:var(--s500);font-size:11.5px}
 .atomgrid .gs{border-left:1px solid var(--s200)}.atomgrid td.lap{background:#fee2e2;color:#b91c1c;font-weight:700}.atomgrid td.due{background:#fef3c7;color:#92400e;font-weight:700}.atomgrid td.ok{color:var(--s600)}.atomgrid td.nh{color:var(--s300)}.atomgrid td.nr{color:var(--s400);font-style:italic;background:repeating-linear-gradient(135deg,#fff 0 4px,#f1f5f9 4px 8px)}
+.atomneeds{border-collapse:collapse;width:100%}.atomneeds th{font-size:11px;text-align:left;color:var(--s500);padding:2px 4px}.atomneeds td{padding:2px 4px}.atomneeds input{width:100%;font:inherit;font-size:12px;padding:3px 5px;border:1px solid var(--s300);border-radius:4px}
 .atomfix{max-height:260px;overflow:auto}.atomfix h3,.atomfix h4{margin:4px 0}.atomfixhd{display:flex;align-items:center;gap:10px}.atomfix ul{margin:2px 0 6px;padding-left:18px;columns:2}.atomfix a{color:var(--blue);cursor:pointer;margin-left:6px;font-size:11.5px}
 .acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#16a34a}.acat.C{background:#d99a06}.acat.D{background:#dc2626}
 .atomleg{display:flex;gap:16px;color:var(--s500);font-size:11.5px;align-items:center}.atomleg i{display:inline-block;width:22px;height:11px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid var(--s200)}.atomleg .lapx{background:#fee2e2}.atomleg .duex{background:#fef3c7}.atomleg .okx{background:#fff}.atomleg .nrx{background:repeating-linear-gradient(135deg,#fff 0 3px,#e2e8f0 3px 6px)}
@@ -1308,13 +1309,57 @@ function renderAtom() {
     }
     h += "</tbody></table></div><div class='atomleg'><span><i class='lapx'></i>Lapsed (expiry before today)</span><span><i class='duex'></i>Due in " + win + " days</span><span><i class='okx'></i>OK</span><span><i class='nrx'></i>Not recorded</span><span>– not held</span></div>";
   }
-  b.innerHTML = h; atomWire();
+  h += atomNeedsHtml();
+  b.innerHTML = h; atomWire(); atomNeedsWire();
 }
 function atomBadge(bi, i) {   // "ATOM ⚠ n" (lapsed) or "ATOM ! n" (due) beside a name in the Planner; "" without ATOM data
   if (!ATOMS.length) return "";
   const day = opsToday(), x = atomIssues(bi, i, day); if (!x.lap.length && !x.due.length) return "";
   const lines = x.lap.map(c => c.col + " lapsed " + atomFmt(c.iso, day)).concat(x.due.map(c => c.col + " due " + atomFmt(c.iso, day)));
   return "<i class='curb " + (x.lap.length ? "bad" : "due") + "' data-cur='1' data-atom='1' title='" + esc(lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(ATOMS[cur.atom || 0]) + ". Click for the Currency tab") + "'>ATOM " + (x.lap.length ? "⚠ " + x.lap.length : "! " + x.due.length) + "</i>";
+}
+// ---------- ATOM currency: what each flight needs (sheet "ATOM Needs" in the Ops Room file, created on first edit)
+const ATOM_NEEDS = "ATOM Needs", ATOM_NEEDS_HEAD = ["Flight code or mission type", "Currencies needed", "Seat"], ATOM_NEEDS_N = 60;
+const opsBook = () => books.find(b => b.S.kind === "ops");
+const atomNeedsRows = () => { const b = opsBook(); return b && b.S.atomNeeds ? b.S.atomNeeds.rows.filter(r => r.match) : []; };
+function atomNeedsFor(code, mtype, seat) {   // currencies a flight needs: every matching row; Captain-only rows only for the captain seat
+  const c = atomKey(code), m = atomKey(mtype), out = [];
+  for (const r of atomNeedsRows()) {
+    if (r.seat === "Captain" && seat !== "Captain") continue;
+    const k = atomKey(r.match), hit = k.endsWith("*") ? c.startsWith(k.slice(0, -1)) : k === c || (m && k === m);
+    if (hit) for (const n of r.needs) if (!out.some(o => atomKey(o) === atomKey(n))) out.push(n);
+  }
+  return out;
+}
+function atomNeedsSet(n, match, needs, seat) {   // row n (0-based) of the table; an empty match clears it
+  const bi = books.findIndex(b => b.S.kind === "ops"); if (bi < 0 || !OPS) return false;
+  const b = books[bi];
+  sheetEnsure(b.WB, ATOM_NEEDS, ATOM_NEEDS_HEAD, '<col min="1" max="1" width="30" customWidth="1"/><col min="2" max="2" width="50" customWidth="1"/><col min="3" max="3" width="12" customWidth="1"/>');
+  const r = n + 2, vals = match ? [match, needs.join(", "), seat === "Captain" ? "Captain" : "Any"] : ["", "", ""];
+  withBook(bi, () => vals.forEach((v, i) => put(ATOM_NEEDS, "ABC"[i] + r, v)));
+  const an = b.S.atomNeeds || (b.S.atomNeeds = { rows: [], has: true }); an.has = true;
+  an.rows[n] = { match: match || "", needs: match ? needs.slice() : [], seat: match ? (seat === "Captain" ? "Captain" : "Any") : "Any", row: r };
+  return true;
+}
+const atomNeedsDel = n => atomNeedsSet(n, "", [], "Any");
+function atomNeedsHtml() {
+  const b = opsBook(), can = !!b && OPS, rows = atomNeedsRows(), dis = can ? "" : " disabled";
+  const all = b && b.S.atomNeeds ? b.S.atomNeeds.rows : [];
+  let n = 0; while (n < all.length && all[n] && all[n].match) n++;
+  let h = "<div class='card' id='atomNeeds'><div class='atomfixhd'><h3>What each flight needs</h3><span class='muted'>A flight code (end with * for a family, e.g. NVG-*) or a mission type, and the ATOM currencies it needs. Captain = only checked on the Aircraft Captain seat.</span></div>";
+  if (!can) h += "<div class='muted'>Open the Ops Room file to save these rules (they are edited in the Ops Room view).</div>";
+  h += "<table class='atomneeds'><thead><tr><th>Flight code or mission type</th><th>Currencies needed (comma separated)</th><th>Seat</th><th></th></tr></thead><tbody>";
+  all.forEach((r, i) => { if (!r || !r.match) return;
+    h += "<tr data-n='" + i + "'><td><input class='nm' value='" + esc(r.match) + "'" + dis + "></td><td><input class='nd' value='" + esc(r.needs.join(", ")) + "'" + dis + "></td><td><select class='ns'" + dis + "><option" + (r.seat === "Any" ? " selected" : "") + ">Any</option><option" + (r.seat === "Captain" ? " selected" : "") + ">Captain</option></select></td><td><button class='btn nx'" + dis + ">Remove</button></td></tr>"; });
+  h += "<tr data-n='" + n + "' class='new'><td><input class='nm' placeholder='NVG-*'" + dis + "></td><td><input class='nd' placeholder='Night Curr'" + dis + "></td><td><select class='ns'" + dis + "><option>Any</option><option>Captain</option></select></td><td><button class='btn nadd'" + dis + ">Add</button></td></tr></tbody></table></div>";
+  return h;
+}
+function atomNeedsWire() {
+  document.querySelectorAll("#atomNeeds tr[data-n]").forEach(tr => {
+    const n = +tr.dataset.n, get = () => [tr.querySelector(".nm").value.trim(), tr.querySelector(".nd").value.split(",").map(x => x.trim()).filter(Boolean), tr.querySelector(".ns").value];
+    const save = () => { const [m, d, s] = get(); if (m && d.length) { atomNeedsSet(n, m, d, s); renderAtom(); } };
+    if (tr.classList.contains("new")) tr.querySelector(".nadd").onclick = save; else { tr.querySelectorAll("input,select").forEach(x => x.onchange = save); tr.querySelector(".nx").onclick = () => { atomNeedsDel(n); renderAtom(); }; }
+  });
 }
 function atomFixOpen() { cur.atomFix = true; renderAtom(); }
 function atomFixClose() { cur.atomFix = false; renderAtom(); }
@@ -2092,25 +2137,28 @@ function logLines(b, sent) {
   return out;
 }
 // add the Change Log sheet to a workbook that has none (files is changed in place)
-function logEnsure(W) {
-  if (W.paths[LOG_SHEET]) return;
+// adds an empty sheet (header row 1, frozen) to a workbook's files in memory; cols = the <cols> xml
+function sheetEnsure(W, name, head, cols) {
+  if (W.paths[name]) return;
   const f = W.files; let n = 0;
   for (const k in f) { const m = /^xl\/worksheets\/sheet(\d+)\.xml$/.exec(k); if (m) n = Math.max(n, +m[1]); }
   const path = "xl/worksheets/sheet" + (n + 1) + ".xml";
   let wb = td.decode(f["xl/workbook.xml"]), rels = td.decode(f["xl/_rels/workbook.xml.rels"]);
-  const ids = [...wb.matchAll(/sheetId="(\d+)"/g)].map(m => +m[1]), rid = "rIdLog" + (n + 1);
+  const ids = [...wb.matchAll(/sheetId="(\d+)"/g)].map(m => +m[1]), rid = "rIdNew" + (n + 1);
   const tgt = /Target="\/xl\/worksheets\//.test(rels) ? "/" + path : path.slice(3);
   rels = rels.replace("</Relationships>", '<Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="' + tgt + '" Id="' + rid + '"/></Relationships>');
-  wb = wb.replace("</sheets>", '<sheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" name="' + LOG_SHEET + '" sheetId="' + (Math.max(0, ...ids) + 1) + '" state="visible" r:id="' + rid + '"/></sheets>');
+  wb = wb.replace("</sheets>", '<sheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" name="' + name + '" sheetId="' + (Math.max(0, ...ids) + 1) + '" state="visible" r:id="' + rid + '"/></sheets>');
   const ctp = "[Content_Types].xml"; let ct = td.decode(f[ctp]);
   if (!ct.includes('PartName="/' + path + '"')) ct = ct.replace("</Types>", '<Override PartName="/' + path + '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
-  const head = "<row r=\"1\">" + LOG_HEAD.map((h, i) => cellXml(colL(i + 1) + "1", "", h)).join("") + "</row>";
+  const head = "<row r=\"1\">" + head.map((h, i) => cellXml(colL(i + 1) + "1", "", h)).join("") + "</row>";
   const ws = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>' +
-    '<cols><col min="1" max="1" width="19" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/><col min="3" max="3" width="26" customWidth="1"/><col min="4" max="4" width="13" customWidth="1"/><col min="5" max="5" width="44" customWidth="1"/><col min="6" max="7" width="20" customWidth="1"/><col min="8" max="8" width="14" customWidth="1"/></cols>' +
+    '<cols>' + cols + '</cols>' +
     "<sheetData>" + head + "</sheetData></worksheet>";
   f["xl/workbook.xml"] = te.encode(wb); f["xl/_rels/workbook.xml.rels"] = te.encode(rels); f[ctp] = te.encode(ct); f[path] = te.encode(ws);
   W.paths = sheetPaths(f);
 }
+const LOG_COLS = '<col min="1" max="1" width="19" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/><col min="3" max="3" width="26" customWidth="1"/><col min="4" max="4" width="13" customWidth="1"/><col min="5" max="5" width="44" customWidth="1"/><col min="6" max="7" width="20" customWidth="1"/><col min="8" max="8" width="14" customWidth="1"/>';
+function logEnsure(W) { sheetEnsure(W, LOG_SHEET, LOG_HEAD, LOG_COLS); }
 // a copy of the workbook's files with the lines added at the bottom of the Change Log
 function logApply(b, lines) {
   if (!lines.length) return null;
@@ -3249,6 +3297,8 @@ function readOps(name) {
   const st = { kind: "ops", year: null, dept: "Ops Room", roster: [], acts: [], cats: [], hols: [], m: [], sdo: {}, fc: new Map(), fcNext: OPS_ROW0 };
   const dash = readCells("Dashboard"); st.year = num(dash.A5) || new Date().getFullYear();
   st.nx = (+((/layout\s+(\d+)/i.exec(str(dash.Z2)) || [])[1] || 0)) >= 2;   // layout 2: Day Board rows run to 31 Jan of the next year
+  st.atomNeeds = { rows: [], has: !!WB.paths[ATOM_NEEDS] };   // what each flight needs from ATOM (sheet created by the dashboard on first edit)
+  if (st.atomNeeds.has) { const an = readCells(ATOM_NEEDS); for (let r = 2; r < 2 + ATOM_NEEDS_N; r++) { const m = str(an["A" + r]); st.atomNeeds.rows.push({ match: m, needs: str(an["B" + r]).split(",").map(x => x.trim()).filter(Boolean), seat: /^captain$/i.test(str(an["C" + r])) ? "Captain" : "Any", row: r }); } }
   const c = readCells("Flight Crew");
   for (let r = OPS_ROW0; r < OPS_ROW0 + OPS_N; r++) {
     const a = c["A" + r]; if (a == null && !str(c["C" + r])) continue;

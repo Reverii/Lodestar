@@ -31,7 +31,8 @@ test("hide_sans_and_nsmen", async ({ page }) => {
   await chip(page, "nsmen");
   rows = await shown(page); assert.ok(!rows.includes(s.ids[1]) && !rows.includes(s.ids[2]));
   assert.ok(await page.evaluate(() => !/SANS \/ NSMEN/.test(document.getElementById("plan").innerText)), "no divider when both are hidden");
-  assert.strictEqual(await count(page), "Showing " + (s.total - 2) + " of " + s.total + " crew");
+  const hidden = await page.evaluate(() => S.roster.filter(p => (p.name || p.id) && /^(sans|nsmen)$/i.test(p.status || "")).length);   // the demo roster has other SANS / NSMEN people too
+  assert.strictEqual(await count(page), "Showing " + (s.total - hidden) + " of " + s.total + " crew");
 }, F);
 test("inactive_chip_replaces_hide_inactive", async ({ page }) => {
   const s = await setup(page);

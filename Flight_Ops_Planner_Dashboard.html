@@ -707,8 +707,6 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 .opsbar{margin-bottom:6px}.opsbar .grow{flex:1}.opsbar h2{font-size:20px;width:320px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:6px}
 #opsNav{display:inline-flex;align-items:stretch;border:1px solid var(--s300);border-radius:8px;overflow:hidden;background:#fff}
 #opsNav>.btn{border:0;border-radius:0;padding:5px 11px;background:#fff;color:var(--s800);font-weight:800}#opsNav>.btn:hover{background:var(--s100)}#opsNav #opsQuick{border:0;border-radius:0;border-left:1px solid var(--s300);border-right:1px solid var(--s300)}
-#opsView{display:inline-flex;border:1px solid var(--s300);border-radius:8px;overflow:hidden;background:#fff}
-#opsView button{border:0;background:#fff;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}#opsView button+button{border-left:1px solid var(--s300)}#opsView button.on{background:var(--s900);color:#fff}
 #opsStats{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
 #opsStats .opsk{flex-direction:row;align-items:baseline;gap:5px;border-radius:999px;padding:3px 11px;font-size:14.5px;cursor:pointer;user-select:none}
 #opsStats .opsk small{font-size:10px;letter-spacing:.3px;font-weight:700}#opsStats .opsk:hover{border-color:var(--s400)}
@@ -762,23 +760,6 @@ table.opst td.oao textarea{width:100%;box-sizing:border-box;font:inherit;resize:
 table.opst td.obrf{color:#0f766e;font-weight:800}
 table.opst tr.f.flash td{animation:opsFlash 1.6s}@keyframes opsFlash{0%,40%{background:#fef9c3}}
 /* timeline */
-.tlw{padding:0 0 10px;min-width:760px}.tlr{display:flex;border-bottom:1px solid var(--s100);min-height:56px}.tlr.hd{min-height:0;border:0;position:sticky;top:0;background:#fff;z-index:4}
-.tll{width:140px;flex:none;padding:7px 10px}.tll small{display:block;color:var(--s400);font-weight:700;margin-top:2px}.tll .ocsn{font-weight:800;font-size:14px}.tll .ocsn.ph{color:var(--s400)}.tll .ost{margin:3px 0 0}
-.tlk{position:relative;flex:1;margin-right:16px}.tlr.hd .tlk{height:44px}
-.tlb{position:absolute;top:0;height:22px;color:#fff;font-weight:800;font-size:11.5px;padding:3px 9px}.tlb.s0{background:#0369a1}.tlb.s1{background:#b45309}.tlb.s2{background:#312e81}
-.tlt{position:absolute;top:26px;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--s500)}
-.tlbody{position:relative}.tlgrid{position:absolute;left:140px;right:16px;top:0;bottom:0;pointer-events:none}
-.tlg{position:absolute;top:0;bottom:0;border-left:1px dashed var(--s200)}
-.tln{position:absolute;top:0;bottom:0;border-left:2px solid #dc2626;z-index:3}.tln span{position:absolute;top:0;left:4px;background:#dc2626;color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;white-space:nowrap}
-.tlf,.tlbr,.tla,.tlsb,.tlgb{position:absolute;border-radius:7px;font-size:11.5px;overflow:hidden;white-space:nowrap}
-.tlf{top:9px;height:32px;padding:0 8px;color:#fff;display:flex;align-items:center;z-index:2;cursor:pointer;background:#94a3b8}.tlf b{font-size:12.5px}.tlf:hover{filter:brightness(1.08);box-shadow:0 0 0 2px var(--s900)}
-.tlf.flown{background:#16a34a}.tlf.open{background:#f59e0b}.tlf.cxl{background:#fca5a5;text-decoration:line-through}.tlf.due{background:#3b82f6;box-shadow:0 0 0 3px #bfdbfe}.tlf.oa{background:#7c3aed}
-.tlbr{top:13px;height:24px;background:repeating-linear-gradient(45deg,#99f6e4 0 4px,#ccfbf1 4px 8px);color:#0f766e;font-weight:800;padding:4px 5px;border-radius:7px 0 0 7px}
-.tla{top:44px;height:5px;background:var(--s900)}
-.tlx{position:absolute;top:16px;font-size:12px;color:var(--s700);white-space:nowrap;z-index:2}.tlx b{color:var(--s900)}.tlx i{font-style:normal;font-weight:800;font-size:10.5px;background:var(--s100);border-radius:999px;padding:1px 7px;margin-left:4px}
-.tlsb{top:10px;height:30px;background:#dcfce7;border:1.5px dashed #16a34a;color:#166534;font-weight:800;padding:6px 10px;box-sizing:border-box}
-.tlgb{top:14px;height:22px;background:var(--s100);border:1px solid var(--s300);box-sizing:border-box}
-.tlleg{display:flex;flex-wrap:wrap;gap:14px;padding:10px 14px 0;font-size:11.5px;color:var(--s600)}.tlleg .sw{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;background:#94a3b8}
 .tlleg .sw.brf{background:repeating-linear-gradient(45deg,#99f6e4 0 4px,#ccfbf1 4px 8px)}.tlleg .sw.flown{background:#16a34a}.tlleg .sw.open{background:#f59e0b}.tlleg .sw.due{background:#3b82f6}.tlleg .sw.oa{background:#7c3aed}.tlleg .sw.act{background:var(--s900);height:4px}
 body.opsfs #opsSize{display:none}
 .lodetop{display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative}.loderight{display:flex;align-items:center;gap:8px;position:relative}.lodenav{display:flex;gap:6px}.lodechip{display:flex;align-items:center;gap:8px;background:var(--s800);color:#cbd5e1;border-radius:20px;padding:4px 14px 4px 5px;font-size:12px}
@@ -894,7 +875,6 @@ body.opsfs #opsSize{display:none}
       <span id="opsNav"><button class="btn" id="opsPrev" title="Previous day">‹</button><span id="opsQuick"><button data-q="0">Today</button><button data-q="1">Tomorrow</button></span><button class="btn" id="opsNextD" title="Next day">›</button></span>
       <input type="date" id="opsDate">
       <span class="grow"></span>
-      <span id="opsView" title="Show the flights as a table or on a timeline"><button data-vw="table">Table</button><button data-vw="tl">Timeline</button></span>
       <button class="btn" id="opsAddBtn" title="Add an ad hoc flight for this day. It isn't put on the Master Planner; departments see it on their programme." style="background:#7c3aed;color:#fff;border-color:#7c3aed">+ Ops Add</button>
       <span id="opsSize"><button class="btn" data-z="-1" title="Smaller">A−</button><button class="btn" data-z="1" title="Bigger">A+</button></span>
       <button class="btn primary" id="opsFull" title="Full screen for the projector: hides the menus. Esc to leave.">⛶ Projector</button></div>
@@ -3806,7 +3786,6 @@ function opsEdge(r, iso) { const oc = opsOutcome(r, iso); return oc !== "plan" ?
 const OPS_FILT = { seats: r => rowMiss(r) > 0, mc: r => !(r.o && r.o.mc), flown: (r, iso) => opsOutcome(r, iso) === "flown", cxl: (r, iso) => opsOutcome(r, iso) === "cxl", open: (r, iso) => opsEdge(r, iso) === "open" };
 const OPS_FILT_LAB = { seats: "Empty seats", mc: "MC not set", flown: "Flown", cxl: "Cancelled", open: "Not closed" };
 function opsDownCount(D) { let n = 0; books.forEach(b => { if (!isDept(b) || b.S.year !== D.y) return; const C = computeChit(b.S), k = dayOfYear(D.y, D.mi, D.d); b.S.roster.forEach((p, i) => { if (C[i] && C[i].down[k]) n++; }); }); return n; }
-let opsVw = (() => { try { return localStorage.getItem("opsView") === "tl" ? "tl" : "table"; } catch (e) { return "table"; } })();
 function renderOps() {
   const el = $("opsMain"); if (!el) return;
   const tab = document.querySelector("nav.tabs button[data-v='ops']"); if (tab) tab.style.display = books.length && (OPS || opsIdx() >= 0 || masterBook()) ? "" : "none";
@@ -3816,7 +3795,6 @@ function renderOps() {
   $("opsDate").value = iso;
   const today = opsToday();
   document.querySelectorAll("#opsQuick button").forEach(b => b.classList.toggle("on", b.dataset.q === "0" ? iso === today : iso === opsAddDays(today, 1)));
-  document.querySelectorAll("#opsView button").forEach(b => b.classList.toggle("on", b.dataset.vw === opsVw));
   const missing = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"].filter(x => !deptOpen(x));
   // only what needs attention: no Master Planner, read-only, departments not open
   $("opsNote").innerHTML = !mb ? "<b style='color:#b91c1c'>Open the Master Planner to see the flights.</b> The Ops Room button on the start page opens every file at once." :
@@ -3825,20 +3803,17 @@ function renderOps() {
   if (!mb) { el.innerHTML = ""; $("opsBoard").innerHTML = ""; $("opsSide").innerHTML = ""; $("opsStats").innerHTML = ""; return; }
   const D = opsDay(iso);
   renderOpsBoard(iso, ed);
-  const seatsN = D.rows.reduce((a, r) => a + rowNeed(r).filter(Boolean).length, 0), seatsF = seatsN - D.rows.reduce((a, r) => a + rowMiss(r), 0);
-  const noMc = D.rows.filter(r => !(r.o && r.o.mc)).length, nOpen = D.rows.filter(r => opsEdge(r, iso) === "open").length, nDown = opsDownCount(D);
+  const noMc = D.rows.filter(r => !(r.o && r.o.mc)).length, nOpen = D.rows.filter(r => opsEdge(r, iso) === "open").length;
   $("opsTitle").textContent = opsFmt(iso, true);
   if (cur.opsF && !OPS_FILT[cur.opsF]) cur.opsF = "";
   // slim stat chips; a chip filters the flights to the ones it counts (click it again to show all)
   const chip = (f, lab, v, cls, tip) => "<span class='opsk" + (cls ? " " + cls : "") + (f && cur.opsF === f ? " sel" : "") + "' data-ofl='" + f + "' title='" + esc(tip || (f ? "Show only these flights" : "Show all flights")) + "'><b>" + v + "</b><small>" + lab + "</small></span>";
   $("opsStats").innerHTML = (D.status ? "<span class='opsk nofly'>" + esc(D.status) + "</span>" : "") +
-    chip("", "Flights", D.flights.length) + chip("", "Sorties", D.rows.length) + chip("seats", "Seats filled", seatsF + " / " + seatsN, seatsF < seatsN ? "bad" : "", "Show only flights with empty seats") +
-    chip("mc", "MC not set", noMc, noMc ? "warn" : "") + chip("flown", "Flown", D.rows.filter(r => opsOutcome(r, iso) === "flown").length) + chip("cxl", "Cancelled", D.rows.filter(r => opsOutcome(r, iso) === "cxl").length) +
-    (iso < today || nOpen ? chip("open", "Not closed", nOpen, nOpen ? "warn" : "") : "") + chip("down", "Down-chit", nDown, nDown ? "bad" : "", "Show the Down-chit card");
+    chip("", "Flights", D.flights.length) + chip("", "Sorties", D.rows.length) + chip("mc", "MC not set", noMc, noMc ? "warn" : "") + chip("flown", "Flown", D.rows.filter(r => opsOutcome(r, iso) === "flown").length) + chip("cxl", "Cancelled", D.rows.filter(r => opsOutcome(r, iso) === "cxl").length) +
+    (iso < today || nOpen ? chip("open", "Not closed", nOpen, nOpen ? "warn" : "") : "");
   const fl = cur.opsF ? OPS_FILT[cur.opsF] : null, rows = fl ? D.rows.filter(r => fl(r, iso)) : D.rows;
   if (D.other) el.innerHTML = "<div class='muted' style='padding:20px'>The Master Planner is for " + mb.S.year + ".</div>";
   else if (!D.rows.length && !D.sb.length) el.innerHTML = "<div class='muted' style='padding:20px'>No flights on the Master Planner for this day." + (D.status ? " Day status: " + esc(D.status) + "." : "") + (ed ? " Use <b>+ Ops Add</b> for an ad hoc flight." : "") + "</div>";
-  else if (opsVw === "tl") el.innerHTML = opsTimeline(D, rows, ed);
   else el.innerHTML = opsTable(D, rows, ed);
   // the right-hand column: area and codes, movement, down-chits, ground programme, then the day's remarks filling the rest
   const G = opsGround(D), MV = opsMovement(D);
@@ -3919,37 +3894,6 @@ function opsHrs(r, oc) {
   const cls = oc !== "cxl" && r.adur != null && r.pdur != null && Math.abs(r.adur - r.pdur) >= 0.05 ? (r.adur > r.pdur ? " over" : " under") : "";
   const line = (lab, v, c) => "<div class='oal" + c + "'><span class='oak'>" + lab + "</span>" + (v != null ? "<b>" + v.toFixed(1) + "</b>" : "<span class='oph'>–</span>") + "</div>";
   return "<td class='ohr l'>" + line("PLAN", r.pdur, " pl") + line("ACTUAL", oc === "cxl" ? null : r.adur, cls) + "</td>";
-}
-// Timeline: each aircraft as a bar on the day's clock (brief, then ETD to ETA), the shifts across the top, a line at the time now
-function opsTimeline(D, rows, ed) {
-  const iso = D.iso, M = t => hhmm(t);
-  const spans = rows.map(r => { let a = M(r.etd), b = M(r.eta); if (a == null) return null; if (b == null) b = a + Math.round((r.pdur || 1) * 60); if (b <= a) b += 1440; const br = M(r.o && r.o.brf); return { r, a, b, br: br != null && br < a ? br : null }; });
-  let lo = 6 * 60, hi = 24 * 60;
-  spans.forEach(s => { if (!s) return; lo = Math.min(lo, Math.floor((s.br != null ? s.br : s.a) / 60) * 60); hi = Math.max(hi, Math.ceil(s.b / 60) * 60); });
-  lo = Math.max(0, lo); hi = Math.min(30 * 60, hi);
-  const pc = m => ((m - lo) / (hi - lo) * 100).toFixed(2) + "%", w = (a, b) => ((b - a) / (hi - lo) * 100).toFixed(2) + "%";
-  const bandsH = [[0, 360, 720], [1, 720, 1080], [2, 1080, 1440]].map(([s, a, b]) => { a = Math.max(a, lo); b = Math.min(b, hi); return b > a ? "<div class='tlb s" + s + "' style='left:" + pc(a) + ";width:" + w(a, b) + "'>" + SHIFTS[s] + "</div>" : ""; }).join("");
-  let ticks = "", grid = "";
-  for (let m = lo; m <= hi; m += 60) { grid += "<div class='tlg' style='left:" + pc(m) + "'></div>"; if ((m / 60) % 2 === 0) ticks += "<div class='tlt' style='left:" + pc(m) + "'>" + String((m / 60) % 24).padStart(2, "0") + "</div>"; }
-  const now = iso === opsToday() ? opsNowMin() : null;
-  const crewOf = r => r.seats.map((c, k) => r.x.need[k] && c ? opsName(c) : null).filter(Boolean);
-  let h = "<div class='tlw'><div class='tlr hd'><div class='tll'></div><div class='tlk'>" + bandsH + ticks + "</div></div><div class='tlbody'><div class='tlgrid'>" + grid +
-    (now != null && now >= lo && now <= hi ? "<div class='tln' style='left:" + pc(now) + "'><span>NOW " + fmtHM(now) + "</span></div>" : "") + "</div>";
-  spans.forEach(s => { if (!s) return; const r = s.r, x = r.x, edge = opsEdge(r, iso), cs = r.o && r.o.cs || "", need = rowNeed(r).filter(Boolean).length, fill = need - rowMiss(r);
-    const lab = { flown: "FLOWN", cxl: "CANCELLED", open: "NOT CLOSED", due: "DUE " + r.etd, oa: "OPS ADD", plan: "PLANNED" }[edge];
-    h += "<div class='tlr'><div class='tll'><div class='ocsn" + (cs ? "" : " ph") + "'>" + esc(cs || x.code) + "</div><span class='ost " + (edge === "oa" ? "plan oa" : edge) + "'>" + lab + "</span>" + (r.o && r.o.tail ? "<small>" + esc(r.o.tail) + "</small>" : "") + "</div><div class='tlk'>" +
-      (s.br != null ? "<div class='tlbr' style='left:" + pc(s.br) + ";width:" + w(s.br, s.a) + "' title='Brief " + fmtHM(s.br) + "'>" + fmtHM(s.br) + "</div>" : "") +
-      "<div class='tlf " + edge + "' data-tlk='" + esc(r.key) + "' style='left:" + pc(s.a) + ";width:" + w(s.a, s.b) + "' title='Click to open this flight in the table'><b>" + esc(x.code) + "</b></div>" +
-      "<div class='tlx' style='left:calc(" + pc(s.b) + " + 8px)'><b>" + fmtHM(s.a) + "–" + fmtHM(s.b) + "</b> · " + (crewOf(r).map(esc).join(" · ") || "no crew") + " <i>" + fill + "/" + need + "</i></div>" +
-      (r.o && r.o.atd && r.o.ata ? (() => { let a = M(r.o.atd), b = M(r.o.ata); if (b <= a) b += 1440; return "<div class='tla' style='left:" + pc(a) + ";width:" + w(a, b) + "' title='Actual " + r.o.atd + "–" + r.o.ata + "'></div>"; })() : "") + "</div></div>"; });
-  if (!cur.opsF) D.sb.length && [...new Set(D.sb.map(r => r.x.s))].forEach(sh => { const L = opsSbList(D, D.sb.filter(r => r.x.s === sh)), a = lo, b = hi;   // standby covers the whole day
-    h += "<div class='tlr sb'><div class='tll'><div class='ocsn' style='color:#166534'>Standby Duty</div><small>" + L.map(r => esc(r.lab || r.x.code)).join(" · ") + "</small></div><div class='tlk'><div class='tlsb' style='left:" + pc(a) + ";width:" + w(a, b) + "'>Standby · " +
-      L.map(r => esc(r.lab || r.x.code) + " " + (r.seats.filter(Boolean).map(c => esc(opsName(c))).join(", ") || "–")).join(" · ") + "</div></div></div>"; });
-  const gr = D.gr.map(g => { const [a0, b0] = opsTimes(g.time, 0); const a = M(a0), b = M(b0); return a == null ? null : { g, a, b: b != null && b > a ? b : a + 30 }; }).filter(Boolean);
-  if (gr.length && !cur.opsF) h += "<div class='tlr gr'><div class='tll'><div class='ocsn' style='color:var(--s600)'>Ground</div></div><div class='tlk'>" + gr.map(z => "<div class='tlgb' style='left:" + pc(z.a) + ";width:" + w(z.a, z.b) + "'></div><div class='tlx' style='left:calc(" + pc(z.b) + " + 6px)'>" + esc(z.g.act) + " " + fmtHM(z.a) + "–" + fmtHM(z.b) + "</div>").join("") + "</div></div>";
-  if (!rows.length) h += "<div class='muted' style='padding:16px'>No flights are " + esc(OPS_FILT_LAB[cur.opsF] || "").toLowerCase() + " on this day.</div>";
-  h += "</div><div class='tlleg'><span><i class='sw brf'></i>Brief</span><span><i class='sw flown'></i>Flown</span><span><i class='sw open'></i>Not closed</span><span><i class='sw due'></i>Due</span><span><i class='sw plan'></i>Planned</span><span><i class='sw oa'></i>Ops Add</span><span><i class='sw act'></i>Actual ATD–ATA</span><span>Click a bar to open the flight in the table</span></div></div>";
-  return h;
 }
 // ground items of a day: Master Planner ground programme, each department's own GROUND PROGRAMME row entries it typed itself,
 // and crew on a ground activity (anything but flights, leave and off) grouped by department, shift and activity
@@ -4093,7 +4037,6 @@ $("opsMain").addEventListener("click", e => {
   const tl = e.target.closest("td[data-tail]"); if (tl && opsEditable()) { tailOpen(tl); return; }
   const ps = e.target.closest("[data-ost]"); if (ps && opsEditable()) { opsOpenPop(ps.closest("tr").dataset.ok, "st"); e.stopPropagation(); return; }
   if (e.target.closest("[data-oadd]")) { $("opsAddBtn").click(); return; }
-  const tb = e.target.closest("[data-tlk]"); if (tb) { opsVw = "table"; try { localStorage.setItem("opsView", opsVw); } catch (x) {} renderOps(); const tr = document.querySelector("#opsMain tr[data-ok='" + CSS.escape(tb.dataset.tlk) + "']"); if (tr) { tr.scrollIntoView({ block: "center" }); tr.classList.add("flash"); setTimeout(() => tr.classList.remove("flash"), 1600); } return; }
   const fo = e.target.closest("#opsMain [data-ofl]"); if (fo) { cur.opsF = ""; renderOps(); return; }
   const te = e.target.closest("[data-ef]");
   if (te && opsEditable() && !te.querySelector("input,textarea")) {
@@ -4228,9 +4171,7 @@ $("opsFull").onclick = () => {
 document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("opsfs")) { document.body.classList.remove("opsfs"); $("opsFull").textContent = "⛶ Projector"; setTimeout(opsFit, 50); } });
 opsApplyZ();
 $("opsStats").addEventListener("click", e => { const c = e.target.closest("[data-ofl]"); if (!c) return; const f = c.dataset.ofl;
-  if (f === "down") { const k = document.querySelector("#opsSide .opsdc"); if (k) { k.scrollIntoView({ block: "nearest" }); k.classList.add("flash"); setTimeout(() => k.classList.remove("flash"), 1600); } return; }
   cur.opsF = !f || cur.opsF === f ? "" : f; renderOps(); });
-$("opsView").addEventListener("click", e => { const b = e.target.closest("[data-vw]"); if (!b) return; opsVw = b.dataset.vw; try { localStorage.setItem("opsView", opsVw); } catch (x) {} $("opsPop").style.display = "none"; cur.opsPop = null; renderOps(); });
 const opsGo = iso => { cur.opsDay = iso; cur.opsPop = null; cur.opsF = ""; $("opsPop").style.display = "none"; renderOps(); };
 $("opsDate").onchange = e => { if (e.target.value) opsGo(e.target.value); };
 $("opsPrev").onclick = () => opsGo(opsAddDays(cur.opsDay, -1));
@@ -5334,7 +5275,7 @@ const HELP = {
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
     "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
-    "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (Seats filled, MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li><li>Timeline shows the same flights as bars on the day's clock (brief, then ETD to ETA) with a line at the time now; click a bar to open it in the table.</li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
+    "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li></li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +
     "<h3>Tools</h3><ul><li>Click a seat to change it, mark MC / CRMO, or swap Captain and Co-Pilot. Click a text cell to type.</li><li><b>+ Ops Add</b>: an ad hoc flight for the day. It isn't put on the Master Planner; departments see it on their MASTER rows (OPS ADD), and crew you seat on it get it on their plan. Remove it from its status pill.</li><li>A- / A+ sizes the board; Projector hides the menus.</li><li>Save writes every file you changed: the Ops Room file, and a department's file when you up-chit someone from it.</li></ul>"],
   mp: ["Master Planning", "<p>The Master Planner's calendar: every flight and ground programme item, which all departments copy. Only the Master Planner (its own file) can edit; everyone else sees it locked.</p>" +

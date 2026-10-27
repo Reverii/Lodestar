@@ -57,6 +57,9 @@ Last updated: 21 Oct 2026 (evening review). Tell Claude in this thread when some
 - [-] ~~Postings in and out: date a person joins/leaves so they only appear in the months they're in the unit~~ Not required (21 Oct)
 - [ ] ⏸ ON HOLD (21 Oct): Who may see Personnel Info on SharePoint? (personal data; may need its own restricted file)
 
+- [x] Master Planner export (z95, 27 Oct): Export… on the Master Planner view, Calendar + List sheets, flight codes can be left out, flights and planned hours only (no crew)
+- [x] Planner crew filter chips: Active / SANS / NSMEN / Inactive (z95, 27 Oct)
+
 ## 4. Currency (off hold 26 Oct: ATOM export drives it)
 - [x] ATOM currency v2 (z94, 26 Oct): the Ops Room publishes the daily export into an `ATOM Currency` sheet in the Ops Room file; five currencies (Day Capt, Day Curr, IRT, Night Capt, Night Curr) and clocked hours; Planner expiry-day marker then alert; Ops Room seat check; ATOM clocked hours in Flown Hrs and My Lodestar. IRT: the expiry day is only highlighted in the Planner (27 Oct). (older z92 line follows)
 - [x] ATOM currency (z92, 26 Oct): Currency tab reads an ATOM export (matched by roster Initials), Names to fix, flight-needs table (ATOM Needs sheet in the Ops Room file), Planner red corner + name badge, Ops Room CURR mark, My Lodestar currency card. Later: projection of planned flights (layer 3)

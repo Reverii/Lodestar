@@ -23,7 +23,7 @@ remarks); everything else fills itself from the department plans.
 - **Leave and MC** is grouped by department (replaces Movement).
 - **Remove the Timeline view.**
 - **Clock and theme:** a clock in the bar; a light / dark switch.
-- **Text a little smaller** than today (Brandon: "font seems a little too big").
+- **Text a little smaller** than today (Brandon: "font seems a little too big"), and a **scaling function** on the page: Auto fit by default, finer manual steps (Brandon, 2026-10-27).
 - **Projector** stays what it is today: full screen, no menus. It is not a separate display.
 - **ATD, ATA and Hours** stay (Brandon asked for them back); so do Brief Timing and the per-flight Remarks.
 - **Not on the Ops Room:** ATOM currency, new data fields, new Excel layout (nothing in any builder changes, no layout stamp change).
@@ -69,11 +69,15 @@ remarks); everything else fills itself from the department plans.
 - One row per department (Pilot, Loadmaster, TACCO, SUP 1, SUP 2, in the table's seat order), each with the people on Leave, OIL or MC that day: callsign (Cat-coloured) and the code (LL, OL, OIL, MC) small.
   A department with nobody shows a dash. Shifts shown when it is not the whole day (as today).
 
-## Text size and fit
-- The default text size is one step smaller than today's (today the first-time default is the second-largest step); A- / A+ and the remembered size stay.
-- The page shrinks (never grows) so the whole page, table and bottom row, fits one screen height as well as the width (today it fits the width only). Smallest allowed 60%.
-  On a busy day (10 flights) it must still fit at 1920x1080 and 1280x720 with no vertical page scroll in projector mode.
-- Rows are not stretched to fill a quiet day beyond the chosen size; spare room is simply space.
+## Scaling (text size and fit)
+- **A scale control in the bar:** `A−  [ 85% ]  A+` plus an **Auto** button. A− / A+ move in steps of 5% from 50% to 200% (today: six fixed steps from 100% to 200%). The percentage shows the scale in use.
+  Clicking the percentage opens a short list (Auto, 60, 70, 80, 90, 100, 120, 150, 200%) to jump straight to one.
+- **Auto is the default.** Auto picks the largest scale, up to 130%, at which the whole page (table and bottom row) fits the screen width and height with no scrolling; on a quiet day it grows, on a busy day
+  (10 flights) it shrinks, and it re-fits when the window changes, the day changes or the flights change. A manual scale (any other choice) is used as chosen, still shrinking if needed so the
+  page never scrolls sideways; the Auto button returns to Auto. Smallest Auto scale is 50%.
+- The choice (Auto or a percentage) is remembered on this computer (localStorage, in try/catch). An old saved size step from today's control is ignored and means Auto.
+- The projector (full screen) uses the same control; the control is hidden in full screen as today.
+- On a busy day (10 flights) Auto must fit at 1920x1080 and 1280x720 with no vertical page scroll in projector mode.
 
 ## Theme
 - A light and a dark theme for this page only (the other pages stay light). The chip in the bar switches; the choice is remembered on this computer (localStorage, in try/catch).
@@ -95,11 +99,11 @@ remarks); everything else fills itself from the department plans.
 - New `tests/ops_room.test.js` (Playwright, demo files, `window.OPS_TODAY` / `OPS_NOW`): the side cards sit below the flight table; the two removed chips are gone and the rest remain; Timeline gone;
   Cat classes on seats and a SANS person's green box; standby row font size equals a flight row's; Codes card in the Day Board; Area card absent when empty, present when filled, `+ Area` in the editable view
   and not in projector mode; Ground programme grouped AM / PM / NIGHT with "until" for a multi-day item; Leave and MC by department; theme switch and persistence; clock text; page fits the viewport height
-  at 1920x1080 and 1280x720 with a 10-flight day (no vertical scroll in projector mode); existing editing paths still work (seat pick, Ops Add, 1 Set / 2 Set, remarks save).
+  at 1920x1080 and 1280x720 with a 10-flight day (no vertical scroll in projector mode); scale control: Auto is the default and fits, A+ / A- change the percentage in 5% steps, picking a percentage sticks and survives a reload, Auto returns to fitting, an old saved step means Auto; existing editing paths still work (seat pick, Ops Add, 1 Set / 2 Set, remarks save).
 - The existing tests (`my_lodestar`, `planner_filter`, `mp_export`, `atom`) stay green; the ATOM test's "no CURR on Ops Room seats" check stays.
 - Real-SharePoint behaviour (background open of the Ops Room file) is not exercised here; unchanged.
 
 ## Open items
-1. The default text size and the 60% floor are my estimate; Brandon tunes them on the real projector.
+1. The 130% Auto ceiling and the 50% floor are my estimate; Brandon tunes them on the real projector. If "scaling function on the dashboard" meant the whole dashboard (not only the Ops Room page), that is a separate item.
 2. Day Board duty names are coloured only where a person can be identified from the plans; typed-in text stays plain.
 3. Leave and MC and Ground programme can overflow on a very full day; they scroll inside their card rather than push the page.

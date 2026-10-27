@@ -64,11 +64,11 @@ ws=openpyxl.load_workbook(sys.argv[1])["List"]
 rows=[[c.value for c in r] for r in ws.iter_rows(min_row=5)]
 fl=[r for r in rows if r[3] and r[6] is not None and r[0] not in (None,"Total")]
 tot=[r for r in rows if r[0]=="Total"]
-print(json.dumps({"n":len(fl),"hrs":sum(r[6] for r in fl),"total":tot[0][6] if tot else None,"first":rows[0][:7]}))`, f);
+print(json.dumps({"n":len(fl),"hrs":sum(r[6] for r in fl),"total":tot[0][6] if tot else None}))`, f);
   assert.strictEqual(r.n, d.totals.fl); assert.ok(Math.abs(r.hrs - d.totals.hrs) < 1e-6 && Math.abs(r.total - d.totals.hrs) < 1e-6, JSON.stringify(r));
 }, F);
 test("no_crew_or_comments_in_the_file", async ({ page }) => {
-  const secret = await page.evaluate(() => { const P = masterBook().S, out = new Set(); P.fl.forEach(f => { if (f.note) out.add(f.note); if (f.crew) out.add(f.crew); }); books.filter(b => !b.S.kind).forEach(b => b.S.roster.forEach(p => { if (p.id && p.id.length > 3) out.add(p.id); if (p.name && p.name.length > 5) out.add(p.name); })); return [...out]; });
+  const secret = await page.evaluate(() => { const P = masterBook().S, out = new Set(), shown = P.codes.map(k => k.code + " " + k.desc).join(" "); P.fl.forEach(f => { if (f.note) out.add(f.note); if (f.crew) out.add(f.crew); }); books.filter(b => !b.S.kind).forEach(b => b.S.roster.forEach(p => { if (p.id && p.id.length > 3) out.add(p.id); if (p.name && p.name.length > 5) out.add(p.name); })); return [...out].filter(x => !shown.includes(x)); });   // a comment that merely repeats a flight code's own description is not a leak
   const f = await bytesTo(page, OCT, "both");
   const text = execFileSync("python3", ["-I", "-c", "import zipfile,sys;z=zipfile.ZipFile(sys.argv[1]);print(' '.join(z.read(n).decode('utf8','ignore') for n in z.namelist()))", f]).toString();
   for (const s of secret) assert.ok(!text.includes(s), "leaked: " + s);

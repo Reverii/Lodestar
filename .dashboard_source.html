@@ -991,7 +991,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-27 z97</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-27 z98</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4565,7 +4565,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-27 z97 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-27 z98 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -4728,7 +4728,7 @@ async function spSave(h, bytes) {
 
 // ---------- events ----------
 $("btnOpen").onclick = openFile; $("wOpen").onclick = openFile; $("btnSave").onclick = save;
-$("wSample").onclick = () => { load(b64ToBuf(TEMPLATE_B64), "Sample_SUP2_Planner_2026.xlsx", null); if (typeof SAMPLES_B64 !== "undefined") { for (const [nm, b64] of Object.entries(SAMPLES_B64)) { try { loadWorkbook(b64ToBuf(b64), nm, null, true); } catch (e) { } } renderAll(); } };
+$("wSample").onclick = () => { load(b64ToBuf(TEMPLATE_B64), "Sample_SUP2_Planner_2026.xlsx", null); if (typeof SAMPLES_B64 !== "undefined") { for (const [nm, b64] of Object.entries(SAMPLES_B64)) { try { loadWorkbook(b64ToBuf(b64), nm, null, true); } catch (e) { } } if (opsIdx() >= 0) OPS = true; /* the sample includes the Ops Room file: every sample file can be edited, like the Ops Room start button */ renderAll(); } };
 $("fileInput").onchange = async e => { const f = e.target.files[0]; if (f) load(await f.arrayBuffer(), f.name, null); };
 $("mpTabBtn").onclick = e => { e.stopPropagation(); $("plMenu").classList.remove("open"); $("mpMenu").classList.toggle("open"); };
 $("plTabBtn").onclick = e => { e.stopPropagation(); $("mpMenu").classList.remove("open"); $("plMenu").classList.toggle("open"); };

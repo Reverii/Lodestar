@@ -288,6 +288,19 @@ test("ground_until_crosses_the_month_end", async ({ page }) => {
   assert.ok(cols[1].text.includes(r) && /until 2 Nov/.test(cols[1].text), cols[1].text);
 }, ED);
 
+test("sample_ops_room_can_pick_a_seat", async ({ page }) => {
+  await page.click("#wSample");
+  await page.waitForFunction(() => typeof books !== "undefined" && books.length >= 8, null, { timeout: 20000 });
+  await goOps(page, DAY);
+  assert.ok(await page.evaluate(() => opsEditable()), "the sample's Ops Room is editable");
+  const before = await page.evaluate(() => document.querySelectorAll("#opsMain td.oc.miss[data-oc]").length);
+  assert.ok(before > 0, "an empty seat can be clicked");
+  await page.click("#opsMain td.oc.miss[data-oc]");
+  assert.ok(await page.evaluate(() => getComputedStyle(document.getElementById("opsPop")).display === "block"), "the seat picker opens");
+  await page.selectOption("#opsPick", { index: 1 });
+  assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsMain td.oc.miss[data-oc]").length), before - 1, "the seat is filled");
+}, { blank: true });
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

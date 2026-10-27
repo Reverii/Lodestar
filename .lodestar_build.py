@@ -37,7 +37,7 @@ def dashboard(release):
     tmp = stage()
     f = lambda n: os.path.join(HERE, n)
     out = os.path.join(HERE, "release" if release else "", "Flight_Ops_Planner_Dashboard.html")
-    others = [f(f"Flight_Ops_Planner_{n}.xlsx") for _, n in OTHER_DEPTS] + [f("Duty_Roster.xlsx"), f("Master_Planner.xlsx")]
+    others = [f(f"Flight_Ops_Planner_{n}.xlsx") for _, n in OTHER_DEPTS] + [f("Duty_Roster.xlsx"), f("Master_Planner.xlsx"), f("Ops_Room.xlsx")]
     run(tmp, ["assemble.py"] + (["--release"] if release else []) + [f("Flight_Ops_Planner_SUP2.xlsx"), out] + others)
     shutil.rmtree(tmp)
     print("wrote", out)

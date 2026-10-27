@@ -768,6 +768,26 @@ table.opst tr.f.flash td{animation:opsFlash 1.6s}@keyframes opsFlash{0%,40%{back
 /* timeline */
 .tlleg .sw.brf{background:repeating-linear-gradient(45deg,#99f6e4 0 4px,#ccfbf1 4px 8px)}.tlleg .sw.flown{background:#16a34a}.tlleg .sw.open{background:#f59e0b}.tlleg .sw.due{background:#3b82f6}.tlleg .sw.oa{background:#7c3aed}.tlleg .sw.act{background:var(--s900);height:4px}
 body.opsfs #opsSize{display:none}
+#opsClock{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;margin-left:auto;padding:0 6px}#opsClock+#opsTheme{margin-left:0}
+/* Ops Room dark theme: only on the Ops Room page (the body class stays on when another tab is open, so every rule is scoped to #v-ops) */
+body.opsdark:has(#v-ops.on){background:#0b1220}
+body.opsdark #v-ops{--s50:#0f1830;--s100:#111a2e;--s200:#1f2d4a;--s300:#2c3e63;--s400:#5b6f95;--s500:#8da0c0;--s600:#a9b8d4;--s700:#c4cfe4;--s800:#060b16;--s900:#e8eefc;color:#e8eefc}
+body.opsdark #v-ops :is(.card,.opsk,#opsLeft,#opsMain,#opsBoard,.odg,.odi,.odi .dbml,table.opst td,.odg .dc.emp,#opsSide .card){background:#111a2e;color:#e8eefc}
+body.opsdark #v-ops table.opst tr.alt td{background:#14203a}body.opsdark #v-ops table.opst tr.sb td{background:#10261c}
+body.opsdark #v-ops table.opst td.oc.miss,body.opsdark #v-ops table.opst td.oc.na,body.opsdark #v-ops table.opst td.oc.off{background:#111a2e}
+body.opsdark #v-ops table.opst tr.cxl td{background:#0f1830!important;color:#5b6f95!important}
+body.opsdark #v-ops .odg .dc{background:#2a1a22;border-color:#6b2a3a;color:#e8eefc}
+body.opsdark #v-ops table.opst tr.ofill td{background:repeating-linear-gradient(135deg,#0f1830 0 14px,#111a2e 14px 28px)}body.opsdark #v-ops table.opst tr.ofill td span{background:#111a2e;border-color:#2c3e63}
+body.opsdark #v-ops #opsStats .opsk.warn{background:#2b2108;border-color:#b45309;color:#fbbf24}body.opsdark #v-ops #opsStats .opsk.bad{background:#2d1216;border-color:#9f1239;color:#f87171}
+body.opsdark #v-ops :is(input,textarea,select),body.opsdark #v-ops #opsDayRem{background:#0b1220;color:#e8eefc;border-color:#2c3e63}
+body.opsdark #v-ops .catA{color:#f8fafc!important}body.opsdark #v-ops .catB{color:#4ade80!important}body.opsdark #v-ops .catC{color:#facc15!important}body.opsdark #v-ops .catD{color:#f87171!important}body.opsdark #v-ops .catT{color:#f472b6!important}
+body.opsdark #v-ops #opsMain table.opst tr.band.s0 td{background:#0369a1;color:#fff}body.opsdark #v-ops #opsMain table.opst tr.band.s1 td{background:#b45309;color:#fff}body.opsdark #v-ops #opsMain table.opst tr.band.s2 td{background:#312e81;color:#fff}body.opsdark #v-ops #opsMain table.opst tr.sbh td{background:#166534;color:#fff;border-top-color:#0b1220}
+body.opsdark #v-ops #opsMain table.opst tr.band td{border-top-color:#0b1220}
+body.opsdark #v-ops .seatp{background:#0b1220;color:#8da0c0;border-color:#2c3e63}
+body.opsdark #v-ops .btn:not(.primary):not(#opsAddBtn){background:#1f2d4a;color:#e8eefc;border-color:#2c3e63}
+body.opsdark #v-ops .odi .dbml{color:#93c5fd}
+body.opsdark #opsPop,body.opsdark #tailPop{background:#111a2e;color:#e8eefc;border-color:#2c3e63}
+body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
 .lodetop{display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative}.loderight{display:flex;align-items:center;gap:8px;position:relative}.lodenav{display:flex;gap:6px}.lodechip{display:flex;align-items:center;gap:8px;background:var(--s800);color:#cbd5e1;border-radius:20px;padding:4px 14px 4px 5px;font-size:12px}
 .lodechip .av{width:24px;height:24px;border-radius:50%;background:#15803d;color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center}.lodechip b{color:#fff;font-size:13px}.lodechip a{color:#93c5fd;font-weight:700;cursor:pointer}
 .lodelist{position:absolute;right:0;top:34px;z-index:20;background:#fff;border:1px solid var(--s300);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:360px;overflow:auto;min-width:260px}.lodelist .lg{padding:5px 10px;font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--s500);background:var(--s50)}.lodelist .li{padding:6px 12px;cursor:pointer}.lodelist .li:hover{background:var(--s100)}
@@ -881,6 +901,7 @@ body.opsfs #opsSize{display:none}
       <span id="opsNav"><button class="btn" id="opsPrev" title="Previous day">‹</button><span id="opsQuick"><button data-q="0">Today</button><button data-q="1">Tomorrow</button></span><button class="btn" id="opsNextD" title="Next day">›</button></span>
       <input type="date" id="opsDate">
       <span class="grow"></span>
+      <span id="opsClock" title="The time now">--:--</span><button class="btn" id="opsTheme" title="Switch the Ops Room between a light and a dark screen">Light</button>
       <button class="btn" id="opsAddBtn" title="Add an ad hoc flight for this day. It isn't put on the Master Planner; departments see it on their programme." style="background:#7c3aed;color:#fff;border-color:#7c3aed">+ Ops Add</button>
       <span id="opsSize"><button class="btn" data-z="-1" title="Smaller">A−</button><button class="btn" data-z="1" title="Bigger">A+</button></span>
       <button class="btn primary" id="opsFull" title="Full screen for the projector: hides the menus. Esc to leave.">⛶ Projector</button></div>
@@ -3799,7 +3820,7 @@ function renderOps() {
   if (!books.length) return;
   if (!cur.opsDay) cur.opsDay = opsToday();
   const iso = cur.opsDay, ed = opsEditable(), mb = masterBook();
-  $("opsDate").value = iso;
+  $("opsDate").value = iso; opsTick();
   const today = opsToday();
   document.querySelectorAll("#opsQuick button").forEach(b => b.classList.toggle("on", b.dataset.q === "0" ? iso === today : iso === opsAddDays(today, 1)));
   const missing = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"].filter(x => !deptOpen(x));
@@ -4172,6 +4193,13 @@ $("opsFull").onclick = () => {
 };
 document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("opsfs")) { document.body.classList.remove("opsfs"); $("opsFull").textContent = "⛶ Projector"; setTimeout(opsFit, 50); } });
 opsApplyZ();
+// the clock in the bar, and the light / dark screen (remembered on this computer; the page works without storage)
+function opsTick() { const e = $("opsClock"); if (!e) return; const m = opsNowMin(); e.textContent = m == null ? "--:--" : fmtHM(m).replace(/^(\d\d)(\d\d)$/, "$1:$2"); }
+setInterval(opsTick, 10000);
+function opsThemeLabel() { const b = $("opsTheme"); if (b) b.textContent = document.body.classList.contains("opsdark") ? "Dark" : "Light"; }
+function opsThemeInit() { let dark = false; try { dark = localStorage.getItem("opsTheme") === "dark"; } catch (e) {} document.body.classList.toggle("opsdark", dark); opsThemeLabel(); }
+$("opsTheme").onclick = () => { const dark = document.body.classList.toggle("opsdark"); opsThemeLabel(); try { localStorage.setItem("opsTheme", dark ? "dark" : "light"); } catch (e) {} };
+opsThemeInit(); opsTick();
 $("opsStats").addEventListener("click", e => { const c = e.target.closest("[data-ofl]"); if (!c) return; const f = c.dataset.ofl;
   cur.opsF = !f || cur.opsF === f ? "" : f; renderOps(); });
 const opsGo = iso => { cur.opsDay = iso; cur.opsPop = null; cur.opsF = ""; cur.opsAreaOpen = false; $("opsPop").style.display = "none"; renderOps(); };

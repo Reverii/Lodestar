@@ -158,6 +158,42 @@ test("key_line", async ({ page }) => {
   assert.ok(t && /SANS \/ NSMEN/.test(t) && /OCU/.test(t), String(t));
 }, ED);
 
+const BGSUM = (page, sel) => page.evaluate(sel => { const m = getComputedStyle(document.querySelector(sel)).backgroundColor.match(/\d+/g).map(Number); return m[0] + m[1] + m[2]; }, sel);
+test("clock_shows_time", async ({ page }) => {
+  await goOps(page, DAY);
+  await page.evaluate(() => { window.OPS_NOW = "14:32"; renderOps(); });
+  assert.strictEqual(await page.evaluate(() => document.getElementById("opsClock").textContent.trim()), "14:32");
+  await page.evaluate(() => { window.OPS_NOW = "07:05"; opsTick(); });
+  assert.strictEqual(await page.evaluate(() => document.getElementById("opsClock").textContent.trim()), "07:05");
+}, ED);
+test("theme_toggle_dark_and_back", async ({ page }) => {
+  await goOps(page, DAY);
+  const light = await BGSUM(page, "#opsMain tr.f td.oc"); assert.ok(light > 700, "light cells are light: " + light);
+  const plan0 = await page.evaluate(() => getComputedStyle(document.querySelector("#v-plan")).backgroundColor);
+  await page.click("#opsTheme");
+  assert.ok(await page.evaluate(() => document.body.classList.contains("opsdark")));
+  for (const sel of ["#opsMain tr.f td.oc", "#opsLeft", "#opsSide .card", "#opsStats .opsk"]) assert.ok(await BGSUM(page, sel) < 250, sel + " is dark: " + await BGSUM(page, sel));
+  assert.strictEqual(await page.evaluate(() => getComputedStyle(document.querySelector("#v-plan")).backgroundColor), plan0, "other pages stay as they were");
+  await page.click("#opsTheme");
+  assert.ok(await BGSUM(page, "#opsMain tr.f td.oc") > 700);
+}, ED);
+test("theme_persists", async ({ page }) => {
+  await goOps(page, DAY); await page.click("#opsTheme");
+  assert.strictEqual(await page.evaluate(() => localStorage.getItem("opsTheme")), "dark");
+  await page.evaluate(() => { document.body.classList.remove("opsdark"); opsThemeInit(); });
+  assert.ok(await page.evaluate(() => document.body.classList.contains("opsdark")));
+}, ED);
+test("theme_storage_throws", async ({ page }) => {
+  await goOps(page, DAY);
+  const r = await page.evaluate(() => { Storage.prototype.getItem = () => { throw new Error("blocked"); }; Storage.prototype.setItem = () => { throw new Error("blocked"); };
+    try { opsThemeInit(); document.getElementById("opsTheme").click(); return document.body.classList.contains("opsdark"); } catch (e) { return "threw " + e.message; } });
+  assert.strictEqual(r, true, "still switches to dark for this visit");
+}, ED);
+test("dark_inputs_readable", async ({ page }) => {
+  await goOps(page, DAY); await page.click("#opsTheme");
+  assert.ok(await BGSUM(page, "#opsDayRem") < 250, "remarks box is dark");
+}, ED);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

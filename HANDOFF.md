@@ -25,7 +25,8 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Planner: layer 1 marks the day a Day / Night currency expires (Capt as a lighter outline), layer 2 gives a red corner "NOT CURRENT" on a flight on or after it.
   No tint after the expiry day, no name badges. The Ops Room marks a seat "CURR" (the Aircraft Captain seat also checks Capt). Warnings only.
 - Hours: Planner "Flown Hrs" and My Lodestar show ATOM's clocked hours for the export's month.
-- **Open:** what IRT should do in the Planner (read and shown on the Currency tab and My Lodestar only for now); the general flying rules (45 / 90 / 180) are still the
+- IRT (Brandon, 27 Oct): in the Planner the day it expires is only highlighted in all three rows; it never alerts.
+- **Open:** the general flying rules (45 / 90 / 180) are still the
   three sample rules; real unsanitised exports from another generator have not been tried; roster Initials must be filled to match ATOM.
 - Removed from v1: the "What each flight needs" table and its `ATOM Needs` sheet, mission / LSS handling, the name badges.
 - Tests: `node tests/atom.test.js` (synthetic exports only; several minutes), `node tests/my_lodestar.test.js`. Dummy-name test set from real Initials:

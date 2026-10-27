@@ -470,8 +470,22 @@ test("alert_uses_the_shift_row", async ({ page }) => {
 }, L7);
 test("pure_marks_for_odd_values", async ({ page }) => {
   const r = await page.evaluate(() => { const row = k => ({ cells: { "Day Curr": { k, iso: null, raw: "" }, "Night Curr": { k, iso: null, raw: "" }, IRT: { k: "date", iso: "2026-10-27", raw: "" } } });
-    return ["none", "na", "blank", "text"].map(k => atomDayMarks(row(k), "2026-10-28", 0, true)).concat([atomDayMarks(row("none"), "2026-10-27", 0, true)]).map(x => [x.marks.length, !!x.alert]); });
-  assert.deepStrictEqual(r, [[0, false], [0, false], [0, false], [0, false], [0, false]]);   // IRT never marks or alerts in the Planner either
+    return ["none", "na", "blank", "text"].map(k => atomDayMarks(row(k), "2026-10-28", 0, true)).map(x => [x.marks.length, !!x.alert]); });
+  assert.deepStrictEqual(r, [[0, false], [0, false], [0, false], [0, false]]);   // odd values give no mark and no alert; IRT after its day never alerts
+}, L7);
+test("irt_highlights_the_expiry_day_in_all_rows_and_never_alerts", async ({ page }) => {
+  const r = await page.evaluate(() => { const row = { cells: { IRT: { k: "date", iso: "2026-10-27", raw: "" } } };
+    return { on: [0, 1, 2].map(s => atomDayMarks(row, "2026-10-27", s, true).marks.map(m => m.label)), after: [0, 1, 2].map(s => { const x = atomDayMarks(row, "2026-10-28", s, true); return [x.marks.length, !!x.alert]; }), before: atomDayMarks(row, "2026-10-26", 0, true).marks.length }; });
+  assert.deepStrictEqual(r, { on: [["IRT expires"], ["IRT expires"], ["IRT expires"]], after: [[0, false], [0, false], [0, false]], before: 0 });
+}, L7);
+test("irt_marker_in_the_planner", async ({ page }) => {
+  const [bi, ix] = await setIni(page, "Pilot", 1, "HO KM");
+  await page.evaluate(() => { ATOMS[0].sheets.Pilot[1].cells.IRT = { k: "date", iso: "2026-10-20", raw: "20 Oct 26" }; });
+  await planMonth(page, 9, [[ix, 0, 22, "FLT-2.0"]], "Pilot");
+  const am = await cellAt(page, ix, 0, 20), pm = await cellAt(page, ix, 1, 20), nt = await cellAt(page, ix, 2, 20), after = await cellAt(page, ix, 0, 22);
+  assert.ok([am, pm, nt].every(c => /l1end/.test(c.cls) && /IRT expires/.test(c.title)), JSON.stringify([am.cls, pm.cls, nt.cls]));
+  assert.ok(/IRT expires/.test(am.txt) && !/IRT expires/.test(pm.txt), "the label is on the AM row only");
+  assert.ok(!/atomw/.test(after.cls) && !/l1/.test(after.cls), JSON.stringify(after));   // a flight after the IRT expiry day: no alert, no tint
 }, L7);
 test("cancelled_or_non_flight_not_alerted", async ({ page }) => {
   const r = await page.evaluate(() => { const row = { cells: { "Night Curr": { k: "date", iso: "2026-10-27", raw: "" } } }; return [!!atomDayMarks(row, "2026-10-28", 2, false).alert, !!atomDayMarks(row, "2026-10-28", 2, true).alert]; });

@@ -22,7 +22,7 @@ currency expires before they plan, and (2) an alert if they plan a flight after 
   not read from ATOM. Pilots seldom lapse it. It is left as it is.
 - **Hours:** ATOM's Clocked hours (Current Month) show in the Planner totals and on My Lodestar.
 - Applies to all five departments (all are on one template since 26 Oct).
-- **IRT behaviour in the Planner is open** ("circle back"): see Open items. Until Brandon decides, IRT is read and shown on the Currency tab and My Lodestar only.
+- **IRT in the Planner (Brandon, 2026-10-27): just highlight the cell.** The day IRT expires is marked in all three shift rows (label on the AM row), the same orange marker as Day / Night Curr; nothing alerts and nothing is tinted after it. IRT also shows on the Currency tab and My Lodestar.
 
 ## What changes from v1 (z92)
 - The reader keeps only the five currencies and the hours column (v1 read four groups and about 20 columns).
@@ -99,7 +99,6 @@ Day versus night follows the **shift row** the flight is in (AM, PM = Day; NIGHT
 - Mock-ups: `previews/Planner_pilot_1920_v3.png` (Pilot planning view at 1920x1200).
 
 ## Open items
-1. **IRT in the Planner** (Brandon: circle back). Candidates: a red marker across all three rows with an alert on any flight (like a safety currency, as in the mock-up), or shown on the Currency tab and My Lodestar only.
-2. The general flying rules (45 / 90 / 180) are still the three sample rules; the real ones are to be entered later.
-3. Real, unsanitised exports from another generator have not been tried (the parser needs the usual `<c r="A1">` layout).
-4. Deferred minors from the z92 review that are not touched by this redesign: duplicate names on one ATOM sheet use the first row; departments missing from an export are only listed in Names to fix.
+1. The general flying rules (45 / 90 / 180) are still the three sample rules; the real ones are to be entered later.
+2. Real, unsanitised exports from another generator have not been tried (the parser needs the usual `<c r="A1">` layout).
+3. Deferred minors from the z92 review that are not touched by this redesign: duplicate names on one ATOM sheet use the first row; departments missing from an export are only listed in Names to fix.

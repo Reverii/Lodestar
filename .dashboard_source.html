@@ -11,6 +11,7 @@
   --blue:#1d4ed8;--teal:#0f766e;--amber:#b45309;--rose:#be123c;--red:#dc2626;--green:#15803d;
   --c0bg:#dbeafe;--c0fg:#1e3a8a;--c1bg:#cffafe;--c1fg:#164e63;--c2bg:#fef3c7;--c2fg:#78350f;--c3bg:#fecdd3;--c3fg:#881337;--c4bg:#e2e8f0;--c4fg:#64748b;--c5bg:#f1f5f9;--c5fg:#94a3b8;
 }
+#crewChips{display:inline-flex;border:1px solid var(--s300);border-radius:5px;overflow:hidden}#crewChips button{border:0;border-right:1px solid var(--s200);background:#fff;padding:5px 10px;font-weight:600;font-size:12px;color:var(--s400);cursor:pointer}#crewChips button:last-child{border-right:0}#crewChips button.on{background:var(--s900);color:#fff}
 .atomhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 12px}.atomhead input,.atomhead select{font:inherit;font-size:12px}
 .astale{border-radius:6px;padding:7px 12px;font-weight:600;border:1px solid #f59e0b;background:#fffbeb;color:#78350f}.astale.red{border-color:#dc2626;background:#fef2f2;color:#991b1b}
 .atombar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.atombar .seg{display:inline-flex;border:1px solid var(--s300);border-radius:5px;overflow:hidden}.atombar .seg button{border:0;background:#fff;padding:5px 11px;font-weight:600;font-size:12px;color:var(--s500);cursor:pointer}.atombar .seg button.on{background:var(--s900);color:#fff}
@@ -837,7 +838,7 @@ body.opsfs #opsSize{display:none}
       <label>Year<input type="number" id="year" min="2000" max="2100" style="width:90px"></label>
       <label>Month<select id="month"></select></label>
       <label>Filter crew<input type="search" id="search" placeholder="Name, callsign or role"></label>
-      <label style="flex-direction:row;align-items:center;gap:6px;padding-bottom:7px"><input type="checkbox" id="hideInactive" style="min-width:0"> Hide inactive</label>
+      <div id="crewShow" style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;font-weight:700;color:var(--s500);letter-spacing:.3px">SHOW</span><span style="display:flex;align-items:center;gap:8px"><span id="crewChips"><button data-st="active">Active</button><button data-st="sans">SANS</button><button data-st="nsmen">NSMEN</button><button data-st="inactive">Inactive</button></span><span id="crewCount" class="muted"></span></span></div>
       <label>Find in this month<input type="search" id="find" placeholder="Code, callsign or comment" style="width:180px" title="Outlines matching cells. Enter jumps to the next one."></label><span id="findInfo"></span>
       <button class="btn" id="btnToday" style="margin-bottom:2px;padding:6px 12px;font-size:13px" title="Go to today's month and column">Today</button>
       <div style="flex:1"></div>
@@ -1384,9 +1385,9 @@ function atomSeatWarn(r, c, k) {   // Ops Room seat: the Day / Night Curr of the
 function atomDayMarks(row, iso, s, flight) {   // one Planner cell: s = shift row (0 AM, 1 PM, 2 NIGHT); flight = the cell holds an uncancelled flight
   const out = { marks: [], alert: null }; if (!row) return out;
   const part = s === 2 ? "Night" : "Day", curK = part + " Curr", captK = part + " Capt";
-  for (const [col, kind] of [[curK, "curr"], [captK, "capt"]]) { const c = row.cells[col]; if (c && c.k === "date" && c.iso === iso) out.marks.push({ col, kind, label: col + " expires" }); }   // the expiry day is marked; nothing after it
+  for (const [col, kind] of [[curK, "curr"], [captK, "capt"], ["IRT", "irt"]]) { const c = row.cells[col]; if (c && c.k === "date" && c.iso === iso) out.marks.push({ col, kind, label: col + " expires" }); }   // the expiry day is marked (IRT in every row); nothing after it
   const c = row.cells[curK];
-  if (flight && c && c.k === "date" && c.iso < iso) out.alert = { lines: [curK + " expired " + atomFmt(c.iso, iso)] };   // Capt and IRT never alert in the Planner
+  if (flight && c && c.k === "date" && c.iso < iso) out.alert = { lines: [curK + " expired " + atomFmt(c.iso, iso)] };   // Capt and IRT never alert in the Planner: the expiry day is only highlighted
   return out;
 }
 function atomFixOpen() { cur.atomFix = true; renderAtom(); }
@@ -2937,11 +2938,22 @@ function renderControls() {
     '<span class="chip shAM">AM</span><span class="chip shPM">PM</span><span class="chip shNIGHT">NIGHT</span><span class="chip" style="background:var(--s700);color:#fcd34d">Weekend</span><span class="chip" style="background:#9f1239;color:#fff">Holiday</span>' +
     (atomCurrent() ? "<span class='chip l1chip' title='ATOM: the day a Day / Night currency expires'>Currency expires</span><span class='chip l1chip capt' title='ATOM: a Captain currency expires (only matters on the Aircraft Captain seat)'>Captain currency expires</span><span class='chip' style='background:#fee2e2;color:#b91c1c' title='ATOM: a flight planned after the expiry day'>⚠ Not current</span>" : "");
 }
+// ---------- Planner crew filter: status chips (everyone shown until a planner switches a group off; remembered per department in this browser)
+const CREW_STATUS = ["active", "sans", "nsmen", "inactive"];
+const crewStatus = p => { const t = String(p.status || "").toLowerCase(); return t === "sans" || t === "nsmen" || t === "inactive" ? t : "active"; };
+const crewShow = () => { const v = spRecall("crew_show_" + S.dept, null); return Array.isArray(v) ? CREW_STATUS.filter(k => v.includes(k)) : CREW_STATUS.slice(); };
+function renderCrewChips() {
+  const box = $("crewChips"); if (!box) return;
+  $("crewShow").style.display = S.kind || !S.roster ? "none" : "flex"; if (S.kind || !S.roster) return;
+  const show = crewShow(), all = S.roster.filter(p => p.name || p.id), n = all.filter(p => show.includes(crewStatus(p))).length;
+  box.querySelectorAll("button").forEach(b => { b.classList.toggle("on", show.includes(b.dataset.st)); b.title = (show.includes(b.dataset.st) ? "Hide " : "Show ") + b.textContent + " crew"; });
+  $("crewCount").textContent = "Showing " + n + " of " + all.length + " crew";
+}
 function visibleCrew() {
-  const q = $("search").value.trim().toLowerCase(), hide = $("hideInactive").checked, out = [];
+  const q = $("search").value.trim().toLowerCase(), show = crewShow(), out = [];
   S.roster.forEach((p, i) => {
     if (!p.name && !p.id) return;
-    if (hide && p.status.toLowerCase() === "inactive") return;
+    if (!show.includes(crewStatus(p))) return;   // the status chips: Active / SANS / NSMEN / Inactive
     if (q && !(p.name + " " + p.id + " " + p.role + " " + p.cat + " " + p.status).toLowerCase().includes(q)) return;
     out.push(i);
   });
@@ -2949,6 +2961,7 @@ function visibleCrew() {
   return out.filter(i => !isSans(S.roster[i])).concat(out.filter(i => isSans(S.roster[i])));
 }
 function renderPlanner() {
+  renderCrewChips();
   if (cur.m === NX_MI && !S.nx) cur.m = 11;   // this file has no Jan (next year) tab
   if (S.kind) { $("kpis").innerHTML = ""; $("mpNote").style.display = "none"; rosterNote("plan"); return; }
   // flights from the Master Planner, when it is open
@@ -3087,8 +3100,8 @@ function renderPlanner() {
         let l1cls = "", l1 = "";   // ATOM: the day a currency expires is marked (layer 1); a flight after it alerts (layer 2)
         const am = AR ? atomDayMarks(AR, isoOf(y, mi, d), s, !!(a && a.ci === CAT_FLIGHT && !cx)) : null;
         if (am && am.marks.length) {
-          const kind = am.marks.some(z => z.kind === "curr") ? "curr" : "capt", diso = isoOf(y, mi, d);
-          l1cls = " l1end " + kind; if (s === 0 || s === 2) l1 = "<div class='l1lab " + kind + "'>" + esc(am.marks.find(z => z.kind === kind).label) + "</div>";
+          const kind = am.marks.some(z => z.kind === "curr") ? "curr" : am.marks.some(z => z.kind === "capt") ? "capt" : "irt", diso = isoOf(y, mi, d), sty = kind === "irt" ? "curr irt" : kind;
+          l1cls = " l1end " + sty; if (s === 0 || (s === 2 && kind !== "irt")) l1 = "<div class='l1lab " + sty + "'>" + esc(am.marks.find(z => z.kind === kind).label) + "</div>";   // IRT's label sits on the AM row only
           tip = am.marks.map(z => z.col + " expires " + atomFmt(diso, diso)).join("\n") + (tip ? "\n" + tip : "");
         }
         if (am && am.alert) { W.push(["⚠ NOT CURRENT", "bad"]); l1cls += " atomw"; tip = am.alert.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent()) + (tip ? "\n" + tip : ""); }
@@ -5173,7 +5186,7 @@ const HELP = {
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". The Ops Room marks a seat \"CURR\", and the Aircraft Captain seat also checks the Captain currency. These only warn. IRT is shown here and on My Lodestar only.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
+    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". The Ops Room marks a seat \"CURR\", and the Aircraft Captain seat also checks the Captain currency. These only warn. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (Seats filled, MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li><li>Timeline shows the same flights as bars on the day's clock (brief, then ETD to ETA) with a line at the time now; click a bar to open it in the table.</li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +
@@ -5207,7 +5220,8 @@ document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.onclick = ()
 });
 $("month").onchange = e => { cur.m = +e.target.value; cur.sel = null; renderPlanner(); renderOverview(); };
 $("year").onchange = e => { const y = +e.target.value; if (!y) return; if (readOnly()) { e.target.value = S.year; return; } S.year = y; put("Dashboard", "A5", y); renderAll(); };
-$("search").oninput = renderPlanner; $("hideInactive").onchange = renderPlanner;
+$("search").oninput = renderPlanner;
+$("crewChips").onclick = e => { const b = e.target.closest("button[data-st]"); if (!b || S.kind) return; const show = crewShow(), k = b.dataset.st; spRemember("crew_show_" + S.dept, show.includes(k) ? show.filter(x => x !== k) : show.concat(k)); renderPlanner(); };
 $("plan").addEventListener("click", e => { const m2 = e.target.closest(".m2add"); if (m2) { cur.m2.s.add(+m2.dataset.m2); renderPlanner(); select("m:" + (m2.dataset.m2 * 2 + 1) + ":0"); return; }
   if (e.target.closest(".mtoggle, td.mfold")) { cur.mfold = !cur.mfold; spRemember("mfold", cur.mfold); renderPlanner(); return; }
   if (e.target.closest("i.curb:not(.rest)")) { document.querySelector("nav.tabs button[data-v='cur']").click(); return; }

@@ -102,6 +102,62 @@ test("empty_day_still_renders", async ({ page }) => {
   for (const h of ["Ground programme", "Leave and MC", "Down-chit", "Remarks"]) assert.ok(t.includes(h), h + " missing: " + t);
 }, ED);
 
+// every roster person of every open department gets this Cat and Status, then redraw
+const ALL_CAT = (page, cat, status) => page.evaluate(([cat, status]) => { books.forEach(b => { if (isDept(b)) b.S.roster.forEach(p => { p.cat = cat; p.status = status; }); }); renderOps(); }, [cat, status]);
+const RGB = c => c.replace(/\s/g, "");
+
+test("seat_names_use_cat_classes", async ({ page }) => {
+  await goOps(page, DAY);
+  const g = await page.evaluate(() => { const bs = [...document.querySelectorAll("#opsMain tr.f td.oc b")], a = bs.find(b => b.classList.contains("catA"));
+    return { n: bs.length, bad: bs.filter(b => !/^cat[ABCDT]$/.test(b.className) && b.className !== "sansbox").map(b => b.textContent + ":" + b.className), a: a ? getComputedStyle(a).color : null }; });
+  assert.ok(g.n > 0, "no seat names");
+  assert.ok(g.a == null || RGB(g.a) === "rgb(0,0,0)", "CAT A is black: " + g.a);
+  await ALL_CAT(page, "CAT D", "Active");
+  const d = await page.evaluate(() => [...document.querySelectorAll("#opsMain tr.f td.oc b")].map(b => b.className + "|" + getComputedStyle(b).color));
+  assert.ok(d.every(x => x.startsWith("catD|") && RGB(x.split("|")[1]) === "rgb(220,38,38)"), d.join());
+}, ED);
+test("sans_person_gets_green_box", async ({ page }) => {
+  await goOps(page, DAY);
+  const g = await page.evaluate(() => { const r = opsDay(cur.opsDay).rows[0], c = r.seats.find(x => x), b = books.find(b => isDept(b) && same(b.S.dept, c.dept)), p = b.S.roster.find(q => same(q.id, c.id));
+    p.status = "NSMEN"; renderOps(); const el = [...document.querySelectorAll("#opsMain tr.f td.oc b")].find(e => e.textContent === opsName(c));
+    return { cls: el.className, bg: getComputedStyle(el).backgroundColor, fg: getComputedStyle(el).color }; });
+  assert.strictEqual(g.cls, "sansbox"); assert.strictEqual(RGB(g.bg), "rgb(22,163,74)"); assert.strictEqual(RGB(g.fg), "rgb(255,255,255)");
+}, ED);
+test("blank_cat_and_status_ok", async ({ page }) => {
+  await goOps(page, DAY); await ALL_CAT(page, "", "");
+  const cls = await page.evaluate(() => [...document.querySelectorAll("#opsMain tr.f td.oc b")].map(b => b.className));
+  assert.ok(cls.length && cls.every(c => c === ""), cls.join());
+}, ED);
+test("all_names_follow_cat_on_the_day_board", async ({ page }) => {
+  await goOps(page, DAY); await ALL_CAT(page, "CAT C", "Active");
+  const cls = await page.evaluate(() => [...document.querySelectorAll("#opsBoard .dc b")].map(b => b.className));
+  assert.ok(cls.length > 0 && cls.every(c => c === "catC"), "day board duty names: " + cls.join());
+}, ED);
+test("standby_rows_flight_size", async ({ page }) => {
+  await goOps(page, DAY);
+  const g = await page.evaluate(() => { const f = document.querySelector("#opsMain tr.f"), s = document.querySelector("#opsMain tr.sb"), fs = e => parseFloat(getComputedStyle(e).fontSize);
+    return { fc: fs(f.querySelector("td.oc")), sc: fs(s.querySelector("td.oc")), fh: f.getBoundingClientRect().height, sh: s.getBoundingClientRect().height, lab: fs(s.querySelector("td.sbc b")), flab: fs(f.querySelector(".ocsn")), w: +getComputedStyle(s.querySelector("td.sbc b")).fontWeight }; });
+  assert.strictEqual(g.sc, g.fc, "seat cell font");
+  assert.ok(g.sh >= 0.85 * g.fh, "standby row " + g.sh + " vs flight row " + g.fh);
+  assert.ok(g.lab >= g.flab && g.w >= 700, JSON.stringify(g));
+}, ED);
+test("ground_and_leave_names_coloured", async ({ page }) => {
+  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1); await PLAN_SET(page, "Pilot", "leave", DAY, [0], 0);
+  await ALL_CAT(page, "CAT B", "Active");
+  const g = await page.evaluate(() => ({ gp: [...document.querySelectorAll("#opsSide .gp3 .owho b")].map(b => b.className), lv: [...document.querySelectorAll("#opsSide .olv .olp b")].map(b => b.className) }));
+  assert.ok(g.gp.length && g.gp.every(c => c === "catB"), g.gp.join()); assert.ok(g.lv.length && g.lv.every(c => c === "catB"), g.lv.join());
+}, ED);
+test("ocu_is_pink", async ({ page }) => {
+  await goOps(page, DAY); await ALL_CAT(page, "TRAINEE", "Active");
+  const d = await page.evaluate(() => [...document.querySelectorAll("#opsMain tr.f td.oc b")].map(b => b.className + "|" + getComputedStyle(b).color));
+  assert.ok(d.length && d.every(x => x.startsWith("catT|") && RGB(x.split("|")[1]) === "rgb(236,72,153)"), d.join());
+}, ED);
+test("key_line", async ({ page }) => {
+  await goOps(page, DAY);
+  const t = await page.evaluate(() => { const k = document.getElementById("opsKey"); return k && k.textContent; });
+  assert.ok(t && /SANS \/ NSMEN/.test(t) && /OCU/.test(t), String(t));
+}, ED);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

@@ -476,7 +476,7 @@ table.opsmon td{padding:4px 6px}table.opsmon td:first-child{width:130px}table.op
 #plan td.cxl{text-decoration:line-through;opacity:.5;background:repeating-linear-gradient(135deg,#fff 0 5px,#fee2e2 5px 7px)!important}
 table.opst tr.sbh .sbsets{float:right;display:inline-flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.5)}table.opst tr.sbh .sbset{background:transparent;color:#dcfce7;border:0;font:inherit;font-size:12px;font-weight:800;padding:2px 10px;cursor:pointer}table.opst tr.sbh .sbset.on{background:#fff;color:#166534}table.opst tr.sbh .sbset:disabled{cursor:default}table.opst tr.sbh td{background:#166534;color:#fff;text-align:left;font-weight:900;font-size:15px;padding:5px 12px;border-top:6px solid #fff}table.opst tr.sbh small{margin-left:8px;font-weight:700;font-size:10.5px;color:#166534;opacity:.8}
 table.opst tr.sbgap td{height:10px;padding:0;background:var(--s100);border:0}
-table.opst tr.sb td{background:#f7fdf9;padding-top:2px;padding-bottom:2px;font-size:.9em}table.opst td.sbc{border-left:6px solid #16a34a;font-size:13px}table.opst tr.sb td.oalert{font-size:11.5px;color:var(--s700)}table.opst td.sbe{color:var(--s400)}
+table.opst tr.sb td{background:#f7fdf9;padding-top:6px;padding-bottom:6px;height:48px}table.opst td.sbc{border-left:6px solid #16a34a;font-size:13px}table.opst td.sbc b{font-size:20px;font-weight:800}table.opst tr.sb td.oalert{font-size:11.5px;color:var(--s700)}table.opst td.sbe{color:var(--s400)}
 table.opst tr.fstart td{border-top:2px solid var(--s400)}
 table.opst tr.band td{background:var(--s900);color:#fff;text-align:left;font-weight:800;font-size:14px;letter-spacing:.5px;padding:4px 10px;border-top:3px solid #fff}
 table.opst tr.band.s0 td{background:#0369a1}table.opst tr.band.s1 td{background:#b45309}table.opst tr.band.s2 td{background:#312e81}
@@ -527,6 +527,8 @@ body.opsfs main,body.opsfs .view{padding-top:6px}
 .opsh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .opsh .grow{flex:1}
 .opst{font-size:15px}.opsc{font-family:Consolas,monospace;font-size:14px;color:var(--blue)}
+.sansbox{background:#16a34a!important;color:#fff!important;border-radius:5px;padding:0 6px;font-style:normal}#v-ops .catT{color:#ec4899!important}
+#opsKey{margin-left:auto;display:inline-flex;gap:8px;align-items:center;font-size:12px;color:var(--s500);font-weight:700}#opsKey b{font-weight:800}
 .opssh{display:inline-block;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;background:#f0f9ff;color:#075985}
 .opssh.s1{background:#fffbeb;color:#92400e}.opssh.s2{background:#1e1b4b;color:#c7d2fe}
 .opsst{font-size:12px;font-weight:700;color:var(--green)}.opsf.short .opsst{color:#d97706}.opsf.bad .opsst{color:var(--red)}
@@ -1047,6 +1049,7 @@ const REG_N = 45;   // roster rows 6-50 regular crew, 51-65 SANS / NSmen (files 
 const CREW_CATS = ["CAT A", "CAT B", "CAT C", "CAT D", "TRAINEE"], CREW_ROLES = ["Instructor", "Senior CAT A", "Junior"];
 const catCls = c => ({ "CAT A": "catA", "CAT B": "catB", "CAT C": "catC", "CAT D": "catD", TRAINEE: "catT" })[String(c || "").toUpperCase()] || "";
 const isSans = p => /^(SANS|NSMEN)$/i.test(p.status || "");
+const opsCatCls = p => p ? (isSans(p) ? "sansbox" : catCls(p.cat)) : "";   // Ops Room names: a SANS / NSMEN person is a green box, everyone else is coloured by Cat
 // roster column letters: new files have Callsign | Name | Cat Status | Role | Status | Remarks, older ones ID | Name | Role | Status | Remarks
 // columns are found from the header row (row 5), so a file with an extra column (Initials, say) still reads; old files fall back to the fixed layout
 const rosterCols = st => st.rcols || { id: "B", name: "C", role: "D", status: "E", remarks: "F" };
@@ -3525,16 +3528,16 @@ function opsDutyPerson(iso, code, deps) {
   books.forEach(b => {
     if (!isDept(b) || b.S.year !== y || (deps && !deps.some(o => same(o, b.S.dept)))) return;
     const M = b.S.m[mi]; if (!M) return;
-    b.S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) if (dutyKey(M.grid[i * 3 + s][d]) === k) on[s].push(p.ini || p.id); });
+    b.S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) if (dutyKey(M.grid[i * 3 + s][d]) === k) on[s].push({ n: p.ini || p.id, c: opsCatCls(p) }); });
   });
   if (!on.some(x => x.length)) return rdep ? rdep + ": ?" : "";
   // a shift nobody is planned on is covered by the previous shift's person (else the next one's): one person on any cell = the whole day,
   // AM + NIGHT cells = AM to PM and NIGHT; then consecutive shifts with the same person merge into one segment
-  const w = on.map(x => x.join(", "));
-  for (let s = 1; s < 3; s++) if (!w[s]) w[s] = w[s - 1];
-  for (let s = 1; s >= 0; s--) if (!w[s]) w[s] = w[s + 1];
+  const w = on.map(x => x.map(z => z.n).join(", ")), h = on.map(x => x.map(z => "<b class='" + z.c + "'>" + esc(z.n) + "</b>").join(", "));
+  for (let s = 1; s < 3; s++) if (!w[s]) { w[s] = w[s - 1]; h[s] = h[s - 1]; }
+  for (let s = 1; s >= 0; s--) if (!w[s]) { w[s] = w[s + 1]; h[s] = h[s + 1]; }
   const seg = [];
-  w.forEach((n, s) => { const L = seg[seg.length - 1]; if (L && L.n === n) L.to = s; else seg.push({ n, from: s, to: s }); });
+  w.forEach((n, s) => { const L = seg[seg.length - 1]; if (L && L.n === n) L.to = s; else seg.push({ n, h: h[s], from: s, to: s }); });
   return seg;
 }
 // an editable Day Board cell (click to type); ml = several lines; auto = the text it starts from when blank
@@ -3555,8 +3558,8 @@ function renderOpsBoard(iso, ed) {
     g += "<div class='dh' style='grid-column:" + col + "' title='" + esc("Ground duty " + c.code + " from the " + (c.deps ? c.deps.join(" / ") : "departments'") + " plans" + (ed ? ". Click to type a name instead." : "")) + "'>" + lab + "</div>";
     const box = (r0, r1, inner, cls, tip) => "<div class='dc" + (cls ? " " + cls : "") + (ed ? " oe" : "") + "' style='grid-column:" + col + ";grid-row:" + r0 + "/" + r1 + "'" + opsDbA(ref, ph, ed) + (tip ? " title='" + esc(tip) + "'" : "") + ">" + inner + "</div>";
     if (v) g += box(2, 5, esc(v), "", "Typed in the Ops Room");
-    else if (Array.isArray(P) && lab !== "BDO") P.forEach(s => { g += box(s.from + 2, s.to + 3, esc(s.n), "", "From the department plans"); });
-    else if (Array.isArray(P)) g += box(2, 5, esc([...new Set(P.map(s => s.n))].join(" / ")), "", "From the department plans: one person for the whole day");
+    else if (Array.isArray(P) && lab !== "BDO") P.forEach(s => { g += box(s.from + 2, s.to + 3, s.h, "", "From the department plans"); });
+    else if (Array.isArray(P)) g += box(2, 5, [...new Map(P.map(s => [s.n, s.h])).values()].join(" / "), "", "From the department plans: one person for the whole day");
     else g += box(2, 5, P ? "<span class='oph'>" + esc(P) + "</span>" : ed ? "+" : "–", P ? "" : "emp", P ? "From the Duty Roster: nobody planned yet" : "Nobody planned");
   });
   g += "</div><div class='odsep'></div>";
@@ -3619,7 +3622,7 @@ function opsCrewOn(y, mi, d) {
       S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < 3; s++) { const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][d]; const a = v && A.get(String(v).toUpperCase());
         // standby crew (P1 / P2 / BU) belong to no shift: whichever shift the plan marks, they go in one whole-day list (kept in slot 2 so saved Ops Room rows still match)
         const sbk = a && a.ci !== CAT_FLIGHT && isSb(a.code) ? 2 : -1; if (sbk >= 0 && out.sb[2].some(c => c.dept === S.dept && c.i === i && same(c.code, v))) continue;
-        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, role: p.role, code: String(v).trim(), note: (S.notes && S.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "" }); } }); });
+        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), note: (S.notes && S.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "" }); } }); });
   });
   return out;
 }
@@ -3627,7 +3630,7 @@ function opsRosterOf(dept) { const b = books.find(x => isDept(x) && same(x.S.dep
 function opsPerson(dept, id, crewS) {
   const hit = crewS && crewS.find(c => same(c.dept, dept) && same(c.id, id)); if (hit) return hit;
   const p = opsRosterOf(dept).find(q => same(q.id, id));
-  return p ? { dept, id: p.id, name: p.name, ini: p.ini, cat: p.cat, role: p.role, code: "", note: "" } : { dept, id, name: "", ini: "", cat: "", role: "", code: "", note: "" };
+  return p ? { dept, id: p.id, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: "", note: "" } : { dept, id, name: "", ini: "", cat: "", status: "", role: "", code: "", note: "" };
 }
 // "0830-1030" / "0830" / "TBC" -> [etd, eta]; minutes helpers for the duration
 const hhmm = v => { const m = /^(\d{1,2}):?(\d{2})$/.exec(String(v || "").trim()); return m ? +m[1] * 60 + +m[2] : null; };
@@ -3733,11 +3736,11 @@ function opsSylLines(r) {
 }
 function opsXtraHtml(r, k) {
   const dep = OPS_SEATS[k][1], L = (opsXtra(r.o)[dep] || []), AU = (r.auto && r.auto[dep]) || [];
-  const au = k === 0 ? "" : AU.map(c => "<div class='oxt' title='" + esc("Also planned on " + c.code + ": " + c.id + (c.name ? " · " + c.name : "") + " (" + dep + ")" + (c.note ? "\nComment: " + c.note : "")).replace(/'/g, "&#39;") + "'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b>" + opsSylTag(dep, c.id, r) + "</div>").join("");
+  const au = k === 0 ? "" : AU.map(c => "<div class='oxt' title='" + esc("Also planned on " + c.code + ": " + c.id + (c.name ? " · " + c.name : "") + " (" + dep + ")" + (c.note ? "\nComment: " + c.note : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" + opsSylTag(dep, c.id, r) + "</div>").join("");
   if (!L.length || k === 0) return au;   // Pilot extras show once, under the Pilot (co-pilot) seat, not the Aircraft Captain
   const D = opsDay(cur.opsDay);
   return L.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]), dw = downOn(dep, id, D.iso);
-    return "<div class='oxt' title='" + esc("Additional crew: " + id + (p.name ? " · " + p.name : "") + " (" + dep + ")" + (dw ? "\n⚠ DOWN-CHITTED" : "")).replace(/'/g, "&#39;") + "'><b class='" + catCls(p.cat) + "'>" + esc(opsName(p) || id) + "</b>" + (dw ? "<i class='opsb down'>DOWN</i>" : "") + (isPax(r.o, id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(dep, id, r) + "</div>"; }).join("") + au;
+    return "<div class='oxt' title='" + esc("Additional crew: " + id + (p.name ? " · " + p.name : "") + " (" + dep + ")" + (dw ? "\n⚠ DOWN-CHITTED" : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b>" + (dw ? "<i class='opsb down'>DOWN</i>" : "") + (isPax(r.o, id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(dep, id, r) + "</div>"; }).join("") + au;
 }
 function opsCrewCell(r, k, ed) {
   if (!r.x.need[k]) return "<td class='oc na' title='Not needed on this flight'>–</td>";
@@ -3746,7 +3749,7 @@ function opsCrewCell(r, k, ed) {
   const mc = r.o && same(r.o.mc, c.id), cr = r.o && same(r.o.crmo, c.id), off = c.code && !sameCode(c.code, r.x.code);
   const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso);
   const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.note ? "\nComment: " + c.note : "") + (c.set ? "\nSet in the Ops Room" : "");
-  return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b>" +
+  return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" +
     (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
 }
 function opsTail(r, ed, one) {
@@ -3815,6 +3818,7 @@ function renderOps() {
   $("opsStats").innerHTML = (D.status ? "<span class='opsk nofly'>" + esc(D.status) + "</span>" : "") +
     chip("", "Flights", D.flights.length) + chip("", "Sorties", D.rows.length) + chip("mc", "MC not set", noMc, noMc ? "warn" : "") + chip("flown", "Flown", D.rows.filter(r => opsOutcome(r, iso) === "flown").length) + chip("cxl", "Cancelled", D.rows.filter(r => opsOutcome(r, iso) === "cxl").length) +
     (iso < today || nOpen ? chip("open", "Not closed", nOpen, nOpen ? "warn" : "") : "");
+  $("opsStats").innerHTML += "<span id='opsKey'>Cat <b class='catA'>A</b> <b class='catB'>B</b> <b class='catC'>C</b> <b class='catD'>D</b> <b class='catT'>OCU</b> <b class='sansbox'>SANS / NSMEN</b></span>";
   const fl = cur.opsF ? OPS_FILT[cur.opsF] : null, rows = fl ? D.rows.filter(r => fl(r, iso)) : D.rows;
   if (D.other) el.innerHTML = "<div class='muted' style='padding:20px'>The Master Planner is for " + mb.S.year + ".</div>";
   else if (!D.rows.length && !D.sb.length) el.innerHTML = "<div class='muted' style='padding:20px'>No flights on the Master Planner for this day." + (D.status ? " Day status: " + esc(D.status) + "." : "") + (ed ? " Use <b>+ Ops Add</b> for an ad hoc flight." : "") + "</div>";
@@ -3917,7 +3921,7 @@ function opsGround(D) {
         // the same activity on the next days of this month (same person and shift): "until <last day>"
         let e = D.d; while (e + 1 < nDays) { const nv = M.grid[i * 3 + s][e + 1], na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; e++; }
         const key = s + "|" + a.code.toUpperCase() + "|" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: e > D.d ? "until " + fmt(e) : "", who: [], notes: [] });
-        const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + catCls(p.cat) + "'>" + esc(n) + "</b>");
+        const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + opsCatCls(p) + "'>" + esc(n) + "</b>");
         const cn = S.notes && S.notes.get(D.mi + ":" + (i * 3 + s) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
       } });
       groups.forEach(g => out.push({ sh: g.s, k: "2" + g.s, when: "", until: g.until, act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
@@ -3943,7 +3947,7 @@ function opsDownCard(D) {
   const rows = [], can = OPS || opsEditable();
   books.forEach((b, bi) => { if (!isDept(b) || b.S.year !== D.y) return; const C = computeChit(b.S), k = dayOfYear(D.y, D.mi, D.d);
     b.S.roster.forEach((p, i) => { if (!C[i] || !C[i].down[k]) return; const sk = C[i].since[k];
-      rows.push("<tr><td><span class='dcn'" + (can || bi === 0 ? " data-upchit='" + bi + "|" + i + "|" + D.iso + "' title='" + esc((p.id || "") + " " + p.name + "\nClick to up-chit") + "'" : " title='" + esc((p.id || "") + " " + p.name) + "'") + ">" + esc(p.ini || p.id || p.name) + "</span></td><td>" + deptChip(b.S.dept) + "</td><td>" + esc(fmtDay(doyISO(D.y, sk))) + "</td></tr>"); }); });
+      rows.push("<tr><td><span class='dcn " + opsCatCls(p) + "'" + (can || bi === 0 ? " data-upchit='" + bi + "|" + i + "|" + D.iso + "' title='" + esc((p.id || "") + " " + p.name + "\nClick to up-chit") + "'" : " title='" + esc((p.id || "") + " " + p.name) + "'") + ">" + esc(p.ini || p.id || p.name) + "</span></td><td>" + deptChip(b.S.dept) + "</td><td>" + esc(fmtDay(doyISO(D.y, sk))) + "</td></tr>"); }); });
   return "<div class='card opsdc'><h2>Down-chit" + (rows.length ? " <span class='muted' style='font-weight:600'>(" + rows.length + ")</span>" : "") + (opsEditable() && !document.body.classList.contains("opsfs") ? "<button class='btn' id='opsAreaAdd' title='Type the area of the day (Oscar, Echo, Nov)'>+ Area</button>" : "") + (can ? "<button class='btn' id='opsDownAdd'>+ Down-chit</button>" : "") + "</h2>" +
     (rows.length ? "<table><tr><th>Crew</th><th>Dept</th><th>Since</th></tr>" + rows.join("") + "</table><div class='muted' style='font-size:11px;margin-top:6px'>Not cleared to fly." + (can ? " Click a name to up-chit." : "") + "</div>" : "<div class='muted'>Nobody down-chitted.</div>") + "</div>";
 }
@@ -3958,7 +3962,7 @@ function opsMovement(D) {
         for (let s = 0; s < 3; s++) { const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
           if (!a || !(a.ci === CAT_LEAVE || a.ci === CAT_OFF || a.ci === CAT_MED)) continue;
           const k = a.code.toUpperCase(); if (!mine.has(k)) mine.set(k, { a, sh: [] }); mine.get(k).sh.push(s); }
-        mine.forEach(m => by.get(dep).push({ r: rank.indexOf(m.a.ci), code: m.a.code, html: "<span class='olp' title='" + esc(m.a.desc || m.a.code) + "'><b class='" + catCls(p.cat) + "'>" + esc(p.ini || p.id) + "</b><small>" + esc(m.a.code) + "</small>" +
+        mine.forEach(m => by.get(dep).push({ r: rank.indexOf(m.a.ci), code: m.a.code, html: "<span class='olp' title='" + esc(m.a.desc || m.a.code) + "'><b class='" + opsCatCls(p) + "'>" + esc(p.ini || p.id) + "</b><small>" + esc(m.a.code) + "</small>" +
           (m.sh.length < 3 ? "<small>" + m.sh.map(s => SHIFTS[s]).join("/") + "</small>" : "") + "</span>" })); });
     });
   });
@@ -4003,7 +4007,7 @@ function opsOpenPop(key, k, keep) {
   let h = "<div class='pt'>" + esc(OPS_SEATS[k][0]) + " · " + esc((r.o && r.o.cs) || r.x.code) + " <span class='muted'>" + esc(SHIFTS[r.x.s] + " " + (r.x.f.time || "")) + "</span><button class='x' data-pc='1'>×</button></div>";
   const dwn = c && downOn(c.dept, c.id, D.iso);
   if (dwn) h += "<div class='pp' style='background:#fee2e2;color:#991b1b'><b>⚠ Down-chitted since " + esc(fmtDay(dwn.since)) + "</b>: not cleared to fly." + ((OPS || opsEditable() || dwn.bi === 0) ? " <button class='upc' data-upchit='" + dwn.bi + "|" + dwn.i + "|" + D.iso + "'>Up-chit…</button>" : " Pick someone else below.") + "</div>";
-  if (c) h += "<div class='pp'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b> " + esc(c.id) + " · " + esc(c.name) + "<div class='muted'>" + esc(c.dept + (c.code ? " · planned " + c.code : "") + (c.set ? " · set in the Ops Room" : " · picked from the plan")) + "</div>" + (c.note ? "<div class='ocn' style='font-size:12px'>" + esc(c.note) + "</div>" : "") + "</div>";
+  if (c) h += "<div class='pp'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b> " + esc(c.id) + " · " + esc(c.name) + "<div class='muted'>" + esc(c.dept + (c.code ? " · planned " + c.code : "") + (c.set ? " · set in the Ops Room" : " · picked from the plan")) + "</div>" + (c.note ? "<div class='ocn' style='font-size:12px'>" + esc(c.note) + "</div>" : "") + "</div>";
   h += "<label>Crew<select id='opsPick'><option value=''>" + (c && !c.set ? "Auto (from the plan): " + esc(c.id) : "Auto (from the plan)") + "</option><optgroup label='" + (r.x.sb ? "On standby today" : "Flying this shift") + "'>" +
     list.map(p => "<option value='" + esc(p.id) + "'" + (c && c.set && same(c.id, p.id) ? " selected" : "") + ">" + esc(opsName(p) + " · " + p.id + " " + p.name + (p.code && !sameCode(p.code, r.x.code) ? " (" + p.code + ")" : "") + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>").join("") + "</optgroup>" +
     "<optgroup label='Others in the " + esc(dep) + " roster'>" + rest.map(p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>").join("") + "</optgroup></select></label>";
@@ -4014,7 +4018,7 @@ function opsOpenPop(key, k, keep) {
     const xs = opsXtra(r.o)[dep] || [], taken = id => (c && same(c.id, id)) || xs.some(x => same(x, id)) || (dep === "Pilot" && r.seats.some(q => q && same(q.dept, dep) && same(q.id, id)));
     const opt = p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>";
     h += "<div class='pxl'><div class='pxh'>Additional " + esc(dep) + " crew</div>" + xs.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]);
-      return "<div class='pxr'><b class='" + catCls(p.cat) + "'>" + esc(opsName(p) || id) + "</b><span class='muted'>" + esc(id + (p.name ? " · " + p.name : "")) + "</span>" + (downOn(dep, id, D.iso) ? "<i class='opsb down'>DOWN</i>" : "") +
+      return "<div class='pxr'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b><span class='muted'>" + esc(id + (p.name ? " · " + p.name : "")) + "</span>" + (downOn(dep, id, D.iso) ? "<i class='opsb down'>DOWN</i>" : "") +
         "<button class='btn pax" + (isPax(r.o, id) ? " on" : "") + "' data-ppx='" + esc(id) + "'>Pax</button><button class='pxd' data-pxd='" + esc(id) + "' title='Take off this aircraft'>×</button></div>"; }).join("") +
       "<select id='opsXAdd'><option value=''>+ Add " + esc(dep) + " crew…</option><optgroup label='Flying this shift'>" + pool.filter(p => !taken(p.id)).map(opt).join("") + "</optgroup><optgroup label='Others in the " + esc(dep) + " roster'>" + rest.filter(p => !taken(p.id)).map(opt).join("") + "</optgroup></select></div>";
   }

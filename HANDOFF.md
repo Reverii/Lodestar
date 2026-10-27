@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Where things stand
 
-- **Dashboard z95** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
+- **Dashboard z97** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
@@ -23,7 +23,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
   from the export is stored; no names.
 - Matching is by exact roster Initials (case and spaces ignored); the Names to fix panel lists what does not match.
 - Planner: layer 1 marks the day a Day / Night currency expires (Capt as a lighter outline), layer 2 gives a red corner "NOT CURRENT" on a flight on or after it.
-  No tint after the expiry day, no name badges. The Ops Room marks a seat "CURR" (the Aircraft Captain seat also checks Capt). Warnings only.
+  No tint after the expiry day, no name badges. The (Ops Room seat "CURR" marks were removed on 27 Oct: the Ops Room shows no currency.) Warnings only.
 - Hours: Planner "Flown Hrs" and My Lodestar show ATOM's clocked hours for the export's month.
 - IRT (Brandon, 27 Oct): in the Planner the day it expires is only highlighted in all three rows; it never alerts.
 - **Open:** the general flying rules (45 / 90 / 180) are still the
@@ -31,6 +31,16 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Removed from v1: the "What each flight needs" table and its `ATOM Needs` sheet, mission / LSS handling, the name badges.
 - Tests: `node tests/atom.test.js` (synthetic exports only; several minutes), `node tests/my_lodestar.test.js`. Dummy-name test set from real Initials:
   `tests/make_atom_demo_input.py` (output goes to the git-ignored `atom_test/`).
+
+## Ops Room redesign (z97, 2026-10-27; spec `docs/superpowers/specs/2026-10-27-ops-room-redesign-design.md`, plan `docs/superpowers/plans/2026-10-27-ops-room-redesign.md`, mock-up `docs/superpowers/mockups/ops-room-v5/`)
+
+- The Ops Room page keeps today's screen and is calmer: the side cards moved to a bottom row (Ground programme by AM / PM / NIGHT with "until <date>" for multi-day items,
+  Leave and MC by department, Down-chit, Remarks); Codes is a Day Board card next to DOB; Area (Oscar / Echo / Nov) shows only when filled (`+ Area` in the Ops Room view to type one);
+  chips "Seats filled" and "Down-chit" and the Timeline view are gone.
+- Names: Cat colour on every callsign (A black, B green, C yellow, D red, OCU pink), SANS / NSMEN in a green box; the standby rows (P1, P2, BU) are as big as a flight row.
+- Clock and a light / dark switch in the bar (remembered on this computer). Default size 100% (steps 70 to 200%); the page shrinks to fit the screen width and height, smallest 50%.
+- **On hold:** a scale control for the whole dashboard (Brandon, 2026-10-27).
+- No Excel change: upload the dev dashboard only. Tests: `node tests/ops_room.test.js`. To tune on the real projector: default size, dark theme, the bottom cards.
 
 ## Master Planner export and Planner crew filter (z95, 2026-10-27)
 

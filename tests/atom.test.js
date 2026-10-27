@@ -300,10 +300,10 @@ test("help_mentions_atom", async ({ page }) => {
   for (const w of ["ATOM", "Initials", "Names to fix", "Publish to everyone", "expires", "clocked hours"]) assert.ok(t.includes(w), w);
   assert.ok(!t.includes("What each flight needs"));
 });
-test("version_is_z95", async ({ page }) => {
+test("version_is_z97", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z95 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-26 z95 "));
+  assert.ok(/ z97 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-27 z97 "));
 });
 
 // ---- Final review fixes
@@ -502,33 +502,12 @@ test("legend_has_new_chips", async ({ page }) => {
 
 // ---- v2 Task 8: Ops Room seat check (2026-10-26 FLT-2.0 AM: captain ADDER, pilot SIDEWINDER; 2026-10-27 NVG-2.0: captain ADDER, pilot ASP)
 const L8 = { atom: [FULL()], fresh: true };
-test("seat_captain_checks_capt", async ({ page }) => {
-  await iniOf(page, "Pilot", "ADDER", "A NGO"); await iniOf(page, "Pilot", "SIDEWINDER", "HO KM");   // A NGO: Day Capt expired 16 Oct, Day Curr valid
-  const cap = await opsMarks(page);
-  assert.strictEqual(cap.length, 1, JSON.stringify(cap)); assert.ok(/Day Capt expired 16 Oct/.test(cap[0][1]) && /From ATOM, data as of 2026-10-25/.test(cap[0][1]), cap[0][1]);
-  await iniOf(page, "Pilot", "ADDER", "HO KM"); await iniOf(page, "Pilot", "SIDEWINDER", "A NGO");   // the same person in the pilot seat: Capt is not checked there
+test("ops_room_shows_no_currency_marks", async ({ page, errs }) => {
+  await iniOf(page, "Pilot", "ADDER", "A NGO"); await iniOf(page, "Pilot", "SIDEWINDER", "S LIM JH");   // both have expired currencies on 26 Oct
   assert.deepStrictEqual(await opsMarks(page), []);
-}, L8);
-test("seat_uses_the_flights_shift", async ({ page }) => {
-  await iniOf(page, "Pilot", "ADDER", "A NGO");   // night flight on 27 Oct: Night Capt expired 16 Oct, Night Curr expires 27 Oct (still valid)
-  const m = await opsMarks(page, "2026-10-27");
-  assert.strictEqual(m.length, 1, JSON.stringify(m)); assert.ok(/Night Capt expired 16 Oct/.test(m[0][1]) && !/Day Capt/.test(m[0][1]), m[0][1]);
-}, L8);
-test("seat_curr_valid_on_its_expiry_day", async ({ page }) => {
-  await iniOf(page, "Pilot", "ASP", "A NGO");   // pilot seat on the 27 Oct night flight; on 28 Oct Night Curr (27 Oct) has expired, but the demo plan has no flight that night
-  const day = await page.evaluate(() => { const d = ["2026-10-27", "2026-10-28"].map(iso => { const D = opsDay(iso); return D.rows.filter(r => r.x.s === 2).length; }); return d; });
-  const m = await opsMarks(page, "2026-10-27");
-  assert.ok(m.every(x => !/Night Curr/.test(x[1])), JSON.stringify(m));   // valid on its expiry day
-}, L8);
-test("seat_no_mark_when_valid_or_unmatched", async ({ page }) => {
-  await iniOf(page, "Pilot", "ADDER", "HO KM"); await iniOf(page, "Pilot", "SIDEWINDER", "NOBODY");
-  assert.deepStrictEqual(await opsMarks(page), []);
-}, L8);
-test("seat_ops_room_renders_without_atom", async ({ page, errs }) => {
-  await page.evaluate(() => { ATOMS = []; cur.atom = 0; }); assert.deepStrictEqual(await opsMarks(page), []);
+  assert.ok(await page.evaluate(() => typeof atomSeatWarn === "undefined"));
   assert.deepStrictEqual(errs.filter(e => /PAGEERROR/.test(e)), []);
 }, L8);
-
 // ---- v2 Task 9: clocked hours (ATOM is the truth)
 const L9 = { atom: [FULL()], fresh: true };
 const flownCell = (page, id) => page.evaluate(id => { const td = [...document.querySelectorAll("#plan td.idc")].find(x => x.textContent.trim() === id); const c = td && td.closest("tr").querySelector("td.flown"); return c ? { txt: c.textContent.trim(), title: c.title } : null; }, id);

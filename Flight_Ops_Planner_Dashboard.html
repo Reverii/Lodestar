@@ -476,7 +476,7 @@ table.opsmon td{padding:4px 6px}table.opsmon td:first-child{width:130px}table.op
 #plan td.cxl{text-decoration:line-through;opacity:.5;background:repeating-linear-gradient(135deg,#fff 0 5px,#fee2e2 5px 7px)!important}
 table.opst tr.sbh .sbsets{float:right;display:inline-flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.5)}table.opst tr.sbh .sbset{background:transparent;color:#dcfce7;border:0;font:inherit;font-size:12px;font-weight:800;padding:2px 10px;cursor:pointer}table.opst tr.sbh .sbset.on{background:#fff;color:#166534}table.opst tr.sbh .sbset:disabled{cursor:default}table.opst tr.sbh td{background:#166534;color:#fff;text-align:left;font-weight:900;font-size:15px;padding:5px 12px;border-top:6px solid #fff}table.opst tr.sbh small{margin-left:8px;font-weight:700;font-size:10.5px;color:#166534;opacity:.8}
 table.opst tr.sbgap td{height:10px;padding:0;background:var(--s100);border:0}
-table.opst tr.sb td{background:#f7fdf9;padding-top:2px;padding-bottom:2px;font-size:.9em}table.opst td.sbc{border-left:6px solid #16a34a;font-size:13px}table.opst tr.sb td.oalert{font-size:11.5px;color:var(--s700)}table.opst td.sbe{color:var(--s400)}
+table.opst tr.sb td{background:#f7fdf9;padding-top:6px;padding-bottom:6px;height:48px}table.opst td.sbc{border-left:6px solid #16a34a;font-size:13px}table.opst td.sbc b{font-size:20px;font-weight:800}table.opst tr.sb td.oalert{font-size:11.5px;color:var(--s700)}table.opst td.sbe{color:var(--s400)}
 table.opst tr.fstart td{border-top:2px solid var(--s400)}
 table.opst tr.band td{background:var(--s900);color:#fff;text-align:left;font-weight:800;font-size:14px;letter-spacing:.5px;padding:4px 10px;border-top:3px solid #fff}
 table.opst tr.band.s0 td{background:#0369a1}table.opst tr.band.s1 td{background:#b45309}table.opst tr.band.s2 td{background:#312e81}
@@ -527,6 +527,8 @@ body.opsfs main,body.opsfs .view{padding-top:6px}
 .opsh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .opsh .grow{flex:1}
 .opst{font-size:15px}.opsc{font-family:Consolas,monospace;font-size:14px;color:var(--blue)}
+.sansbox{background:#16a34a!important;color:#fff!important;border-radius:5px;padding:0 6px;font-style:normal}#v-ops .catT{color:#ec4899!important}
+#opsKey{margin-left:auto;display:inline-flex;gap:8px;align-items:center;font-size:12px;color:var(--s500);font-weight:700}#opsKey b{font-weight:800}
 .opssh{display:inline-block;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;background:#f0f9ff;color:#075985}
 .opssh.s1{background:#fffbeb;color:#92400e}.opssh.s2{background:#1e1b4b;color:#c7d2fe}
 .opsst{font-size:12px;font-weight:700;color:var(--green)}.opsf.short .opsst{color:#d97706}.opsf.bad .opsst{color:var(--red)}
@@ -707,21 +709,23 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 .opsbar{margin-bottom:6px}.opsbar .grow{flex:1}.opsbar h2{font-size:20px;width:320px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:6px}
 #opsNav{display:inline-flex;align-items:stretch;border:1px solid var(--s300);border-radius:8px;overflow:hidden;background:#fff}
 #opsNav>.btn{border:0;border-radius:0;padding:5px 11px;background:#fff;color:var(--s800);font-weight:800}#opsNav>.btn:hover{background:var(--s100)}#opsNav #opsQuick{border:0;border-radius:0;border-left:1px solid var(--s300);border-right:1px solid var(--s300)}
-#opsView{display:inline-flex;border:1px solid var(--s300);border-radius:8px;overflow:hidden;background:#fff}
-#opsView button{border:0;background:#fff;padding:6px 12px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}#opsView button+button{border-left:1px solid var(--s300)}#opsView button.on{background:var(--s900);color:#fff}
 #opsStats{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
 #opsStats .opsk{flex-direction:row;align-items:baseline;gap:5px;border-radius:999px;padding:3px 11px;font-size:14.5px;cursor:pointer;user-select:none}
 #opsStats .opsk small{font-size:10px;letter-spacing:.3px;font-weight:700}#opsStats .opsk:hover{border-color:var(--s400)}
 #opsStats .opsk.warn{border-color:#fbbf24;background:#fffbeb;color:#b45309}#opsStats .opsk.bad{border-color:#fca5a5;background:#fef2f2;color:#dc2626}
 #opsStats .opsk.sel{box-shadow:0 0 0 2px #3b82f6;border-color:#3b82f6}#opsStats .opsk.nofly{cursor:default;padding:4px 11px}
 #opsNote{font-size:12px;margin:0 0 6px}#opsNote:empty{display:none}
-#opsWrap{display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,23%,400px);gap:12px;align-items:stretch;min-height:360px}
+#opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) clamp(160px,22vh,300px);gap:10px;align-items:stretch;min-height:360px}
 #opsLeft{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}
 #opsMain{flex:1;min-height:0;overflow:auto;border:0;border-radius:0;background:#fff}
-#opsSide{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
-#opsSide>.card{margin:0;padding:9px 12px;flex:none}#opsSide>.card h2{font-size:13.5px;margin:0 0 6px;display:flex;align-items:center;gap:6px}
+#opsSide{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.5fr);gap:10px;align-items:stretch;min-height:0}
+#opsSide .stack{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}#opsSide .stack>.card{margin:0;padding:9px 12px;overflow:auto;flex:1 1 auto}
+#opsSide>.card{margin:0;padding:9px 12px;min-width:0;overflow:auto}#opsSide>.card h2{font-size:13.5px;margin:0 0 6px;display:flex;align-items:center;gap:6px}
 #opsSide .ocnt{font-weight:600;color:var(--s500)}
-#opsSide>.card.rmk{flex:1 0 auto;display:flex;flex-direction:column;min-height:150px}#opsSide .rmk #opsDayRem{flex:1;min-height:110px}
+#opsSide .opsdc h2{flex-wrap:wrap;white-space:nowrap}#opsSide h2 .btn{padding:2px 8px;font-size:12px;white-space:nowrap;margin-left:auto}#opsSide h2 .btn+.btn{margin-left:0}
+#opsSide>.card.rmk{display:flex;flex-direction:column}#opsSide .rmk #opsDayRem{flex:1;min-height:70px}
+.gp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.gcol{min-width:0}.gcol .gi{padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px}.gcol .opssh{margin-bottom:3px}.gcol .owho{margin-top:2px}.gcol .gc{color:#6d28d9;font-style:italic;font-size:11.5px}
+.olv .dep{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-top:1px solid var(--s100);font-size:13px}.olv .dep:first-of-type{border-top:0}.olv .dep .dn{min-width:76px;flex:none;color:var(--s500);font-size:11px;text-transform:uppercase;letter-spacing:.3px}.olv .olp{margin-right:10px;white-space:nowrap}.olv .olp b{font-size:14px}.olv .olp small{margin-left:3px;color:var(--s500);font-size:10.5px;font-weight:700}
 .olist .oli{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px;align-items:flex-start}.olist .oli:first-child{border-top:0}
 .olist .ogt{width:74px;flex:none;font-weight:700;white-space:nowrap}.olist .omc{padding:1px 6px;border-radius:4px;font-size:11px;flex:none;min-width:36px;text-align:center}
 .olist .ow{flex:1;min-width:0}.olist .owho{margin-top:2px}.olist .gc{color:#6d28d9;font-style:italic;font-size:11.5px}
@@ -762,25 +766,32 @@ table.opst td.oao textarea{width:100%;box-sizing:border-box;font:inherit;resize:
 table.opst td.obrf{color:#0f766e;font-weight:800}
 table.opst tr.f.flash td{animation:opsFlash 1.6s}@keyframes opsFlash{0%,40%{background:#fef9c3}}
 /* timeline */
-.tlw{padding:0 0 10px;min-width:760px}.tlr{display:flex;border-bottom:1px solid var(--s100);min-height:56px}.tlr.hd{min-height:0;border:0;position:sticky;top:0;background:#fff;z-index:4}
-.tll{width:140px;flex:none;padding:7px 10px}.tll small{display:block;color:var(--s400);font-weight:700;margin-top:2px}.tll .ocsn{font-weight:800;font-size:14px}.tll .ocsn.ph{color:var(--s400)}.tll .ost{margin:3px 0 0}
-.tlk{position:relative;flex:1;margin-right:16px}.tlr.hd .tlk{height:44px}
-.tlb{position:absolute;top:0;height:22px;color:#fff;font-weight:800;font-size:11.5px;padding:3px 9px}.tlb.s0{background:#0369a1}.tlb.s1{background:#b45309}.tlb.s2{background:#312e81}
-.tlt{position:absolute;top:26px;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--s500)}
-.tlbody{position:relative}.tlgrid{position:absolute;left:140px;right:16px;top:0;bottom:0;pointer-events:none}
-.tlg{position:absolute;top:0;bottom:0;border-left:1px dashed var(--s200)}
-.tln{position:absolute;top:0;bottom:0;border-left:2px solid #dc2626;z-index:3}.tln span{position:absolute;top:0;left:4px;background:#dc2626;color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;white-space:nowrap}
-.tlf,.tlbr,.tla,.tlsb,.tlgb{position:absolute;border-radius:7px;font-size:11.5px;overflow:hidden;white-space:nowrap}
-.tlf{top:9px;height:32px;padding:0 8px;color:#fff;display:flex;align-items:center;z-index:2;cursor:pointer;background:#94a3b8}.tlf b{font-size:12.5px}.tlf:hover{filter:brightness(1.08);box-shadow:0 0 0 2px var(--s900)}
-.tlf.flown{background:#16a34a}.tlf.open{background:#f59e0b}.tlf.cxl{background:#fca5a5;text-decoration:line-through}.tlf.due{background:#3b82f6;box-shadow:0 0 0 3px #bfdbfe}.tlf.oa{background:#7c3aed}
-.tlbr{top:13px;height:24px;background:repeating-linear-gradient(45deg,#99f6e4 0 4px,#ccfbf1 4px 8px);color:#0f766e;font-weight:800;padding:4px 5px;border-radius:7px 0 0 7px}
-.tla{top:44px;height:5px;background:var(--s900)}
-.tlx{position:absolute;top:16px;font-size:12px;color:var(--s700);white-space:nowrap;z-index:2}.tlx b{color:var(--s900)}.tlx i{font-style:normal;font-weight:800;font-size:10.5px;background:var(--s100);border-radius:999px;padding:1px 7px;margin-left:4px}
-.tlsb{top:10px;height:30px;background:#dcfce7;border:1.5px dashed #16a34a;color:#166534;font-weight:800;padding:6px 10px;box-sizing:border-box}
-.tlgb{top:14px;height:22px;background:var(--s100);border:1px solid var(--s300);box-sizing:border-box}
-.tlleg{display:flex;flex-wrap:wrap;gap:14px;padding:10px 14px 0;font-size:11.5px;color:var(--s600)}.tlleg .sw{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;background:#94a3b8}
 .tlleg .sw.brf{background:repeating-linear-gradient(45deg,#99f6e4 0 4px,#ccfbf1 4px 8px)}.tlleg .sw.flown{background:#16a34a}.tlleg .sw.open{background:#f59e0b}.tlleg .sw.due{background:#3b82f6}.tlleg .sw.oa{background:#7c3aed}.tlleg .sw.act{background:var(--s900);height:4px}
 body.opsfs #opsSize{display:none}
+#opsClock{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;margin-left:auto;padding:0 6px}#opsClock+#opsTheme{margin-left:0}
+/* Ops Room dark theme: only on the Ops Room page (the body class stays on when another tab is open, so every rule is scoped to #v-ops) */
+body.opsfs #opsAreaAdd{display:none}
+body.opsdark:has(#v-ops.on){background:#0b1220}
+body.opsdark #v-ops{--s50:#0f1830;--s100:#111a2e;--s200:#1f2d4a;--s300:#2c3e63;--s400:#5b6f95;--s500:#8da0c0;--s600:#a9b8d4;--s700:#c4cfe4;--s800:#060b16;--s900:#e8eefc;color:#e8eefc}
+body.opsdark #v-ops :is(.card,.opsk,#opsLeft,#opsMain,#opsBoard,.odg,.odi,.odi .dbml,table.opst td,.odg .dc.emp,#opsSide .card){background:#111a2e;color:#e8eefc}
+body.opsdark #v-ops table.opst tr.alt td{background:#14203a}body.opsdark #v-ops table.opst tr.sb td{background:#10261c}
+body.opsdark #v-ops table.opst td.oc.miss,body.opsdark #v-ops table.opst td.oc.na,body.opsdark #v-ops table.opst td.oc.off{background:#111a2e}
+body.opsdark #v-ops table.opst tr.cxl td{background:#0f1830!important;color:#5b6f95!important}
+body.opsdark #v-ops .odg .dc{background:#2a1a22;border-color:#6b2a3a;color:#e8eefc}
+body.opsdark #v-ops table.opst tr.ofill td{background:repeating-linear-gradient(135deg,#0f1830 0 14px,#111a2e 14px 28px)}body.opsdark #v-ops table.opst tr.ofill td span{background:#111a2e;border-color:#2c3e63}
+body.opsdark #v-ops #opsStats .opsk.warn{background:#2b2108;border-color:#b45309;color:#fbbf24}body.opsdark #v-ops #opsStats .opsk.bad{background:#2d1216;border-color:#9f1239;color:#f87171}
+body.opsdark #v-ops :is(input,textarea,select),body.opsdark #v-ops #opsDayRem{background:#0b1220;color:#e8eefc;border-color:#2c3e63}
+body.opsdark #v-ops .catA{color:#f8fafc!important}body.opsdark #v-ops .catB{color:#4ade80!important}body.opsdark #v-ops .catC{color:#facc15!important}body.opsdark #v-ops .catD{color:#f87171!important}body.opsdark #v-ops .catT{color:#f472b6!important}
+body.opsdark #v-ops #opsMain table.opst tr.band.s0 td{background:#0369a1;color:#fff}body.opsdark #v-ops #opsMain table.opst tr.band.s1 td{background:#b45309;color:#fff}body.opsdark #v-ops #opsMain table.opst tr.band.s2 td{background:#312e81;color:#fff}body.opsdark #v-ops #opsMain table.opst tr.sbh td{background:#166534;color:#fff;border-top-color:#0b1220}
+body.opsdark #v-ops #opsMain table.opst tr.band td{border-top-color:#0b1220}
+body.opsdark #v-ops .seatp{background:#0b1220;color:#8da0c0;border-color:#2c3e63}
+body.opsdark #v-ops .btn:not(.primary):not(#opsAddBtn){background:#1f2d4a;color:#e8eefc;border-color:#2c3e63}
+body.opsdark #v-ops .odi .dbml{color:#93c5fd}
+body.opsdark #v-ops #opsQuick button{background:#1f2d4a;color:#e8eefc}body.opsdark #v-ops #opsQuick button.on{background:#1d4ed8;color:#fff}
+body.opsdark #v-ops .seatp.urg{border-color:#f87171;color:#f87171;background:#2d1216}
+body.opsdark #v-ops table.opst td.oc.odown{background:#3b1219!important}body.opsdark #v-ops table.opst td.oc.off{background:#2b2108}
+body.opsdark #opsPop,body.opsdark #tailPop{background:#111a2e;color:#e8eefc;border-color:#2c3e63}
+body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
 .lodetop{display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative}.loderight{display:flex;align-items:center;gap:8px;position:relative}.lodenav{display:flex;gap:6px}.lodechip{display:flex;align-items:center;gap:8px;background:var(--s800);color:#cbd5e1;border-radius:20px;padding:4px 14px 4px 5px;font-size:12px}
 .lodechip .av{width:24px;height:24px;border-radius:50%;background:#15803d;color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center}.lodechip b{color:#fff;font-size:13px}.lodechip a{color:#93c5fd;font-weight:700;cursor:pointer}
 .lodelist{position:absolute;right:0;top:34px;z-index:20;background:#fff;border:1px solid var(--s300);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:360px;overflow:auto;min-width:260px}.lodelist .lg{padding:5px 10px;font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--s500);background:var(--s50)}.lodelist .li{padding:6px 12px;cursor:pointer}.lodelist .li:hover{background:var(--s100)}
@@ -894,7 +905,7 @@ body.opsfs #opsSize{display:none}
       <span id="opsNav"><button class="btn" id="opsPrev" title="Previous day">‹</button><span id="opsQuick"><button data-q="0">Today</button><button data-q="1">Tomorrow</button></span><button class="btn" id="opsNextD" title="Next day">›</button></span>
       <input type="date" id="opsDate">
       <span class="grow"></span>
-      <span id="opsView" title="Show the flights as a table or on a timeline"><button data-vw="table">Table</button><button data-vw="tl">Timeline</button></span>
+      <span id="opsClock" title="The time now">--:--</span><button class="btn" id="opsTheme" title="Switch the Ops Room between a light and a dark screen">Light</button>
       <button class="btn" id="opsAddBtn" title="Add an ad hoc flight for this day. It isn't put on the Master Planner; departments see it on their programme." style="background:#7c3aed;color:#fff;border-color:#7c3aed">+ Ops Add</button>
       <span id="opsSize"><button class="btn" data-z="-1" title="Smaller">A−</button><button class="btn" data-z="1" title="Bigger">A+</button></span>
       <button class="btn primary" id="opsFull" title="Full screen for the projector: hides the menus. Esc to leave.">⛶ Projector</button></div>
@@ -980,7 +991,7 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z95</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-27 z97</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1065,6 +1076,7 @@ const REG_N = 45;   // roster rows 6-50 regular crew, 51-65 SANS / NSmen (files 
 const CREW_CATS = ["CAT A", "CAT B", "CAT C", "CAT D", "TRAINEE"], CREW_ROLES = ["Instructor", "Senior CAT A", "Junior"];
 const catCls = c => ({ "CAT A": "catA", "CAT B": "catB", "CAT C": "catC", "CAT D": "catD", TRAINEE: "catT" })[String(c || "").toUpperCase()] || "";
 const isSans = p => /^(SANS|NSMEN)$/i.test(p.status || "");
+const opsCatCls = p => p ? (isSans(p) ? "sansbox" : catCls(p.cat)) : "";   // Ops Room names: a SANS / NSMEN person is a green box, everyone else is coloured by Cat
 // roster column letters: new files have Callsign | Name | Cat Status | Role | Status | Remarks, older ones ID | Name | Role | Status | Remarks
 // columns are found from the header row (row 5), so a file with an extra column (Initials, say) still reads; old files fall back to the fixed layout
 const rosterCols = st => st.rcols || { id: "B", name: "C", role: "D", status: "E", remarks: "F" };
@@ -1390,15 +1402,6 @@ function atomPublish(f) {   // writes every person of the export into the sheet,
 function atomHours(bi, i, mi) {   // ATOM's clocked hours for a person, only for the month the export belongs to
   const f = atomCurrent(), row = f && atomFor(bi, i); if (!row || typeof row.hours !== "number") return null;
   const asOf = atomAsOf(f); return asOf.slice(0, 7) === isoOf(books[bi].S.year, mi, 0).slice(0, 7) ? { h: row.hours, asOf } : null;
-}
-function atomSeatWarn(r, c, k) {   // Ops Room seat: the Day / Night Curr of the flight's shift, and for the Aircraft Captain seat (k = 0) the matching Capt, expired before the flight's day
-  if (!atomCurrent() || !c || !r.x || r.x.sb) return null;
-  const bi = books.findIndex(b => !b.S.kind && same(b.S.dept, c.dept)); if (bi < 0) return null;
-  const i = books[bi].S.roster.findIndex(p => p.id && p.id === c.id); if (i < 0) return null;
-  const row = atomFor(bi, i); if (!row) return null;
-  const iso = opsDay(cur.opsDay).iso, part = r.x.s === 2 ? "Night" : "Day", lines = [];
-  for (const col of k === 0 ? [part + " Curr", part + " Capt"] : [part + " Curr"]) { const cell = row.cells[col]; if (cell && cell.k === "date" && cell.iso < iso) lines.push(col + " expired " + atomFmt(cell.iso, iso)); }
-  return lines.length ? { lines } : null;
 }
 function atomDayMarks(row, iso, s, flight) {   // one Planner cell: s = shift row (0 AM, 1 PM, 2 NIGHT); flight = the cell holds an uncancelled flight
   const out = { marks: [], alert: null }; if (!row) return out;
@@ -3552,16 +3555,16 @@ function opsDutyPerson(iso, code, deps) {
   books.forEach(b => {
     if (!isDept(b) || b.S.year !== y || (deps && !deps.some(o => same(o, b.S.dept)))) return;
     const M = b.S.m[mi]; if (!M) return;
-    b.S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) if (dutyKey(M.grid[i * 3 + s][d]) === k) on[s].push(p.ini || p.id); });
+    b.S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) if (dutyKey(M.grid[i * 3 + s][d]) === k) on[s].push({ n: p.ini || p.id, c: opsCatCls(p) }); });
   });
   if (!on.some(x => x.length)) return rdep ? rdep + ": ?" : "";
   // a shift nobody is planned on is covered by the previous shift's person (else the next one's): one person on any cell = the whole day,
   // AM + NIGHT cells = AM to PM and NIGHT; then consecutive shifts with the same person merge into one segment
-  const w = on.map(x => x.join(", "));
-  for (let s = 1; s < 3; s++) if (!w[s]) w[s] = w[s - 1];
-  for (let s = 1; s >= 0; s--) if (!w[s]) w[s] = w[s + 1];
+  const w = on.map(x => x.map(z => z.n).join(", ")), h = on.map(x => x.map(z => "<b class='" + z.c + "'>" + esc(z.n) + "</b>").join(", "));
+  for (let s = 1; s < 3; s++) if (!w[s]) { w[s] = w[s - 1]; h[s] = h[s - 1]; }
+  for (let s = 1; s >= 0; s--) if (!w[s]) { w[s] = w[s + 1]; h[s] = h[s + 1]; }
   const seg = [];
-  w.forEach((n, s) => { const L = seg[seg.length - 1]; if (L && L.n === n) L.to = s; else seg.push({ n, from: s, to: s }); });
+  w.forEach((n, s) => { const L = seg[seg.length - 1]; if (L && L.n === n) L.to = s; else seg.push({ n, h: h[s], from: s, to: s }); });
   return seg;
 }
 // an editable Day Board cell (click to type); ml = several lines; auto = the text it starts from when blank
@@ -3582,8 +3585,8 @@ function renderOpsBoard(iso, ed) {
     g += "<div class='dh' style='grid-column:" + col + "' title='" + esc("Ground duty " + c.code + " from the " + (c.deps ? c.deps.join(" / ") : "departments'") + " plans" + (ed ? ". Click to type a name instead." : "")) + "'>" + lab + "</div>";
     const box = (r0, r1, inner, cls, tip) => "<div class='dc" + (cls ? " " + cls : "") + (ed ? " oe" : "") + "' style='grid-column:" + col + ";grid-row:" + r0 + "/" + r1 + "'" + opsDbA(ref, ph, ed) + (tip ? " title='" + esc(tip) + "'" : "") + ">" + inner + "</div>";
     if (v) g += box(2, 5, esc(v), "", "Typed in the Ops Room");
-    else if (Array.isArray(P) && lab !== "BDO") P.forEach(s => { g += box(s.from + 2, s.to + 3, esc(s.n), "", "From the department plans"); });
-    else if (Array.isArray(P)) g += box(2, 5, esc([...new Set(P.map(s => s.n))].join(" / ")), "", "From the department plans: one person for the whole day");
+    else if (Array.isArray(P) && lab !== "BDO") P.forEach(s => { g += box(s.from + 2, s.to + 3, s.h, "", "From the department plans"); });
+    else if (Array.isArray(P)) g += box(2, 5, [...new Map(P.map(s => [s.n, s.h])).values()].join(" / "), "", "From the department plans: one person for the whole day");
     else g += box(2, 5, P ? "<span class='oph'>" + esc(P) + "</span>" : ed ? "+" : "–", P ? "" : "emp", P ? "From the Duty Roster: nobody planned yet" : "Nobody planned");
   });
   g += "</div><div class='odsep'></div>";
@@ -3595,14 +3598,16 @@ function renderOpsBoard(iso, ed) {
   const half = (ref, v, lab, auto, tip) => "<div class='dbml" + (ed ? " oe" : "") + "'" + opsDbA(ref, "", ed, auto) + " title='" + esc(tip) + "'><small>" + lab + "</small>" + (v ? esc(v) : auto ? "<span class='oau'>" + esc(auto) + "</span>" : "<span class='oph'>–</span>") + "</div>";
   g += "<div class='odi wide'><div class='dn'>Intel</div><div class='dv2'>" + half(r1, v1, "Flights", flts, v1 ? "Typed in the Ops Room" : "From the day's flights" + (ed ? ". Click to edit." : "")) + half(r2, v2, "Intel Spec", null, "Intel Spec") + "</div></div>";
   const dob = cell("DOB"), rd = dob.col + row; g += "<div class='odi dob'><div class='dn'>DOB</div>" + val(rd, st.db[rd] || "", "tm") + "</div>";
+  const cd = cell("CODES"), rc = cd.col + row; g += "<div class='odi codes'><div class='dn'>Codes</div>" + val(rc, st.db[rc] || "") + "</div>";
   el.innerHTML = g;
 }
-// Area (Oscar / Echo / Nov) and Codes, typed per day, at the top of the right-hand column
+// Area (Oscar / Echo / Nov), typed per day: only the lines with text show, and the card is left out when nothing is filled (the Ops Room user opens the empty lines with + Area)
 function opsAreaCard(D, ed) {
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null; if (!ob || !ob.hasDb || ob.year !== D.y) return "";
-  const row = 6 + dayOfYear(D.y, D.mi, D.d), kv = (lab, c, cls) => { const ref = c.col + row, v = ob.db[ref] || "";
-    return "<div class='k'>" + esc(lab) + "</div><div class='v" + (cls ? " " + cls : "") + (ed ? " oe" : "") + "'" + opsDbA(ref, "", ed) + ">" + (v ? esc(v) : "<span class='oph'>–</span>") + "</div>"; };
-  return "<div class='card opsac'><h2>Area &amp; Codes</h2><div class='okv'>" + OPS_DB_CELLS.filter(c => c.stack >= 0).map(c => kv(c.sub, c)).join("") + kv("Codes", OPS_DB_CELLS.find(c => c.lab === "CODES"), "b") + "</div></div>";
+  const row = 6 + dayOfYear(D.y, D.mi, D.d), L = OPS_DB_CELLS.filter(c => c.stack >= 0).map(c => ({ c, v: ob.db[c.col + row] || "" }));
+  const show = ed && cur.opsAreaOpen && !document.body.classList.contains("opsfs") ? L : L.filter(x => x.v); if (!show.length) return "";
+  const kv = x => { const ref = x.c.col + row; return "<div class='k'>" + esc(x.c.sub) + "</div><div class='v" + (ed ? " oe" : "") + "'" + opsDbA(ref, "", ed) + ">" + (x.v ? esc(x.v) : "<span class='oph'>–</span>") + "</div>"; };
+  return "<div class='card opsac'><h2>Area</h2><div class='okv'>" + show.map(kv).join("") + "</div></div>";
 }
 // typing into the Day Board: in the strip and in the Area & Codes card
 function opsDbClick(e) {
@@ -3644,7 +3649,7 @@ function opsCrewOn(y, mi, d) {
       S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < 3; s++) { const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][d]; const a = v && A.get(String(v).toUpperCase());
         // standby crew (P1 / P2 / BU) belong to no shift: whichever shift the plan marks, they go in one whole-day list (kept in slot 2 so saved Ops Room rows still match)
         const sbk = a && a.ci !== CAT_FLIGHT && isSb(a.code) ? 2 : -1; if (sbk >= 0 && out.sb[2].some(c => c.dept === S.dept && c.i === i && same(c.code, v))) continue;
-        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, role: p.role, code: String(v).trim(), note: (S.notes && S.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "" }); } }); });
+        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), note: (S.notes && S.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "" }); } }); });
   });
   return out;
 }
@@ -3652,7 +3657,7 @@ function opsRosterOf(dept) { const b = books.find(x => isDept(x) && same(x.S.dep
 function opsPerson(dept, id, crewS) {
   const hit = crewS && crewS.find(c => same(c.dept, dept) && same(c.id, id)); if (hit) return hit;
   const p = opsRosterOf(dept).find(q => same(q.id, id));
-  return p ? { dept, id: p.id, name: p.name, ini: p.ini, cat: p.cat, role: p.role, code: "", note: "" } : { dept, id, name: "", ini: "", cat: "", role: "", code: "", note: "" };
+  return p ? { dept, id: p.id, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: "", note: "" } : { dept, id, name: "", ini: "", cat: "", status: "", role: "", code: "", note: "" };
 }
 // "0830-1030" / "0830" / "TBC" -> [etd, eta]; minutes helpers for the duration
 const hhmm = v => { const m = /^(\d{1,2}):?(\d{2})$/.exec(String(v || "").trim()); return m ? +m[1] * 60 + +m[2] : null; };
@@ -3758,21 +3763,21 @@ function opsSylLines(r) {
 }
 function opsXtraHtml(r, k) {
   const dep = OPS_SEATS[k][1], L = (opsXtra(r.o)[dep] || []), AU = (r.auto && r.auto[dep]) || [];
-  const au = k === 0 ? "" : AU.map(c => "<div class='oxt' title='" + esc("Also planned on " + c.code + ": " + c.id + (c.name ? " · " + c.name : "") + " (" + dep + ")" + (c.note ? "\nComment: " + c.note : "")).replace(/'/g, "&#39;") + "'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b>" + opsSylTag(dep, c.id, r) + "</div>").join("");
+  const au = k === 0 ? "" : AU.map(c => "<div class='oxt' title='" + esc("Also planned on " + c.code + ": " + c.id + (c.name ? " · " + c.name : "") + " (" + dep + ")" + (c.note ? "\nComment: " + c.note : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" + opsSylTag(dep, c.id, r) + "</div>").join("");
   if (!L.length || k === 0) return au;   // Pilot extras show once, under the Pilot (co-pilot) seat, not the Aircraft Captain
   const D = opsDay(cur.opsDay);
   return L.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]), dw = downOn(dep, id, D.iso);
-    return "<div class='oxt' title='" + esc("Additional crew: " + id + (p.name ? " · " + p.name : "") + " (" + dep + ")" + (dw ? "\n⚠ DOWN-CHITTED" : "")).replace(/'/g, "&#39;") + "'><b class='" + catCls(p.cat) + "'>" + esc(opsName(p) || id) + "</b>" + (dw ? "<i class='opsb down'>DOWN</i>" : "") + (isPax(r.o, id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(dep, id, r) + "</div>"; }).join("") + au;
+    return "<div class='oxt' title='" + esc("Additional crew: " + id + (p.name ? " · " + p.name : "") + " (" + dep + ")" + (dw ? "\n⚠ DOWN-CHITTED" : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b>" + (dw ? "<i class='opsb down'>DOWN</i>" : "") + (isPax(r.o, id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(dep, id, r) + "</div>"; }).join("") + au;
 }
 function opsCrewCell(r, k, ed) {
   if (!r.x.need[k]) return "<td class='oc na' title='Not needed on this flight'>–</td>";
   const c = r.seats[k], dep = OPS_SEATS[k][1];
   if (!c) return "<td class='oc miss'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc((deptOpen(dep) ? "Nobody planned from " + dep : dep + " file not open") + (r.urg ? ". The flight is due soon." : "") + (ed ? "\nClick to pick someone." : "")) + "'><span class='seatp" + (r.urg ? " urg" : "") + (deptOpen(dep) ? "" : " nf") + "'>" + (deptOpen(dep) ? "+" : "?") + "</span>" + opsXtraHtml(r, k) + "</td>";
   const mc = r.o && same(r.o.mc, c.id), cr = r.o && same(r.o.crmo, c.id), off = c.code && !sameCode(c.code, r.x.code);
-  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso), aw = atomSeatWarn(r, c, k);
+  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso);
   const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.note ? "\nComment: " + c.note : "") + (c.set ? "\nSet in the Ops Room" : "");
-  return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b>" +
-    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (aw ? "<i class='opsb atomx' title='" + esc(aw.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent())) + "'>CURR</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
+  return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" +
+    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
 }
 function opsTail(r, ed, one) {
   // shown as plain text: the actual tail in bold, the standby tail small under it; click the cell to pick from the fleet
@@ -3815,17 +3820,15 @@ function opsEdge(r, iso) { const oc = opsOutcome(r, iso); return oc !== "plan" ?
 const OPS_FILT = { seats: r => rowMiss(r) > 0, mc: r => !(r.o && r.o.mc), flown: (r, iso) => opsOutcome(r, iso) === "flown", cxl: (r, iso) => opsOutcome(r, iso) === "cxl", open: (r, iso) => opsEdge(r, iso) === "open" };
 const OPS_FILT_LAB = { seats: "Empty seats", mc: "MC not set", flown: "Flown", cxl: "Cancelled", open: "Not closed" };
 function opsDownCount(D) { let n = 0; books.forEach(b => { if (!isDept(b) || b.S.year !== D.y) return; const C = computeChit(b.S), k = dayOfYear(D.y, D.mi, D.d); b.S.roster.forEach((p, i) => { if (C[i] && C[i].down[k]) n++; }); }); return n; }
-let opsVw = (() => { try { return localStorage.getItem("opsView") === "tl" ? "tl" : "table"; } catch (e) { return "table"; } })();
 function renderOps() {
   const el = $("opsMain"); if (!el) return;
   const tab = document.querySelector("nav.tabs button[data-v='ops']"); if (tab) tab.style.display = books.length && (OPS || opsIdx() >= 0 || masterBook()) ? "" : "none";
   if (!books.length) return;
   if (!cur.opsDay) cur.opsDay = opsToday();
   const iso = cur.opsDay, ed = opsEditable(), mb = masterBook();
-  $("opsDate").value = iso;
+  $("opsDate").value = iso; opsTick();
   const today = opsToday();
   document.querySelectorAll("#opsQuick button").forEach(b => b.classList.toggle("on", b.dataset.q === "0" ? iso === today : iso === opsAddDays(today, 1)));
-  document.querySelectorAll("#opsView button").forEach(b => b.classList.toggle("on", b.dataset.vw === opsVw));
   const missing = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"].filter(x => !deptOpen(x));
   // only what needs attention: no Master Planner, read-only, departments not open
   $("opsNote").innerHTML = !mb ? "<b style='color:#b91c1c'>Open the Master Planner to see the flights.</b> The Ops Room button on the start page opens every file at once." :
@@ -3834,35 +3837,31 @@ function renderOps() {
   if (!mb) { el.innerHTML = ""; $("opsBoard").innerHTML = ""; $("opsSide").innerHTML = ""; $("opsStats").innerHTML = ""; return; }
   const D = opsDay(iso);
   renderOpsBoard(iso, ed);
-  const seatsN = D.rows.reduce((a, r) => a + rowNeed(r).filter(Boolean).length, 0), seatsF = seatsN - D.rows.reduce((a, r) => a + rowMiss(r), 0);
-  const noMc = D.rows.filter(r => !(r.o && r.o.mc)).length, nOpen = D.rows.filter(r => opsEdge(r, iso) === "open").length, nDown = opsDownCount(D);
+  const noMc = D.rows.filter(r => !(r.o && r.o.mc)).length, nOpen = D.rows.filter(r => opsEdge(r, iso) === "open").length;
   $("opsTitle").textContent = opsFmt(iso, true);
   if (cur.opsF && !OPS_FILT[cur.opsF]) cur.opsF = "";
   // slim stat chips; a chip filters the flights to the ones it counts (click it again to show all)
   const chip = (f, lab, v, cls, tip) => "<span class='opsk" + (cls ? " " + cls : "") + (f && cur.opsF === f ? " sel" : "") + "' data-ofl='" + f + "' title='" + esc(tip || (f ? "Show only these flights" : "Show all flights")) + "'><b>" + v + "</b><small>" + lab + "</small></span>";
   $("opsStats").innerHTML = (D.status ? "<span class='opsk nofly'>" + esc(D.status) + "</span>" : "") +
-    chip("", "Flights", D.flights.length) + chip("", "Sorties", D.rows.length) + chip("seats", "Seats filled", seatsF + " / " + seatsN, seatsF < seatsN ? "bad" : "", "Show only flights with empty seats") +
-    chip("mc", "MC not set", noMc, noMc ? "warn" : "") + chip("flown", "Flown", D.rows.filter(r => opsOutcome(r, iso) === "flown").length) + chip("cxl", "Cancelled", D.rows.filter(r => opsOutcome(r, iso) === "cxl").length) +
-    (iso < today || nOpen ? chip("open", "Not closed", nOpen, nOpen ? "warn" : "") : "") + chip("down", "Down-chit", nDown, nDown ? "bad" : "", "Show the Down-chit card");
+    chip("", "Flights", D.flights.length) + chip("", "Sorties", D.rows.length) + chip("mc", "MC not set", noMc, noMc ? "warn" : "") + chip("flown", "Flown", D.rows.filter(r => opsOutcome(r, iso) === "flown").length) + chip("cxl", "Cancelled", D.rows.filter(r => opsOutcome(r, iso) === "cxl").length) +
+    (iso < today || nOpen ? chip("open", "Not closed", nOpen, nOpen ? "warn" : "") : "");
+  $("opsStats").innerHTML += "<span id='opsKey'>Cat <b class='catA'>A</b> <b class='catB'>B</b> <b class='catC'>C</b> <b class='catD'>D</b> <b class='catT'>OCU</b> <b class='sansbox'>SANS / NSMEN</b></span>";
   const fl = cur.opsF ? OPS_FILT[cur.opsF] : null, rows = fl ? D.rows.filter(r => fl(r, iso)) : D.rows;
   if (D.other) el.innerHTML = "<div class='muted' style='padding:20px'>The Master Planner is for " + mb.S.year + ".</div>";
   else if (!D.rows.length && !D.sb.length) el.innerHTML = "<div class='muted' style='padding:20px'>No flights on the Master Planner for this day." + (D.status ? " Day status: " + esc(D.status) + "." : "") + (ed ? " Use <b>+ Ops Add</b> for an ad hoc flight." : "") + "</div>";
-  else if (opsVw === "tl") el.innerHTML = opsTimeline(D, rows, ed);
   else el.innerHTML = opsTable(D, rows, ed);
   // the right-hand column: area and codes, movement, down-chits, ground programme, then the day's remarks filling the rest
   const G = opsGround(D), MV = opsMovement(D);
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
-  const mv = "<div class='card'><h2>Movement" + cnt(MV.length) + "</h2>" + (MV.length ? "<div class='olist'>" + MV.map(g =>
-    "<div class='oli'><b class='omc " + (g.ci >= 0 ? "cat" + g.ci : "") + "' title='" + esc(g.desc || "") + "'>" + esc(g.act) + "</b><div class='ow'>" + g.who + (g.note ? "<div class='gc'>" + g.note + "</div>" : "") + "</div></div>").join("") + "</div>" :
-    "<div class='muted'>Nobody on leave, OIL or MC.</div>") + "</div>";
-  const gr = "<div class='card'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='olist'>" + G.map(g =>
-    "<div class='oli'><span class='ogt'>" + (g.when || "") + "</span><div class='ow'><b>" + esc(g.act) + "</b>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "<div class='owho'>" + g.who + "</div>" + (g.note ? "<div class='gc'>" + g.note + "</div>" : "") + "</div></div>").join("") + "</div>" :
-    "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
+  const mv = "<div class='card olv'><h2>Leave and MC</h2>" + MV.map(m => "<div class='dep'><b class='dn'>" + esc(m.dept) + "</b><span class='dw'>" + (m.who || "<span class='muted'>–</span>") + "</span></div>").join("") + "</div>";
+  const gcol = sh => "<div class='gcol'><span class='opssh s" + sh + "'>" + SHIFTS[sh] + "</span>" + G.filter(g => g.sh === sh).map(g =>
+    "<div class='gi'><b>" + esc(g.act) + "</b> <span class='muted'>" + (g.until || g.when || "") + "</span>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "<div class='owho'>" + g.who + "</div>" + (g.note ? "<div class='gc'>" + g.note + "</div>" : "") + "</div>").join("") + "</div>";
+  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gp3'>" + gcol(0) + gcol(1) + gcol(2) + "</div>" : "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
   // remarks for the day (Day Board column P of the Ops Room file)
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
     : rv ? "<div class='opsrem'>" + esc(rv) + "</div>" : "<div class='muted'>" + (rref ? "No remarks for this day." : "Open the Ops Room file to keep remarks.") + "</div>") + "</div>";
-  $("opsSide").innerHTML = opsAreaCard(D, ed) + mv + opsDownCard(D) + gr + rem;
+  $("opsSide").innerHTML = gr + mv + "<div class='stack'>" + opsDownCard(D) + opsAreaCard(D, ed) + "</div>" + rem;
   opsFit();
   if (cur.opsPop) opsOpenPop(cur.opsPop.key, cur.opsPop.k, true);
 }
@@ -3929,61 +3928,35 @@ function opsHrs(r, oc) {
   const line = (lab, v, c) => "<div class='oal" + c + "'><span class='oak'>" + lab + "</span>" + (v != null ? "<b>" + v.toFixed(1) + "</b>" : "<span class='oph'>–</span>") + "</div>";
   return "<td class='ohr l'>" + line("PLAN", r.pdur, " pl") + line("ACTUAL", oc === "cxl" ? null : r.adur, cls) + "</td>";
 }
-// Timeline: each aircraft as a bar on the day's clock (brief, then ETD to ETA), the shifts across the top, a line at the time now
-function opsTimeline(D, rows, ed) {
-  const iso = D.iso, M = t => hhmm(t);
-  const spans = rows.map(r => { let a = M(r.etd), b = M(r.eta); if (a == null) return null; if (b == null) b = a + Math.round((r.pdur || 1) * 60); if (b <= a) b += 1440; const br = M(r.o && r.o.brf); return { r, a, b, br: br != null && br < a ? br : null }; });
-  let lo = 6 * 60, hi = 24 * 60;
-  spans.forEach(s => { if (!s) return; lo = Math.min(lo, Math.floor((s.br != null ? s.br : s.a) / 60) * 60); hi = Math.max(hi, Math.ceil(s.b / 60) * 60); });
-  lo = Math.max(0, lo); hi = Math.min(30 * 60, hi);
-  const pc = m => ((m - lo) / (hi - lo) * 100).toFixed(2) + "%", w = (a, b) => ((b - a) / (hi - lo) * 100).toFixed(2) + "%";
-  const bandsH = [[0, 360, 720], [1, 720, 1080], [2, 1080, 1440]].map(([s, a, b]) => { a = Math.max(a, lo); b = Math.min(b, hi); return b > a ? "<div class='tlb s" + s + "' style='left:" + pc(a) + ";width:" + w(a, b) + "'>" + SHIFTS[s] + "</div>" : ""; }).join("");
-  let ticks = "", grid = "";
-  for (let m = lo; m <= hi; m += 60) { grid += "<div class='tlg' style='left:" + pc(m) + "'></div>"; if ((m / 60) % 2 === 0) ticks += "<div class='tlt' style='left:" + pc(m) + "'>" + String((m / 60) % 24).padStart(2, "0") + "</div>"; }
-  const now = iso === opsToday() ? opsNowMin() : null;
-  const crewOf = r => r.seats.map((c, k) => r.x.need[k] && c ? opsName(c) : null).filter(Boolean);
-  let h = "<div class='tlw'><div class='tlr hd'><div class='tll'></div><div class='tlk'>" + bandsH + ticks + "</div></div><div class='tlbody'><div class='tlgrid'>" + grid +
-    (now != null && now >= lo && now <= hi ? "<div class='tln' style='left:" + pc(now) + "'><span>NOW " + fmtHM(now) + "</span></div>" : "") + "</div>";
-  spans.forEach(s => { if (!s) return; const r = s.r, x = r.x, edge = opsEdge(r, iso), cs = r.o && r.o.cs || "", need = rowNeed(r).filter(Boolean).length, fill = need - rowMiss(r);
-    const lab = { flown: "FLOWN", cxl: "CANCELLED", open: "NOT CLOSED", due: "DUE " + r.etd, oa: "OPS ADD", plan: "PLANNED" }[edge];
-    h += "<div class='tlr'><div class='tll'><div class='ocsn" + (cs ? "" : " ph") + "'>" + esc(cs || x.code) + "</div><span class='ost " + (edge === "oa" ? "plan oa" : edge) + "'>" + lab + "</span>" + (r.o && r.o.tail ? "<small>" + esc(r.o.tail) + "</small>" : "") + "</div><div class='tlk'>" +
-      (s.br != null ? "<div class='tlbr' style='left:" + pc(s.br) + ";width:" + w(s.br, s.a) + "' title='Brief " + fmtHM(s.br) + "'>" + fmtHM(s.br) + "</div>" : "") +
-      "<div class='tlf " + edge + "' data-tlk='" + esc(r.key) + "' style='left:" + pc(s.a) + ";width:" + w(s.a, s.b) + "' title='Click to open this flight in the table'><b>" + esc(x.code) + "</b></div>" +
-      "<div class='tlx' style='left:calc(" + pc(s.b) + " + 8px)'><b>" + fmtHM(s.a) + "–" + fmtHM(s.b) + "</b> · " + (crewOf(r).map(esc).join(" · ") || "no crew") + " <i>" + fill + "/" + need + "</i></div>" +
-      (r.o && r.o.atd && r.o.ata ? (() => { let a = M(r.o.atd), b = M(r.o.ata); if (b <= a) b += 1440; return "<div class='tla' style='left:" + pc(a) + ";width:" + w(a, b) + "' title='Actual " + r.o.atd + "–" + r.o.ata + "'></div>"; })() : "") + "</div></div>"; });
-  if (!cur.opsF) D.sb.length && [...new Set(D.sb.map(r => r.x.s))].forEach(sh => { const L = opsSbList(D, D.sb.filter(r => r.x.s === sh)), a = lo, b = hi;   // standby covers the whole day
-    h += "<div class='tlr sb'><div class='tll'><div class='ocsn' style='color:#166534'>Standby Duty</div><small>" + L.map(r => esc(r.lab || r.x.code)).join(" · ") + "</small></div><div class='tlk'><div class='tlsb' style='left:" + pc(a) + ";width:" + w(a, b) + "'>Standby · " +
-      L.map(r => esc(r.lab || r.x.code) + " " + (r.seats.filter(Boolean).map(c => esc(opsName(c))).join(", ") || "–")).join(" · ") + "</div></div></div>"; });
-  const gr = D.gr.map(g => { const [a0, b0] = opsTimes(g.time, 0); const a = M(a0), b = M(b0); return a == null ? null : { g, a, b: b != null && b > a ? b : a + 30 }; }).filter(Boolean);
-  if (gr.length && !cur.opsF) h += "<div class='tlr gr'><div class='tll'><div class='ocsn' style='color:var(--s600)'>Ground</div></div><div class='tlk'>" + gr.map(z => "<div class='tlgb' style='left:" + pc(z.a) + ";width:" + w(z.a, z.b) + "'></div><div class='tlx' style='left:calc(" + pc(z.b) + " + 6px)'>" + esc(z.g.act) + " " + fmtHM(z.a) + "–" + fmtHM(z.b) + "</div>").join("") + "</div></div>";
-  if (!rows.length) h += "<div class='muted' style='padding:16px'>No flights are " + esc(OPS_FILT_LAB[cur.opsF] || "").toLowerCase() + " on this day.</div>";
-  h += "</div><div class='tlleg'><span><i class='sw brf'></i>Brief</span><span><i class='sw flown'></i>Flown</span><span><i class='sw open'></i>Not closed</span><span><i class='sw due'></i>Due</span><span><i class='sw plan'></i>Planned</span><span><i class='sw oa'></i>Ops Add</span><span><i class='sw act'></i>Actual ATD–ATA</span><span>Click a bar to open the flight in the table</span></div></div>";
-  return h;
-}
 // ground items of a day: Master Planner ground programme, each department's own GROUND PROGRAMME row entries it typed itself,
 // and crew on a ground activity (anything but flights, leave and off) grouped by department, shift and activity
 function opsGround(D) {
-  const out = [], mb = masterBook(), P = mb && mb.S;
-  D.gr.forEach(g => out.push({ k: "0" + (g.time || "~"), when: esc(g.time || ""), act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));
-  const sk = s => ["AM", "PM", "NIGHT"][s];
+  const out = [], mb = masterBook(), P = mb && mb.S, fmt = (m, e) => new Date(isoOf(D.y, m, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  // a Master Planner item sits in the column of its start time (06:00-11:59 AM, 12:00-17:59 PM, otherwise NIGHT); no time = AM
+  const shOf = t => { const m = hhmm(opsTimes(t, 0)[0]); return m == null || (m >= 360 && m < 720) ? 0 : m >= 720 && m < 1080 ? 1 : 2; };
+  D.gr.forEach(g => out.push({ sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), until: "", act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));
   books.forEach((b, bi) => {
     if (!isDept(b) || b.S.year !== D.y) return;
     withBook(bi, () => {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
       if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : "";
-        if (own && !same(own, fromMp)) out.push({ k: "1", when: "", act: own, desc: "", who: deptChip(S.dept), note: "<span class='muted'>" + esc(S.dept) + "'s ground programme row</span>" }); }
+        if (own && !same(own, fromMp)) out.push({ sh: 0, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "<span class='muted'>" + esc(S.dept) + "'s ground programme row</span>" }); }
       const groups = new Map();
       S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) {
         const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
-        if (!a || a.ci !== CAT_ADMIN) continue;   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Movement
-        const key = s + "|" + a.code.toUpperCase(); if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, who: [], notes: [] });
-        const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + catCls(p.cat) + "'>" + esc(n) + "</b>");
+        if (!a || a.ci !== CAT_ADMIN) continue;   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
+        // the same activity on the next days of this month (same person and shift): "until <last day>"
+        let e = D.d, em = D.mi;   // the last day (and its month) of the run; it carries on into the next month's grid
+        for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[i * 3 + s][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[i * 3 + s]) break; nv = N.grid[i * 3 + s][0]; }
+          const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
+        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", who: [], notes: [] });
+        const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + opsCatCls(p) + "'>" + esc(n) + "</b>");
         const cn = S.notes && S.notes.get(D.mi + ":" + (i * 3 + s) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
       } });
-      groups.forEach(g => out.push({ k: "2" + g.s, when: "<span class='opssh s" + g.s + "'>" + sk(g.s) + "</span>", act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
+      groups.forEach(g => out.push({ sh: g.s, k: "2" + g.s, when: "", until: g.until, act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
     });
   });
-  return out.sort((x, y) => x.k < y.k ? -1 : x.k > y.k ? 1 : 0);
+  return out.sort((x, y) => x.sh - y.sh || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0));
 }
 // the month so far: sorties planned, flown, cancelled (by reason) and not closed, from the Ops Room's outcomes
 function opsMonthCard(D) {
@@ -4003,33 +3976,26 @@ function opsDownCard(D) {
   const rows = [], can = OPS || opsEditable();
   books.forEach((b, bi) => { if (!isDept(b) || b.S.year !== D.y) return; const C = computeChit(b.S), k = dayOfYear(D.y, D.mi, D.d);
     b.S.roster.forEach((p, i) => { if (!C[i] || !C[i].down[k]) return; const sk = C[i].since[k];
-      rows.push("<tr><td><span class='dcn'" + (can || bi === 0 ? " data-upchit='" + bi + "|" + i + "|" + D.iso + "' title='" + esc((p.id || "") + " " + p.name + "\nClick to up-chit") + "'" : " title='" + esc((p.id || "") + " " + p.name) + "'") + ">" + esc(p.ini || p.id || p.name) + "</span></td><td>" + deptChip(b.S.dept) + "</td><td>" + esc(fmtDay(doyISO(D.y, sk))) + "</td></tr>"); }); });
-  return "<div class='card opsdc'><h2>Down-chit" + (rows.length ? " <span class='muted' style='font-weight:600'>(" + rows.length + ")</span>" : "") + (can ? "<button class='btn' id='opsDownAdd'>+ Down-chit</button>" : "") + "</h2>" +
+      rows.push("<tr><td><span class='dcn " + opsCatCls(p) + "'" + (can || bi === 0 ? " data-upchit='" + bi + "|" + i + "|" + D.iso + "' title='" + esc((p.id || "") + " " + p.name + "\nClick to up-chit") + "'" : " title='" + esc((p.id || "") + " " + p.name) + "'") + ">" + esc(p.ini || p.id || p.name) + "</span></td><td>" + deptChip(b.S.dept) + "</td><td>" + esc(fmtDay(doyISO(D.y, sk))) + "</td></tr>"); }); });
+  return "<div class='card opsdc'><h2>Down-chit" + (rows.length ? " <span class='muted' style='font-weight:600'>(" + rows.length + ")</span>" : "") + (opsEditable() && !document.body.classList.contains("opsfs") ? "<button class='btn' id='opsAreaAdd' title='Type the area of the day (Oscar, Echo, Nov)'>+ Area</button>" : "") + (can ? "<button class='btn' id='opsDownAdd'>+ Down-chit</button>" : "") + "</h2>" +
     (rows.length ? "<table><tr><th>Crew</th><th>Dept</th><th>Since</th></tr>" + rows.join("") + "</table><div class='muted' style='font-size:11px;margin-top:6px'>Not cleared to fly." + (can ? " Click a name to up-chit." : "") + "</div>" : "<div class='muted'>Nobody down-chitted.</div>") + "</div>";
 }
 function opsMovement(D) {
-  const groups = new Map();
+  const order = [...new Set(OPS_SEATS.map(z => z[1]))], by = new Map(order.map(d => [d, []])), rank = [CAT_LEAVE, CAT_OFF, CAT_MED];
   books.forEach((b, bi) => {
     if (!isDept(b) || b.S.year !== D.y) return;
     withBook(bi, () => {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
+      const dep = order.find(o => same(o, S.dept)); if (!dep) return;
       S.roster.forEach((p, i) => { const mine = new Map();
         for (let s = 0; s < 3; s++) { const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
           if (!a || !(a.ci === CAT_LEAVE || a.ci === CAT_OFF || a.ci === CAT_MED)) continue;
-          const k = a.code.toUpperCase(); if (!mine.has(k)) mine.set(k, { a, sh: [], notes: [] }); const m = mine.get(k); m.sh.push(s);
-          const cn = S.notes && S.notes.get(D.mi + ":" + (i * 3 + s) + ":" + D.d); if (cn && !m.notes.includes(cn)) m.notes.push(cn); }
-        mine.forEach((m, k) => {
-          if (!groups.has(k)) groups.set(k, { act: m.a.code, desc: m.a.desc, ci: m.a.ci, by: new Map(), notes: [] });
-          const g = groups.get(k), n = p.ini || p.id;
-          if (!g.by.has(S.dept)) g.by.set(S.dept, []);
-          g.by.get(S.dept).push("<b class='" + catCls(p.cat) + "'>" + esc(n) + "</b>" + (m.sh.length < 3 ? " <small class='muted'>" + m.sh.map(s => SHIFTS[s]).join("/") + "</small>" : ""));
-          m.notes.forEach(cn => g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn)));
-        }); });
+          const k = a.code.toUpperCase(); if (!mine.has(k)) mine.set(k, { a, sh: [] }); mine.get(k).sh.push(s); }
+        mine.forEach(m => by.get(dep).push({ r: rank.indexOf(m.a.ci), code: m.a.code, html: "<span class='olp' title='" + esc(m.a.desc || m.a.code) + "'><b class='" + opsCatCls(p) + "'>" + esc(p.ini || p.id) + "</b><small>" + esc(m.a.code) + "</small>" +
+          (m.sh.length < 3 ? "<small>" + m.sh.map(s => SHIFTS[s]).join("/") + "</small>" : "") + "</span>" })); });
     });
   });
-  const order = [CAT_LEAVE, CAT_OFF, CAT_MED];
-  return [].concat([...groups.values()].sort((x, y) => order.indexOf(x.ci) - order.indexOf(y.ci) || (x.act < y.act ? -1 : 1))
-    .map(g => ({ act: g.act, desc: g.desc, ci: g.ci, who: [...g.by].map(([dep, L]) => deptChip(dep) + " " + L.join(", ")).join("<br>"), note: g.notes.join("<br>") })));
+  return order.map(dept => ({ dept, who: by.get(dept).sort((x, y) => x.r - y.r || (x.code < y.code ? -1 : x.code > y.code ? 1 : 0)).map(z => z.html).join("") }));
 }
 // writing the Ops Room file: the aircraft's row (made on first change), all columns rewritten
 function opsWrite(key, fn) {
@@ -4070,7 +4036,7 @@ function opsOpenPop(key, k, keep) {
   let h = "<div class='pt'>" + esc(OPS_SEATS[k][0]) + " · " + esc((r.o && r.o.cs) || r.x.code) + " <span class='muted'>" + esc(SHIFTS[r.x.s] + " " + (r.x.f.time || "")) + "</span><button class='x' data-pc='1'>×</button></div>";
   const dwn = c && downOn(c.dept, c.id, D.iso);
   if (dwn) h += "<div class='pp' style='background:#fee2e2;color:#991b1b'><b>⚠ Down-chitted since " + esc(fmtDay(dwn.since)) + "</b>: not cleared to fly." + ((OPS || opsEditable() || dwn.bi === 0) ? " <button class='upc' data-upchit='" + dwn.bi + "|" + dwn.i + "|" + D.iso + "'>Up-chit…</button>" : " Pick someone else below.") + "</div>";
-  if (c) h += "<div class='pp'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b> " + esc(c.id) + " · " + esc(c.name) + "<div class='muted'>" + esc(c.dept + (c.code ? " · planned " + c.code : "") + (c.set ? " · set in the Ops Room" : " · picked from the plan")) + "</div>" + (c.note ? "<div class='ocn' style='font-size:12px'>" + esc(c.note) + "</div>" : "") + "</div>";
+  if (c) h += "<div class='pp'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b> " + esc(c.id) + " · " + esc(c.name) + "<div class='muted'>" + esc(c.dept + (c.code ? " · planned " + c.code : "") + (c.set ? " · set in the Ops Room" : " · picked from the plan")) + "</div>" + (c.note ? "<div class='ocn' style='font-size:12px'>" + esc(c.note) + "</div>" : "") + "</div>";
   h += "<label>Crew<select id='opsPick'><option value=''>" + (c && !c.set ? "Auto (from the plan): " + esc(c.id) : "Auto (from the plan)") + "</option><optgroup label='" + (r.x.sb ? "On standby today" : "Flying this shift") + "'>" +
     list.map(p => "<option value='" + esc(p.id) + "'" + (c && c.set && same(c.id, p.id) ? " selected" : "") + ">" + esc(opsName(p) + " · " + p.id + " " + p.name + (p.code && !sameCode(p.code, r.x.code) ? " (" + p.code + ")" : "") + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>").join("") + "</optgroup>" +
     "<optgroup label='Others in the " + esc(dep) + " roster'>" + rest.map(p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>").join("") + "</optgroup></select></label>";
@@ -4081,7 +4047,7 @@ function opsOpenPop(key, k, keep) {
     const xs = opsXtra(r.o)[dep] || [], taken = id => (c && same(c.id, id)) || xs.some(x => same(x, id)) || (dep === "Pilot" && r.seats.some(q => q && same(q.dept, dep) && same(q.id, id)));
     const opt = p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>";
     h += "<div class='pxl'><div class='pxh'>Additional " + esc(dep) + " crew</div>" + xs.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]);
-      return "<div class='pxr'><b class='" + catCls(p.cat) + "'>" + esc(opsName(p) || id) + "</b><span class='muted'>" + esc(id + (p.name ? " · " + p.name : "")) + "</span>" + (downOn(dep, id, D.iso) ? "<i class='opsb down'>DOWN</i>" : "") +
+      return "<div class='pxr'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b><span class='muted'>" + esc(id + (p.name ? " · " + p.name : "")) + "</span>" + (downOn(dep, id, D.iso) ? "<i class='opsb down'>DOWN</i>" : "") +
         "<button class='btn pax" + (isPax(r.o, id) ? " on" : "") + "' data-ppx='" + esc(id) + "'>Pax</button><button class='pxd' data-pxd='" + esc(id) + "' title='Take off this aircraft'>×</button></div>"; }).join("") +
       "<select id='opsXAdd'><option value=''>+ Add " + esc(dep) + " crew…</option><optgroup label='Flying this shift'>" + pool.filter(p => !taken(p.id)).map(opt).join("") + "</optgroup><optgroup label='Others in the " + esc(dep) + " roster'>" + rest.filter(p => !taken(p.id)).map(opt).join("") + "</optgroup></select></div>";
   }
@@ -4102,7 +4068,6 @@ $("opsMain").addEventListener("click", e => {
   const tl = e.target.closest("td[data-tail]"); if (tl && opsEditable()) { tailOpen(tl); return; }
   const ps = e.target.closest("[data-ost]"); if (ps && opsEditable()) { opsOpenPop(ps.closest("tr").dataset.ok, "st"); e.stopPropagation(); return; }
   if (e.target.closest("[data-oadd]")) { $("opsAddBtn").click(); return; }
-  const tb = e.target.closest("[data-tlk]"); if (tb) { opsVw = "table"; try { localStorage.setItem("opsView", opsVw); } catch (x) {} renderOps(); const tr = document.querySelector("#opsMain tr[data-ok='" + CSS.escape(tb.dataset.tlk) + "']"); if (tr) { tr.scrollIntoView({ block: "center" }); tr.classList.add("flash"); setTimeout(() => tr.classList.remove("flash"), 1600); } return; }
   const fo = e.target.closest("#opsMain [data-ofl]"); if (fo) { cur.opsF = ""; renderOps(); return; }
   const te = e.target.closest("[data-ef]");
   if (te && opsEditable() && !te.querySelector("input,textarea")) {
@@ -4204,43 +4169,51 @@ $("opsSide").addEventListener("change", e => {
   const t = e.target; if (t.id !== "opsDayRem" || !opsEditable()) return;
   const oi = opsIdx(), v = t.value.trim(); books[oi].S.db[t.dataset.ref] = v; withBook(oi, () => put("Day Board", t.dataset.ref, v)); renderBooks();
 });
-$("opsSide").addEventListener("click", e => { if (e.target.id === "opsNext") { cur.opsDay = opsAddDays(cur.opsDay, 1); renderOps(); } if (e.target.id === "opsDownAdd") downOpen(opsDay(cur.opsDay).iso); });
+$("opsSide").addEventListener("click", e => { if (e.target.id === "opsNext") { cur.opsDay = opsAddDays(cur.opsDay, 1); renderOps(); } if (e.target.id === "opsDownAdd") downOpen(opsDay(cur.opsDay).iso); if (e.target.id === "opsAreaAdd") { cur.opsAreaOpen = true; renderOps(); } });
 // projector: a size the room can read (remembered on this computer), and full screen without the menus
-const OPS_ZS = [1, 1.15, 1.3, 1.5, 1.75, 2];
-let opsZi = (() => { try { const v = +localStorage.getItem("opsZoom"); return v >= 0 && v < OPS_ZS.length && localStorage.getItem("opsZoom") != null ? v : 2; } catch (e) { return 2; } })();
+const OPS_ZS = [0.7, 0.85, 1, 1.15, 1.3, 1.5, 1.75, 2];   // the default is 100%, one step below the old first-time 130% (the saved size has its own key, so an old six-step value is never read)
+let opsZi = (() => { try { const v = +localStorage.getItem("opsZoom2"); return v >= 0 && v < OPS_ZS.length && localStorage.getItem("opsZoom2") != null ? v : 2; } catch (e) { return 2; } })();
 const opsZ = () => OPS_ZS[opsZi];
-// the chosen size, shrunk just enough that the whole flight table fits the screen width (no sideways scrolling on the projector)
+// the chosen size, shrunk (never grown) just enough that the whole page fits the screen: the flight table across the width and, with the cards under it, down the height (no scrolling on the projector). Smallest 50%.
 let opsZEff = 1;
 function opsFit() {
   const sc = $("opsScale"), m = $("opsMain"); if (!sc || !m || !document.getElementById("v-ops").classList.contains("on")) return;
-  sc.style.zoom = opsZ(); opsZEff = opsZ();
+  const bar = sc.querySelector(".opsbar"), w = $("opsWrap");
+  // lay the page out at zoom z: the top bar keeps one size whatever the day holds (so the day buttons never move), the flight card and the cards run to the bottom of the window
+  const place = z => {
+    opsZEff = z; sc.style.zoom = z;
+    if (bar) { bar.style.zoom = 1 / z; bar.style.flexWrap = "nowrap"; bar.style.width = "max-content"; const nat = bar.getBoundingClientRect().width, avail = sc.getBoundingClientRect().width; bar.style.flexWrap = bar.style.width = "";
+      bar.style.zoom = Math.min(opsZ(), avail / Math.max(1, nat)) / z; }
+    w.style.height = "";
+    const top = w.getBoundingClientRect().top, want = window.innerHeight - top - 12; if (want < 200) return;
+    let h = want / z; w.style.height = h + "px";
+    const got = w.getBoundingClientRect().height; if (got > 0 && Math.abs(got - want) > 2) w.style.height = Math.max(360, h * want / got) + "px";
+  };
+  place(opsZ());
   const over = m.scrollWidth / Math.max(1, m.clientWidth);
-  if (over > 1.001) { opsZEff = Math.max(0.8, opsZ() / over); sc.style.zoom = opsZEff; }
-  // the top bar keeps one size whatever the day holds (so the day buttons never move): the chosen size, or smaller if the window is too narrow for it on one line
-  const bar = sc.querySelector(".opsbar");
-  if (bar) { bar.style.zoom = 1 / opsZEff; bar.style.flexWrap = "nowrap"; bar.style.width = "max-content"; const nat = bar.getBoundingClientRect().width, avail = sc.getBoundingClientRect().width; bar.style.flexWrap = bar.style.width = "";
-    bar.style.zoom = Math.min(opsZ(), avail / Math.max(1, nat)) / opsZEff; }
-  // the flight card and the right-hand column run to the bottom of the window
-  const w = $("opsWrap"); w.style.height = "";
-  const top = w.getBoundingClientRect().top, want = window.innerHeight - top - 12; if (want < 200) return;
-  let h = want / opsZEff; w.style.height = h + "px";
-  const got = w.getBoundingClientRect().height; if (got > 0 && Math.abs(got - want) > 2) w.style.height = Math.max(360, h * want / got) + "px";
+  if (over > 1.001) place(Math.max(0.5, opsZ() / over));
+  for (let i = 0; i < 14 && opsZEff > 0.5 && m.scrollHeight > m.clientHeight + 2; i++) place(Math.max(0.5, opsZEff * 0.95));
 }
 window.addEventListener("resize", () => opsFit());
 function opsApplyZ() { opsFit(); document.querySelectorAll("#opsSize button").forEach(b => b.disabled = +b.dataset.z < 0 ? opsZi === 0 : opsZi === OPS_ZS.length - 1); $("opsSize").title = "Size " + Math.round(opsZ() * 100) + "%"; }
-$("opsSize").addEventListener("click", e => { const b = e.target.closest("button[data-z]"); if (!b) return; opsZi = Math.max(0, Math.min(OPS_ZS.length - 1, opsZi + +b.dataset.z)); try { localStorage.setItem("opsZoom", opsZi); } catch (x) {} $("opsPop").style.display = "none"; cur.opsPop = null; opsApplyZ(); });
+$("opsSize").addEventListener("click", e => { const b = e.target.closest("button[data-z]"); if (!b) return; opsZi = Math.max(0, Math.min(OPS_ZS.length - 1, opsZi + +b.dataset.z)); try { localStorage.setItem("opsZoom2", opsZi); } catch (x) {} $("opsPop").style.display = "none"; cur.opsPop = null; opsApplyZ(); });
 $("opsFull").onclick = () => {
   const on = !document.body.classList.contains("opsfs");
-  document.body.classList.toggle("opsfs", on); $("opsFull").textContent = on ? "✕ Leave projector" : "⛶ Projector"; setTimeout(opsFit, 50);
+  document.body.classList.toggle("opsfs", on); $("opsFull").textContent = on ? "✕ Leave projector" : "⛶ Projector"; renderOps(); setTimeout(opsFit, 50);
   try { if (on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
 };
 document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("opsfs")) { document.body.classList.remove("opsfs"); $("opsFull").textContent = "⛶ Projector"; setTimeout(opsFit, 50); } });
 opsApplyZ();
+// the clock in the bar, and the light / dark screen (remembered on this computer; the page works without storage)
+function opsTick() { const e = $("opsClock"); if (!e) return; const m = opsNowMin(); e.textContent = m == null ? "--:--" : fmtHM(m).replace(/^(\d\d)(\d\d)$/, "$1:$2"); }
+setInterval(opsTick, 10000);
+function opsThemeLabel() { const b = $("opsTheme"); if (b) b.textContent = document.body.classList.contains("opsdark") ? "Dark" : "Light"; }
+function opsThemeInit() { let dark = false; try { dark = localStorage.getItem("opsTheme") === "dark"; } catch (e) {} document.body.classList.toggle("opsdark", dark); opsThemeLabel(); }
+$("opsTheme").onclick = () => { const dark = document.body.classList.toggle("opsdark"); opsThemeLabel(); try { localStorage.setItem("opsTheme", dark ? "dark" : "light"); } catch (e) {} };
+opsThemeInit(); opsTick();
 $("opsStats").addEventListener("click", e => { const c = e.target.closest("[data-ofl]"); if (!c) return; const f = c.dataset.ofl;
-  if (f === "down") { const k = document.querySelector("#opsSide .opsdc"); if (k) { k.scrollIntoView({ block: "nearest" }); k.classList.add("flash"); setTimeout(() => k.classList.remove("flash"), 1600); } return; }
   cur.opsF = !f || cur.opsF === f ? "" : f; renderOps(); });
-$("opsView").addEventListener("click", e => { const b = e.target.closest("[data-vw]"); if (!b) return; opsVw = b.dataset.vw; try { localStorage.setItem("opsView", opsVw); } catch (x) {} $("opsPop").style.display = "none"; cur.opsPop = null; renderOps(); });
-const opsGo = iso => { cur.opsDay = iso; cur.opsPop = null; cur.opsF = ""; $("opsPop").style.display = "none"; renderOps(); };
+const opsGo = iso => { cur.opsDay = iso; cur.opsPop = null; cur.opsF = ""; cur.opsAreaOpen = false; $("opsPop").style.display = "none"; renderOps(); };
 $("opsDate").onchange = e => { if (e.target.value) opsGo(e.target.value); };
 $("opsPrev").onclick = () => opsGo(opsAddDays(cur.opsDay, -1));
 $("opsNextD").onclick = () => opsGo(opsAddDays(cur.opsDay, 1));
@@ -4594,7 +4567,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z95 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-27 z97 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5341,9 +5314,9 @@ const HELP = {
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". The Ops Room marks a seat \"CURR\", and the Aircraft Captain seat also checks the Captain currency. These only warn. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
+    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
-    "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (Seats filled, MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li><li>Timeline shows the same flights as bars on the day's clock (brief, then ETD to ETA) with a line at the time now; click a bar to open it in the table.</li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
+    "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li></li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +
     "<h3>Tools</h3><ul><li>Click a seat to change it, mark MC / CRMO, or swap Captain and Co-Pilot. Click a text cell to type.</li><li><b>+ Ops Add</b>: an ad hoc flight for the day. It isn't put on the Master Planner; departments see it on their MASTER rows (OPS ADD), and crew you seat on it get it on their plan. Remove it from its status pill.</li><li>A- / A+ sizes the board; Projector hides the menus.</li><li>Save writes every file you changed: the Ops Room file, and a department's file when you up-chit someone from it.</li></ul>"],
   mp: ["Master Planning", "<p>The Master Planner's calendar: every flight and ground programme item, which all departments copy. Only the Master Planner (its own file) can edit; everyone else sees it locked.</p>" +

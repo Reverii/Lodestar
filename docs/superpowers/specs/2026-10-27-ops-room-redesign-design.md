@@ -23,14 +23,14 @@ remarks); everything else fills itself from the department plans.
 - **Leave and MC** is grouped by department (replaces Movement).
 - **Remove the Timeline view.**
 - **Clock and theme:** a clock in the bar; a light / dark switch.
-- **Text a little smaller** than today (Brandon: "font seems a little too big"), and a **scaling function for the whole dashboard** (Brandon, 2026-10-27): finer manual steps on every page, and an Auto fit on the Ops Room.
+- **Text a little smaller** than today (Brandon: "font seems a little too big"), and with the page shrinking to fit the screen height. A scaling function for the whole dashboard was discussed and put **on hold** (2026-10-27).
 - **Projector** stays what it is today: full screen, no menus. It is not a separate display.
 - **ATD, ATA and Hours** stay (Brandon asked for them back); so do Brief Timing and the per-flight Remarks.
 - **Not on the Ops Room:** ATOM currency, new data fields, new Excel layout (nothing in any builder changes, no layout stamp change).
 - Wording: 121 SQN is one squadron. Plain English.
 
 ## What the page shows (top to bottom)
-1. **Bar:** the long date, Today / Tomorrow / day arrows, the date picker, then (right) the **clock**, the **theme switch**, + Ops Add, Projector. (The scale control is the dashboard's, in the tab bar, see Scaling.)
+1. **Bar:** the long date, Today / Tomorrow / day arrows, the date picker, then (right) the **clock**, the **theme switch**, + Ops Add, A- / A+, Projector.
    The Table / Timeline buttons go. Nothing else new.
 2. **Chips:** Flights, Sorties, MC not set (when any), Flown, Cancelled, Not closed (past days or open sorties), and the day-status chip when set. Filtering by a chip stays.
    Removed: Seats filled, Down-chit.
@@ -69,17 +69,12 @@ remarks); everything else fills itself from the department plans.
 - One row per department (Pilot, Loadmaster, TACCO, SUP 1, SUP 2, in the table's seat order), each with the people on Leave, OIL or MC that day: callsign (Cat-coloured) and the code (LL, OL, OIL, MC) small.
   A department with nobody shows a dash. Shifts shown when it is not the whole day (as today).
 
-## Scaling (the whole dashboard)
-- **One scale control for the dashboard**, in the tab bar under the header (right-hand end), so it is on every page and never moves: `A−  [ 100% ]  A+` and an **Auto** button (Auto is shown only where it means something, see below).
-  A− / A+ move in steps of 5% from 50% to 200%. Clicking the percentage opens a short list (Auto, 60, 70, 80, 90, 100, 120, 150, 200%). It scales the page content (not the header and tabs, which keep their size so the control and the tabs stay put).
-- **Remembered per kind of page, on this computer** (localStorage, in try/catch): the **Ops Room page** has its own scale (default **Auto**), and **every other page** shares one scale (default **100%**). Changing the scale on the Planner does not change the Ops Room's.
-- **Auto (Ops Room only):** the largest scale, up to 130%, at which the whole Ops Room page (table and bottom row) fits the screen width and height with no scrolling. A quiet day grows, a busy day (10 flights)
-  shrinks; it re-fits when the window, the day or the flights change. Smallest Auto scale 50%. Picking a percentage sets a manual scale (still shrinking if the page would scroll sideways); the Auto button returns to Auto.
-  On the other pages there is no Auto button, because "fit the screen" makes no sense for a month planner that scrolls.
-- **Replaces today's Ops Room A− / A+** (six fixed steps, 100% to 200%) and the Ops Room's own scaling in `opsFit`. An old saved Ops Room size step is ignored (means Auto). The projector (full screen) hides the control as today and keeps the Ops Room's scale.
-- **Must keep working at any scale:** the Planner's frozen columns and header rows, the sticky table headers, cell editing and dropdown pop-ups, tooltips and pop-over positions, the live-refresh banners, and drag or click targets (a pop-up must open beside the cell it belongs to, not offset by the scale).
-  Implementation uses the browser's CSS `zoom` on the page area (Edge / Chromium, as `#opsScale` does today); pop-ups that position themselves from `getBoundingClientRect` are corrected for the zoom.
-- On a busy day (10 flights) the Ops Room's Auto must fit at 1920x1080 and 1280x720 with no vertical page scroll in projector mode.
+## Text size and fit
+- The Ops Room keeps its own A- / A+ and remembered size. The default is one step smaller than today's (today the first-time default is the second-largest step).
+- The page shrinks (never grows) so the whole page, table and bottom row, fits one screen height as well as the width (today it fits the width only). Smallest allowed 60%.
+  On a busy day (10 flights) it must still fit at 1920x1080 and 1280x720 with no vertical page scroll in projector mode.
+- Rows are not stretched to fill a quiet day beyond the chosen size; spare room is simply space.
+- A scale control for the whole dashboard is **on hold** (Brandon, 2026-10-27); see Open items.
 
 ## Theme
 - A light and a dark theme for this page only (the other pages stay light). The chip in the bar switches; the choice is remembered on this computer (localStorage, in try/catch).
@@ -101,12 +96,12 @@ remarks); everything else fills itself from the department plans.
 - New `tests/ops_room.test.js` (Playwright, demo files, `window.OPS_TODAY` / `OPS_NOW`): the side cards sit below the flight table; the two removed chips are gone and the rest remain; Timeline gone;
   Cat classes on seats and a SANS person's green box; standby row font size equals a flight row's; Codes card in the Day Board; Area card absent when empty, present when filled, `+ Area` in the editable view
   and not in projector mode; Ground programme grouped AM / PM / NIGHT with "until" for a multi-day item; Leave and MC by department; theme switch and persistence; clock text; page fits the viewport height
-  at 1920x1080 and 1280x720 with a 10-flight day (no vertical scroll in projector mode); scale control (in the tab bar on every page): Ops Room Auto is the default and fits, A+ / A- change the percentage in 5% steps, a chosen percentage survives a reload, Auto returns to fitting, the Planner's scale is remembered separately from the Ops Room's, an old saved Ops Room step means Auto, and at 80% and 150% on the Planner a cell click still opens its editor beside the cell and the frozen columns stay frozen; existing editing paths still work (seat pick, Ops Add, 1 Set / 2 Set, remarks save).
+  at 1920x1080 and 1280x720 with a 10-flight day (no vertical scroll in projector mode); the A- / A+ size is remembered and the default is one step smaller; existing editing paths still work (seat pick, Ops Add, 1 Set / 2 Set, remarks save).
 - The existing tests (`my_lodestar`, `planner_filter`, `mp_export`, `atom`) stay green; the ATOM test's "no CURR on Ops Room seats" check stays.
 - Real-SharePoint behaviour (background open of the Ops Room file) is not exercised here; unchanged.
 
 ## Open items
-1. The 130% Auto ceiling and the 50% floor are my estimate; Brandon tunes them on the real projector.
-2. Scaling the whole dashboard touches every page: the risky parts are pop-ups and frozen panes under CSS zoom. If a page misbehaves at some scale the plan fixes it or limits the range on that page; it is the one part of this work that is not Ops Room only.
-2. Day Board duty names are coloured only where a person can be identified from the plans; typed-in text stays plain.
-3. Leave and MC and Ground programme can overflow on a very full day; they scroll inside their card rather than push the page.
+1. The default size step and the 60% floor are my estimate; Brandon tunes them on the real projector.
+2. **On hold:** a scale control for the whole dashboard (every page, percentage steps, remembered per kind of page, an Auto fit on the Ops Room). Risk: pop-ups and frozen panes under CSS zoom. Revisit when Brandon asks.
+3. Day Board duty names are coloured only where a person can be identified from the plans; typed-in text stays plain.
+4. Leave and MC and Ground programme can overflow on a very full day; they scroll inside their card rather than push the page.

@@ -980,7 +980,7 @@ body.opsfs #opsSize{display:none}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z95</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-26 z96</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1390,15 +1390,6 @@ function atomPublish(f) {   // writes every person of the export into the sheet,
 function atomHours(bi, i, mi) {   // ATOM's clocked hours for a person, only for the month the export belongs to
   const f = atomCurrent(), row = f && atomFor(bi, i); if (!row || typeof row.hours !== "number") return null;
   const asOf = atomAsOf(f); return asOf.slice(0, 7) === isoOf(books[bi].S.year, mi, 0).slice(0, 7) ? { h: row.hours, asOf } : null;
-}
-function atomSeatWarn(r, c, k) {   // Ops Room seat: the Day / Night Curr of the flight's shift, and for the Aircraft Captain seat (k = 0) the matching Capt, expired before the flight's day
-  if (!atomCurrent() || !c || !r.x || r.x.sb) return null;
-  const bi = books.findIndex(b => !b.S.kind && same(b.S.dept, c.dept)); if (bi < 0) return null;
-  const i = books[bi].S.roster.findIndex(p => p.id && p.id === c.id); if (i < 0) return null;
-  const row = atomFor(bi, i); if (!row) return null;
-  const iso = opsDay(cur.opsDay).iso, part = r.x.s === 2 ? "Night" : "Day", lines = [];
-  for (const col of k === 0 ? [part + " Curr", part + " Capt"] : [part + " Curr"]) { const cell = row.cells[col]; if (cell && cell.k === "date" && cell.iso < iso) lines.push(col + " expired " + atomFmt(cell.iso, iso)); }
-  return lines.length ? { lines } : null;
 }
 function atomDayMarks(row, iso, s, flight) {   // one Planner cell: s = shift row (0 AM, 1 PM, 2 NIGHT); flight = the cell holds an uncancelled flight
   const out = { marks: [], alert: null }; if (!row) return out;
@@ -3769,10 +3760,10 @@ function opsCrewCell(r, k, ed) {
   const c = r.seats[k], dep = OPS_SEATS[k][1];
   if (!c) return "<td class='oc miss'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc((deptOpen(dep) ? "Nobody planned from " + dep : dep + " file not open") + (r.urg ? ". The flight is due soon." : "") + (ed ? "\nClick to pick someone." : "")) + "'><span class='seatp" + (r.urg ? " urg" : "") + (deptOpen(dep) ? "" : " nf") + "'>" + (deptOpen(dep) ? "+" : "?") + "</span>" + opsXtraHtml(r, k) + "</td>";
   const mc = r.o && same(r.o.mc, c.id), cr = r.o && same(r.o.crmo, c.id), off = c.code && !sameCode(c.code, r.x.code);
-  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso), aw = atomSeatWarn(r, c, k);
+  const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso);
   const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.note ? "\nComment: " + c.note : "") + (c.set ? "\nSet in the Ops Room" : "");
   return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + catCls(c.cat) + "'>" + esc(opsName(c)) + "</b>" +
-    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (aw ? "<i class='opsb atomx' title='" + esc(aw.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent())) + "'>CURR</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
+    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
 }
 function opsTail(r, ed, one) {
   // shown as plain text: the actual tail in bold, the standby tail small under it; click the cell to pick from the fleet
@@ -4594,7 +4585,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z95 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-26 z96 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5341,7 +5332,7 @@ const HELP = {
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". The Ops Room marks a seat \"CURR\", and the Aircraft Captain seat also checks the Captain currency. These only warn. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
+    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (Seats filled, MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li><li>Timeline shows the same flights as bars on the day's clock (brief, then ETD to ETA) with a line at the time now; click a bar to open it in the table.</li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +

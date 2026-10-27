@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Where things stand
 
-- **Dashboard z95** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
+- **Dashboard z96** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
@@ -23,7 +23,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
   from the export is stored; no names.
 - Matching is by exact roster Initials (case and spaces ignored); the Names to fix panel lists what does not match.
 - Planner: layer 1 marks the day a Day / Night currency expires (Capt as a lighter outline), layer 2 gives a red corner "NOT CURRENT" on a flight on or after it.
-  No tint after the expiry day, no name badges. The Ops Room marks a seat "CURR" (the Aircraft Captain seat also checks Capt). Warnings only.
+  No tint after the expiry day, no name badges. The (Ops Room seat "CURR" marks were removed on 27 Oct: the Ops Room shows no currency.) Warnings only.
 - Hours: Planner "Flown Hrs" and My Lodestar show ATOM's clocked hours for the export's month.
 - IRT (Brandon, 27 Oct): in the Planner the day it expires is only highlighted in all three rows; it never alerts.
 - **Open:** the general flying rules (45 / 90 / 180) are still the

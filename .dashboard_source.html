@@ -715,10 +715,10 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsStats .opsk.warn{border-color:#fbbf24;background:#fffbeb;color:#b45309}#opsStats .opsk.bad{border-color:#fca5a5;background:#fef2f2;color:#dc2626}
 #opsStats .opsk.sel{box-shadow:0 0 0 2px #3b82f6;border-color:#3b82f6}#opsStats .opsk.nofly{cursor:default;padding:4px 11px}
 #opsNote{font-size:12px;margin:0 0 6px}#opsNote:empty{display:none}
-#opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:10px;align-items:stretch;min-height:360px}
+#opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) clamp(160px,22vh,300px);gap:10px;align-items:stretch;min-height:360px}
 #opsLeft{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}
 #opsMain{flex:1;min-height:0;overflow:auto;border:0;border-radius:0;background:#fff}
-#opsSide{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.5fr);gap:10px;align-items:stretch;min-height:0;max-height:45vh}
+#opsSide{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.5fr);gap:10px;align-items:stretch;min-height:0}
 #opsSide .stack{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}#opsSide .stack>.card{margin:0;padding:9px 12px;overflow:auto;flex:1 1 auto}
 #opsSide>.card{margin:0;padding:9px 12px;min-width:0;overflow:auto}#opsSide>.card h2{font-size:13.5px;margin:0 0 6px;display:flex;align-items:center;gap:6px}
 #opsSide .ocnt{font-weight:600;color:var(--s500)}
@@ -770,6 +770,7 @@ table.opst tr.f.flash td{animation:opsFlash 1.6s}@keyframes opsFlash{0%,40%{back
 body.opsfs #opsSize{display:none}
 #opsClock{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;margin-left:auto;padding:0 6px}#opsClock+#opsTheme{margin-left:0}
 /* Ops Room dark theme: only on the Ops Room page (the body class stays on when another tab is open, so every rule is scoped to #v-ops) */
+body.opsfs #opsAreaAdd{display:none}
 body.opsdark:has(#v-ops.on){background:#0b1220}
 body.opsdark #v-ops{--s50:#0f1830;--s100:#111a2e;--s200:#1f2d4a;--s300:#2c3e63;--s400:#5b6f95;--s500:#8da0c0;--s600:#a9b8d4;--s700:#c4cfe4;--s800:#060b16;--s900:#e8eefc;color:#e8eefc}
 body.opsdark #v-ops :is(.card,.opsk,#opsLeft,#opsMain,#opsBoard,.odg,.odi,.odi .dbml,table.opst td,.odg .dc.emp,#opsSide .card){background:#111a2e;color:#e8eefc}
@@ -786,6 +787,9 @@ body.opsdark #v-ops #opsMain table.opst tr.band td{border-top-color:#0b1220}
 body.opsdark #v-ops .seatp{background:#0b1220;color:#8da0c0;border-color:#2c3e63}
 body.opsdark #v-ops .btn:not(.primary):not(#opsAddBtn){background:#1f2d4a;color:#e8eefc;border-color:#2c3e63}
 body.opsdark #v-ops .odi .dbml{color:#93c5fd}
+body.opsdark #v-ops #opsQuick button{background:#1f2d4a;color:#e8eefc}body.opsdark #v-ops #opsQuick button.on{background:#1d4ed8;color:#fff}
+body.opsdark #v-ops .seatp.urg{border-color:#f87171;color:#f87171;background:#2d1216}
+body.opsdark #v-ops table.opst td.oc.odown{background:#3b1219!important}body.opsdark #v-ops table.opst td.oc.off{background:#2b2108}
 body.opsdark #opsPop,body.opsdark #tailPop{background:#111a2e;color:#e8eefc;border-color:#2c3e63}
 body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
 .lodetop{display:flex;justify-content:space-between;align-items:center;gap:12px;position:relative}.loderight{display:flex;align-items:center;gap:8px;position:relative}.lodenav{display:flex;gap:6px}.lodechip{display:flex;align-items:center;gap:8px;background:var(--s800);color:#cbd5e1;border-radius:20px;padding:4px 14px 4px 5px;font-size:12px}
@@ -3599,7 +3603,7 @@ function renderOpsBoard(iso, ed) {
 function opsAreaCard(D, ed) {
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null; if (!ob || !ob.hasDb || ob.year !== D.y) return "";
   const row = 6 + dayOfYear(D.y, D.mi, D.d), L = OPS_DB_CELLS.filter(c => c.stack >= 0).map(c => ({ c, v: ob.db[c.col + row] || "" }));
-  const show = ed && cur.opsAreaOpen ? L : L.filter(x => x.v); if (!show.length) return "";
+  const show = ed && cur.opsAreaOpen && !document.body.classList.contains("opsfs") ? L : L.filter(x => x.v); if (!show.length) return "";
   const kv = x => { const ref = x.c.col + row; return "<div class='k'>" + esc(x.c.sub) + "</div><div class='v" + (ed ? " oe" : "") + "'" + opsDbA(ref, "", ed) + ">" + (x.v ? esc(x.v) : "<span class='oph'>–</span>") + "</div>"; };
   return "<div class='card opsac'><h2>Area</h2><div class='okv'>" + show.map(kv).join("") + "</div></div>";
 }
@@ -3925,7 +3929,7 @@ function opsHrs(r, oc) {
 // ground items of a day: Master Planner ground programme, each department's own GROUND PROGRAMME row entries it typed itself,
 // and crew on a ground activity (anything but flights, leave and off) grouped by department, shift and activity
 function opsGround(D) {
-  const out = [], mb = masterBook(), P = mb && mb.S, fmt = e => new Date(isoOf(D.y, D.mi, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  const out = [], mb = masterBook(), P = mb && mb.S, fmt = (m, e) => new Date(isoOf(D.y, m, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
   // a Master Planner item sits in the column of its start time (06:00-11:59 AM, 12:00-17:59 PM, otherwise NIGHT); no time = AM
   const shOf = t => { const m = hhmm(opsTimes(t, 0)[0]); return m == null || (m >= 360 && m < 720) ? 0 : m >= 720 && m < 1080 ? 1 : 2; };
   D.gr.forEach(g => out.push({ sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), until: "", act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));
@@ -3935,13 +3939,15 @@ function opsGround(D) {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
       if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : "";
         if (own && !same(own, fromMp)) out.push({ sh: 0, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "<span class='muted'>" + esc(S.dept) + "'s ground programme row</span>" }); }
-      const groups = new Map(), nDays = daysIn(D.y, D.mi);
+      const groups = new Map();
       S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) {
         const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
         if (!a || a.ci !== CAT_ADMIN) continue;   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
         // the same activity on the next days of this month (same person and shift): "until <last day>"
-        let e = D.d; while (e + 1 < nDays) { const nv = M.grid[i * 3 + s][e + 1], na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; e++; }
-        const key = s + "|" + a.code.toUpperCase() + "|" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: e > D.d ? "until " + fmt(e) : "", who: [], notes: [] });
+        let e = D.d, em = D.mi;   // the last day (and its month) of the run; it carries on into the next month's grid
+        for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[i * 3 + s][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[i * 3 + s]) break; nv = N.grid[i * 3 + s][0]; }
+          const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
+        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", who: [], notes: [] });
         const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + opsCatCls(p) + "'>" + esc(n) + "</b>");
         const cn = S.notes && S.notes.get(D.mi + ":" + (i * 3 + s) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
       } });
@@ -4191,7 +4197,7 @@ function opsApplyZ() { opsFit(); document.querySelectorAll("#opsSize button").fo
 $("opsSize").addEventListener("click", e => { const b = e.target.closest("button[data-z]"); if (!b) return; opsZi = Math.max(0, Math.min(OPS_ZS.length - 1, opsZi + +b.dataset.z)); try { localStorage.setItem("opsZoom2", opsZi); } catch (x) {} $("opsPop").style.display = "none"; cur.opsPop = null; opsApplyZ(); });
 $("opsFull").onclick = () => {
   const on = !document.body.classList.contains("opsfs");
-  document.body.classList.toggle("opsfs", on); $("opsFull").textContent = on ? "✕ Leave projector" : "⛶ Projector"; setTimeout(opsFit, 50);
+  document.body.classList.toggle("opsfs", on); $("opsFull").textContent = on ? "✕ Leave projector" : "⛶ Projector"; renderOps(); setTimeout(opsFit, 50);
   try { if (on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
 };
 document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("opsfs")) { document.body.classList.remove("opsfs"); $("opsFull").textContent = "⛶ Projector"; setTimeout(opsFit, 50); } });

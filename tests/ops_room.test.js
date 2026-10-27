@@ -241,6 +241,53 @@ test("editing_paths_still_work", async ({ page }) => {
   await page.click("#opsDownAdd"); assert.strictEqual(await page.evaluate(() => document.getElementById("chitTitle").textContent), "Down-chit");
 }, ED);
 
+// contrast ratio of an element's text colour against its (own or nearest painted) background, run in the page
+const CONTRAST = (page, sel) => page.evaluate(sel => { const P = c => c.match(/[\d.]+/g).map(Number), L = ([r, g, b]) => { const f = v => (v /= 255) <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+  const el = document.querySelector(sel); let bgEl = el, bg = P(getComputedStyle(bgEl).backgroundColor); while ((bg.length > 3 && bg[3] === 0) && bgEl.parentElement) { bgEl = bgEl.parentElement; bg = P(getComputedStyle(bgEl).backgroundColor); }
+  const fg = P(getComputedStyle(el).color), a = L(fg) + 0.05, b = L(bg) + 0.05; return Math.max(a, b) / Math.min(a, b); }, sel);
+
+test("dark_today_button_readable", async ({ page }) => {
+  await goOps(page, DAY); await page.click("#opsTheme");
+  await page.evaluate(() => { opsGo(opsToday()); });
+  const c = await CONTRAST(page, "#opsQuick button.on");
+  assert.ok(c >= 3, "Today button contrast " + c);
+}, ED);
+test("dark_due_seat_stays_red", async ({ page }) => {
+  await page.evaluate(() => { window.OPS_TODAY = "2026-10-14"; window.OPS_NOW = "07:30"; });
+  await goOps(page, DAY); await page.click("#opsTheme"); await page.evaluate(() => renderOps());
+  const c = await page.evaluate(() => { const e = document.querySelector(".seatp.urg"); return e ? getComputedStyle(e).borderTopColor : null; });
+  assert.ok(c, "a due seat exists"); const [r, g] = c.match(/\d+/g).map(Number); assert.ok(r > 180 && g < 150, "due seat border " + c);
+}, ED);
+test("dark_down_chit_name_readable", async ({ page }) => {
+  await goOps(page, DAY); await page.click("#opsTheme");
+  await page.evaluate(() => { document.querySelector("#opsMain tr.f td.oc:not(.miss):not(.na)").classList.add("odown"); });
+  const c = await CONTRAST(page, "#opsMain tr.f td.oc.odown b");
+  assert.ok(c >= 3, "down-chit name contrast " + c);
+}, ED);
+test("long_lists_do_not_shrink_the_table", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await goOps(page, DAY); await page.click("#opsFull"); await page.evaluate(() => renderOps()); await page.waitForTimeout(200);
+  const z0 = await page.evaluate(() => opsZEff);
+  await page.evaluate(() => { const og = opsGround; window.opsGround = D => og(D).concat(Array.from({ length: 40 }, (_, i) => ({ sh: i % 3, k: "3", when: "", until: "", act: "Item " + i, desc: "", who: "X", note: "" }))); renderOps(); });
+  await page.waitForTimeout(200);
+  const g = await page.evaluate(() => ({ z: opsZEff, side: document.getElementById("opsSide").getBoundingClientRect().height, h: innerHeight }));
+  assert.ok(Math.abs(g.z - z0) < 0.001, "zoom " + z0 + " -> " + g.z); assert.ok(g.side <= 0.45 * g.h + 1, "bottom row " + g.side);
+}, ED);
+test("area_add_hidden_when_projector_clicked", async ({ page }) => {
+  await goOps(page, DAY); await page.click("#opsAreaAdd");
+  await page.click("#opsFull");
+  assert.ok(await page.evaluate(() => !document.getElementById("opsAreaAdd") || getComputedStyle(document.getElementById("opsAreaAdd")).display === "none"), "button hidden");
+  assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsSide .opsac .v.oe").length), 0, "no empty area lines on the projector");
+}, ED);
+test("ground_until_crosses_the_month_end", async ({ page }) => {
+  const r = await page.evaluate(() => { const bi = books.findIndex(b => isDept(b) && same(b.S.dept, "Pilot")); let out = null;
+    withBook(bi, () => { const A = [...actIndex().values()].filter(a => a.ci === CAT_ADMIN), a = A[A.length - 1], i = S.roster.findIndex(p => p.name || p.id), D = opsDay("2026-10-30");
+      [[D.mi, D.d], [D.mi, D.d + 1], [D.mi + 1, 0], [D.mi + 1, 1]].forEach(([m, d]) => { S.m[m].grid[i * 3 + 1][d] = a.code; }); out = a.code; });
+    cur.opsDay = "2026-10-30"; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps(); return out; });
+  const cols = await COLS(page);
+  assert.ok(cols[1].text.includes(r) && /until 2 Nov/.test(cols[1].text), cols[1].text);
+}, ED);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

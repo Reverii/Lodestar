@@ -713,13 +713,15 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsStats .opsk.warn{border-color:#fbbf24;background:#fffbeb;color:#b45309}#opsStats .opsk.bad{border-color:#fca5a5;background:#fef2f2;color:#dc2626}
 #opsStats .opsk.sel{box-shadow:0 0 0 2px #3b82f6;border-color:#3b82f6}#opsStats .opsk.nofly{cursor:default;padding:4px 11px}
 #opsNote{font-size:12px;margin:0 0 6px}#opsNote:empty{display:none}
-#opsWrap{display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,23%,400px);gap:12px;align-items:stretch;min-height:360px}
+#opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:10px;align-items:stretch;min-height:360px}
 #opsLeft{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}
 #opsMain{flex:1;min-height:0;overflow:auto;border:0;border-radius:0;background:#fff}
-#opsSide{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
-#opsSide>.card{margin:0;padding:9px 12px;flex:none}#opsSide>.card h2{font-size:13.5px;margin:0 0 6px;display:flex;align-items:center;gap:6px}
+#opsSide{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.5fr);gap:10px;align-items:stretch;min-height:0;max-height:45vh}
+#opsSide .stack{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}#opsSide .stack>.card{margin:0;padding:9px 12px;overflow:auto;flex:1 1 auto}
+#opsSide>.card{margin:0;padding:9px 12px;min-width:0;overflow:auto}#opsSide>.card h2{font-size:13.5px;margin:0 0 6px;display:flex;align-items:center;gap:6px}
 #opsSide .ocnt{font-weight:600;color:var(--s500)}
-#opsSide>.card.rmk{flex:1 0 auto;display:flex;flex-direction:column;min-height:150px}#opsSide .rmk #opsDayRem{flex:1;min-height:110px}
+#opsSide .opsdc h2{flex-wrap:wrap;white-space:nowrap}#opsSide h2 .btn{padding:2px 8px;font-size:12px;white-space:nowrap;margin-left:auto}#opsSide h2 .btn+.btn{margin-left:0}
+#opsSide>.card.rmk{display:flex;flex-direction:column}#opsSide .rmk #opsDayRem{flex:1;min-height:70px}
 .olist .oli{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px;align-items:flex-start}.olist .oli:first-child{border-top:0}
 .olist .ogt{width:74px;flex:none;font-weight:700;white-space:nowrap}.olist .omc{padding:1px 6px;border-radius:4px;font-size:11px;flex:none;min-width:36px;text-align:center}
 .olist .ow{flex:1;min-width:0}.olist .owho{margin-top:2px}.olist .gc{color:#6d28d9;font-style:italic;font-size:11.5px}
@@ -3564,14 +3566,16 @@ function renderOpsBoard(iso, ed) {
   const half = (ref, v, lab, auto, tip) => "<div class='dbml" + (ed ? " oe" : "") + "'" + opsDbA(ref, "", ed, auto) + " title='" + esc(tip) + "'><small>" + lab + "</small>" + (v ? esc(v) : auto ? "<span class='oau'>" + esc(auto) + "</span>" : "<span class='oph'>–</span>") + "</div>";
   g += "<div class='odi wide'><div class='dn'>Intel</div><div class='dv2'>" + half(r1, v1, "Flights", flts, v1 ? "Typed in the Ops Room" : "From the day's flights" + (ed ? ". Click to edit." : "")) + half(r2, v2, "Intel Spec", null, "Intel Spec") + "</div></div>";
   const dob = cell("DOB"), rd = dob.col + row; g += "<div class='odi dob'><div class='dn'>DOB</div>" + val(rd, st.db[rd] || "", "tm") + "</div>";
+  const cd = cell("CODES"), rc = cd.col + row; g += "<div class='odi codes'><div class='dn'>Codes</div>" + val(rc, st.db[rc] || "") + "</div>";
   el.innerHTML = g;
 }
-// Area (Oscar / Echo / Nov) and Codes, typed per day, at the top of the right-hand column
+// Area (Oscar / Echo / Nov), typed per day: only the lines with text show, and the card is left out when nothing is filled (the Ops Room user opens the empty lines with + Area)
 function opsAreaCard(D, ed) {
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null; if (!ob || !ob.hasDb || ob.year !== D.y) return "";
-  const row = 6 + dayOfYear(D.y, D.mi, D.d), kv = (lab, c, cls) => { const ref = c.col + row, v = ob.db[ref] || "";
-    return "<div class='k'>" + esc(lab) + "</div><div class='v" + (cls ? " " + cls : "") + (ed ? " oe" : "") + "'" + opsDbA(ref, "", ed) + ">" + (v ? esc(v) : "<span class='oph'>–</span>") + "</div>"; };
-  return "<div class='card opsac'><h2>Area &amp; Codes</h2><div class='okv'>" + OPS_DB_CELLS.filter(c => c.stack >= 0).map(c => kv(c.sub, c)).join("") + kv("Codes", OPS_DB_CELLS.find(c => c.lab === "CODES"), "b") + "</div></div>";
+  const row = 6 + dayOfYear(D.y, D.mi, D.d), L = OPS_DB_CELLS.filter(c => c.stack >= 0).map(c => ({ c, v: ob.db[c.col + row] || "" }));
+  const show = ed && cur.opsAreaOpen ? L : L.filter(x => x.v); if (!show.length) return "";
+  const kv = x => { const ref = x.c.col + row; return "<div class='k'>" + esc(x.c.sub) + "</div><div class='v" + (ed ? " oe" : "") + "'" + opsDbA(ref, "", ed) + ">" + (x.v ? esc(x.v) : "<span class='oph'>–</span>") + "</div>"; };
+  return "<div class='card opsac'><h2>Area</h2><div class='okv'>" + show.map(kv).join("") + "</div></div>";
 }
 // typing into the Day Board: in the strip and in the Area & Codes card
 function opsDbClick(e) {
@@ -3826,7 +3830,7 @@ function renderOps() {
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
     : rv ? "<div class='opsrem'>" + esc(rv) + "</div>" : "<div class='muted'>" + (rref ? "No remarks for this day." : "Open the Ops Room file to keep remarks.") + "</div>") + "</div>";
-  $("opsSide").innerHTML = opsAreaCard(D, ed) + mv + opsDownCard(D) + gr + rem;
+  $("opsSide").innerHTML = gr + mv + "<div class='stack'>" + opsDownCard(D) + opsAreaCard(D, ed) + "</div>" + rem;
   opsFit();
   if (cur.opsPop) opsOpenPop(cur.opsPop.key, cur.opsPop.k, true);
 }
@@ -3937,7 +3941,7 @@ function opsDownCard(D) {
   books.forEach((b, bi) => { if (!isDept(b) || b.S.year !== D.y) return; const C = computeChit(b.S), k = dayOfYear(D.y, D.mi, D.d);
     b.S.roster.forEach((p, i) => { if (!C[i] || !C[i].down[k]) return; const sk = C[i].since[k];
       rows.push("<tr><td><span class='dcn'" + (can || bi === 0 ? " data-upchit='" + bi + "|" + i + "|" + D.iso + "' title='" + esc((p.id || "") + " " + p.name + "\nClick to up-chit") + "'" : " title='" + esc((p.id || "") + " " + p.name) + "'") + ">" + esc(p.ini || p.id || p.name) + "</span></td><td>" + deptChip(b.S.dept) + "</td><td>" + esc(fmtDay(doyISO(D.y, sk))) + "</td></tr>"); }); });
-  return "<div class='card opsdc'><h2>Down-chit" + (rows.length ? " <span class='muted' style='font-weight:600'>(" + rows.length + ")</span>" : "") + (can ? "<button class='btn' id='opsDownAdd'>+ Down-chit</button>" : "") + "</h2>" +
+  return "<div class='card opsdc'><h2>Down-chit" + (rows.length ? " <span class='muted' style='font-weight:600'>(" + rows.length + ")</span>" : "") + (opsEditable() && !document.body.classList.contains("opsfs") ? "<button class='btn' id='opsAreaAdd' title='Type the area of the day (Oscar, Echo, Nov)'>+ Area</button>" : "") + (can ? "<button class='btn' id='opsDownAdd'>+ Down-chit</button>" : "") + "</h2>" +
     (rows.length ? "<table><tr><th>Crew</th><th>Dept</th><th>Since</th></tr>" + rows.join("") + "</table><div class='muted' style='font-size:11px;margin-top:6px'>Not cleared to fly." + (can ? " Click a name to up-chit." : "") + "</div>" : "<div class='muted'>Nobody down-chitted.</div>") + "</div>";
 }
 function opsMovement(D) {
@@ -4136,7 +4140,7 @@ $("opsSide").addEventListener("change", e => {
   const t = e.target; if (t.id !== "opsDayRem" || !opsEditable()) return;
   const oi = opsIdx(), v = t.value.trim(); books[oi].S.db[t.dataset.ref] = v; withBook(oi, () => put("Day Board", t.dataset.ref, v)); renderBooks();
 });
-$("opsSide").addEventListener("click", e => { if (e.target.id === "opsNext") { cur.opsDay = opsAddDays(cur.opsDay, 1); renderOps(); } if (e.target.id === "opsDownAdd") downOpen(opsDay(cur.opsDay).iso); });
+$("opsSide").addEventListener("click", e => { if (e.target.id === "opsNext") { cur.opsDay = opsAddDays(cur.opsDay, 1); renderOps(); } if (e.target.id === "opsDownAdd") downOpen(opsDay(cur.opsDay).iso); if (e.target.id === "opsAreaAdd") { cur.opsAreaOpen = true; renderOps(); } });
 // projector: a size the room can read (remembered on this computer), and full screen without the menus
 const OPS_ZS = [1, 1.15, 1.3, 1.5, 1.75, 2];
 let opsZi = (() => { try { const v = +localStorage.getItem("opsZoom"); return v >= 0 && v < OPS_ZS.length && localStorage.getItem("opsZoom") != null ? v : 2; } catch (e) { return 2; } })();
@@ -4170,7 +4174,7 @@ document.addEventListener("fullscreenchange", () => { if (!document.fullscreenEl
 opsApplyZ();
 $("opsStats").addEventListener("click", e => { const c = e.target.closest("[data-ofl]"); if (!c) return; const f = c.dataset.ofl;
   cur.opsF = !f || cur.opsF === f ? "" : f; renderOps(); });
-const opsGo = iso => { cur.opsDay = iso; cur.opsPop = null; cur.opsF = ""; $("opsPop").style.display = "none"; renderOps(); };
+const opsGo = iso => { cur.opsDay = iso; cur.opsPop = null; cur.opsF = ""; cur.opsAreaOpen = false; $("opsPop").style.display = "none"; renderOps(); };
 $("opsDate").onchange = e => { if (e.target.value) opsGo(e.target.value); };
 $("opsPrev").onclick = () => opsGo(opsAddDays(cur.opsDay, -1));
 $("opsNextD").onclick = () => opsGo(opsAddDays(cur.opsDay, 1));

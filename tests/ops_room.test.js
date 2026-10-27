@@ -22,6 +22,48 @@ test("no_timeline", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => document.querySelector("#v-ops button[data-vw]")), null);
 }, RO);
 
+// the Day Board cells of an Area line / Codes for the open day: ref and value helpers run in the page
+const AREA_SET = (page, vals) => page.evaluate(vals => { const st = books[opsIdx()].S, row = 6 + dayOfYear(...Object.values((({ y, mi, d }) => ({ y, mi, d }))(opsDay(cur.opsDay))));
+  OPS_DB_CELLS.filter(c => c.stack >= 0).forEach(c => { st.db[c.col + row] = vals[c.sub] || ""; }); renderOps(); }, vals);
+
+test("side_cards_below_table", async ({ page }) => {
+  await goOps(page, DAY);
+  const g = await page.evaluate(() => { const s = document.getElementById("opsSide").getBoundingClientRect(), m = document.getElementById("opsMain").getBoundingClientRect(), w = document.getElementById("opsWrap").getBoundingClientRect();
+    return { sideTop: s.top, mainBottom: m.bottom, mainW: m.width, wrapW: w.width, txt: document.getElementById("opsSide").innerText }; });
+  assert.ok(g.sideTop >= g.mainBottom - 1, "side " + g.sideTop + " main bottom " + g.mainBottom);
+  assert.ok(g.mainW >= 0.9 * g.wrapW, g.mainW + " of " + g.wrapW);
+  for (const h of ["Ground programme", "Down-chit", "Remarks"]) assert.ok(g.txt.includes(h), h);
+  assert.ok(/Movement|Leave and MC/.test(g.txt));
+}, ED);
+test("codes_card_next_to_dob", async ({ page }) => {
+  await goOps(page, DAY);
+  const g = await page.evaluate(() => { const c = document.querySelector("#opsBoard .odi.codes"), d = document.querySelector("#opsBoard .odi.dob"); return { has: !!c, cl: c && c.getBoundingClientRect().left, dl: d && d.getBoundingClientRect().left, side: document.getElementById("opsSide").innerText }; });
+  assert.ok(g.has && g.cl > g.dl, JSON.stringify(g));
+  assert.ok(!/Codes/i.test(g.side), "Codes still in the side cards");
+}, ED);
+test("area_hidden_when_empty", async ({ page }) => {
+  await goOps(page, DAY);
+  await AREA_SET(page, {});
+  assert.strictEqual(await page.evaluate(() => document.querySelector("#opsSide .opsac")), null);
+  await AREA_SET(page, { Echo: "VIPER" });
+  const t = await page.evaluate(() => { const a = document.querySelector("#opsSide .opsac"); return a ? a.innerText : null; });
+  assert.ok(t && /echo/i.test(t) && /VIPER/.test(t) && !/oscar/i.test(t), String(t));
+}, ED);
+test("area_add_button", async ({ page }) => {
+  await goOps(page, DAY); await AREA_SET(page, {});
+  assert.ok(await page.evaluate(() => !!document.getElementById("opsAreaAdd")), "button in the Ops Room view");
+  await page.click("#opsAreaAdd");
+  assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsSide .opsac .v.oe").length), 3);
+  await page.evaluate(iso => opsGo(iso), "2026-10-15");
+  assert.strictEqual(await page.evaluate(() => document.querySelector("#opsSide .opsac")), null, "closed on a new day");
+  await page.evaluate(() => { document.body.classList.add("opsfs"); renderOps(); });
+  assert.ok(await page.evaluate(() => !document.getElementById("opsAreaAdd")), "no button in projector mode");
+}, ED);
+test("area_add_button_absent_read_only", async ({ page }) => {
+  await goOps(page, DAY);
+  assert.ok(await page.evaluate(() => !document.getElementById("opsAreaAdd")));
+}, RO);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

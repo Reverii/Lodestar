@@ -722,6 +722,8 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsSide .ocnt{font-weight:600;color:var(--s500)}
 #opsSide .opsdc h2{flex-wrap:wrap;white-space:nowrap}#opsSide h2 .btn{padding:2px 8px;font-size:12px;white-space:nowrap;margin-left:auto}#opsSide h2 .btn+.btn{margin-left:0}
 #opsSide>.card.rmk{display:flex;flex-direction:column}#opsSide .rmk #opsDayRem{flex:1;min-height:70px}
+.gp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.gcol{min-width:0}.gcol .gi{padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px}.gcol .opssh{margin-bottom:3px}.gcol .owho{margin-top:2px}.gcol .gc{color:#6d28d9;font-style:italic;font-size:11.5px}
+.olv .dep{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-top:1px solid var(--s100);font-size:13px}.olv .dep:first-of-type{border-top:0}.olv .dep .dn{min-width:76px;flex:none;color:var(--s500);font-size:11px;text-transform:uppercase;letter-spacing:.3px}.olv .olp{margin-right:10px;white-space:nowrap}.olv .olp b{font-size:14px}.olv .olp small{margin-left:3px;color:var(--s500);font-size:10.5px;font-weight:700}
 .olist .oli{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px;align-items:flex-start}.olist .oli:first-child{border-top:0}
 .olist .ogt{width:74px;flex:none;font-weight:700;white-space:nowrap}.olist .omc{padding:1px 6px;border-radius:4px;font-size:11px;flex:none;min-width:36px;text-align:center}
 .olist .ow{flex:1;min-width:0}.olist .owho{margin-top:2px}.olist .gc{color:#6d28d9;font-style:italic;font-size:11.5px}
@@ -3820,12 +3822,10 @@ function renderOps() {
   // the right-hand column: area and codes, movement, down-chits, ground programme, then the day's remarks filling the rest
   const G = opsGround(D), MV = opsMovement(D);
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
-  const mv = "<div class='card'><h2>Movement" + cnt(MV.length) + "</h2>" + (MV.length ? "<div class='olist'>" + MV.map(g =>
-    "<div class='oli'><b class='omc " + (g.ci >= 0 ? "cat" + g.ci : "") + "' title='" + esc(g.desc || "") + "'>" + esc(g.act) + "</b><div class='ow'>" + g.who + (g.note ? "<div class='gc'>" + g.note + "</div>" : "") + "</div></div>").join("") + "</div>" :
-    "<div class='muted'>Nobody on leave, OIL or MC.</div>") + "</div>";
-  const gr = "<div class='card'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='olist'>" + G.map(g =>
-    "<div class='oli'><span class='ogt'>" + (g.when || "") + "</span><div class='ow'><b>" + esc(g.act) + "</b>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "<div class='owho'>" + g.who + "</div>" + (g.note ? "<div class='gc'>" + g.note + "</div>" : "") + "</div></div>").join("") + "</div>" :
-    "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
+  const mv = "<div class='card olv'><h2>Leave and MC</h2>" + MV.map(m => "<div class='dep'><b class='dn'>" + esc(m.dept) + "</b><span class='dw'>" + (m.who || "<span class='muted'>–</span>") + "</span></div>").join("") + "</div>";
+  const gcol = sh => "<div class='gcol'><span class='opssh s" + sh + "'>" + SHIFTS[sh] + "</span>" + G.filter(g => g.sh === sh).map(g =>
+    "<div class='gi'><b>" + esc(g.act) + "</b> <span class='muted'>" + (g.until || g.when || "") + "</span>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "<div class='owho'>" + g.who + "</div>" + (g.note ? "<div class='gc'>" + g.note + "</div>" : "") + "</div>").join("") + "</div>";
+  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gp3'>" + gcol(0) + gcol(1) + gcol(2) + "</div>" : "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
   // remarks for the day (Day Board column P of the Ops Room file)
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
@@ -3900,27 +3900,30 @@ function opsHrs(r, oc) {
 // ground items of a day: Master Planner ground programme, each department's own GROUND PROGRAMME row entries it typed itself,
 // and crew on a ground activity (anything but flights, leave and off) grouped by department, shift and activity
 function opsGround(D) {
-  const out = [], mb = masterBook(), P = mb && mb.S;
-  D.gr.forEach(g => out.push({ k: "0" + (g.time || "~"), when: esc(g.time || ""), act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));
-  const sk = s => ["AM", "PM", "NIGHT"][s];
+  const out = [], mb = masterBook(), P = mb && mb.S, fmt = e => new Date(isoOf(D.y, D.mi, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  // a Master Planner item sits in the column of its start time (06:00-11:59 AM, 12:00-17:59 PM, otherwise NIGHT); no time = AM
+  const shOf = t => { const m = hhmm(opsTimes(t, 0)[0]); return m == null || (m >= 360 && m < 720) ? 0 : m >= 720 && m < 1080 ? 1 : 2; };
+  D.gr.forEach(g => out.push({ sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), until: "", act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));
   books.forEach((b, bi) => {
     if (!isDept(b) || b.S.year !== D.y) return;
     withBook(bi, () => {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
       if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : "";
-        if (own && !same(own, fromMp)) out.push({ k: "1", when: "", act: own, desc: "", who: deptChip(S.dept), note: "<span class='muted'>" + esc(S.dept) + "'s ground programme row</span>" }); }
-      const groups = new Map();
+        if (own && !same(own, fromMp)) out.push({ sh: 0, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "<span class='muted'>" + esc(S.dept) + "'s ground programme row</span>" }); }
+      const groups = new Map(), nDays = daysIn(D.y, D.mi);
       S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) {
         const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
-        if (!a || a.ci !== CAT_ADMIN) continue;   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Movement
-        const key = s + "|" + a.code.toUpperCase(); if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, who: [], notes: [] });
+        if (!a || a.ci !== CAT_ADMIN) continue;   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
+        // the same activity on the next days of this month (same person and shift): "until <last day>"
+        let e = D.d; while (e + 1 < nDays) { const nv = M.grid[i * 3 + s][e + 1], na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; e++; }
+        const key = s + "|" + a.code.toUpperCase() + "|" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: e > D.d ? "until " + fmt(e) : "", who: [], notes: [] });
         const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + catCls(p.cat) + "'>" + esc(n) + "</b>");
         const cn = S.notes && S.notes.get(D.mi + ":" + (i * 3 + s) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
       } });
-      groups.forEach(g => out.push({ k: "2" + g.s, when: "<span class='opssh s" + g.s + "'>" + sk(g.s) + "</span>", act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
+      groups.forEach(g => out.push({ sh: g.s, k: "2" + g.s, when: "", until: g.until, act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
     });
   });
-  return out.sort((x, y) => x.k < y.k ? -1 : x.k > y.k ? 1 : 0);
+  return out.sort((x, y) => x.sh - y.sh || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0));
 }
 // the month so far: sorties planned, flown, cancelled (by reason) and not closed, from the Ops Room's outcomes
 function opsMonthCard(D) {
@@ -3945,28 +3948,21 @@ function opsDownCard(D) {
     (rows.length ? "<table><tr><th>Crew</th><th>Dept</th><th>Since</th></tr>" + rows.join("") + "</table><div class='muted' style='font-size:11px;margin-top:6px'>Not cleared to fly." + (can ? " Click a name to up-chit." : "") + "</div>" : "<div class='muted'>Nobody down-chitted.</div>") + "</div>";
 }
 function opsMovement(D) {
-  const groups = new Map();
+  const order = [...new Set(OPS_SEATS.map(z => z[1]))], by = new Map(order.map(d => [d, []])), rank = [CAT_LEAVE, CAT_OFF, CAT_MED];
   books.forEach((b, bi) => {
     if (!isDept(b) || b.S.year !== D.y) return;
     withBook(bi, () => {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
+      const dep = order.find(o => same(o, S.dept)); if (!dep) return;
       S.roster.forEach((p, i) => { const mine = new Map();
         for (let s = 0; s < 3; s++) { const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
           if (!a || !(a.ci === CAT_LEAVE || a.ci === CAT_OFF || a.ci === CAT_MED)) continue;
-          const k = a.code.toUpperCase(); if (!mine.has(k)) mine.set(k, { a, sh: [], notes: [] }); const m = mine.get(k); m.sh.push(s);
-          const cn = S.notes && S.notes.get(D.mi + ":" + (i * 3 + s) + ":" + D.d); if (cn && !m.notes.includes(cn)) m.notes.push(cn); }
-        mine.forEach((m, k) => {
-          if (!groups.has(k)) groups.set(k, { act: m.a.code, desc: m.a.desc, ci: m.a.ci, by: new Map(), notes: [] });
-          const g = groups.get(k), n = p.ini || p.id;
-          if (!g.by.has(S.dept)) g.by.set(S.dept, []);
-          g.by.get(S.dept).push("<b class='" + catCls(p.cat) + "'>" + esc(n) + "</b>" + (m.sh.length < 3 ? " <small class='muted'>" + m.sh.map(s => SHIFTS[s]).join("/") + "</small>" : ""));
-          m.notes.forEach(cn => g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn)));
-        }); });
+          const k = a.code.toUpperCase(); if (!mine.has(k)) mine.set(k, { a, sh: [] }); mine.get(k).sh.push(s); }
+        mine.forEach(m => by.get(dep).push({ r: rank.indexOf(m.a.ci), code: m.a.code, html: "<span class='olp' title='" + esc(m.a.desc || m.a.code) + "'><b class='" + catCls(p.cat) + "'>" + esc(p.ini || p.id) + "</b><small>" + esc(m.a.code) + "</small>" +
+          (m.sh.length < 3 ? "<small>" + m.sh.map(s => SHIFTS[s]).join("/") + "</small>" : "") + "</span>" })); });
     });
   });
-  const order = [CAT_LEAVE, CAT_OFF, CAT_MED];
-  return [].concat([...groups.values()].sort((x, y) => order.indexOf(x.ci) - order.indexOf(y.ci) || (x.act < y.act ? -1 : 1))
-    .map(g => ({ act: g.act, desc: g.desc, ci: g.ci, who: [...g.by].map(([dep, L]) => deptChip(dep) + " " + L.join(", ")).join("<br>"), note: g.notes.join("<br>") })));
+  return order.map(dept => ({ dept, who: by.get(dept).sort((x, y) => x.r - y.r || (x.code < y.code ? -1 : x.code > y.code ? 1 : 0)).map(z => z.html).join("") }));
 }
 // writing the Ops Room file: the aircraft's row (made on first change), all columns rewritten
 function opsWrite(key, fn) {

@@ -64,6 +64,44 @@ test("area_add_button_absent_read_only", async ({ page }) => {
   assert.ok(await page.evaluate(() => !document.getElementById("opsAreaAdd")));
 }, RO);
 
+// plan a dept's first crew member on an Admin ("admin") or Leave ("leave") activity for the given day offsets in one shift of the open day, then redraw
+const PLAN_SET = (page, dept, kind, iso, offs, shift) => page.evaluate(([dept, kind, iso, offs, shift]) => {
+  const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept)); let r = null;
+  withBook(bi, () => { const all = [...actIndex().values()].filter(a => a.ci === (kind === "admin" ? CAT_ADMIN : CAT_LEAVE)), A = all[all.length - 1], D = opsDay(iso), i = S.roster.findIndex(p => p.name || p.id);
+    offs.forEach(o => { S.m[D.mi].grid[i * 3 + shift][D.d + o] = A.code; }); r = { code: A.code, who: S.roster[i].ini || S.roster[i].id }; });
+  cur.opsDay = iso; renderOps(); return r; }, [dept, kind, iso, offs, shift]);
+const COLS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gp3 .gcol")].map(c => ({ head: c.querySelector(".opssh").textContent.trim(), text: c.innerText })));
+
+test("ground_columns_am_pm_night", async ({ page }) => {
+  const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1, 2], 1);
+  const cols = await COLS(page);
+  assert.deepStrictEqual(cols.map(c => c.head), ["AM", "PM", "NIGHT"]);
+  assert.ok(cols[1].text.includes(r.code) && /until 16 Oct/.test(cols[1].text), cols[1].text);
+  assert.ok(!/until 16 Oct/.test(cols[0].text) && !/until 16 Oct/.test(cols[2].text));
+}, ED);
+test("ground_one_day_no_until", async ({ page }) => {
+  const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
+  const cols = await COLS(page);
+  assert.ok(cols[1].text.includes(r.code) && !/until/.test(cols[1].text), cols[1].text);
+}, ED);
+test("ground_until_stops_at_month_end", async ({ page }) => {
+  const r = await PLAN_SET(page, "Pilot", "admin", "2026-10-30", [0, 1], 1);
+  const cols = await COLS(page);
+  assert.ok(cols[1].text.includes(r.code) && /until 31 Oct/.test(cols[1].text), cols[1].text);
+}, ED);
+test("leave_and_mc_by_department", async ({ page }) => {
+  const r = await PLAN_SET(page, "Pilot", "leave", DAY, [0], 0);
+  const rows = await page.evaluate(() => [...document.querySelectorAll("#opsSide .olv .dep")].map(d => ({ dept: d.querySelector("b").textContent.trim(), text: d.textContent })));
+  assert.deepStrictEqual(rows.map(x => x.dept), ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"]);
+  assert.ok(rows[0].text.includes(r.who) && rows[0].text.includes(r.code), rows[0].text);
+  assert.ok(rows.slice(1).some(x => /–/.test(x.text)), "a department with nobody shows a dash");
+}, ED);
+test("empty_day_still_renders", async ({ page }) => {
+  await goOps(page, "2026-12-27");
+  const t = await page.evaluate(() => document.getElementById("opsSide").innerText);
+  for (const h of ["Ground programme", "Leave and MC", "Down-chit", "Remarks"]) assert.ok(t.includes(h), h + " missing: " + t);
+}, ED);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

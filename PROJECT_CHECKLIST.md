@@ -102,6 +102,9 @@ Last updated: 21 Oct 2026 (evening review). Tell Claude in this thread when some
 
 ## 8. Ops Room (all departments)
 
+- [x] Ops Room redesign (z97, 27 Oct): side cards in a bottom row, Cat colours and a SANS / NSMEN box on every callsign, standby rows at flight size, Codes on the Day Board, Area only when filled, Ground programme by shift with "until", Leave and MC by department, clock, light / dark, no Timeline, fits the screen height (built; to tune on the real projector)
+- [ ] On hold (27 Oct, Brandon): a scale control for the whole dashboard
+
 - [-] ~~All Departments tab: month matrix per department, day view by shift~~ Removed (you, 21 Oct, z24). The Ops Room button still opens every file
 - [-] ~~Plan a joint flight across departments~~ Removed with the All Departments tab (21 Oct, z24); use Ops Add or the Master Planner
 - [x] Ops Room for the SDO and AOS on duty (21 Oct): the day's flights from the Master Planner, ground programme, tomorrow's forecast, and each flight's crew seats (Aircraft Captain, Co-Pilot, Loadmaster, TACCO, SUP 1, SUP 2) from the department plans. Day bar (Today / Tomorrow / any date), suggested Captain with a swap button, Ops notes and unmatched crew. Mission Commander and CRMO are marked and saved in Ops_Room_2026.xlsx. The Ops Room picks the pilot seats (your decision)

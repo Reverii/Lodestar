@@ -221,6 +221,26 @@ test("busy_day_fits_height_1280", async ({ page }) => {
   assert.ok(f.z < f.chosen && f.z >= 0.5, JSON.stringify(f)); assert.ok(f.mainOver <= 2 && f.docOver <= 1, JSON.stringify(f));
 }, Object.assign({}, ED, { viewport: { width: 1280, height: 720 } }));
 
+test("editing_paths_still_work", async ({ page }) => {
+  await goOps(page, DAY);
+  // a seat cell opens the seat picker
+  await page.click("#opsMain tr.f td[data-oc]");
+  assert.ok(await page.evaluate(() => getComputedStyle(document.getElementById("opsPop")).display === "block"), "seat picker opens");
+  await page.evaluate(() => { document.getElementById("opsPop").style.display = "none"; cur.opsPop = null; });
+  // the remarks box saves into the Day Board cell
+  await page.fill("#opsDayRem", "Fuel bowser out 1300"); await page.press("#opsDayRem", "Tab");
+  assert.ok(await page.evaluate(() => { const r = document.getElementById("opsDayRem"); return Object.values(books[opsIdx()].S.db).includes("Fuel bowser out 1300"); }), "remark stored");
+  // 1 Set / 2 Set
+  await goOps(page, DAY); await page.click(".sbset[data-sbset='1']");
+  assert.strictEqual(await page.evaluate(() => opsSbSets(opsDay(cur.opsDay))), 1);
+  await page.click(".sbset[data-sbset='2']");
+  assert.strictEqual(await page.evaluate(() => opsSbSets(opsDay(cur.opsDay))), 2);
+  // + Ops Add and + Down-chit open their dialogs
+  await page.click("#opsAddBtn"); assert.ok(await page.evaluate(() => getComputedStyle(document.getElementById("oaPop")).display === "flex"), "Ops Add dialog");
+  await page.evaluate(() => { document.getElementById("oaPop").style.display = "none"; });
+  await page.click("#opsDownAdd"); assert.strictEqual(await page.evaluate(() => document.getElementById("chitTitle").textContent), "Down-chit");
+}, ED);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

@@ -70,8 +70,8 @@ remarks); everything else fills itself from the department plans.
   A department with nobody shows a dash. Shifts shown when it is not the whole day (as today).
 
 ## Text size and fit
-- The Ops Room keeps its own A- / A+ and remembered size. The default is one step smaller than today's (today the first-time default is the second-largest step).
-- The page shrinks (never grows) so the whole page, table and bottom row, fits one screen height as well as the width (today it fits the width only). Smallest allowed 60%.
+- The Ops Room keeps its own A- / A+ and remembered size. The steps are 70, 85, 100, 115, 130, 150, 175, 200%; the default is 100%, one step below today's first-time 130% (today's third of six steps). The saved size is stored under a new key, so an old value is ignored.
+- The page shrinks (never grows) so the whole page, table and bottom row, fits one screen height as well as the width (today it fits the width only). Smallest allowed 50% (ruling in the build: 10 flights on a 1280x720 screen need about 57%).
   On a busy day (10 flights) it must still fit at 1920x1080 and 1280x720 with no vertical page scroll in projector mode.
 - Rows are not stretched to fill a quiet day beyond the chosen size; spare room is simply space.
 - A scale control for the whole dashboard is **on hold** (Brandon, 2026-10-27); see Open items.
@@ -101,7 +101,7 @@ remarks); everything else fills itself from the department plans.
 - Real-SharePoint behaviour (background open of the Ops Room file) is not exercised here; unchanged.
 
 ## Open items
-1. The default size step and the 60% floor are my estimate; Brandon tunes them on the real projector.
+1. The default size step and the 50% floor are my estimate; Brandon tunes them on the real projector.
 2. **On hold:** a scale control for the whole dashboard (every page, percentage steps, remembered per kind of page, an Auto fit on the Ops Room). Risk: pop-ups and frozen panes under CSS zoom. Revisit when Brandon asks.
 3. Day Board duty names are coloured only where a person can be identified from the plans; typed-in text stays plain.
 4. Leave and MC and Ground programme can overflow on a very full day; they scroll inside their card rather than push the page.

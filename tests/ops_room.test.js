@@ -194,6 +194,33 @@ test("dark_inputs_readable", async ({ page }) => {
   assert.ok(await BGSUM(page, "#opsDayRem") < 250, "remarks box is dark");
 }, ED);
 
+// a day with many flights: the day's rows repeated (same keys, only the layout matters)
+const BUSY = page => page.evaluate(() => { const od = opsDay; window.opsDay = iso => { const D = od(iso); if (D && D.rows) D.rows = [].concat(D.rows, D.rows, D.rows, D.rows, D.rows); return D; }; });
+const FIT = async (page, busy) => { await goOps(page, DAY); if (busy) await BUSY(page); await page.click("#opsFull"); await page.evaluate(() => renderOps()); await page.waitForTimeout(300);
+  return page.evaluate(() => ({ z: opsZEff, chosen: opsZ(), mainOver: document.getElementById("opsMain").scrollHeight - document.getElementById("opsMain").clientHeight, docOver: document.documentElement.scrollHeight - innerHeight })); };
+
+test("default_size_100", async ({ page }) => {
+  const g = await page.evaluate(() => ({ z: OPS_ZS[opsZi], saved: localStorage.getItem("opsZoom2"), steps: OPS_ZS.join() }));
+  assert.strictEqual(g.z, 1, g.steps); assert.strictEqual(g.saved, null);
+}, ED);
+test("size_buttons_remembered", async ({ page }) => {
+  await goOps(page, DAY); await page.click("#opsSize button[data-z='1']");
+  const g = await page.evaluate(() => ({ z: OPS_ZS[opsZi], saved: localStorage.getItem("opsZoom2") }));
+  assert.strictEqual(g.z, 1.15); assert.strictEqual(g.saved, "3");
+}, ED);
+test("quiet_day_not_stretched", async ({ page }) => {
+  const f = await FIT(page, false);
+  assert.strictEqual(f.z, f.chosen, JSON.stringify(f)); assert.ok(f.mainOver <= 2, JSON.stringify(f));
+}, Object.assign({}, ED, { viewport: { width: 1920, height: 1080 } }));
+test("busy_day_fits_height_1920", async ({ page }) => {
+  const f = await FIT(page, true);
+  assert.ok(f.z < f.chosen && f.z >= 0.5, JSON.stringify(f)); assert.ok(f.mainOver <= 2 && f.docOver <= 1, JSON.stringify(f));
+}, Object.assign({}, ED, { viewport: { width: 1920, height: 1080 } }));
+test("busy_day_fits_height_1280", async ({ page }) => {
+  const f = await FIT(page, true);
+  assert.ok(f.z < f.chosen && f.z >= 0.5, JSON.stringify(f)); assert.ok(f.mainOver <= 2 && f.docOver <= 1, JSON.stringify(f));
+}, Object.assign({}, ED, { viewport: { width: 1280, height: 720 } }));
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

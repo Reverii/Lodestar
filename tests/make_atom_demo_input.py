@@ -21,7 +21,6 @@ SURN = {"A": ["Abbott", "Archer", "Ashby"], "B": ["Baker", "Bennett", "Brooks", 
         "K": ["Keller", "Kemp", "King", "Knight"], "L": ["Lambert", "Lawson", "Lowe", "Lynch"], "M": ["Mason", "Marsh", "Miles", "Moore"], "N": ["Nash", "Nelson", "Newman", "Noble"],
         "O": ["Oakley", "Osborne", "Owens"], "P": ["Parker", "Pierce", "Powell", "Price"], "Q": ["Quinn", "Quigley"], "R": ["Reid", "Rhodes", "Rowe", "Ryder"], "S": ["Sawyer", "Shaw", "Stone", "Sutton"],
         "T": ["Tate", "Thorne", "Turner", "Tyler"], "U": ["Underwood", "Upton"], "V": ["Vance", "Vaughn", "Vega"], "W": ["Walsh", "Wells", "Wood", "Wyatt"], "X": ["Xander"], "Y": ["Yates", "York"], "Z": ["Zimmer", "Zeller"]}
-RANKS = ["CPT", "MAJ", "LTA", "LTC", "ME1", "ME2", "ME3", "2LT"]
 used = {}
 def dummy_name(ini, k):
     """Invented name that follows the shape of the ATOM Initials: a word of one letter is a given name starting with that letter; the first longer word is the
@@ -41,7 +40,7 @@ def dummy_name(ini, k):
         else: givens += [pick(GIVEN, ch, k + i) for i, ch in enumerate(t)]
     if surname is None and givens: surname = givens.pop() if len(givens) > 1 else pick(SURN, ini.strip()[0].upper(), k)
     if not givens: givens = [pick(GIVEN, surname[0], k + 1)]   # a one-word ATOM name still gets a given name
-    return RANKS[k % len(RANKS)] + " " + " ".join(givens + [surname])
+    return " ".join(givens + [surname])   # no rank: the demo shows only a name and a callsign
 
 src = openpyxl.load_workbook(sys.argv[1], data_only=True)
 crew = {}

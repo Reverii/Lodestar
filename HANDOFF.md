@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Where things stand
 
-- **Dashboard z94** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
+- **Dashboard z95** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
@@ -31,6 +31,14 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Removed from v1: the "What each flight needs" table and its `ATOM Needs` sheet, mission / LSS handling, the name badges.
 - Tests: `node tests/atom.test.js` (synthetic exports only; several minutes), `node tests/my_lodestar.test.js`. Dummy-name test set from real Initials:
   `tests/make_atom_demo_input.py` (output goes to the git-ignored `atom_test/`).
+
+## Master Planner export and Planner crew filter (z95, 2026-10-27)
+
+- **Export…** on the Master Planner view: a clean Excel copy for an outside office (Calendar sheet, List sheet, or both). Period, tick flight codes to
+  include (unticked codes leave the rows and totals; remembered in the browser). Flights and planned hours only: no crew, names or comments. No-flying days show
+  their reason in the calendar. Built in the browser (`xlsxBuild`, `mpExportData`, `mpExportBytes`). Tests: `node tests/mp_export.test.js`.
+- Planner crew filter: status chips Active / SANS / NSMEN / Inactive beside the filter box (everyone shown by default, remembered per department).
+  Tests: `node tests/planner_filter.test.js`.
 
 ## What was built (short history)
 

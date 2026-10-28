@@ -364,7 +364,7 @@ table.allday .free{color:var(--s400);font-size:11.5px}
 #spStatus{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--s600);margin-bottom:10px}#spStatus .dot{width:9px;height:9px;border-radius:50%;background:#16a34a;flex:none}#spStatus b{color:var(--s900)}#spStatus.warn .dot{background:#f59e0b}#spStatus.warn{color:#b45309}
 #spPick .opscard{display:flex;align-items:center;gap:18px;width:100%;text-align:left;background:#dbeafe;color:var(--s900);border:2px solid #93c5fd;border-radius:12px;padding:11px 22px;margin-bottom:12px;cursor:pointer;font:inherit;position:relative}
 #spPick .opscard:hover{border-color:var(--blue)}#spPick .opscard.last{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue)}
-#spPick .opscard .n{font-size:24px;font-weight:800}#spPick .opscard .d{font-size:13.5px;color:#1e3a8a;flex:1;line-height:1.35}#spPick .opscard .m{font-size:12.5px;color:var(--s600);text-align:right;line-height:1.35;max-width:230px}
+#spPick .opscard .n{font-size:24px;font-weight:800}#spPick .opscard .d{font-size:13.5px;color:#1e3a8a;flex:1;line-height:1.35}#spPick .opscard .m{font-size:12.5px;color:var(--s600);text-align:right;line-height:1.35;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #spPick .opscard .go{background:#2563eb;color:#fff;border-radius:8px;padding:9px 18px;font-weight:800;font-size:14px;white-space:nowrap}
 #spPick .tag{background:#2563eb;color:#fff;font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 9px;white-space:nowrap}
 #spPick .opscard .tag{position:absolute;right:12px;top:-9px}#spPick .dcard .tag{position:absolute;right:10px;top:10px}
@@ -4612,9 +4612,9 @@ async function spInit() {
 // the files in the folder with their last-changed time and, where SharePoint allows it, who changed them (some sites refuse the expand: then the plain list is used and nobody is named)
 async function spList() {
   const base = SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(SP.folder) + "')/Files?$select=Name,ServerRelativeUrl,TimeLastModified";
-  let j;
-  if (!SP.noWho) { try { j = await spJson(base + ",ModifiedBy/Title&$expand=ModifiedBy"); } catch (e) { SP.noWho = true; } }
-  if (!j) j = await spJson(base);
+  let j, refused = false;
+  if (!SP.noWho) { try { j = await spJson(base + ",ModifiedBy/Title&$expand=ModifiedBy"); } catch (e) { refused = e.status === 400 || e.status === 403 || e.status === 404 || e.status === 501; } }   // a dropped connection or a busy server is not a refusal: ask again next time
+  if (!j) { j = await spJson(base); if (refused) SP.noWho = true; }
   SP.files = (j.d.results || []).filter(f => /\.xlsx$/i.test(f.Name) && !/^~\$/.test(f.Name)).map(f => Object.assign({}, f, { By: f.ModifiedBy && f.ModifiedBy.Title || "" })).sort((a, b) => a.Name.localeCompare(b.Name));
   SP.listedAt = spNow();
 }
@@ -4663,7 +4663,7 @@ function spCardHtml(lab, f, last) {
 function spOpsHtml(f, last) {
   const w = f && spWhen(f.TimeLastModified, spNow());
   return "<button class='opscard" + (last ? " last" : "") + "' data-ops='1'>" + (last ? "<span class='tag'>You opened this last</span>" : "") + "<span class='n'>Ops Room</span><span class='d'>The day's flights and crew. Every department's file is editable.</span>" +
-    "<span class='m'>" + (f ? spEsc(f.Name) + "<br>" + spEsc(w.text) + (f.By ? " by " + spEsc(f.By) : "") : "No Ops Room file in this folder") + "</span><span class='go'>Open Ops Room</span></button>";
+    "<span class='m'" + (f ? " title='" + spEsc(f.Name + " · " + w.text + (f.By ? " by " + f.By : "")) + "'" : "") + ">" + (f ? spEsc(f.Name) + "<br>" + spEsc(w.text) + (f.By ? " by " + spEsc(f.By) : "") : "No Ops Room file in this folder") + "</span><span class='go'>Open Ops Room</span></button>";
 }
 const spHm = d => d ? String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") : "";
 const spLastDept = () => (v => v === "SDO Manager" || v === "SDO Planner" ? "Duty Planner" : v)(spRecall("dept", ""));   // renamed 2026-10-21
@@ -4672,23 +4672,25 @@ const spStatusHtml = warn => "<div id='spStatus'" + (warn ? " class='warn'" : ""
 const spGridHtml = last => SP_DEPTS.map(([lab, key]) => spCardHtml(lab, spFileFor(key), lab === last)).join("") + "<button class='allcard' id='spAll'>Show all files in the folder<br>instead</button>";
 // the department screen is open (and not the file picker)
 const spDeptsOpen = () => getComputedStyle($("spPick")).display !== "none" && document.querySelector("#spPick .box").classList.contains("wide");
-let spDeptT = null;
-function spStopDepts() { clearInterval(spDeptT); spDeptT = null; }
+let spDeptT = null, spGen = 0, spShown = { ops: "", grid: "" };
+function spStopDepts() { clearInterval(spDeptT); spDeptT = null; spGen++; }   // spGen: a refresh still waiting on the folder is dropped when it comes back
 // every 15 seconds while the screen is open: look at the folder again and redraw the cards, the Ops Room card and the status line (the logo stays as it is)
 async function spRefreshDepts() {
   if (!spDeptsOpen()) return;
-  const seen = SP.listedAt;
+  const seen = SP.listedAt, gen = spGen;
   try { await spList(); } catch (e) {
-    if (spDeptsOpen() && $("spStatus")) $("spStatus").outerHTML = spStatusHtml("Couldn't check at " + spHm(spNow()) + ", showing what was seen at " + spHm(seen)); return;
+    if (gen === spGen && spDeptsOpen() && $("spStatus")) $("spStatus").outerHTML = spStatusHtml("Couldn't check at " + spHm(spNow()) + ", showing what was seen at " + spHm(seen)); return;
   }
-  if (!spDeptsOpen() || !$("spGrid")) return;
-  const last = spLastDept();
-  $("spStatus").outerHTML = spStatusHtml(); document.querySelector("#spPick .opscard").outerHTML = spOpsHtml(spFileFor("opsroom"), last === "Ops Room"); $("spGrid").innerHTML = spGridHtml(last);
+  if (gen !== spGen || !spDeptsOpen() || !$("spGrid")) return;
+  const last = spLastDept(), ops = spOpsHtml(spFileFor("opsroom"), last === "Ops Room"), grid = spGridHtml(last);
+  $("spStatus").outerHTML = spStatusHtml();
+  if (ops !== spShown.ops) { document.querySelector("#spPick .opscard").outerHTML = ops; spShown.ops = ops; }   // only what changed is redrawn, so a click or the keyboard focus is not lost every 15 seconds
+  if (grid !== spShown.grid) { $("spGrid").innerHTML = grid; spShown.grid = grid; }
 }
 function spRenderDepts() {
   const last = spLastDept(), logo = document.querySelector("#welcome .lslogo");
   $("spTable").innerHTML = "<tr><td style='border:0;padding:0'><div class='hero'>" + (logo ? logo.outerHTML : "") + "<div class='q'><h1>Which department are you from?</h1><div class='lead'>Your department's planner opens for editing. The other departments open beside it, read-only.</div></div></div>" +
-    spStatusHtml() + spOpsHtml(spFileFor("opsroom"), last === "Ops Room") + "<div id='spGrid'>" + spGridHtml(last) + "</div></td></tr>";
+    spStatusHtml() + (spShown.ops = spOpsHtml(spFileFor("opsroom"), last === "Ops Room")) + "<div id='spGrid'>" + (spShown.grid = spGridHtml(last)) + "</div></td></tr>";
   $("spKey").innerHTML = "<span><i class='fresh g'></i>Changed today</span><span><i class='fresh a'></i>Changed this week</span><span><i class='fresh r'></i>Not changed for a week or more</span>";
 }
 async function spShowDepts() {

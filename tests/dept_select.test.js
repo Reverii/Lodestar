@@ -28,7 +28,7 @@ test("list_asks_for_the_editor", async ({ page }) => {
 }, BLANK);
 test("list_falls_back_without_the_editor", async ({ page }) => {
   const r = await page.evaluate(async () => { SP.web = "https://x/sites/s"; SP.folder = "/sites/s/Program"; const urls = [];
-    window.spJson = async u => { urls.push(u); if (/\$expand/.test(u)) throw new Error("refused"); return { d: { results: [{ Name: "A.xlsx", ServerRelativeUrl: "/x/A.xlsx", TimeLastModified: "2026-10-28T08:00:00" }] } }; };
+    window.spJson = async u => { urls.push(u); if (/\$expand/.test(u)) { const e = new Error("refused"); e.status = 400; throw e; } return { d: { results: [{ Name: "A.xlsx", ServerRelativeUrl: "/x/A.xlsx", TimeLastModified: "2026-10-28T08:00:00" }] } }; };
     await spList(); const first = urls.slice(); await spList(); return { first, second: urls.slice(first.length), noWho: SP.noWho, by: SP.files[0].By }; });
   assert.strictEqual(r.noWho, true); assert.strictEqual(r.by, "");
   assert.ok(r.first.some(u => /\$expand/.test(u)) && r.first.some(u => !/\$expand/.test(u)));
@@ -141,6 +141,36 @@ test("refresh_ignored_when_hidden", async ({ page }) => {
   await set(page, std(), ""); await show(page); await page.click("#spCancel");
   const n = await page.evaluate(async () => { window.__calls = 0; window.spList = async () => { window.__calls++; }; const before = document.getElementById("spGrid").innerHTML; await spRefreshDepts(); return { calls: window.__calls, same: before === document.getElementById("spGrid").innerHTML }; });
   assert.strictEqual(n.calls, 0); assert.ok(n.same);
+}, BLANK);
+
+test("a_temporary_error_does_not_hide_the_editor", async ({ page }) => {
+  const r = await page.evaluate(async () => { SP.web = "https://x/sites/s"; SP.folder = "/sites/s/Program"; const urls = []; let n = 0;
+    window.spJson = async u => { urls.push(u); n++; if (n === 1) { const e = new Error("busy"); e.status = 503; throw e; } return { d: { results: [{ Name: "A.xlsx", ServerRelativeUrl: "/x/A.xlsx", TimeLastModified: "2026-10-28T08:00:00", ModifiedBy: { Title: "R. Tan" } }] } }; };
+    await spList(); const afterFirst = SP.noWho; await spList(); return { afterFirst, noWho: SP.noWho, by: SP.files[0].By, last: urls[urls.length - 1] }; });
+  assert.strictEqual(r.afterFirst, false, "a 503 is not a refusal"); assert.strictEqual(r.noWho, false); assert.strictEqual(r.by, "R. Tan"); assert.ok(/\$expand/.test(r.last), "the editor is asked for again");
+}, BLANK);
+test("a_network_error_does_not_latch_either", async ({ page }) => {
+  const r = await page.evaluate(async () => { SP.web = "https://x/sites/s"; SP.folder = "/sites/s/Program"; window.spJson = async () => { throw new Error("Failed to fetch"); };
+    let threw = false; try { await spList(); } catch (e) { threw = true; } return { threw, noWho: SP.noWho }; });
+  assert.ok(r.threw, "the failure still shows"); assert.strictEqual(r.noWho, false);
+}, BLANK);
+test("a_refresh_in_flight_cannot_undo_an_opening", async ({ page }) => {
+  await set(page, std(), ""); await show(page);
+  const r = await page.evaluate(async () => { let go; window.spList = () => new Promise(res => { go = res; }); const p = spRefreshDepts();
+    document.querySelectorAll("#spGrid .dcard").forEach(b => (b.disabled = true)); spStopDepts(); go(); await p;
+    return document.querySelectorAll("#spGrid .dcard:not(.miss):disabled").length; });
+  assert.strictEqual(r, 7, "the cards stay disabled once an opening has started");
+}, BLANK);
+test("an_unchanged_refresh_keeps_the_focused_card", async ({ page }) => {
+  await set(page, std(), ""); await show(page);
+  const r = await page.evaluate(async () => { const c = document.querySelector("#spGrid .dcard"); c.focus(); window.SP_NOW = "2026-10-28T14:47:00"; window.spList = async () => { SP.listedAt = new Date(window.SP_NOW); };
+    await spRefreshDepts(); return { same: document.activeElement === c, connected: c.isConnected, st: document.getElementById("spStatus").innerText }; });
+  assert.ok(r.same && r.connected, "the focused card is still the same element"); assert.ok(/checked 14:47/.test(r.st), r.st);
+}, BLANK);
+test("ops_card_cuts_a_long_name", async ({ page }) => {
+  const f = std(); f[7].Name = "Ops_Room_" + "x".repeat(200) + ".xlsx"; await set(page, f, ""); await show(page); await page.waitForTimeout(100);
+  const g = await page.evaluate(() => { const m = document.querySelector("#spPick .opscard .m"), go = document.querySelector("#spPick .opscard .go"); return { ell: getComputedStyle(m).textOverflow, mr: m.getBoundingClientRect().right, gl: go.getBoundingClientRect().left, title: m.title }; });
+  assert.strictEqual(g.ell, "ellipsis"); assert.ok(g.mr <= g.gl + 1, "text " + g.mr + " ends before the button " + g.gl); assert.ok(g.title.length > 10, "the full name is in the tooltip");
 }, BLANK);
 
 (async () => {

@@ -206,8 +206,8 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .mday:hover{border-color:#93c5fd}.mday.we{background:#f8fafc}.mday.out{background:transparent;border:1px dashed var(--s300);cursor:default}
 .mday.today{box-shadow:0 0 0 3px #2563eb}.mday.sel{box-shadow:0 0 0 3px #f59e0b}
 .mday .dn{display:flex;justify-content:space-between;font-weight:800;font-size:14.5px;margin-bottom:4px}.mday .dn small{color:#1d4ed8;font-size:11.5px}
-.mday .chip{display:flex;align-items:center;gap:5px;border-radius:5px;padding:2px 6px;margin-bottom:3px;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden}
-.mday .chip .t{font-weight:600;opacity:.85;font-size:12px}.mday .chip .c{margin-left:auto;font-size:9.5px;font-weight:800;opacity:.8}
+.mday .chip{display:flex;align-items:center;gap:4px;border-radius:5px;padding:2px 5px;margin-bottom:3px;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden}
+.mday .chip .t{font-weight:600;opacity:.85;font-size:11px;letter-spacing:-.2px}.mday .chip .c{margin-left:auto;font-size:9.5px;font-weight:800;opacity:.8}
 .fAM{background:#e0f2fe;color:#075985;border-left:4px solid #0284c7}.fPM{background:#fef3c7;color:#92400e;border-left:4px solid #d97706}.fNT{background:#1e1b4b;color:#e0e7ff;border-left:4px solid #818cf8}
 .mday .more{font-size:11.5px;color:var(--s500);font-weight:700;padding-left:4px}
 .mday .plus{position:absolute;left:34px;top:4px;width:22px;height:22px;font-size:16px!important;border-radius:50%;border:0;background:#2563eb;color:#fff;font-weight:800;font-size:18px;line-height:1;cursor:pointer;opacity:0;transition:opacity .1s}
@@ -991,7 +991,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-27 z98</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-28 z99</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2692,8 +2692,8 @@ function renderMp() {
       {
         const G = grDay(P, mi, d), items = (dayOff ? [] : L.map(f => ({ f }))).concat(G.map(g => ({ g }))), show = items.length > 4 ? 3 : 4;
         items.slice(0, show).forEach(({ f, g }) => {
-          if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc((f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
-          else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Ground programme · " + [g.time, g.act, cw.length ? "crew " + cw.join(" ") : "everyone", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc((g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
+          if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(f.time, (P.codes.find(k => same(k.code, f.code)) || {}).hrs) || (f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
+          else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Ground programme · " + [g.time, g.act, cw.length ? "crew " + cw.join(" ") : "everyone", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
         });
         if (items.length > show) h += "<div class='more'>+" + (items.length - show) + " more</div>";
         if (!lock && !dayOff) h += "<button class='plus' data-add='" + d + "' title='Add a flight on " + (d + 1) + " " + monLab(mi, y) + "'>+</button>";
@@ -3668,6 +3668,8 @@ function opsTimes(t, hrs) {
   const a = hhmm(String(t || "").replace(":", "")); if (a == null) return ["", ""];
   return [fmtHM(a), hrs ? fmtHM(a + Math.round(hrs * 60)) : ""];
 }
+// the time shown on a calendar chip: 0830H-1000H (the end is the start plus the flight code's hours, or the typed end), 0830H when only a start is known
+function mpRange(time, hrs) { const [a, b] = opsTimes(time, hrs); return a ? a + "H" + (b ? "-" + b + "H" : "") : ""; }
 function opsDur(a, b) { const x = hhmm(a), y = hhmm(b); if (x == null || y == null) return null; let n = y - x; if (n < 0) n += 1440; return n / 60; }
 // one day: the Master Planner's flights, one row per aircraft, with crew picked from the department plans (same code first, then any flight that shift)
 function opsDay(iso) {
@@ -4567,7 +4569,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-27 z98 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-28 z99 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="360" height="90" class="lslogo" role="img" aria-label="LODESTAR Flight and Ops Planner"><style>
+.ls-tile{animation:ls-tile .5s ease-out both}
+.ls-ring{stroke-dasharray:132;stroke-dashoffset:132;animation:ls-ring .7s .1s ease-out forwards}
+.ls-rose{transform-box:fill-box;transform-origin:center;animation:ls-rose 1.5s .2s cubic-bezier(.18,.9,.3,1.12) both}
+.ls-glow{transform-box:fill-box;transform-origin:center;opacity:0;animation:ls-glow .7s 1.55s ease-out both}
+.ls-spark{transform-box:fill-box;transform-origin:center;opacity:0;animation:ls-spark .8s 1.6s ease-out both}
+.ls-word{opacity:0;animation:ls-word .9s 1.7s cubic-bezier(.2,.8,.2,1) forwards}
+.ls-sub{opacity:0;animation:ls-sub .6s 2.35s ease-out forwards}
+@keyframes ls-tile{from{opacity:0}to{opacity:1}}
+@keyframes ls-ring{to{stroke-dashoffset:0}}
+@keyframes ls-rose{from{transform:rotate(-540deg) scale(.3);opacity:0}25%{opacity:1}to{transform:rotate(0) scale(1);opacity:1}}
+@keyframes ls-glow{0%{opacity:0;transform:scale(.6)}35%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+@keyframes ls-spark{0%{opacity:0;transform:scale(0) rotate(0)}40%{opacity:1;transform:scale(1.2) rotate(45deg)}100%{opacity:0;transform:scale(.2) rotate(90deg)}}
+@keyframes ls-word{from{opacity:0;letter-spacing:22px}to{opacity:1;letter-spacing:5px}}
+@keyframes ls-sub{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+<rect width="400" height="100" fill="#0f172a"/>
+<g transform="translate(18 18)"><rect class="ls-tile" width="64" height="64" rx="14" fill="#0f172a"/><circle class="ls-ring" cx="32" cy="32" r="21" fill="none" stroke="#334155" stroke-width="2" transform="rotate(-90 32 32)"/><g class="ls-rose"><g transform="rotate(0 32 32)"><path d="M32 6 L27 32 L32 32 Z" fill="#f5b301"/><path d="M32 6 L37 32 L32 32 Z" fill="#c98f00"/></g><g transform="rotate(45 32 32)"><path d="M32 16 L28.5 32 L32 32 Z" fill="#94a3b8"/><path d="M32 16 L35.5 32 L32 32 Z" fill="#64748b"/></g><g transform="rotate(90 32 32)"><path d="M32 6 L27 32 L32 32 Z" fill="#f8fafc"/><path d="M32 6 L37 32 L32 32 Z" fill="#cbd5e1"/></g><g transform="rotate(135 32 32)"><path d="M32 16 L28.5 32 L32 32 Z" fill="#94a3b8"/><path d="M32 16 L35.5 32 L32 32 Z" fill="#64748b"/></g><g transform="rotate(180 32 32)"><path d="M32 6 L27 32 L32 32 Z" fill="#f8fafc"/><path d="M32 6 L37 32 L32 32 Z" fill="#cbd5e1"/></g><g transform="rotate(225 32 32)"><path d="M32 16 L28.5 32 L32 32 Z" fill="#94a3b8"/><path d="M32 16 L35.5 32 L32 32 Z" fill="#64748b"/></g><g transform="rotate(270 32 32)"><path d="M32 6 L27 32 L32 32 Z" fill="#f8fafc"/><path d="M32 6 L37 32 L32 32 Z" fill="#cbd5e1"/></g><g transform="rotate(315 32 32)"><path d="M32 16 L28.5 32 L32 32 Z" fill="#94a3b8"/><path d="M32 16 L35.5 32 L32 32 Z" fill="#64748b"/></g><circle cx="32" cy="32" r="2.5" fill="#0f172a"/></g><circle class="ls-glow" cx="32" cy="8" r="7" fill="#f5b301" opacity="0" style="filter:blur(2px)"/><path class="ls-spark" d="M32 0 L33.4 4.6 L38 6 L33.4 7.4 L32 12 L30.6 7.4 L26 6 L30.6 4.6 Z" fill="#fff"/></g>
+<text class="ls-word" x="100" y="58" font-family="Segoe UI,Arial,sans-serif" font-size="38" font-weight="700" letter-spacing="5" fill="#f8fafc">LODESTAR</text>
+<text class="ls-sub" x="101" y="80" font-family="Segoe UI,Arial,sans-serif" font-size="13" letter-spacing="1" fill="#94a3b8">121 SQN · FLIGHT &amp; OPS PLANNER</text></svg>

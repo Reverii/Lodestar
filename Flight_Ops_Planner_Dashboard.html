@@ -4550,7 +4550,7 @@ $("wOps").onclick = async () => {
 $("fileInputOps").onchange = async e => { const list = []; for (const f of e.target.files) list.push({ name: f.name, buf: await f.arrayBuffer(), handle: null }); if (list.length) openOps(list); };
 
 // ---------- SharePoint: when this page is opened from a SharePoint library, list, open and save the Excel files in the same folder ----------
-const SP = { on: false, web: "", folder: "", files: [], digest: "", digestAt: 0, ttl: 0 };
+const SP = { on: false, web: "", folder: "", files: [], digest: "", digestAt: 0, ttl: 0, noWho: false, listedAt: null };
 const spQ = p => encodeURIComponent(p.replace(/'/g, "''"));
 const spLabel = f => f.Name.replace(/\.xlsx$/i, "").replace(/^Flight_Ops_Planner_/, "").replace(/_/g, " ");
 async function spJson(url, opt = {}) {
@@ -4595,9 +4595,25 @@ async function spInit() {
   document.querySelector("#welcome p.muted").textContent = "Opened from SharePoint: the Excel files in this folder (" + folder.split("/").pop() + ") open and save directly here. Saving replaces the file on SharePoint, so make sure nobody is editing the same file in Excel at the same time.";
   if (!books.length) { /*DEV*/ devUi(); if (devGet("auto") === "1") { devOpen(); return; } /*/DEV*/ spShowDepts(); }
 }
+// the files in the folder with their last-changed time and, where SharePoint allows it, who changed them (some sites refuse the expand: then the plain list is used and nobody is named)
 async function spList() {
-  const j = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(SP.folder) + "')/Files?$select=Name,ServerRelativeUrl,TimeLastModified");
-  SP.files = (j.d.results || []).filter(f => /\.xlsx$/i.test(f.Name) && !/^~\$/.test(f.Name)).sort((a, b) => a.Name.localeCompare(b.Name));
+  const base = SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(SP.folder) + "')/Files?$select=Name,ServerRelativeUrl,TimeLastModified";
+  let j;
+  if (!SP.noWho) { try { j = await spJson(base + ",ModifiedBy/Title&$expand=ModifiedBy"); } catch (e) { SP.noWho = true; } }
+  if (!j) j = await spJson(base);
+  SP.files = (j.d.results || []).filter(f => /\.xlsx$/i.test(f.Name) && !/^~\$/.test(f.Name)).map(f => Object.assign({}, f, { By: f.ModifiedBy && f.ModifiedBy.Title || "" })).sort((a, b) => a.Name.localeCompare(b.Name));
+  SP.listedAt = spNow();
+}
+const spNow = () => window.SP_NOW ? new Date(window.SP_NOW) : new Date();   // tests set window.SP_NOW
+// "Today 08:12" / "Yesterday 16:55" / "Mon 26 Oct 11:20" (the year too when it is another year) and a level: g today, a 1-6 days ago, r a week or more, x unknown
+function spWhen(iso, now) {
+  const t = new Date(iso); if (!iso || isNaN(t)) return { text: "Changed: unknown", level: "x" };
+  const day = d => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()), age = Math.round((day(now) - day(t)) / 86400000);
+  const hm = String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0");
+  if (age <= 0) return { text: "Today " + hm, level: "g" };
+  if (age === 1) return { text: "Yesterday " + hm, level: "a" };
+  const d = t.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }) + (t.getFullYear() !== now.getFullYear() ? " " + t.getFullYear() : "");
+  return { text: d + " " + hm, level: age < 7 ? "a" : "r" };
 }
 async function spFetch(f) {
   const r = await fetch(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(f.ServerRelativeUrl) + "')/$value", { credentials: "same-origin" });

@@ -40,6 +40,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Names: Cat colour on every callsign (A black, B green, C yellow, D red, OCU pink), SANS / NSMEN in a green box; the standby rows (P1, P2, BU) are as big as a flight row.
 - Clock and a light / dark switch in the bar (remembered on this computer). Default size 100% (steps 70 to 200%); the page shrinks to fit the screen width and height, smallest 50%.
 - **On hold:** a scale control for the whole dashboard (Brandon, 2026-10-27).
+- **Closed 2026-10-28 (Brandon):** the Ops Room item is done as shipped. The Timeline view, the empty-seats filter, the Down-chit chip jump and the leave comments on the old Movement card are not being restored.
 - z99: Master Planner calendar chips show the full time range (0830H-1000H): the end is the start plus the flight code's hours (or the typed end); only a start shows 0830H. Test: `node tests/master_calendar.test.js`.
 - z98: "Try with the built-in sample" now also embeds `Ops_Room.xlsx` and opens everything editable, so seats can be picked in the Ops Room view of the sample (it was read-only before: the sample never had an Ops Room file). The assembler gets it through `.lodestar_build.py` (`others`).
 - No Excel change: upload the dev dashboard only. Tests: `node tests/ops_room.test.js`. To tune on the real projector: default size, dark theme, the bottom cards.

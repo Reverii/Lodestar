@@ -358,12 +358,26 @@ table.allday .fl small{font-weight:500;color:#334155}
 table.allday .cr{padding:1px 0}table.allday .cr b{display:inline-block;min-width:62px}
 table.allday .free{color:var(--s400);font-size:11.5px}
 #spPick .row{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
-#spPick .depts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin:8px 0 4px}
-#spPick .depts button{padding:16px 10px;font-size:17px;font-weight:800;border-radius:10px;border:2px solid var(--s200);background:var(--s100);color:var(--s900);cursor:pointer}
-#spPick .depts button:hover{border-color:var(--blue);background:#eff6ff}
-#spPick .depts button.last{border-color:var(--blue)}
-#spPick .depts button small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:500;color:var(--s500);margin-top:3px}
-#spPick .depts button:disabled{opacity:.4;cursor:not-allowed}
+#spPick .box.wide{max-width:1120px;width:94%;padding:16px 24px 14px}
+#spPick .hero{background:#0f172a;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 26px 10px 18px;margin-bottom:12px}#spPick .hero svg{display:block;width:330px;height:auto;max-width:42%}
+#spPick .hero .q{text-align:right}#spPick .hero h1{margin:0;font-size:27px;color:#f8fafc}#spPick .hero .lead{color:#94a3b8;font-size:13.5px;margin:3px 0 0 auto;max-width:430px}
+#spStatus{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--s600);margin-bottom:10px}#spStatus .dot{width:9px;height:9px;border-radius:50%;background:#16a34a;flex:none}#spStatus b{color:var(--s900)}#spStatus.warn .dot{background:#f59e0b}#spStatus.warn{color:#b45309}
+#spPick .opscard{display:flex;align-items:center;gap:18px;width:100%;text-align:left;background:#dbeafe;color:var(--s900);border:2px solid #93c5fd;border-radius:12px;padding:11px 22px;margin-bottom:12px;cursor:pointer;font:inherit;position:relative}
+#spPick .opscard:hover{border-color:var(--blue)}#spPick .opscard.last{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue)}
+#spPick .opscard .n{font-size:24px;font-weight:800}#spPick .opscard .d{font-size:13.5px;color:#1e3a8a;flex:1;line-height:1.35}#spPick .opscard .m{font-size:12.5px;color:var(--s600);text-align:right;line-height:1.35;max-width:230px}
+#spPick .opscard .go{background:#2563eb;color:#fff;border-radius:8px;padding:9px 18px;font-weight:800;font-size:14px;white-space:nowrap}
+#spPick .tag{background:#2563eb;color:#fff;font-size:10.5px;font-weight:800;border-radius:999px;padding:2px 9px;white-space:nowrap}
+#spPick .opscard .tag{position:absolute;right:12px;top:-9px}#spPick .dcard .tag{position:absolute;right:10px;top:10px}
+#spGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#spPick .dcard{border:2px solid var(--s200);border-radius:12px;padding:11px 16px;background:var(--s50);position:relative;min-height:96px;text-align:left;cursor:pointer;font:inherit;color:var(--s900);min-width:0}
+#spPick .dcard:hover:not(:disabled){border-color:var(--blue);background:#eff6ff}#spPick .dcard.last{border-color:var(--blue);background:#eff6ff}
+#spPick .dcard .n{font-size:22px;font-weight:800}#spPick .dcard .when{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:13.5px;font-weight:700}#spPick .dcard.old .when{color:#b45309}
+#spPick .dcard .by{font-size:12.5px;color:var(--s600);margin-top:1px;padding-left:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#spPick .dcard .f{font-size:11px;color:var(--s400);margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#spPick .fresh{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}#spPick .fresh.g{background:#16a34a}#spPick .fresh.a{background:#f59e0b}#spPick .fresh.r{background:#dc2626}#spPick .fresh.x{background:#cbd5e1}
+#spPick .dcard.miss{background:#f1f5f9;border-style:dashed;color:var(--s400);cursor:not-allowed}#spPick .dcard.miss .n{color:var(--s400)}
+#spPick .allcard{border:2px dashed #cbd5e1;border-radius:12px;background:transparent;display:flex;align-items:center;justify-content:center;color:#2563eb;font:inherit;font-weight:700;font-size:14px;text-align:center;padding:10px;cursor:pointer;min-height:96px}#spPick .allcard:hover{border-color:var(--blue);background:#eff6ff}
+#spKey{display:flex;gap:14px;margin-right:auto;align-items:center;font-size:12px;color:var(--s500)}#spKey span{display:flex;align-items:center;gap:5px}
 #spPick a{color:var(--blue);font-size:13px;cursor:pointer}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--s900);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:200;max-width:90%}
 .muted{color:var(--s500)}
@@ -999,7 +1013,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <h2 id="spTitle">Open from SharePoint</h2>
   <p id="spNote"></p>
   <table id="spTable"></table>
-  <div class="row"><button class="btn" id="spCancel">Cancel</button><button class="btn primary" id="spGo">Open</button></div>
+  <div class="row"><div id="spKey" style="display:none"></div><button class="btn" id="spCancel">Cancel</button><button class="btn primary" id="spGo">Open</button></div>
 </div></div>
 <div id="tailPop"></div>
 <div id="oaPop"><div class="box">
@@ -4634,17 +4648,36 @@ function spFileFor(key) {
   const yr = f => +((/(20\d\d)/.exec(f.Name) || [0, 0])[1]);
   return hits.sort((a, b) => yr(b) - yr(a) || new Date(b.TimeLastModified) - new Date(a.TimeLastModified))[0] || null;
 }
+// a value from SharePoint (a file name, a person's name) as text, safe inside the page and inside an attribute
+const spEsc = v => esc(v == null ? "" : v).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+const SP_EXPECT = { "Duty Planner": "Duty_Roster.xlsx", "Master Planner": "Master_Planner.xlsx", "Ops Room": "Ops_Room.xlsx" };
+const spExpected = lab => SP_EXPECT[lab] || "Flight_Ops_Planner_" + lab.replace(/\s+/g, "") + ".xlsx";
+function spCardHtml(lab, f, last) {
+  if (!f) return "<button class='dcard miss' data-dept='" + spEsc(lab) + "' disabled><div class='n'>" + spEsc(lab) + "</div><div class='when'><span class='fresh x'></span>No file in this folder</div><div class='f'>Looking for " + spEsc(spExpected(lab)) + "</div></button>";
+  const w = spWhen(f.TimeLastModified, spNow());
+  return "<button class='dcard" + (last ? " last" : "") + (w.level === "r" ? " old" : "") + "' data-dept='" + spEsc(lab) + "'>" + (last ? "<span class='tag'>You opened this last</span>" : "") + "<div class='n'>" + spEsc(lab) + "</div><div class='when'><span class='fresh " + w.level + "'></span>" + spEsc(w.text) + "</div>" +
+    (f.By ? "<div class='by'>by " + spEsc(f.By) + "</div>" : "") + "<div class='f' title='" + spEsc(f.Name) + "'>" + spEsc(f.Name) + "</div></button>";
+}
+function spOpsHtml(f, last) {
+  const w = f && spWhen(f.TimeLastModified, spNow());
+  return "<button class='opscard" + (last ? " last" : "") + "' data-ops='1'>" + (last ? "<span class='tag'>You opened this last</span>" : "") + "<span class='n'>Ops Room</span><span class='d'>The day's flights and crew. Every department's file is editable.</span>" +
+    "<span class='m'>" + (f ? spEsc(f.Name) + "<br>" + spEsc(w.text) + (f.By ? " by " + spEsc(f.By) : "") : "No Ops Room file in this folder") + "</span><span class='go'>Open Ops Room</span></button>";
+}
+const spHm = d => d ? String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") : "";
+const spLastDept = () => (v => v === "SDO Manager" || v === "SDO Planner" ? "Duty Planner" : v)(spRecall("dept", ""));   // renamed 2026-10-21
+// the whole department screen: hero with the logo, the status line, the Ops Room card, one grid of file-state cards
+function spRenderDepts() {
+  const last = spLastDept(), logo = document.querySelector("#welcome .lslogo");
+  $("spTable").innerHTML = "<tr><td style='border:0;padding:0'><div class='hero'>" + (logo ? logo.outerHTML : "") + "<div class='q'><h1>Which department are you from?</h1><div class='lead'>Your department's planner opens for editing. The other departments open beside it, read-only.</div></div></div>" +
+    "<div id='spStatus'><span class='dot'></span><span><b>Connected to " + spEsc(SP.folder.split("/").pop()) + "</b> · " + SP.files.length + " files · checked " + spHm(SP.listedAt) + ", refreshes every 15 seconds</span></div>" +
+    spOpsHtml(spFileFor("opsroom"), last === "Ops Room") + "<div id='spGrid'>" + SP_DEPTS.map(([lab, key]) => spCardHtml(lab, spFileFor(key), lab === last)).join("") + "<button class='allcard' id='spAll'>Show all files in the folder<br>instead</button></div></td></tr>";
+  $("spKey").innerHTML = "<span><i class='fresh g'></i>Changed today</span><span><i class='fresh a'></i>Changed this week</span><span><i class='fresh r'></i>Not changed for a week or more</span>";
+}
 async function spShowDepts() {
   try { await spList(); } catch (e) { alert(e.message); return; }
   spAdd = false;
-  const last = (v => v === "SDO Manager" || v === "SDO Planner" ? "Duty Planner" : v)(spRecall("dept", ""));   // renamed 2026-10-21
-  $("spTitle").textContent = "Which department are you from?";
-  $("spNote").textContent = "Your department's planner opens for editing. Other departments can be added read-only afterwards with Add other departments.";
-  $("spTable").innerHTML = "<tr><td style='border:0;padding:0'><div class='depts'>" + SP_DEPTS.map(([lab, key]) => {
-    const f = spFileFor(key);
-    return "<button data-dept='" + esc(lab) + "' class='" + (lab === last ? "last" : "") + "'" + (f ? "" : " disabled title='No file for this department in the folder'") + ">" + esc(lab) +
-      "<small>" + (f ? esc(f.Name) : "file not found") + "</small></button>";
-  }).join("") + "<button data-ops='1' style='grid-column:1/-1'>Ops Room<small>for the SDO and AOS on duty: the day's flights, crew, MC and CRMO, with every department's file editable</small></button></div><a id='spAll'>Show all files in the folder instead</a></td></tr>";
+  $("spTitle").style.display = $("spNote").style.display = "none"; $("spKey").style.display = "flex"; document.querySelector("#spPick .box").classList.add("wide");
+  spRenderDepts();
   $("spGo").style.display = "none";
   $("spPick").style.display = "flex";
 }
@@ -4686,10 +4719,11 @@ async function spOpenDept(lab) {
 $("spTable").addEventListener("click", e => {
   if (e.target.closest("button[data-ops]")) { spOpenOps(); return; }
   const b = e.target.closest("button[data-dept]"); if (b) { spOpenDept(b.dataset.dept); return; }
-  if (e.target.id === "spAll") spShowPicker(false);
+  if (e.target.closest("#spAll")) spShowPicker(false);
 });
 async function spShowPicker(add) {
   spAdd = add; $("spGo").style.display = "";
+  $("spKey").style.display = "none"; $("spTitle").style.display = $("spNote").style.display = ""; document.querySelector("#spPick .box").classList.remove("wide");
   try { await spList(); } catch (e) { alert(e.message); return; }
   const open = new Set(books.map(b => b.WB.name)), mine = spRecall("mine", ""), others = new Set(spRecall("others", []));
   $("spTitle").textContent = add ? "Add other departments" : "Open from SharePoint";

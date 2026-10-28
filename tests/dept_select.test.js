@@ -35,6 +35,84 @@ test("list_falls_back_without_the_editor", async ({ page }) => {
   assert.ok(r.second.length === 1 && !/\$expand/.test(r.second[0]), "no second try of the expand: " + r.second.join());
 }, BLANK);
 
+const std = () => [F("Flight_Ops_Planner_SUP1.xlsx", "2026-10-28T08:12:00", "R. Tan"), F("Flight_Ops_Planner_SUP2.xlsx", "2026-10-28T07:40:00", "S. Lim"), F("Flight_Ops_Planner_TACCO.xlsx", "2026-10-27T16:55:00", "J. Koh"),
+  F("Flight_Ops_Planner_Loadmaster.xlsx", "2026-10-26T11:20:00", "A. Ng"), F("Flight_Ops_Planner_Pilot.xlsx", "2026-10-28T06:58:00", "M. Lee"), F("Master_Planner.xlsx", "2026-10-28T08:30:00", "H. Yeo"),
+  F("Duty_Roster.xlsx", "2026-10-20T09:05:00", "D. Chua"), F("Ops_Room.xlsx", "2026-10-28T08:05:00", "K. Ong")];
+const show = page => page.evaluate(() => { document.getElementById("welcome").style.display = "none"; return spShowDepts(); });
+const card = (page, lab) => page.evaluate(lab => { const c = [...document.querySelectorAll("#spGrid .dcard")].find(x => x.querySelector(".n").textContent === lab); return c ? { cls: c.className, txt: c.innerText.replace(/\s+/g, " ").trim(), dis: c.disabled, dot: (c.querySelector(".fresh") || {}).className || "" } : null; }, lab);
+
+test("cards_in_order_with_texts", async ({ page }) => {
+  await set(page, std(), "SUP 2"); await show(page);
+  const g = await page.evaluate(() => ({ names: [...document.querySelectorAll("#spGrid .dcard .n")].map(x => x.textContent), last: document.getElementById("spGrid").lastElementChild.id, lastTxt: document.getElementById("spGrid").lastElementChild.innerText }));
+  assert.deepStrictEqual(g.names, ["SUP 1", "SUP 2", "TACCO", "Loadmaster", "Pilot", "Duty Planner", "Master Planner"]);
+  assert.strictEqual(g.last, "spAll"); assert.ok(/Show all files in the folder/.test(g.lastTxt));
+  const c = await card(page, "SUP 2"); assert.ok(/Today 07:40/.test(c.txt) && /by S\. Lim/.test(c.txt) && /Flight_Ops_Planner_SUP2\.xlsx/.test(c.txt), c.txt);
+}, BLANK);
+test("dots_follow_age", async ({ page }) => {
+  const f = std(); f[2].TimeLastModified = "2026-10-25T10:00:00"; f[3].TimeLastModified = "garbage";
+  await set(page, f, ""); await show(page);
+  const d = await Promise.all(["SUP 1", "TACCO", "Duty Planner", "Loadmaster"].map(l => card(page, l)));
+  assert.ok(/ g\b/.test(d[0].dot) && / a\b/.test(d[1].dot) && / r\b/.test(d[2].dot) && / x\b/.test(d[3].dot), d.map(x => x.dot).join("|"));
+  assert.ok(/Changed: unknown/.test(d[3].txt));
+}, BLANK);
+test("last_used_is_highlighted", async ({ page }) => {
+  await set(page, std(), "SUP 2"); await show(page);
+  let r = await page.evaluate(() => ({ lasts: [...document.querySelectorAll("#spPick .dcard.last")].map(c => c.querySelector(".n").textContent), tag: document.querySelector("#spPick .dcard.last").innerText, ops: document.querySelector("#spPick .opscard").classList.contains("last") }));
+  assert.deepStrictEqual(r.lasts, ["SUP 2"]); assert.ok(/You opened this last/.test(r.tag)); assert.strictEqual(r.ops, false);
+  await page.evaluate(() => { spRemember("dept", "Ops Room"); return spShowDepts(); });
+  r = await page.evaluate(() => ({ lasts: document.querySelectorAll("#spPick .dcard.last").length, ops: document.querySelector("#spPick .opscard").classList.contains("last"), tag: document.querySelector("#spPick .opscard").innerText }));
+  assert.strictEqual(r.lasts, 0); assert.ok(r.ops && /You opened this last/.test(r.tag));
+  await page.evaluate(() => { spRemember("dept", "Some Old Name"); return spShowDepts(); });
+  assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#spPick .last").length), 0);
+}, BLANK);
+test("missing_file_card", async ({ page }) => {
+  await set(page, std().filter(f => !/Loadmaster/.test(f.Name)), ""); await show(page);
+  const c = await card(page, "Loadmaster");
+  assert.ok(/miss/.test(c.cls) && c.dis === true && /No file in this folder/.test(c.txt) && /Looking for Flight_Ops_Planner_Loadmaster\.xlsx/.test(c.txt), JSON.stringify(c));
+  await page.evaluate(() => { window.__d = null; window.spOpenDept = l => (window.__d = l); });
+  await page.click("#spGrid .dcard.miss", { force: true }).catch(() => {});
+  assert.strictEqual(await page.evaluate(() => window.__d), null);
+}, BLANK);
+test("no_by_line_without_an_editor", async ({ page }) => {
+  const f = std(); f[1].By = ""; await set(page, f, ""); await show(page);
+  const c = await card(page, "SUP 2"); assert.ok(!/\bby\b/.test(c.txt), c.txt);
+}, BLANK);
+test("hostile_names_are_text", async ({ page }) => {
+  const f = std(); f[0].By = "<img src=x onerror=\"window.__x=1\">\""; f[3].Name = "Flight_Ops_Planner_Loadmaster_" + "x".repeat(200) + ".xlsx";
+  await set(page, f, ""); await show(page); await page.waitForTimeout(100);
+  const g = await page.evaluate(() => { const cs = [...document.querySelectorAll("#spGrid .dcard")], w = cs.map(c => Math.round(c.getBoundingClientRect().width)), lm = cs.find(c => c.querySelector(".n").textContent === "Loadmaster");
+    return { img: document.querySelectorAll("#spGrid img").length, x: window.__x, widths: [...new Set(w)], ell: getComputedStyle(lm.querySelector(".f")).textOverflow }; });
+  assert.strictEqual(g.img, 0); assert.strictEqual(g.x, undefined); assert.strictEqual(g.widths.length, 1, "cards stay one width: " + g.widths); assert.strictEqual(g.ell, "ellipsis");
+}, BLANK);
+test("ops_card_content", async ({ page }) => {
+  await set(page, std(), ""); await show(page);
+  const t = await page.evaluate(() => document.querySelector("#spPick .opscard").innerText.replace(/\s+/g, " "));
+  assert.ok(/The day's flights and crew\. Every department's file is editable\./.test(t) && /Today 08:05/.test(t) && /by K\. Ong/.test(t) && /Open Ops Room/.test(t), t);
+}, BLANK);
+test("hero_and_status", async ({ page }) => {
+  await set(page, std(), ""); await show(page);
+  const g = await page.evaluate(() => ({ logo: !!document.querySelector("#spPick .hero svg.lslogo"), h: document.querySelector("#spPick .hero h1").textContent, st: document.getElementById("spStatus").innerText.replace(/\s+/g, " ") }));
+  assert.ok(g.logo); assert.strictEqual(g.h, "Which department are you from?");
+  assert.ok(/Connected to Program/.test(g.st) && /8 files/.test(g.st) && /refreshes every 15 seconds/.test(g.st), g.st);
+}, BLANK);
+test("clicks_reach_the_openers", async ({ page }) => {
+  await set(page, std(), ""); await show(page);
+  await page.evaluate(() => { window.spOpenDept = l => (window.__d = l); window.spOpenOps = () => (window.__o = 1); window.spShowPicker = a => (window.__p = a); });
+  await page.click("#spGrid .dcard >> text=SUP 1"); await page.click("#spPick .opscard"); await page.click("#spAll");
+  assert.deepStrictEqual(await page.evaluate(() => [window.__d, window.__o, window.__p]), ["SUP 1", 1, false]);
+}, BLANK);
+test("fits_1280x720", async ({ page }) => {
+  await set(page, std(), "SUP 2"); await show(page); await page.waitForTimeout(100);
+  const g = await page.evaluate(() => { const b = document.querySelector("#spPick .box"), r = b.getBoundingClientRect(); return { bottom: r.bottom, over: b.scrollHeight - b.clientHeight, w: r.width }; });
+  assert.ok(g.bottom <= 720 && g.over <= 1, JSON.stringify(g)); assert.ok(g.w > 900, "wide box " + g.w);
+}, BLANK);
+test("file_picker_keeps_the_narrow_box", async ({ page }) => {
+  await set(page, std(), ""); await show(page);
+  await page.evaluate(() => { window.spList = async () => {}; return spShowPicker(false); });
+  const g = await page.evaluate(() => ({ wide: document.querySelector("#spPick .box").classList.contains("wide"), w: document.querySelector("#spPick .box").getBoundingClientRect().width, title: document.getElementById("spTitle").offsetParent !== null }));
+  assert.strictEqual(g.wide, false); assert.ok(g.w <= 640, "box " + g.w); assert.ok(g.title, "the picker title is back");
+}, BLANK);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

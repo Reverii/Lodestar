@@ -32,6 +32,10 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Tests: `node tests/atom.test.js` (synthetic exports only; several minutes), `node tests/my_lodestar.test.js`. Dummy-name test set from real Initials:
   `tests/make_atom_demo_input.py` (output goes to the git-ignored `atom_test/`).
 
+## Briefing page (added 2026-10-28)
+
+- `briefing/index.html` (scroll-snap web briefing, 19 slides, assets in `briefing/assets/`). Brandon supplied it as a zip; the ATOM screenshot (real currency dates from the sanitised export) was left out and slide 15 now shows the three cards only. The Pages workflow publishes it at `/briefing/` beside the dashboard and refuses to publish if `atom.webp` comes back.
+
 ## Department selector (z100, 2026-10-28; spec `docs/superpowers/specs/2026-10-28-department-selector-design.md`, plan `docs/superpowers/plans/2026-10-28-department-selector.md`, mock-up `docs/superpowers/mockups/dept-select-v2/`)
 
 - The SharePoint start screen "Which department are you from?" is rebuilt: the Compass Rose hero, a status line ("Connected to Program · 8 files · checked 14:32, refreshes every 15 seconds"), a wide light-blue Ops Room card, and one grid of cards

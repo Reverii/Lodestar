@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LODESTAR · 121 SQN</title>
+<meta name="description" content="LODESTAR: one unified plan, one true north. Flying and duty crew planning for the whole squadron.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/compass.png">
+<style>
+:root{
+  --white:#ffffff; --grey:#f5f5f7; --line:#d2d2d7;
+  --ink:#1d1d1f; --mute:#6e6e73;
+  --blue:#0071e3; --sky:#2997ff; --violet:#a66cff;
+  --dark:#0a0a0c; --dark2:#1d1d1f; --dmute:#a1a1a6;
+  --font:"Inter","Segoe UI Variable","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-snap-type:y proximity;scroll-behavior:smooth}
+body{font-family:var(--font);color:var(--ink);background:var(--white);-webkit-font-smoothing:antialiased;line-height:1.45}
+img{max-width:100%;display:block}
+
+/* ---------- panels ---------- */
+.panel{min-height:100vh;min-height:100svh;padding:10vh 8vw 8vh;display:flex;flex-direction:column;justify-content:center;gap:clamp(20px,3.4vh,44px);scroll-snap-align:start;position:relative}
+.panel.grey{background:var(--grey)}
+.panel.dark{background:var(--dark);color:#f5f5f7}
+.panel.blue{background:var(--blue);color:#fff}
+.inner{width:100%;max-width:1520px;margin:0 auto;display:flex;flex-direction:column;gap:clamp(20px,3.4vh,44px)}
+.head{text-align:center;display:flex;flex-direction:column;gap:12px}
+.eyebrow{font-size:clamp(16px,1.4vw,24px);font-weight:600;color:var(--blue)}
+.dark .eyebrow{color:var(--sky)}
+.blue .eyebrow{color:#fff}
+h1,h2,h3{letter-spacing:-0.03em;line-height:1.08}
+h2{font-size:clamp(32px,3.9vw,64px);font-weight:700}
+h3{font-size:clamp(20px,1.9vw,32px);font-weight:700;letter-spacing:-0.02em;line-height:1.2}
+p,li{font-size:clamp(16px,1.35vw,24px)}
+.mute{color:var(--mute)}
+.dark .mute{color:var(--dmute)}
+.center{text-align:center}
+.lead{font-size:clamp(18px,1.8vw,30px);line-height:1.4}
+.grad{background:linear-gradient(90deg,var(--sky),var(--violet),var(--sky));background-size:200% 100%;animation:shine 6s linear infinite;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--sky)}
+
+/* ---------- cards ---------- */
+.grid{display:grid;gap:clamp(14px,1.6vw,24px)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g5{grid-template-columns:repeat(5,1fr)}
+.card{background:var(--grey);border-radius:28px;padding:clamp(18px,2vw,34px);display:flex;flex-direction:column;gap:10px}
+.grey .card{background:var(--white);box-shadow:0 2px 24px rgba(0,0,0,.06)}
+.dark .card{background:var(--dark2);box-shadow:none}
+.card.accent,.grey .card.accent{background:var(--blue);color:#fff;box-shadow:none}
+.card.accent .mute{color:#fff}
+.card ul{padding-left:1.2em;display:flex;flex-direction:column;gap:6px;color:var(--mute)}
+.card.accent ul{color:#fff}
+.num{font-size:clamp(34px,3.6vw,60px);font-weight:700;letter-spacing:-0.03em;line-height:1.1;color:var(--blue)}
+.dark .num{color:var(--sky)}
+.card.accent .num{color:#fff}
+.card .tag{font-size:clamp(15px,1.2vw,20px);font-weight:600;color:var(--blue)}
+.card.accent .tag{color:#fff}
+.band{background:var(--dark2);color:#f5f5f7;border-radius:28px;padding:clamp(18px,2vw,32px) clamp(22px,3vw,48px)}
+.band b{color:var(--sky)}
+.result{font-size:clamp(18px,1.9vw,32px);text-align:center}
+.result b{color:var(--blue)}
+
+/* ---------- cover / reveal ---------- */
+.hero{padding-bottom:18vh;align-items:center;text-align:center;justify-content:center;background:radial-gradient(circle at 50% 115%,#123a7a 0%,var(--dark) 62%);color:#f5f5f7}
+.hero.reveal{background:radial-gradient(circle at 50% 40%,#1b2a47 0%,var(--dark) 60%)}
+.hero .compass{width:clamp(120px,14vw,240px)}
+.reveal .compass{width:clamp(160px,20vw,340px)}
+.hero h1{font-size:clamp(44px,8vw,136px);font-weight:700;letter-spacing:-0.04em}
+.word{font-size:clamp(40px,9vw,150px);font-weight:700;letter-spacing:.12em;line-height:1.05}
+.hero .sub{font-size:clamp(18px,2.4vw,40px);color:var(--dmute)}
+.hero .who{font-size:clamp(16px,1.6vw,28px);font-weight:600}
+.hint{position:absolute;bottom:9vh;left:0;right:0;font-size:clamp(14px,1.1vw,18px);color:var(--dmute);display:flex;flex-direction:column;align-items:center;gap:8px}
+.hint i{display:block;width:2px;height:34px;background:linear-gradient(var(--sky),transparent);animation:drip 2s infinite}
+@keyframes float{50%{translate:0 -10px}}
+@keyframes spin{from{rotate:-200deg}to{rotate:0deg}}
+@keyframes swing{0%,100%{rotate:0deg}15%{rotate:7deg}30%{rotate:-5deg}45%{rotate:3deg}60%{rotate:-1.5deg}75%{rotate:0deg}}
+@keyframes shine{to{background-position:-200% 0}}
+@keyframes nudge{50%{translate:8px 0}}
+@keyframes pulse{50%{box-shadow:0 20px 100px rgba(0,113,227,.65)}}
+@keyframes ping{70%{box-shadow:0 0 0 20px rgba(0,113,227,0)}100%{box-shadow:0 0 0 0 rgba(0,113,227,0)}}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ---------- name ---------- */
+.split{display:grid;grid-template-columns:minmax(220px,.8fr) 1.4fr;gap:clamp(32px,6vw,96px);align-items:center}
+.split .compass{width:100%;max-width:520px;margin:0 auto}
+.rows{display:flex;flex-direction:column;gap:clamp(14px,2vh,22px)}
+.row{border-top:1px solid #3a3a3c;padding-top:clamp(12px,1.6vh,20px);display:flex;flex-direction:column;gap:6px}
+.light .row{border-top-color:var(--line)}
+
+/* ---------- fixes ---------- */
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:clamp(10px,1.4vw,20px);align-items:center}
+.pair .arrow{width:clamp(28px,3.4vw,56px);height:auto;color:var(--blue)}
+.labels{display:grid;grid-template-columns:1fr auto 1fr;gap:clamp(10px,1.4vw,20px);font-weight:600;font-size:clamp(14px,1.2vw,20px)}
+.labels span:nth-child(3){color:var(--blue)}
+.pair .card{padding:clamp(12px,1.3vw,22px) clamp(18px,2vw,30px);border-radius:24px}
+
+/* ---------- hub ---------- */
+.hub{display:grid;grid-template-columns:1fr minmax(240px,.8fr) 1fr;gap:clamp(40px,5vw,80px);align-items:center}
+.hub .side{display:flex;flex-direction:column;gap:clamp(16px,3vh,40px)}
+.hub .card{position:relative}
+.hub .left .card::after,.hub .right .card::before{content:"";position:absolute;top:50%;width:clamp(40px,5vw,80px);height:3px;background:var(--blue)}
+.hub .left .card::after{left:100%}
+.hub .right .card::before{right:100%}
+.hub .core{background:var(--blue);color:#fff;border-radius:28px;padding:clamp(24px,3vw,48px);text-align:center;box-shadow:0 20px 60px rgba(0,113,227,.35)}
+.hub .core h3{font-size:clamp(24px,2.6vw,44px)}
+.foot{font-size:clamp(18px,1.7vw,28px);font-weight:600;text-align:center}
+
+/* ---------- flow ---------- */
+.flow .card{position:relative}
+.flow .step{font-size:clamp(30px,3.2vw,56px)}
+
+/* ---------- screenshots ---------- */
+.shot{border-radius:24px;box-shadow:0 8px 40px rgba(0,0,0,.18);cursor:zoom-in;width:100%;height:auto;transition:transform .3s}
+figure{display:flex;flex-direction:column;gap:14px}
+figure figcaption{text-align:center;display:flex;flex-direction:column;gap:6px}
+.feature{display:grid;grid-template-columns:1.5fr 1fr;gap:clamp(28px,4vw,64px);align-items:center}
+.feature .rows{gap:clamp(12px,2vh,22px)}
+.feature .row{border-top-color:var(--line)}
+.wide{width:100%;height:auto;border-radius:24px;cursor:zoom-in}
+
+/* ---------- table ---------- */
+.tablewrap{overflow-x:auto;border-radius:24px}
+table{width:100%;border-collapse:collapse;font-size:clamp(15px,1.45vw,26px);min-width:720px}
+th,td{text-align:left;padding:clamp(12px,1.6vh,20px) clamp(14px,1.6vw,28px);vertical-align:top}
+thead th{background:var(--dark2);color:#f5f5f7}
+thead th:last-child{color:var(--sky)}
+tbody tr:nth-child(odd){background:var(--white)}
+tbody tr:nth-child(even){background:#ebebed}
+tbody td:last-child{font-weight:700}
+
+/* ---------- timeline ---------- */
+.line{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,1.6vw,24px);position:relative}
+.line .card{gap:12px}
+.line .card h3{font-size:clamp(28px,3vw,48px)}
+.status{margin-top:auto;font-weight:700;color:var(--blue);font-size:clamp(16px,1.4vw,24px)}
+.accent .status{color:#fff}
+
+/* ---------- Q&A ---------- */
+.qa{display:grid;grid-template-columns:1.3fr 1fr;gap:clamp(24px,4vw,64px);align-items:center}
+.qa h2{font-size:clamp(90px,16vw,260px);letter-spacing:-0.06em;line-height:1}
+.disc{background:var(--dark);border-radius:50%;aspect-ratio:1;display:grid;place-items:center;max-width:520px;width:100%;justify-self:center}
+.disc img{width:82%}
+
+/* ---------- chrome ---------- */
+.top{position:fixed;inset:0 0 auto 0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,3vw,40px);z-index:20;font-size:14px;font-weight:600;letter-spacing:.04em;color:var(--mute);pointer-events:none;transition:color .3s}
+.top img{width:22px;height:22px;display:inline-block;vertical-align:-5px;margin-right:8px}
+.bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--sky),var(--violet));width:0;z-index:30}
+.bottom{position:fixed;inset:auto 0 14px 0;display:flex;justify-content:space-between;align-items:center;padding:0 clamp(16px,3vw,40px);z-index:20;font-size:13px;color:var(--mute);pointer-events:none;transition:color .3s}
+.bottom .count{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px}
+body[data-theme="dark"] .top,body[data-theme="dark"] .bottom{color:var(--dmute)}
+body[data-theme="blue"] .top,body[data-theme="blue"] .bottom{color:#fff}
+.dots{position:fixed;right:clamp(10px,1.4vw,24px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:9px;z-index:20}
+.dots a{width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.25;display:block;transition:all .25s;position:relative}
+.dots a.on{opacity:1;background:var(--blue);transform:scale(1.35)}
+.dots a:hover{opacity:.8}
+.dots a span{position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:13px;font-weight:600;background:var(--dark2);color:#f5f5f7;padding:4px 10px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s}
+.dots a:hover span{opacity:1}
+body{color:var(--ink)}
+.dots{color:var(--mute)}
+body[data-theme="dark"] .dots{color:var(--dmute)}
+body[data-theme="blue"] .dots{color:#fff}
+body[data-theme="blue"] .dots a.on{background:#fff}
+
+.lightbox{position:fixed;inset:0;background:rgba(10,10,12,.92);display:none;place-items:center;z-index:50;padding:3vw;cursor:zoom-out}
+.lightbox.open{display:grid}
+.lightbox img{max-width:100%;max-height:100%;border-radius:16px;box-shadow:0 20px 80px rgba(0,0,0,.6)}
+
+/* ---------- reveal on scroll ---------- */
+.fx{opacity:0;transform:translateY(34px) scale(.98);filter:blur(6px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1),filter .8s ease,translate .3s ease}
+.fx-l{transform:translateX(-70px)}.fx-r{transform:translateX(70px)}.fx-z{transform:scale(.86)}
+.panel.active .fx{opacity:1;transform:none;filter:none}
+.card:hover{translate:0 -4px}
+.ln{display:block}
+.stars{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.panel{isolation:isolate}
+
+/* compass: spin in, settle, then drift like a real needle */
+.panel.active .compass{animation:spin 1.9s cubic-bezier(.2,1.25,.35,1) both,swing 9s ease-in-out 2.3s infinite,float 8s ease-in-out infinite}
+
+/* wordmark letters */
+.word span{display:inline-block;opacity:0;transform:translateY(.5em) scale(.9);filter:blur(12px);transition:opacity .8s ease,transform .9s cubic-bezier(.2,.9,.3,1.2),filter .8s ease}
+.panel.active .word span{opacity:1;transform:none;filter:none}
+
+/* fixes: arrows nudge */
+.panel.active .pair .arrow{animation:nudge 1.6s ease-in-out 1.4s infinite}
+
+/* hub: lines draw in, core glows */
+.hub .left .card::after,.hub .right .card::before{transform:scaleX(0);transition:transform .7s cubic-bezier(.4,0,.2,1) .8s}
+.hub .left .card::after{transform-origin:left}
+.hub .right .card::before{transform-origin:right}
+.panel.active .hub .left .card::after,.panel.active .hub .right .card::before{transform:scaleX(1)}
+.panel.active .hub .core{animation:pulse 3s ease-in-out 1.6s infinite}
+
+/* flow + timeline tracks */
+.track,.tl{height:5px;background:var(--line);border-radius:3px;position:relative}
+.track{overflow:hidden}
+.track i{display:block;height:100%;transform:scaleX(0);transform-origin:left;background:linear-gradient(90deg,var(--sky),var(--violet))}
+.panel.active .track i{transform:scaleX(1);transition:transform 2.5s cubic-bezier(.45,0,.25,1) .3s}
+.tl i{position:absolute;left:0;top:0;bottom:0;width:12.5%;border-radius:3px;background:linear-gradient(90deg,var(--sky),var(--violet));transform:scaleX(0);transform-origin:left}
+.panel.active .tl i{transform:scaleX(1);transition:transform 1.2s cubic-bezier(.45,0,.25,1) .6s}
+.tl b{position:absolute;left:12.5%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:var(--blue);opacity:0;transition:opacity .4s ease 1.6s}
+.panel.active .tl b{opacity:1;animation:ping 2s ease-out 1.8s infinite}
+
+/* table rows slide in */
+tbody tr{opacity:0;transform:translateX(-40px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.panel.active tbody tr{opacity:1;transform:none}
+tbody tr:nth-child(1){transition-delay:.35s}tbody tr:nth-child(2){transition-delay:.5s}tbody tr:nth-child(3){transition-delay:.65s}tbody tr:nth-child(4){transition-delay:.8s}tbody tr:nth-child(5){transition-delay:.95s}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}
+
+@media (max-width:1000px){
+  .g3,.g2,.g5,.line{grid-template-columns:1fr}
+  .split,.feature,.qa{grid-template-columns:1fr}
+  .hub{grid-template-columns:1fr}
+  .hub .card::before,.hub .card::after{display:none}
+  .pair,.labels{grid-template-columns:1fr}
+  .pair .arrow{transform:rotate(90deg);justify-self:center}
+  .labels span:nth-child(2){display:none}
+  .dots{display:none}
+  .disc{max-width:320px}
+}
+@media (max-width:1300px) and (min-width:1001px){.g5{grid-template-columns:repeat(3,1fr)}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .fx,.word span,tbody tr{opacity:1!important;transform:none!important;filter:none!important}
+  .track i,.tl i,.hub .card::before,.hub .card::after{transform:none!important}
+  .tl b{opacity:1!important}
+  .stars{display:none}
+}
+@media print{
+  .top,.bottom,.dots,.bar,.hint{display:none}
+  .panel{min-height:auto;page-break-after:always;padding:40px}
+  .fx,.word span,tbody tr{opacity:1;transform:none;filter:none}
+  .track i,.tl i,.hub .card::before,.hub .card::after{transform:none}
+  .tl b{opacity:1}
+  .stars{display:none}
+}
+</style>
+</head>
+<body data-theme="light">
+<div class="bar" id="bar"></div>
+<div class="top"><span><img src="assets/compass.png" alt="">LODESTAR · 121 SQN</span><span>Flight &amp; Ops Planner</span></div>
+<div class="bottom"><span>OFFICIAL (OPEN) / NON-SENSITIVE</span><span class="count" id="count">1 / 20</span></div>
+<nav class="dots" id="dots" aria-label="Sections"></nav>
+<div class="lightbox" id="lb" role="dialog" aria-label="Enlarged screenshot"><img alt="" id="lbimg"></div>
+
+<main>
+
+<!-- 1 cover -->
+<section class="panel hero" data-theme="dark" data-title="Cover" id="cover">
+  <img class="compass fx fx-z" src="assets/compass.png" alt="LODESTAR compass rose with a gold north point">
+  <h1><span class="ln fx d2">One unified plan.</span><span class="ln grad fx d3">One true north.</span></h1>
+  <p class="sub fx d4">Flying and duty crew planning for the whole squadron</p>
+  <p class="who fx d5">ME2 Brandon Ng · 121 SQN</p>
+  <div class="hint fx" style="transition-delay:1.2s">Scroll or press ↓<i></i></div>
+</section>
+
+<!-- 2 problem -->
+<section class="panel" data-title="The problem">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">The problem</p><h2>How the flying programme is built today</h2></div>
+    <div class="grid g2">
+      <div class="card fx d1"><p class="num">01</p><h3>Oracle runs on heavy macros</h3><p class="mute">Macros slow it down to open and to update.</p></div>
+      <div class="card fx d2"><p class="num">02</p><h3>Five Excel files, five styles</h3><p class="mute">Data from each department is planted into Oracle by hand.</p></div>
+      <div class="card fx d3"><p class="num">03</p><h3>Department files built years ago</h3><p class="mute">Many of their macros no longer work.</p></div>
+      <div class="card fx d4"><p class="num">04</p><h3>Flights retyped in every department</h3><p class="mute">Master Planner (MOP) data is transferred by hand into each planning Excel.</p></div>
+    </div>
+    <p class="result fx d5">The result: <b>double work, missed changes, and a programme that falls out of step.</b></p>
+  </div>
+</section>
+
+<!-- 3 reveal -->
+<section class="panel hero reveal" data-theme="dark" data-title="Meet LODESTAR" id="reveal">
+  <img class="compass fx fx-z" src="assets/compass.png" alt="LODESTAR compass rose">
+  <h2 class="word" aria-label="LODESTAR"><span style="transition-delay:0.45s">L</span><span style="transition-delay:0.53s">O</span><span style="transition-delay:0.61s">D</span><span style="transition-delay:0.69s">E</span><span style="transition-delay:0.77s">S</span><span style="transition-delay:0.85s">T</span><span style="transition-delay:0.93s">A</span><span style="transition-delay:1.01s">R</span></h2>
+  <p class="sub fx" style="letter-spacing:.1em;transition-delay:1.2s">121 SQN · FLIGHT &amp; OPS PLANNER</p>
+  <p class="lead grad fx" style="font-weight:600;transition-delay:1.5s">One unified plan. One true north.</p>
+</section>
+
+<!-- 4 name -->
+<section class="panel dark" data-theme="dark" data-title="Why the name">
+  <div class="inner">
+    <div class="split">
+      <img class="compass fx fx-z" src="assets/compass.png" alt="LODESTAR compass rose with a gold north point">
+      <div class="rows">
+        <p class="eyebrow fx">Why the name</p>
+        <h2 class="fx d1">The star navigators steer by</h2>
+        <p class="lead mute fx d2"><i>lodestar</i> (n.): a star that guides navigation course, especially the North Star.</p>
+        <div class="row fx d2"><h3>A fixed point</h3><p class="mute">The North Star holds still while the sky turns. The Master Planner is the fixed reference every plan is checked against.</p></div>
+        <div class="row fx d3"><h3>Every department steers by it</h3><p class="mute">Pilot, TACCO, Loadmaster, SUP 1 and SUP 2 plan from the same source, so the squadron keeps one course.</p></div>
+        <div class="row fx d4"><h3>Made for navigators</h3><p class="mute">Navigator steers by the stars. Our compass rose points gold to north.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 solution -->
+<section class="panel grey" data-title="The solution">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">The solution</p><h2>How LODESTAR solves each problem</h2></div>
+    <div class="labels"><span>Today</span><span style="width:clamp(28px,3.4vw,56px)"></span><span>With LODESTAR</span></div>
+    <div style="display:flex;flex-direction:column;gap:clamp(10px,1.6vh,18px)">
+      <div class="pair"><div class="card fx fx-l" style="transition-delay:0.00s"><h3>Oracle runs on heavy macros</h3><p class="mute">Slow to open and slow to update.</p></div><svg class="arrow" viewBox="0 0 64 32" aria-hidden="true"><path fill="currentColor" d="M0 11h40V0l24 16-24 16V21H0z"/></svg><div class="card accent fx fx-r" style="transition-delay:0.15s"><h3>No macros at all</h3><p>A light dashboard reads the files directly, fast in Edge.</p></div></div>
+      <div class="pair"><div class="card fx fx-l" style="transition-delay:0.20s"><h3>Five Excel files, five different styles</h3><p class="mute">Data is planted into Oracle by hand.</p></div><svg class="arrow" viewBox="0 0 64 32" aria-hidden="true"><path fill="currentColor" d="M0 11h40V0l24 16-24 16V21H0z"/></svg><div class="card accent fx fx-r" style="transition-delay:0.35s"><h3>One template for every department</h3><p>Same layout and codes, so the Ops Room board fills itself.</p></div></div>
+      <div class="pair"><div class="card fx fx-l" style="transition-delay:0.40s"><h3>Department files built years ago</h3><p class="mute">Many of their macros no longer work.</p></div><svg class="arrow" viewBox="0 0 64 32" aria-hidden="true"><path fill="currentColor" d="M0 11h40V0l24 16-24 16V21H0z"/></svg><div class="card accent fx fx-r" style="transition-delay:0.55s"><h3>Rebuilt fresh, macro-free</h3><p>Clean Excel files that open on SharePoint and still work alone.</p></div></div>
+      <div class="pair"><div class="card fx fx-l" style="transition-delay:0.60s"><h3>Flights retyped in every department</h3><p class="mute">Master Planner data is transferred by hand.</p></div><svg class="arrow" viewBox="0 0 64 32" aria-hidden="true"><path fill="currentColor" d="M0 11h40V0l24 16-24 16V21H0z"/></svg><div class="card accent fx fx-r" style="transition-delay:0.75s"><h3>Flights copied in one click</h3><p>Departments pull them straight from the Master Planner.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 wheel -->
+<section class="panel" data-title="Why this?">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">We already have a system. Why this?</p><h2>Not reinventing the wheel. Redesigning it so we run better.</h2></div>
+    <div class="grid g2">
+      <div class="card fx d1"><h3>What we keep</h3><ul><li>The same flying programme and Ops Room routine</li><li>Excel, which every department already knows</li><li>The Master Planner as the source of flights</li><li>Each department owns its own plan</li><li>The SharePoint we already use</li></ul></div>
+      <div class="card accent fx d2"><h3>What runs better</h3><ul><li>Flights entered once, not re-typed in every file</li><li>Department changes reach the Ops Room on save</li><li>Warnings before a crewing mistake, not after</li><li>One template, no broken macros to nurse</li><li>Instant updates: everyone sees the latest plan</li></ul></div>
+    </div>
+    <p class="result fx d3" style="color:var(--ink)">Same people, same process, better tools. <b style="color:var(--ink)">Innovation works best when it is applied to old processes.</b></p>
+  </div>
+</section>
+
+<!-- 7 how -->
+<section class="panel grey" data-title="How it works">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">How it works</p><h2>The dashboard is the hub that connects everything</h2></div>
+    <div class="hub">
+      <div class="side left">
+        <div class="card fx d1"><h3>Master Planner</h3><p class="mute">Every flight, ground programme and SQN programme</p></div>
+        <div class="card fx d2"><h3>Duty Roster</h3><p class="mute">Which department has BDO and SDO each day</p></div>
+      </div>
+      <div class="core fx fx-z"><h3>The dashboard</h3><p>One dashboard, reads every file and saves back to your own.</p></div>
+      <div class="side right">
+        <div class="card fx d1"><h3>Department files</h3><p class="mute">Pilot, TACCO, Loadmaster, SUP 1, SUP 2. Each edits only its own.</p></div>
+        <div class="card fx d2"><h3>Ops Room board</h3><p class="mute">Crew seats, duties and movements, on the projector</p></div>
+      </div>
+    </div>
+    <p class="foot fx d3">Everything sits in one SharePoint folder</p>
+  </div>
+</section>
+
+<!-- 8 flow -->
+<section class="panel" data-title="Flight data flow">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">Flight data flow</p><h2>How a flight travels from code to crew seat</h2></div>
+    <div class="track"><i></i></div>
+    <div class="grid g5 flow">
+      <div class="card fx" style="transition-delay:.5s"><p class="num step">01</p><h3>Code set</h3><p class="mute">Set once in the shared list: sorties, hours and which departments fly it.</p></div>
+      <div class="card fx" style="transition-delay:.95s"><p class="num step">02</p><h3>Flight planned</h3><p class="mute">Date, shift, time and code on the Master Planner. Departments see it read-only.</p></div>
+      <div class="card fx" style="transition-delay:1.4s"><p class="num step">03</p><h3>Copied to departments</h3><p class="mute">Departments named on the code copy it in with one click. Any drift shows amber.</p></div>
+      <div class="card fx" style="transition-delay:1.85s"><p class="num step">04</p><h3>Crew put on</h3><p class="mute">Each department crews its seats. Warnings flag MC, currency and crew rest.</p></div>
+      <div class="card accent fx" style="transition-delay:2.3s"><p class="num step">05</p><h3>On the board</h3><p>The dashboard reads each department file and fills the Ops Room seats on save.</p></div>
+    </div>
+    <div class="band fx"><p><b>And back again:</b> ad hoc flights added in the Ops Room land on the department plans, and flown or cancelled updates everyone’s totals and currency.</p></div>
+  </div>
+</section>
+
+<!-- 9 screens -->
+<section class="panel grey" data-title="Three screens">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">What it looks like</p><h2>Three screens, one plan</h2></div>
+    <div class="grid g3">
+      <figure class="fx d1"><img class="shot" src="assets/master.webp" alt="Master Planner screen" loading="lazy"><figcaption><h3>Master Planner</h3><p class="mute">Every flight is planned once, at the top.</p></figcaption></figure>
+      <figure class="fx d2"><img class="shot" src="assets/planner.webp" alt="Department planner screen" loading="lazy"><figcaption><h3>Department planner</h3><p class="mute">Each department plans its own crew, with live warnings.</p></figcaption></figure>
+      <figure class="fx d3"><img class="shot" src="assets/ops.webp" alt="Ops Room board screen" loading="lazy"><figcaption><h3>Ops Room board</h3><p class="mute">The day’s board builds itself from the plans.</p></figcaption></figure>
+    </div>
+    <p class="center mute fx d4" style="font-size:clamp(14px,1.1vw,18px)">Click any screen to enlarge</p>
+  </div>
+</section>
+
+<!-- 10 does -->
+<section class="panel" data-title="What it does">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">What it does</p><h2>Plan, check and run the day in one place</h2></div>
+    <div class="grid g3">
+      <div class="card fx d1"><p class="tag">01</p><h3 style="font-size:clamp(28px,3vw,48px)">Plan</h3><ul><li>Flights planned once, copied in one click</li><li>No-fly days and ground programme for all</li><li>One shared flight code list</li><li>BDO and SDO by department</li></ul></div>
+      <div class="card fx d2"><p class="tag">02</p><h3 style="font-size:clamp(28px,3vw,48px)">Check</h3><ul><li>Red or amber when a shift is short</li><li>Currency, crew rest and MC warnings</li><li>Down-chit holds until the up-chit</li><li>Training syllabus, pass or fail per item</li></ul></div>
+      <div class="card accent fx d3"><p class="tag">03</p><h3 style="font-size:clamp(28px,3vw,48px)">Run the day</h3><ul><li>Seats auto filled from the plans</li><li>Standby crew, tails and timings</li><li>Ad hoc flights added on the day</li><li>Flown or cancelled, logged</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 qol -->
+<section class="panel grey" data-title="Small things">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">Quality of life</p><h2>The small things that save time every day</h2></div>
+    <div class="grid g3">
+      <div class="card fx d1"><p class="tag">01</p><h3>Request to Master Planner</h3><p class="mute">Send a request straight to the Master Planner, so no information is lost.</p></div>
+      <div class="card fx d2"><p class="tag">02</p><h3>Find and Undo</h3><p class="mute">Search for any name or flight, and take back a slip in one step.</p></div>
+      <div class="card fx d3"><p class="tag">03</p><h3>Block of days</h3><p class="mute">Leave or a detachment over a date range in one go, skipping weekends.</p></div>
+      <div class="card fx d1"><p class="tag">04</p><h3>Notes on any cell</h3><p class="mute">A comment on a crew cell shows in the plan and on the Ops Room board.</p></div>
+      <div class="card fx d2"><p class="tag">05</p><h3>Totals counted for you</h3><p class="mute">Sorties, ground duty, duties and leave each month, with no tallying by hand.</p></div>
+      <div class="card accent fx d3"><p class="tag">06</p><h3>Help and projector mode</h3><p>A help pop-up on every tab, and a full-screen board for the Ops Room.</p></div>
+    </div>
+    <p class="result fx d4" style="color:var(--ink)"><b style="color:var(--ink)">Every department can also view the other plans side by side, read-only.</b></p>
+  </div>
+</section>
+
+<!-- 12 ops -->
+<section class="panel" data-title="Ops Room board">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">Ops Room board, redesigned</p><h2>No longer built by hand: the board builds itself</h2></div>
+    <div class="feature">
+      <img class="shot fx" src="assets/ops.webp" alt="Ops Room board dashboard screenshot" loading="lazy">
+      <div class="rows">
+        <div class="row fx d1"><h3>Seats fill themselves</h3><p class="mute">Every seat comes from the department plans. No re-typing, no phoning round.</p></div>
+        <div class="row fx d2"><h3>The whole day, one screen</h3><p class="mute">Seats, tails and times per flight, with SXO, OPS O, SDO and BDO per shift.</p></div>
+        <div class="row fx d3"><h3>Standby and ad hoc</h3><p class="mute">P1, P2 and BU per shift. Flights added here go onto department plans.</p></div>
+        <div class="row fx d4"><h3>Closes the loop</h3><p class="mute">Flown or cancelled logged with a reason; down-chits cleared in one click.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 syllabus -->
+<section class="panel grey" data-title="Syllabus tracker">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">Syllabus tracker</p><h2>Every trainee’s path from OCU to CAT A</h2></div>
+    <div class="feature">
+      <img class="shot fx" src="assets/syllabus.webp" alt="Syllabus tracker dashboard screenshot" loading="lazy">
+      <div class="rows">
+        <div class="row fx d1"><h3>One path per trainee</h3><p class="mute">Sims, flights and role items side by side, from OCU to CAT A.</p></div>
+        <div class="row fx d2"><h3>Linked to the plan</h3><p class="mute">Each item is tied to a flight in the department planner.</p></div>
+        <div class="row fx d3"><h3>Pass or fail, by hand</h3><p class="mute">The instructor marks it after the sortie.</p></div>
+        <div class="row fx d4"><h3>Category stays in control</h3><p class="mute">Cat Status never changes by itself; the Roster updates once paperwork is approved.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 my lodestar -->
+<section class="panel" data-title="My LODESTAR">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">My LODESTAR</p><h2>A dashboard for every member</h2></div>
+    <div class="feature">
+      <img class="shot fx" src="assets/mylodestar.webp" alt="My LODESTAR member dashboard screenshot" loading="lazy">
+      <div class="rows">
+        <div class="row fx d1"><h3>Your day at a glance</h3><p class="mute">Today’s flight, seat, brief time and crew, plus standby and duties.</p></div>
+        <div class="row fx d2"><h3>Your status, up front</h3><p class="mute">Medical, crew rest, currency and syllabus in green, amber or red.</p></div>
+        <div class="row fx d3"><h3>What changed</h3><p class="mute">Cancellations, new flights and time changes, and who made them.</p></div>
+        <div class="row fx d4"><h3>Your week and month</h3><p class="mute">The next 7 days, monthly totals, and one click to add the week to Outlook.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 currency -->
+<section class="panel dark" data-theme="dark" data-title="Currency sync">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">Currency sync</p><h2>Currency is read from ATOM, never kept twice</h2></div>
+    <div class="grid g3">
+      <div class="card fx d1"><p class="num">1</p><h3>ATOM holds the record</h3><p class="mute">Currency records stay where they are entered today, in ATOM.</p></div>
+      <div class="card fx d2"><p class="num">2</p><h3>LODESTAR reads it</h3><p class="mute">LODESTAR looks up each member’s currency in ATOM.</p></div>
+      <div class="card fx d3"><p class="num">3</p><h3>One answer everywhere</h3><p class="mute">The plans show the same data as ATOM, with a warning if someone is out of currency.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 before/after -->
+<section class="panel grey" data-title="Before and after">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">Before and after</p><h2>What changes for the squadron</h2></div>
+    <div class="tablewrap fx d1">
+      <table>
+        <thead><tr><th style="width:32%">Measure</th><th style="width:34%">Today</th><th style="width:34%">With LODESTAR</th></tr></thead>
+        <tbody>
+          <tr><td>Time to build the day’s Ops Room programme</td><td>30 min to 1 hr, depending on the number of flights</td><td>Built as each department saves</td></tr>
+          <tr><td>Where each flight is typed</td><td>Master Planner, then again in each department file</td><td>Once, in the Master Planner</td></tr>
+          <tr><td>How a department change reaches the Ops Room</td><td>Re-typed by hand, and the Ops Room told</td><td>On the board as soon as the department saves</td></tr>
+          <tr><td>Missed or late changes, last month</td><td>Several, not logged</td><td>Tracked after go-live</td></tr>
+          <tr><td>Cost of new software</td><td>None</td><td>None: our own SharePoint and Excel</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 17 gains -->
+<section class="panel" data-title="What it gains">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">What the squadron gains</p><h2>Safer crewing, less re-typing, and a faster process</h2></div>
+    <div class="grid g3">
+      <div class="card fx d1"><h3>Less double entry</h3><p class="mute">Flights entered once, copied to every plan in one click</p></div>
+      <div class="card fx d2"><h3>Gaps show up early</h3><p class="mute">A short-crewed flight turns red or amber days ahead</p></div>
+      <div class="card fx d3"><h3>Safer crewing</h3><p class="mute">MC, currency and crew rest warnings before anyone is put on a flight</p></div>
+      <div class="card fx d1"><h3>Faster morning process</h3><p class="mute">The Ops Room daily board is always ready on the projector</p></div>
+      <div class="card fx d2"><h3>One squadron, one plan</h3><p class="mute">Every department sees the same flights, duties and crew in a single dashboard</p></div>
+      <div class="card accent fx d3"><h3>Zero cost</h3><p>Our own SharePoint and Excel. Nothing to buy or install. Excel still works alone.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 18 safe -->
+<section class="panel grey" data-title="Safe and supported">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">Safe and supported</p><h2>It stays inside the squadron, and it doesn’t rest on one person</h2></div>
+    <div class="grid g2">
+      <div class="card fx d1"><h3>Data and security</h3><ul><li>Stays on the squadron’s intranet SharePoint</li><li>SharePoint permissions decide who edits what</li><li>Each department edits only its own file</li></ul></div>
+      <div class="card accent fx d2"><h3>Support and ownership</h3><ul><li>One template for every department</li><li>Full PDF guide will be included</li><li>Help pop-up on every tab</li><li>A second maintainer, to be named and trained</li></ul></div>
+    </div>
+    <p class="result fx d3" style="color:var(--ink)">If the dashboard is ever down, <b style="color:var(--ink)">every department’s Excel file still works on its own.</b></p>
+  </div>
+</section>
+
+<!-- 19 ahead -->
+<section class="panel" data-title="The way ahead">
+  <div class="inner">
+    <div class="head fx"><p class="eyebrow">The way ahead</p><h2>From dashboard build to Q1 2027</h2></div>
+    <div class="tl fx"><i></i><b></b></div>
+    <div class="line">
+      <div class="card accent fx d1"><p class="tag">Now</p><h3>Build</h3><p>The dashboard is still being built.</p><p class="status">In progress</p></div>
+      <div class="card fx d2"><p class="tag">Step 1</p><h3>Feedback</h3><p class="mute">Collect feedback from stakeholders.</p><p class="status">Next</p></div>
+      <div class="card fx d3"><p class="tag">Step 2</p><h3>Beta test</h3><p class="mute">Beta test the dashboard.</p><p class="status">After feedback</p></div>
+      <div class="card fx d4"><p class="tag">Step 3</p><h3>Target</h3><p class="mute">Our target date for the next milestone.</p><p class="status">Q1 2027</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 20 Q&A -->
+<section class="panel blue" data-theme="blue" data-title="Questions" id="end">
+  <div class="inner">
+    <div class="qa">
+      <div style="display:flex;flex-direction:column;gap:clamp(12px,2vh,24px)">
+        <p class="eyebrow fx">Questions</p>
+        <h2 class="fx d1">Q&amp;A</h2>
+        <p class="lead fx d2" style="font-weight:500">One unified plan. One true north.</p>
+        <p class="fx d3" style="font-weight:600">ME2 Brandon Ng · 121 SQN</p>
+      </div>
+      <div class="disc fx fx-z d2"><img class="compass" src="assets/compass.png" alt="LODESTAR compass rose with a gold north point"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+  var panels=[].slice.call(document.querySelectorAll('.panel'));
+  var total=panels.length, cur=0;
+  var dots=document.getElementById('dots'), count=document.getElementById('count'), bar=document.getElementById('bar');
+  var lb=document.getElementById('lb'), lbimg=document.getElementById('lbimg');
+
+  panels.forEach(function(p,i){
+    var a=document.createElement('a');
+    a.href='#s'+(i+1); a.setAttribute('aria-label',p.dataset.title||('Section '+(i+1)));
+    a.innerHTML='<span>'+(p.dataset.title||'')+'</span>';
+    a.addEventListener('click',function(e){e.preventDefault();go(i);});
+    dots.appendChild(a);
+    p.id=p.id||'s'+(i+1);
+  });
+  var dotEls=[].slice.call(dots.children);
+
+  function setCurrent(i){
+    cur=i;
+    dotEls.forEach(function(d,k){d.classList.toggle('on',k===i);});
+    count.textContent=(i+1)+' / '+total;
+    document.body.dataset.theme=panels[i].dataset.theme||'light';
+    bar.style.width=((i+1)/total*100)+'%';
+    try{history.replaceState(null,'','#'+(i+1));}catch(e){}
+  }
+  function go(i){
+    i=Math.max(0,Math.min(total-1,i));
+    panels[i].scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  }
+
+  var vis=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){var i=panels.indexOf(e.target);if(i>-1)setCurrent(i);}
+    });
+  },{rootMargin:'-50% 0px -50% 0px',threshold:0});
+  panels.forEach(function(p){vis.observe(p);});
+
+  /* animations play when a section comes into view and replay each time you return */
+  if('IntersectionObserver' in window){
+    var enter=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('active');});},{rootMargin:'-30% 0px -30% 0px',threshold:0});
+    var leave=new IntersectionObserver(function(es){es.forEach(function(e){if(!e.isIntersecting)e.target.classList.remove('active');});},{threshold:0});
+    panels.forEach(function(p){enter.observe(p);leave.observe(p);});
+  } else {panels.forEach(function(p){p.classList.add('active');});}
+
+  /* starfield behind the dark sections */
+  var still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fields=[];
+  if(!still){
+    panels.filter(function(p){return p.classList.contains('hero')||p.classList.contains('dark');}).forEach(function(p){
+      var c=document.createElement('canvas');c.className='stars';p.insertBefore(c,p.firstChild);
+      var f={p:p,c:c,x:c.getContext('2d'),s:[],w:0,h:0};
+      f.size=function(){var d=Math.min(devicePixelRatio||1,2);f.w=p.clientWidth;f.h=p.clientHeight;c.width=f.w*d;c.height=f.h*d;f.x.setTransform(d,0,0,d,0,0);
+        var n=Math.round(f.w*f.h/16000);f.s=[];for(var i=0;i<n;i++)f.s.push({x:Math.random()*f.w,y:Math.random()*f.h,r:Math.random()*1.3+.3,t:Math.random()*6.28,v:Math.random()*1.2+.4,d:Math.random()*.12+.02,b:Math.random()<.25});};
+      f.size();fields.push(f);
+      if('ResizeObserver' in window)new ResizeObserver(f.size).observe(p);
+    });
+    (function loop(t){
+      fields.forEach(function(f){
+        if(!f.p.classList.contains('active'))return;
+        var x=f.x;x.clearRect(0,0,f.w,f.h);
+        f.s.forEach(function(s){
+          s.y-=s.d;if(s.y<-2){s.y=f.h+2;s.x=Math.random()*f.w;}
+          var a=.25+.55*(.5+.5*Math.sin(t/1000*s.v+s.t));
+          x.globalAlpha=a;x.fillStyle=s.b?'#7fb4ff':'#ffffff';
+          x.beginPath();x.arc(s.x,s.y,s.r,0,6.283);x.fill();
+        });
+      });
+      requestAnimationFrame(loop);
+    })(0);
+  }
+
+  /* soft 3D tilt on screenshots */
+  if(!still&&matchMedia('(hover:hover)').matches){
+    [].forEach.call(document.querySelectorAll('.shot'),function(img){
+      img.addEventListener('pointermove',function(e){
+        var r=img.getBoundingClientRect(),px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;
+        img.style.transition='transform .12s ease-out';
+        img.style.transform='perspective(1000px) rotateX('+(-py*7)+'deg) rotateY('+(px*9)+'deg) scale(1.025)';
+      });
+      img.addEventListener('pointerleave',function(){img.style.transition='transform .6s cubic-bezier(.2,.7,.2,1)';img.style.transform='';});
+    });
+  }
+
+  document.addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    if(lb.classList.contains('open')){ if(e.key==='Escape'||e.key==='Enter'||e.key===' '){closeLb();e.preventDefault();} return; }
+    var k=e.key;
+    if(k==='ArrowDown'||k==='PageDown'||k==='ArrowRight'||(k===' '&&!e.shiftKey)){e.preventDefault();go(cur+1);}
+    else if(k==='ArrowUp'||k==='PageUp'||k==='ArrowLeft'||(k===' '&&e.shiftKey)){e.preventDefault();go(cur-1);}
+    else if(k==='Home'){e.preventDefault();go(0);}
+    else if(k==='End'){e.preventDefault();go(total-1);}
+    else if(k==='f'||k==='F'){ if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();} else {document.exitFullscreen();} }
+  });
+
+  [].forEach.call(document.querySelectorAll('.shot,.wide'),function(img){
+    img.addEventListener('click',function(){lbimg.src=img.src;lbimg.alt=img.alt;lb.classList.add('open');});
+  });
+  function closeLb(){lb.classList.remove('open');}
+  lb.addEventListener('click',closeLb);
+
+  var h=parseInt(location.hash.slice(1),10);
+  if(h>=1&&h<=total){setTimeout(function(){panels[h-1].scrollIntoView({behavior:'auto'});},0);} else {setCurrent(0);}
+})();
+</script>
+</body>
+</html>

@@ -113,6 +113,36 @@ test("file_picker_keeps_the_narrow_box", async ({ page }) => {
   assert.strictEqual(g.wide, false); assert.ok(g.w <= 640, "box " + g.w); assert.ok(g.title, "the picker title is back");
 }, BLANK);
 
+test("refresh_redraws_a_changed_list", async ({ page }) => {
+  await set(page, std(), "SUP 2"); await show(page);
+  await page.evaluate(() => { window.__hero = document.querySelector("#spPick .hero svg"); window.SP_NOW = "2026-10-28T14:40:00";
+    window.spList = async () => { SP.files = SP.files.map(f => f.Name === "Flight_Ops_Planner_SUP2.xlsx" ? Object.assign({}, f, { TimeLastModified: "2026-10-28T14:00:00" }) : f); SP.listedAt = new Date(window.SP_NOW); }; return spRefreshDepts(); });
+  const c = await card(page, "SUP 2"); assert.ok(/Today 14:00/.test(c.txt), c.txt);
+  const g = await page.evaluate(() => ({ st: document.getElementById("spStatus").innerText, same: window.__hero === document.querySelector("#spPick .hero svg") }));
+  assert.ok(/checked 14:40/.test(g.st), g.st); assert.ok(g.same, "the logo is not redrawn on a refresh");
+}, BLANK);
+test("refresh_failure_is_quiet", async ({ page }) => {
+  await set(page, std(), ""); await show(page);
+  await page.evaluate(() => { window.SP_NOW = "2026-10-28T14:47:00"; window.spList = async () => { throw new Error("offline"); }; return spRefreshDepts(); });
+  let g = await page.evaluate(() => ({ warn: document.getElementById("spStatus").classList.contains("warn"), st: document.getElementById("spStatus").innerText, cards: document.querySelectorAll("#spGrid .dcard").length }));
+  assert.ok(g.warn && /Couldn't check at 14:47/.test(g.st) && /seen at 14:32/.test(g.st), g.st); assert.strictEqual(g.cards, 7);
+  await page.evaluate(() => { window.spList = async () => { SP.listedAt = new Date(window.SP_NOW); }; return spRefreshDepts(); });
+  g = await page.evaluate(() => ({ warn: document.getElementById("spStatus").classList.contains("warn"), st: document.getElementById("spStatus").innerText }));
+  assert.ok(!g.warn && /checked 14:47/.test(g.st), g.st);
+}, BLANK);
+test("timer_runs_only_while_open", async ({ page }) => {
+  await set(page, std(), ""); await show(page);
+  assert.strictEqual(typeof await page.evaluate(() => spDeptT), "number");
+  await page.click("#spCancel"); assert.strictEqual(await page.evaluate(() => spDeptT), null);
+  await show(page); assert.strictEqual(typeof await page.evaluate(() => spDeptT), "number");
+  await page.evaluate(() => spShowPicker(false)); assert.strictEqual(await page.evaluate(() => spDeptT), null);
+}, BLANK);
+test("refresh_ignored_when_hidden", async ({ page }) => {
+  await set(page, std(), ""); await show(page); await page.click("#spCancel");
+  const n = await page.evaluate(async () => { window.__calls = 0; window.spList = async () => { window.__calls++; }; const before = document.getElementById("spGrid").innerHTML; await spRefreshDepts(); return { calls: window.__calls, same: before === document.getElementById("spGrid").innerHTML }; });
+  assert.strictEqual(n.calls, 0); assert.ok(n.same);
+}, BLANK);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

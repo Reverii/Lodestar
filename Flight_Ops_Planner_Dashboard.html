@@ -4668,11 +4668,27 @@ function spOpsHtml(f, last) {
 const spHm = d => d ? String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") : "";
 const spLastDept = () => (v => v === "SDO Manager" || v === "SDO Planner" ? "Duty Planner" : v)(spRecall("dept", ""));   // renamed 2026-10-21
 // the whole department screen: hero with the logo, the status line, the Ops Room card, one grid of file-state cards
+const spStatusHtml = warn => "<div id='spStatus'" + (warn ? " class='warn'" : "") + "><span class='dot'></span><span>" + (warn || "<b>Connected to " + spEsc(SP.folder.split("/").pop()) + "</b> · " + SP.files.length + " files · checked " + spHm(SP.listedAt) + ", refreshes every 15 seconds") + "</span></div>";
+const spGridHtml = last => SP_DEPTS.map(([lab, key]) => spCardHtml(lab, spFileFor(key), lab === last)).join("") + "<button class='allcard' id='spAll'>Show all files in the folder<br>instead</button>";
+// the department screen is open (and not the file picker)
+const spDeptsOpen = () => getComputedStyle($("spPick")).display !== "none" && document.querySelector("#spPick .box").classList.contains("wide");
+let spDeptT = null;
+function spStopDepts() { clearInterval(spDeptT); spDeptT = null; }
+// every 15 seconds while the screen is open: look at the folder again and redraw the cards, the Ops Room card and the status line (the logo stays as it is)
+async function spRefreshDepts() {
+  if (!spDeptsOpen()) return;
+  const seen = SP.listedAt;
+  try { await spList(); } catch (e) {
+    if (spDeptsOpen() && $("spStatus")) $("spStatus").outerHTML = spStatusHtml("Couldn't check at " + spHm(spNow()) + ", showing what was seen at " + spHm(seen)); return;
+  }
+  if (!spDeptsOpen() || !$("spGrid")) return;
+  const last = spLastDept();
+  $("spStatus").outerHTML = spStatusHtml(); document.querySelector("#spPick .opscard").outerHTML = spOpsHtml(spFileFor("opsroom"), last === "Ops Room"); $("spGrid").innerHTML = spGridHtml(last);
+}
 function spRenderDepts() {
   const last = spLastDept(), logo = document.querySelector("#welcome .lslogo");
   $("spTable").innerHTML = "<tr><td style='border:0;padding:0'><div class='hero'>" + (logo ? logo.outerHTML : "") + "<div class='q'><h1>Which department are you from?</h1><div class='lead'>Your department's planner opens for editing. The other departments open beside it, read-only.</div></div></div>" +
-    "<div id='spStatus'><span class='dot'></span><span><b>Connected to " + spEsc(SP.folder.split("/").pop()) + "</b> · " + SP.files.length + " files · checked " + spHm(SP.listedAt) + ", refreshes every 15 seconds</span></div>" +
-    spOpsHtml(spFileFor("opsroom"), last === "Ops Room") + "<div id='spGrid'>" + SP_DEPTS.map(([lab, key]) => spCardHtml(lab, spFileFor(key), lab === last)).join("") + "<button class='allcard' id='spAll'>Show all files in the folder<br>instead</button></div></td></tr>";
+    spStatusHtml() + spOpsHtml(spFileFor("opsroom"), last === "Ops Room") + "<div id='spGrid'>" + spGridHtml(last) + "</div></td></tr>";
   $("spKey").innerHTML = "<span><i class='fresh g'></i>Changed today</span><span><i class='fresh a'></i>Changed this week</span><span><i class='fresh r'></i>Not changed for a week or more</span>";
 }
 async function spShowDepts() {
@@ -4682,8 +4698,10 @@ async function spShowDepts() {
   spRenderDepts();
   $("spGo").style.display = "none";
   $("spPick").style.display = "flex";
+  spStopDepts(); spDeptT = setInterval(() => { if (!document.hidden) spRefreshDepts(); }, LIVE_MS);
 }
 async function spOpenOps() {
+  spStopDepts();
   try { await spList(); } catch (e) { alert(e.message); return; }
   const files = SP_DEPTS.map(d => spFileFor(d[1])).concat([spFileFor("opsroom")]).filter((x, i, arr) => x && arr.findIndex(y => y && y.Name === x.Name) === i);
   if (!files.length) { alert("No department files found in the folder."); return; }
@@ -4703,6 +4721,7 @@ function spDeptExtras(key) {   // the files opened beside a department's own: th
   return extra;
 }
 async function spOpenDept(lab) {
+  spStopDepts();
   const key = SP_DEPTS.find(d => d[0] === lab)[1], f = spFileFor(key);
   if (!f) return;
   $("spTable").querySelectorAll("button").forEach(b => b.disabled = true);
@@ -4724,7 +4743,7 @@ $("spTable").addEventListener("click", e => {
   if (e.target.closest("#spAll")) spShowPicker(false);
 });
 async function spShowPicker(add) {
-  spAdd = add; $("spGo").style.display = "";
+  spStopDepts(); spAdd = add; $("spGo").style.display = "";
   $("spKey").style.display = "none"; $("spTitle").style.display = $("spNote").style.display = ""; document.querySelector("#spPick .box").classList.remove("wide");
   try { await spList(); } catch (e) { alert(e.message); return; }
   const open = new Set(books.map(b => b.WB.name)), mine = spRecall("mine", ""), others = new Set(spRecall("others", []));
@@ -4742,13 +4761,14 @@ async function spShowPicker(add) {
   $("spGo").textContent = add ? "Add" : "Open";
   $("spPick").style.display = "flex";
 }
-$("spCancel").onclick = () => { $("spPick").style.display = "none"; };
+$("spCancel").onclick = () => { spStopDepts(); $("spPick").style.display = "none"; };
 $("spTable").addEventListener("change", e => {
   // the file picked as Mine cannot also be a view-only tab
   if (e.target.name === "spMine") { const cb = $("spTable").querySelector("input[data-i='" + e.target.value + "']"); if (cb) cb.checked = false; }
   if (e.target.dataset.i) { const r = $("spTable").querySelector("input[name=spMine]:checked"); if (r && r.value === e.target.dataset.i) e.target.checked = false; }
 });
 $("spGo").onclick = async () => {
+  spStopDepts();
   const r = $("spTable").querySelector("input[name=spMine]:checked");
   if (!spAdd && !r) { alert("Pick your own file in the Mine column."); return; }
   const picks = [...$("spTable").querySelectorAll("input[data-i]:checked:not(:disabled)")].map(x => SP.files[+x.dataset.i]);

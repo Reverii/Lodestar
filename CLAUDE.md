@@ -56,6 +56,7 @@ existing macro-heavy ops tool (Oracle).
 | `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, `node tests/atom.test.js` (ATOM currency, synthetic exports from `tests/make_atom_fixture.py`), `node tests/planner_filter.test.js`, `node tests/mp_export.test.js`, `node tests/ops_room.test.js` (Ops Room board, about 40 checks), `node tests/master_calendar.test.js` (Master Planner calendar chips), `node tests/dept_select.test.js` (the SharePoint department screen, stubbed SharePoint), needs the dashboard built first; the ATOM file takes several minutes); `LODE_FILES=<folder>` points them at another set of xlsx files |
 | `docs/superpowers/` | design specs and implementation plans (My Lodestar) |
 | `specs/SUP2_syllabus_items.csv` | real SUP 2 syllabus (47 items); embedded in `.build_planner.py` as `SYL_REAL` |
+| `briefing/` | the web briefing (index.html + demo-data screenshots, 19 slides; no ATOM screenshot: it showed real currency dates). Published by the Pages workflow at `/briefing/` |
 | `deck/LODESTAR.pptx` | CO reveal deck, Brandon's edited master copy |
 | `logo/final/`, `logo/animated/` | Compass Rose logo (chosen), 8 s intro video |
 | `previews/` | deck screenshots and mock-ups |

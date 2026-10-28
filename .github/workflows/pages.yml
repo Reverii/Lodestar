@@ -1,10 +1,10 @@
 name: Publish dashboard to GitHub Pages
 
-# Publishes ONLY Flight_Ops_Planner_Dashboard.html (as index.html). No Excel files, sources or notes.
+# Publishes ONLY Flight_Ops_Planner_Dashboard.html (as index.html) and the briefing/ page (screenshots of demo data, no ATOM screenshot). No Excel files, sources or notes.
 on:
   push:
     branches: [main]
-    paths: [Flight_Ops_Planner_Dashboard.html, .github/workflows/pages.yml]
+    paths: [Flight_Ops_Planner_Dashboard.html, briefing/**, .github/workflows/pages.yml]
   workflow_dispatch:
 
 permissions:
@@ -37,10 +37,17 @@ jobs:
               sys.exit("SUP 2 roster no longer holds the demo crew. Refusing to publish a build that may contain real data.")
           EOF
 
-      - name: Stage the dashboard only
+      # The briefing must never carry the ATOM screenshot (real currency dates).
+      - name: Guard - no ATOM screenshot in the briefing
+        run: |
+          test ! -e briefing/assets/atom.webp || { echo "briefing/assets/atom.webp must not be published"; exit 1; }
+          ! grep -q "atom.webp" briefing/index.html || { echo "briefing/index.html still points at atom.webp"; exit 1; }
+
+      - name: Stage the dashboard and the briefing only
         run: |
           mkdir _site
           cp Flight_Ops_Planner_Dashboard.html _site/index.html
+          cp -r briefing _site/briefing
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

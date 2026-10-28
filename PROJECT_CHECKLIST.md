@@ -102,6 +102,8 @@ Last updated: 21 Oct 2026 (evening review). Tell Claude in this thread when some
 
 ## 8. Ops Room (all departments)
 
+- [x] Department selector revamp (z100, 28 Oct): hero with the logo, status line, wide Ops Room card, cards showing when each file changed and by whom, last-used highlight, missing-file card, 15-second refresh (built; to test on SharePoint: the by-name line, the refresh)
+
 - [x] Ops Room redesign (z97, 27 Oct): side cards in a bottom row, Cat colours and a SANS / NSMEN box on every callsign, standby rows at flight size, Codes on the Day Board, Area only when filled, Ground programme by shift with "until", Leave and MC by department, clock, light / dark, no Timeline, fits the screen height (built; to tune on the real projector)
 - [ ] On hold (27 Oct, Brandon): a scale control for the whole dashboard
 - [x] Ops Room item closed (28 Oct, Brandon): the redesign stands as shipped (z97 to z99). Not coming back: the Timeline view, the empty-seats filter chip, the Down-chit chip, the Movement leave comments

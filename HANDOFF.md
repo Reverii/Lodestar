@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Where things stand
 
-- **Dashboard z99** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
+- **Dashboard z100** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.
 - **Real data loaded** (z84, 2026-10-25) from `input/LODESTAR_Data_Input.xlsx` into all 8 Excel files, with empty plans.
   The demo set is in `_archive/Demo files (before real data 2026-10-25)/`.
 - Files are year-less (`Flight_Ops_Planner_SUP2.xlsx`, not `_2026`); the year lives in `Dashboard!A5`.
@@ -31,6 +31,16 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Removed from v1: the "What each flight needs" table and its `ATOM Needs` sheet, mission / LSS handling, the name badges.
 - Tests: `node tests/atom.test.js` (synthetic exports only; several minutes), `node tests/my_lodestar.test.js`. Dummy-name test set from real Initials:
   `tests/make_atom_demo_input.py` (output goes to the git-ignored `atom_test/`).
+
+## Department selector (z100, 2026-10-28; spec `docs/superpowers/specs/2026-10-28-department-selector-design.md`, plan `docs/superpowers/plans/2026-10-28-department-selector.md`, mock-up `docs/superpowers/mockups/dept-select-v2/`)
+
+- The SharePoint start screen "Which department are you from?" is rebuilt: the Compass Rose hero, a status line ("Connected to Program · 8 files · checked 14:32, refreshes every 15 seconds"), a wide light-blue Ops Room card, and one grid of cards
+  (SUP 1, SUP 2, TACCO, Loadmaster, Pilot, Duty Planner, Master Planner, then "Show all files in the folder"). Each card shows when its file last changed (green today, amber 1 to 6 days, red a week or more), who changed it and the file name;
+  the department opened last is highlighted ("You opened this last"); a missing file is a grey card that cannot be clicked. The screen checks the folder every 15 seconds while it is open.
+- Clicking a card opens exactly what it opened before. The file picker ("Show all files…") keeps its narrow box. No Excel change.
+- "Who changed it" asks SharePoint for `ModifiedBy`; if the site refuses, the plain list is used and the "by" line is left off. **To test on the real SharePoint:** whether the name appears, the 15-second refresh, the last-used highlight.
+  Tests without SharePoint: `node tests/dept_select.test.js` (stubs the file list; fake clock `window.SP_NOW`).
+- Open items: the 7-day red threshold is a guess; the editor name is shown as SharePoint gives it.
 
 ## Ops Room redesign (z97, 2026-10-27; spec `docs/superpowers/specs/2026-10-27-ops-room-redesign-design.md`, plan `docs/superpowers/plans/2026-10-27-ops-room-redesign.md`, mock-up `docs/superpowers/mockups/ops-room-v5/`)
 

@@ -3,6 +3,24 @@
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
+## Next session: start here (handoff of 30 Oct 2026)
+
+**State:** everything is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is now on, deciding about making it private is an open item). Dashboard **z100** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
+Built and merged since the last handoff: Ops Room redesign (z97), built-in sample fix (z98), Master Planner time ranges (z99), department selector revamp (z100).
+
+**Do next, in this order** (full notes in `PROJECT_CHECKLIST.md` section 9):
+1. **Other departments open by themselves + View only.** Spec `docs/superpowers/specs/2026-10-30-other-departments-design.md`, plan `docs/superpowers/plans/2026-10-30-other-departments.md` are written and reviewed by Brandon's plan; Brandon said go. Use native execution. Brandon's SharePoint: only planners and the Master Planner can edit; everyone can read every file.
+2. **AC and Pax tags in the planner** (item 5; all questions settled: AC tag only, every other pilot is a co-pilot, two ACs allowed on a formation, Pax counts nowhere). Needs its own spec and plan first.
+3. **Fourth row per member** (item 1; dummy data, so rebuild the files fresh, no migration).
+
+**Not to do:** the request function is **omitted** (SharePoint lists do not work on the squadron site). The **full PDF guide** (Planners, Master Planner, Ops Room; audience the users) is **not to be generated until Brandon says so**.
+
+**Brandon's pending tests on the real SharePoint:** the department selector (does the "by <name>" line show, does the 15-second refresh work, is a week the right red-dot threshold), the Ops Room redesign on the projector, the Master Planner time ranges.
+
+**How to work with Brandon right now:** he is near his weekly usage cap, so keep sessions short: one feature per session, text answers, screenshots only when words will not do, no full ATOM test run unless ATOM code changes (`node tests/atom.test.js` takes minutes). He says "build it" after a mock-up, "go, native" for execution, and "merge to main and push" when he wants a merge. Never overwrite live `.xlsx` files.
+
+**Starting prompt for a new session:** "Read `/home/user/Lodestar/CLAUDE.md`, then `HANDOFF.md` (the section 'Next session: start here') and `PROJECT_CHECKLIST.md` section 9. Start a new branch from main and build the other-departments change from the spec and plan listed there, native execution."
+
 ## Where things stand
 
 - **Dashboard z100** (dev build) in this folder, paired with layout stamps dept 2 / master 2 / roster 2 / ops 2.

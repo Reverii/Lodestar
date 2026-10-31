@@ -1517,6 +1517,19 @@ function loadWorkbook(buf, name, handle, other) {
       st.notes.set(k, tx); st.noteRow.set(k, r);
     }
   }
+  // Role Tags sheet (made by the dashboard on the first tag): AC / Pax on a crew flight cell, header row 1, rows 2.. (A date, B shift, C callsign or name, D tag)
+  st.roleTags = new Map(); st.roleRow = new Map(); st.roleUsed = new Set();
+  if (WB.paths[ROLE_SHEET]) {
+    const c = readCells(ROLE_SHEET);
+    for (let r = ROLE_ROW0; r < ROLE_ROW0 + ROLE_N; r++) {
+      const a = c["A" + r], who = str(c["C" + r]), tag = str(c["D" + r]).toUpperCase(), si = SHIFTS.indexOf(str(c["B" + r]).toUpperCase());
+      if (a != null || who || tag) st.roleUsed.add(r);
+      if (typeof a !== "number" || si < 0 || !who || (tag !== "AC" && tag !== "PAX")) continue;
+      const iso = serialToISO(a), D = ymd(iso, st.year); if (D.y !== st.year) continue;
+      let ci = st.roster.findIndex(p => p.id && same(p.id, who)); if (ci < 0) ci = st.roster.findIndex(p => p.name && same(p.name, who)); if (ci < 0) continue;
+      const k = D.mi + ":" + (ci * 3 + si) + ":" + D.d; st.roleTags.set(k, tag); st.roleRow.set(k, r);
+    }
+  }
   // Medical Chits sheet: up-chits (and hand-typed down-chits), rows 6..205 (A callsign, B down-chit, C up-chit, D up-chitted by, E remarks)
   readSylLog(st);
   st.hasChit = !!WB.paths["Medical Chits"]; st.chits = []; st.chitUsed = new Set();
@@ -1557,6 +1570,30 @@ function setNote(mi, r, d, tx) {
     S.noteUsed.add(row); S.noteRow.set(k, row);
   }
   put("Cell Notes", "E" + row, tx); S.notes.set(k, tx); return true;
+}
+// ---------- role tags (AC / Pax): a planner's tag on a crew flight cell, kept in the department file's own Role Tags sheet
+const ROLE_SHEET = "Role Tags", ROLE_ROW0 = 2, ROLE_N = 1500, ROLE_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="4" width="14" customWidth="1"/>';
+const isFlightCode = (st, code) => { const a = st.acts.find(x => x.code && same(x.code, code)); return !!a && !!st.cats[CAT_FLIGHT] && same(a.cat, st.cats[CAT_FLIGHT]); };
+// "AC" | "PAX" | "" for crew grid row r (person i = r/3, shift r%3) on day d of month mi; a tag on a cell that is no longer a flight does not count
+function roleOf(st, mi, r, d) {
+  const k = mi + ":" + r + ":" + d, t = st.roleTags && st.roleTags.get(k); if (!t) return "";
+  const M = st.m[mi], v = M && M.grid[r] && M.grid[r][d]; return v && isFlightCode(st, v) ? t : "";
+}
+// set (AC / PAX) or clear ("") the tag on a cell of the current book
+function roleSet(mi, r, d, tag) {
+  if (!mayEdit(cur.b)) return false;
+  const k = mi + ":" + r + ":" + d, old = S.roleTags.get(k) || ""; if (tag === old) return true;
+  sheetEnsure(WB, ROLE_SHEET, ["Date", "Shift", "Callsign", "Tag"], ROLE_COLS);
+  let row = S.roleRow.get(k);
+  if (!tag) { if (row) { ["A", "B", "C", "D"].forEach(L => put(ROLE_SHEET, L + row, "")); S.roleTags.delete(k); S.roleRow.delete(k); S.roleUsed.delete(row); } return true; }
+  if (!row) {
+    row = ROLE_ROW0; while (S.roleUsed.has(row) && row < ROLE_ROW0 + ROLE_N) row++;
+    if (row >= ROLE_ROW0 + ROLE_N) { toast("The Role Tags sheet is full. Clear old rows in Excel to make room.", 5000); return false; }
+    const p = S.roster[Math.floor(r / 3)];
+    put(ROLE_SHEET, "A" + row, dateSerial(S.year, mi, d)); put(ROLE_SHEET, "B" + row, SHIFTS[r % 3]); put(ROLE_SHEET, "C" + row, p.id || p.name);
+    S.roleUsed.add(row); S.roleRow.set(k, row);
+  }
+  put(ROLE_SHEET, "D" + row, tag); S.roleTags.set(k, tag); return true;
 }
 // the Master Planner: a list of flights (Flights sheet, rows 6..1005: A date, B shift, C code, D time, E crew, F comment), any number per shift,
 // plus a Day Status sheet (one row per date of the year from row 6, status in C). The month tabs are a view built by Excel formulas.
@@ -2138,6 +2175,7 @@ function setCell(xml, ref, val) {
 function buildXlsx() {
   const bySheet = {};
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
+  if (bySheet[ROLE_SHEET]) sheetEnsure(WB, ROLE_SHEET, ["Date", "Shift", "Callsign", "Tag"], ROLE_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {

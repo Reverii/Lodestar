@@ -47,41 +47,37 @@ test("calendar_day_lines_and_week_hours", async ({ page }) => {
   const wk = d.months[0].weeks.map(w => w.filter(Boolean).reduce((a, c) => a + c.hrs, 0)), tot = wk.reduce((a, b) => a + b, 0);
   assert.ok(Math.abs(tot - d.months[0].hrs) < 1e-9 && Math.abs(tot - d.totals.hrs) < 1e-9);
 }, F);
-test("xlsx_has_both_sheets_and_opens", async ({ page }) => {
-  const f = await bytesTo(page, OCT, "both");
+test("xlsx_is_one_calendar_sheet", async ({ page }) => {
+  const f = await bytesTo(page, OCT);
   const r = py(`import openpyxl,sys,json
-wb=openpyxl.load_workbook(sys.argv[1]); ws=wb["List"]; cal=wb["Calendar"]
-rows=[[c.value for c in r] for r in ws.iter_rows()]
-print(json.dumps({"sheets":wb.sheetnames,"title":ws["A1"].value,"head":[c.value for c in ws[4]] if ws.max_row>=4 else None,"n":ws.max_row,"cal_title":cal["A1"].value,"orient":cal.page_setup.orientation,"fit":cal.sheet_properties.pageSetUpPr.fitToPage if cal.sheet_properties.pageSetUpPr else None,"merged":[str(m) for m in cal.merged_cells.ranges][:2]}))`, f);
-  assert.deepStrictEqual(r.sheets, ["Calendar", "List"]); assert.ok(/^121 SQN flight programme, October 2026$/.test(r.title) && /^121 SQN flight programme, October 2026$/.test(r.cal_title), JSON.stringify(r));
-  assert.deepStrictEqual(r.head, ["Date", "Day", "Shift", "Flight code", "Description", "Time", "Planned hours"]);
-  assert.strictEqual(r.orient, "landscape"); assert.ok(r.fit); assert.ok(r.merged.length > 0);
+cal=openpyxl.load_workbook(sys.argv[1])["Calendar"]
+print(json.dumps({"sheets":openpyxl.load_workbook(sys.argv[1]).sheetnames,"title":cal["A1"].value,"orient":cal.page_setup.orientation,"fit":cal.sheet_properties.pageSetUpPr.fitToPage if cal.sheet_properties.pageSetUpPr else None,"merged":len(cal.merged_cells.ranges)}))`, f);
+  assert.deepStrictEqual(r.sheets, ["Calendar"]); assert.ok(/^121 SQN flight programme, October 2026$/.test(r.title), JSON.stringify(r));
+  assert.strictEqual(r.orient, "landscape"); assert.ok(r.fit); assert.ok(r.merged > 0);
 }, F);
-test("xlsx_list_rows_and_total_match", async ({ page }) => {
-  const d = await data(page, OCT), f = await bytesTo(page, OCT, "list");
-  const r = py(`import openpyxl,sys,json
-ws=openpyxl.load_workbook(sys.argv[1])["List"]
-rows=[[c.value for c in r] for r in ws.iter_rows(min_row=5)]
-fl=[r for r in rows if r[3] and r[6] is not None and r[0] not in (None,"Total")]
-tot=[r for r in rows if r[0]=="Total"]
-print(json.dumps({"n":len(fl),"hrs":sum(r[6] for r in fl),"total":tot[0][6] if tot else None}))`, f);
-  assert.strictEqual(r.n, d.totals.fl); assert.ok(Math.abs(r.hrs - d.totals.hrs) < 1e-6 && Math.abs(r.total - d.totals.hrs) < 1e-6, JSON.stringify(r));
+test("xlsx_flight_hours_sit_beside_each_flight_and_add_up", async ({ page }) => {
+  const d = await data(page, OCT), f = await bytesTo(page, OCT);
+  const r = py(`import openpyxl,sys,json,re
+ws=openpyxl.load_workbook(sys.argv[1])["Calendar"]
+n=0;h=0.0;wk=0.0
+for row in ws.iter_rows(min_row=4):
+    for c in row[:14:2]:
+        nxt=ws.cell(row=c.row,column=c.column+1).value
+        if isinstance(c.value,str) and re.match(r"^(\\d{4}-\\d{4}|\\d{4})?\\s*\\S+",c.value) and isinstance(nxt,(int,float)) and not re.match(r"^\\d+$",c.value): n+=1;h+=nxt
+print(json.dumps({"n":n,"hrs":h}))`, f);
+  assert.strictEqual(r.n, d.totals.fl); assert.ok(Math.abs(r.hrs - d.totals.hrs) < 1e-6, JSON.stringify(r));
 }, F);
 test("no_crew_or_comments_in_the_file", async ({ page }) => {
   const secret = await page.evaluate(() => { const P = masterBook().S, out = new Set(), shown = P.codes.map(k => k.code + " " + k.desc).join(" "); P.fl.forEach(f => { if (f.note) out.add(f.note); if (f.crew) out.add(f.crew); }); books.filter(b => !b.S.kind).forEach(b => b.S.roster.forEach(p => { if (p.id && p.id.length > 3) out.add(p.id); if (p.name && p.name.length > 5) out.add(p.name); })); return [...out].filter(x => !shown.includes(x)); });   // a comment that merely repeats a flight code's own description is not a leak
-  const f = await bytesTo(page, OCT, "both");
+  const f = await bytesTo(page, OCT);
   const text = execFileSync("python3", ["-I", "-c", "import zipfile,sys;z=zipfile.ZipFile(sys.argv[1]);print(' '.join(z.read(n).decode('utf8','ignore') for n in z.namelist()))", f]).toString();
   for (const s of secret) assert.ok(!text.includes(s), "leaked: " + s);
 }, F);
-test("layout_choices", async ({ page }) => {
-  const names = async lay => py("import openpyxl,sys,json;print(json.dumps(openpyxl.load_workbook(sys.argv[1]).sheetnames))", await bytesTo(page, OCT, lay));
-  assert.deepStrictEqual([await names("cal"), await names("list"), await names("both")], [["Calendar"], ["List"], ["Calendar", "List"]]);
-}, F);
 test("dialog_defaults_and_preview", async ({ page }) => {
   await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = 9; renderMp(); document.getElementById("mpExport").click(); });
-  const r = await page.evaluate(() => ({ lay: document.querySelector("input[name=mpExpLay]:checked").value, from: document.getElementById("mpExpFrom").value, to: document.getElementById("mpExpTo").value, boxes: [...document.querySelectorAll("#mpExpCodes input[data-code]")].map(b => b.checked), prev: document.getElementById("mpExpPreview").textContent }));
+  const r = await page.evaluate(() => ({ from: document.getElementById("mpExpFrom").value, to: document.getElementById("mpExpTo").value, boxes: [...document.querySelectorAll("#mpExpCodes input[data-code]")].map(b => b.checked), prev: document.getElementById("mpExpPreview").textContent }));
   const s = await screen(page);
-  assert.strictEqual(r.lay, "both"); assert.deepStrictEqual([r.from, r.to], ["2026-10-01", "2026-10-31"]); assert.ok(r.boxes.length > 0 && r.boxes.every(Boolean));
+  assert.deepStrictEqual([r.from, r.to], ["2026-10-01", "2026-10-31"]); assert.ok(r.boxes.length > 0 && r.boxes.every(Boolean));
   assert.ok(r.prev.includes(s.n + " flights") && r.prev.includes(s.h.toFixed(1) + " planned hours"), r.prev + " vs " + s.n + "/" + s.h);
 }, F);
 test("omitting_in_the_dialog_updates_preview_and_is_remembered", async ({ page }) => {

@@ -1016,7 +1016,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z108</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z109</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4315,10 +4315,10 @@ const opsZ = () => OPS_ZS[opsZi];
 let opsZEff = 1;
 // the bottom strip grows with the ground programme (up to 40% of the page) but never takes the room the flight table needs; past that the table scrolls, and by itself on the projector
 function opsGrowStrip() {
-  const w = $("opsWrap"), t = document.querySelector("#opsSide .gtab"), m = $("opsMain"), side = $("opsSide"); if (!w) return;
-  w.style.removeProperty("--sidh"); if (!m) return;
-  if (!t) { w.style.setProperty("--sidh", "160px"); return; }   // nothing on the ground programme: the same small strip, not 22% of the screen
-  w.style.setProperty("--sidh", (t.offsetHeight + 50) + "px");
+  const w = $("opsWrap"), m = $("opsMain"), side = $("opsSide"); if (!w || !m || !side) return;
+  w.style.setProperty("--sidh", "160px");   // start small, then grow to the tallest card (ground table, leave list, down-chit): no card scrolls while the page has room
+  const t = side.querySelector(".gtab"), need = Math.max(160, t ? t.offsetHeight + 50 : 0, ...[...side.children].filter(c => !c.classList.contains("gp")).map(c => c.scrollHeight)) + 2;   // the ground card scrolls inside, so its table is measured itself
+  w.style.setProperty("--sidh", need + "px");
   const over = m.scrollHeight - m.clientHeight;   // the flight table no longer fits: give the room back
   if (over > 2) w.style.setProperty("--sidh", Math.max(160, side.offsetHeight - over) + "px");
 }
@@ -4730,7 +4730,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z108 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z109 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

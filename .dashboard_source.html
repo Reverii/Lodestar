@@ -732,15 +732,23 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsStats .opsk.warn{border-color:#fbbf24;background:#fffbeb;color:#b45309}#opsStats .opsk.bad{border-color:#fca5a5;background:#fef2f2;color:#dc2626}
 #opsStats .opsk.sel{box-shadow:0 0 0 2px #3b82f6;border-color:#3b82f6}#opsStats .opsk.nofly{cursor:default;padding:4px 11px}
 #opsNote{font-size:12px;margin:0 0 6px}#opsNote:empty{display:none}
-#opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) clamp(160px,22vh,300px);gap:10px;align-items:stretch;min-height:360px}
+#opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) clamp(160px,var(--sidh,22vh),40%);gap:10px;align-items:stretch;min-height:360px}
 #opsLeft{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}
 #opsMain{flex:1;min-height:0;overflow:auto;border:0;border-radius:0;background:#fff}
-#opsSide{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,1fr) minmax(0,1.5fr);gap:10px;align-items:stretch;min-height:0}
+#opsSide{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,1.1fr);gap:10px;align-items:stretch;min-height:0}
 #opsSide .stack{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}#opsSide .stack>.card{margin:0;padding:9px 12px;overflow:auto;flex:1 1 auto}
 #opsSide>.card{margin:0;padding:9px 12px;min-width:0;overflow:auto}#opsSide>.card h2{font-size:13.5px;margin:0 0 6px;display:flex;align-items:center;gap:6px}
 #opsSide .ocnt{font-weight:600;color:var(--s500)}
 #opsSide .opsdc h2{flex-wrap:wrap;white-space:nowrap}#opsSide h2 .btn{padding:2px 8px;font-size:12px;white-space:nowrap;margin-left:auto}#opsSide h2 .btn+.btn{margin-left:0}
 #opsSide>.card.rmk{display:flex;flex-direction:column}#opsSide .rmk #opsDayRem{flex:1;min-height:70px}
+.card.gp{display:flex;flex-direction:column;overflow:hidden}.gp .gsc{flex:1;min-height:0;overflow:auto}
+table.gtab{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+table.gtab th{position:sticky;top:0;z-index:1;background:#1e293b;color:#fff;font-size:10.5px;letter-spacing:.4px;text-align:left;padding:3px 8px;font-weight:700}
+table.gtab td{padding:3px 8px;border-top:1px solid var(--s100);vertical-align:top;overflow-wrap:anywhere}table.gtab tr.gs td{border-top:2px solid var(--s200)}
+table.gtab col.gt{width:92px}table.gtab col.gac{width:30%}table.gtab col.glo{width:22%}
+table.gtab td.tm{font-weight:700;white-space:nowrap}table.gtab td.tm.s0{color:#075985}table.gtab td.tm.s1{color:#92400e}table.gtab td.tm.s2{color:#1e1b4b}table.gtab td.tm.s3{color:#115e59}table.gtab td.tm.till{color:#6d28d9}
+table.gtab td.gl{color:#6d28d9;font-style:italic}table.gtab td.gw b{font-weight:800}
+body.opsdark table.gtab td.tm.s0{color:#7dd3fc}body.opsdark table.gtab td.tm.s1{color:#fcd34d}body.opsdark table.gtab td.tm.s2{color:#c7d2fe}body.opsdark table.gtab td.tm.s3{color:#5eead4}body.opsdark table.gtab td.tm.till,body.opsdark table.gtab td.gl{color:#c4b5fd}body.opsdark table.gtab td{border-top-color:#22304d}
 .gp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.gp3.gp4{grid-template-columns:repeat(4,minmax(0,1fr))}.gcol{min-width:0}.gcol .gi{padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px}.gcol .opssh{margin-bottom:3px}.gcol .owho{margin-top:2px}.gcol .gc{color:#6d28d9;font-style:italic;font-size:11.5px}
 .olv .dep{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-top:1px solid var(--s100);font-size:13px}.olv .dep:first-of-type{border-top:0}.olv .dep .dn{min-width:76px;flex:none;color:var(--s500);font-size:11px;text-transform:uppercase;letter-spacing:.3px}.olv .olp{margin-right:10px;white-space:nowrap}.olv .olp b{font-size:14px}.olv .olp small{margin-left:3px;color:var(--s500);font-size:10.5px;font-weight:700}
 .olist .oli{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px;align-items:flex-start}.olist .oli:first-child{border-top:0}
@@ -1009,7 +1017,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z103</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z104</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3931,15 +3939,18 @@ function renderOps() {
   const G = opsGround(D), MV = opsMovement(D);
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
   const mv = "<div class='card olv'><h2>Leave and MC</h2>" + MV.map(m => "<div class='dep'><b class='dn'>" + esc(m.dept) + "</b><span class='dw'>" + (m.who || "<span class='muted'>–</span>") + "</span></div>").join("") + "</div>";
-  const GLAB = [...SHIFTS, "Whole day"], wdCol = G.some(g => g.sh === 3);   // the Whole day column only when someone has a WD item
-  const gcol = sh => "<div class='gcol'><span class='opssh s" + sh + "'>" + GLAB[sh] + "</span>" + G.filter(g => g.sh === sh).map(g =>
-    "<div class='gi'><b>" + esc(g.act) + "</b> <span class='muted'>" + (g.until || g.when || "") + "</span>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "<div class='owho'>" + g.who + "</div>" + (g.note ? "<div class='gc'>" + g.note + "</div>" : "") + "</div>").join("") + "</div>";
-  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gp3" + (wdCol ? " gp4" : "") + "'>" + gcol(0) + gcol(1) + gcol(2) + (wdCol ? gcol(3) : "") + "</div>" : "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
+  // the ground programme as a table sorted by opsGround: Time | Activity | Location (the note) | Personnel
+  const GSH = ["AM", "PM", "NIGHT", "WD"];
+  let gprev = -1;
+  const grow = g => { const lab = g.grp === 0 ? (mpRange(g.when, 0) || g.when) : g.grp === 3 ? g.until.replace(/^until /, "till ").toUpperCase() : GSH[g.sh], cls = g.grp === 0 ? "" : g.grp === 3 ? "till" : "s" + g.sh;
+    const tr = "<tr" + (gprev >= 0 && g.grp !== gprev ? " class='gs'" : "") + "><td class='tm " + cls + "'>" + lab + "</td><td class='ga'><b>" + esc(g.act) + "</b>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "</td><td class='gl'>" + (g.note || "") + "</td><td class='gw'>" + g.who + "</td></tr>"; gprev = g.grp; return tr; };
+  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gsc'><table class='gtab'><colgroup><col class='gt'><col class='gac'><col class='glo'><col></colgroup><thead><tr><th>TIME</th><th>ACTIVITY</th><th>LOCATION</th><th>PERSONNEL</th></tr></thead><tbody>" + G.map(grow).join("") + "</tbody></table></div>" : "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
   // remarks for the day (Day Board column P of the Ops Room file)
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
     : rv ? "<div class='opsrem'>" + esc(rv) + "</div>" : "<div class='muted'>" + (rref ? "No remarks for this day." : "Open the Ops Room file to keep remarks.") + "</div>") + "</div>";
   $("opsSide").innerHTML = gr + mv + "<div class='stack'>" + opsDownCard(D) + opsAreaCard(D, ed) + "</div>" + rem;
+  opsGrowStrip();
   opsFit();
   if (cur.opsPop) opsOpenPop(cur.opsPop.key, cur.opsPop.k, true);
 }
@@ -4012,13 +4023,13 @@ function opsGround(D) {
   const out = [], mb = masterBook(), P = mb && mb.S, fmt = (m, e) => new Date(isoOf(D.y, m, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
   // a Master Planner item sits in the column of its start time (06:00-11:59 AM, 12:00-17:59 PM, otherwise NIGHT); no time = AM
   const shOf = t => { const m = hhmm(opsTimes(t, 0)[0]); return m == null || (m >= 360 && m < 720) ? 0 : m >= 720 && m < 1080 ? 1 : 2; };
-  D.gr.forEach(g => out.push({ sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), until: "", act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));
+  D.gr.forEach(g => out.push({ sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), until: "", act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));   // the note is the location
   books.forEach((b, bi) => {
     if (!isDept(b) || b.S.year !== D.y) return;
     withBook(bi, () => {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
       if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : "";
-        if (own && !same(own, fromMp)) out.push({ sh: 0, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "<span class='muted'>" + esc(S.dept) + "'s ground programme row</span>" }); }
+        if (own && !same(own, fromMp)) out.push({ sh: 3, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "" }); }
       const groups = new Map();
       S.roster.forEach((p, i) => { for (let s = 0; s < rp(); s++) {
         const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
@@ -4027,14 +4038,16 @@ function opsGround(D) {
         let e = D.d, em = D.mi;   // the last day (and its month) of the run; it carries on into the next month's grid
         for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
           const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
-        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", who: [], notes: [] });
+        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", uk: isoOf(D.y, em, e), who: [], notes: [] });
         const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + opsCatCls(p) + "'>" + esc(n) + "</b>");
         const cn = S.notes && S.notes.get(D.mi + ":" + (gridRow(i, s)) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
       } });
-      groups.forEach(g => out.push({ sh: g.s, k: "2" + g.s, when: "", until: g.until, act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
+      groups.forEach(g => out.push({ sh: g.s, k: "2" + g.s, when: "", until: g.until, uk: g.uk, act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
     });
   });
-  return out.sort((x, y) => x.sh - y.sh || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0));
+  // the table order: clock times first (by time), then AM / PM / NIGHT, then whole day, then items running on to a later day (by their last day)
+  out.forEach(g => { const m = hhmm(opsTimes(g.when, 0)[0]); g.grp = m != null ? 0 : g.until ? 3 : g.sh === 3 ? 2 : 1; g.key = g.grp === 0 ? String(m).padStart(5, "0") : g.grp === 3 ? g.uk : String(g.sh); });
+  return out.sort((x, y) => x.grp - y.grp || (x.key < y.key ? -1 : x.key > y.key ? 1 : 0) || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0) || (x.act < y.act ? -1 : x.act > y.act ? 1 : 0));
 }
 // the month so far: sorties planned, flown, cancelled (by reason) and not closed, from the Ops Room's outcomes
 function opsMonthCard(D) {
@@ -4257,6 +4270,20 @@ let opsZi = (() => { try { const v = +localStorage.getItem("opsZoom2"); return v
 const opsZ = () => OPS_ZS[opsZi];
 // the chosen size, shrunk (never grown) just enough that the whole page fits the screen: the flight table across the width and, with the cards under it, down the height (no scrolling on the projector). Smallest 50%.
 let opsZEff = 1;
+// the bottom strip grows with the ground programme (up to 40% of the page) but never takes the room the flight table needs; past that the table scrolls, and by itself on the projector
+function opsGrowStrip() {
+  const w = $("opsWrap"), t = document.querySelector("#opsSide .gtab"), m = $("opsMain"), side = $("opsSide"); if (!w) return;
+  w.style.removeProperty("--sidh"); if (!t || !m) return;
+  w.style.setProperty("--sidh", (t.offsetHeight + 50) + "px");
+  const over = m.scrollHeight - m.clientHeight;   // the flight table no longer fits: give the room back
+  if (over > 2) w.style.setProperty("--sidh", Math.max(160, side.offsetHeight - over) + "px");
+}
+setInterval(() => {
+  const sc = document.body.classList.contains("opsfs") && document.querySelector("#opsSide .gsc"); if (!sc || sc.scrollHeight <= sc.clientHeight + 2) return;
+  const n = (sc._hold || 0); if (n > 0) { sc._hold = n - 1; return; }
+  const top = sc.scrollTop; sc.scrollTop = top + (sc._dir || 1);
+  if (sc.scrollTop === top) { sc._dir = -(sc._dir || 1); sc._hold = 60; }
+}, 50);
 function opsFit() {
   const sc = $("opsScale"), m = $("opsMain"); if (!sc || !m || !document.getElementById("v-ops").classList.contains("on")) return;
   const bar = sc.querySelector(".opsbar"), w = $("opsWrap");
@@ -4659,7 +4686,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z103 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z104 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

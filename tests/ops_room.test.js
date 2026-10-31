@@ -70,24 +70,45 @@ const PLAN_SET = (page, dept, kind, iso, offs, shift) => page.evaluate(([dept, k
   withBook(bi, () => { const all = [...actIndex().values()].filter(a => a.ci === (kind === "admin" ? CAT_ADMIN : CAT_LEAVE)), A = all[all.length - 1], D = opsDay(iso), i = S.roster.findIndex(p => p.name || p.id);
     offs.forEach(o => { S.m[D.mi].grid[gridRow(i, shift)][D.d + o] = A.code; }); r = { code: A.code, who: S.roster[i].ini || S.roster[i].id }; });
   cur.opsDay = iso; renderOps(); return r; }, [dept, kind, iso, offs, shift]);
-const COLS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gp3 .gcol")].map(c => ({ head: c.querySelector(".opssh").textContent.trim(), text: c.innerText })));
+const ROWS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: r.cells[1].textContent.trim(), loc: r.cells[2].textContent.trim(), who: r.cells[3].textContent.trim(), text: r.innerText })));
 
-test("ground_columns_am_pm_night", async ({ page }) => {
+test("ground_row_with_till_date", async ({ page }) => {
   const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1, 2], 1);
-  const cols = await COLS(page);
-  assert.deepStrictEqual(cols.map(c => c.head), ["AM", "PM", "NIGHT"]);
-  assert.ok(cols[1].text.includes(r.code) && /until 16 Oct/.test(cols[1].text), cols[1].text);
-  assert.ok(!/until 16 Oct/.test(cols[0].text) && !/until 16 Oct/.test(cols[2].text));
+  const rows = await ROWS(page);
+  assert.ok(rows.some(x => x.act.includes(r.code) && x.time === "TILL 16 OCT"), JSON.stringify(rows));
+  assert.ok(!rows.some(x => x.act.includes(r.code) && x.time === "PM"), "a run of days is one row, not one per shift");
 }, ED);
-test("ground_one_day_no_until", async ({ page }) => {
+test("ground_one_day_shows_the_shift", async ({ page }) => {
   const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
-  const cols = await COLS(page);
-  assert.ok(cols[1].text.includes(r.code) && !/until/.test(cols[1].text), cols[1].text);
+  const rows = await ROWS(page);
+  assert.ok(rows.some(x => x.act.includes(r.code) && x.time === "PM"), JSON.stringify(rows));
 }, ED);
 test("ground_until_stops_at_month_end", async ({ page }) => {
   const r = await PLAN_SET(page, "Pilot", "admin", "2026-10-30", [0, 1], 1);
-  const cols = await COLS(page);
-  assert.ok(cols[1].text.includes(r.code) && /until 31 Oct/.test(cols[1].text), cols[1].text);
+  const rows = await ROWS(page);
+  assert.ok(rows.some(x => x.act.includes(r.code) && x.time === "TILL 31 OCT"), JSON.stringify(rows));
+}, ED);
+test("ground_table_sorted_and_location_from_note", async ({ page }) => {
+  await page.evaluate(iso => { const mb = masterBook(), D = opsDay(iso);
+    mb.S.gr.push({ row: 900, mi: D.mi, d: D.d, time: "1400-1600", act: "PSM", crew: "", note: "121 CR" }, { row: 901, mi: D.mi, d: D.d, time: "0800", act: "Filming", crew: "", note: "PLAB" }); }, DAY);
+  await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1], 2);   // runs on, so it goes last
+  await PLAN_SET(page, "Pilot", "admin", DAY, [0], 3);
+  await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
+  await PLAN_SET(page, "Pilot", "admin", DAY, [0], 0);
+  const rows = await ROWS(page), grp = t => /^\d/.test(t) ? 0 : t === "AM" ? 1 : t === "PM" ? 2 : t === "NIGHT" ? 3 : t === "WD" ? 4 : 5;
+  const g = rows.map(r => grp(r.time)); assert.deepStrictEqual(g, [...g].sort((a, b) => a - b), "groups in order: " + rows.map(r => r.time).join());
+  const timed = rows.filter(r => grp(r.time) === 0).map(r => r.time); assert.deepStrictEqual(timed, [...timed].sort(), "clock times in order");
+  assert.deepStrictEqual([0, 1, 2, 3, 4, 5].filter(k => !g.includes(k)), [3], "every group but NIGHT is there: " + rows.map(r => r.time).join());
+  const f = rows.find(r => r.act === "Filming"), p = rows.find(r => r.act === "PSM");
+  assert.strictEqual(f.time, "0800H"); assert.strictEqual(f.loc, "PLAB"); assert.strictEqual(p.time, "1400H-1600H"); assert.strictEqual(p.loc, "121 CR");
+  assert.ok(await page.evaluate(() => document.querySelectorAll("#opsSide .gtab tr.gs").length >= 3), "a divider between the groups");
+}, ED);
+test("ground_strip_grows_and_scrolls", async ({ page }) => {
+  await page.evaluate(iso => { const mb = masterBook(), D = opsDay(iso); for (let i = 0; i < 40; i++) mb.S.gr.push({ row: 900 + i, mi: D.mi, d: D.d, time: String(800 + i).padStart(4, "0"), act: "Brief " + i, crew: "", note: "Room " + i }); }, DAY);
+  await goOps(page, DAY);
+  const r = await page.evaluate(() => { const w = document.getElementById("opsWrap"), s = document.getElementById("opsSide"), sc = document.querySelector("#opsSide .gsc"), f = document.getElementById("opsMain").getBoundingClientRect();
+    return { side: s.getBoundingClientRect().height, wrap: w.getBoundingClientRect().height, scrolls: sc.scrollHeight > sc.clientHeight + 1, page: document.documentElement.scrollHeight > innerHeight + 1 }; });
+  assert.ok(r.side > 170 && r.side <= 0.41 * r.wrap, JSON.stringify(r)); assert.ok(r.scrolls, "past the cap the table scrolls"); assert.ok(!r.page, "the page itself does not scroll");
 }, ED);
 test("leave_and_mc_by_department", async ({ page }) => {
   const r = await PLAN_SET(page, "Pilot", "leave", DAY, [0], 0);
@@ -144,7 +165,7 @@ test("standby_rows_flight_size", async ({ page }) => {
 test("ground_and_leave_names_coloured", async ({ page }) => {
   const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1); await PLAN_SET(page, "Pilot", "leave", DAY, [0], 0);
   await ALL_CAT(page, "CAT B", "Active");
-  const g = await page.evaluate(() => ({ gp: [...document.querySelectorAll("#opsSide .gp3 .owho b")].map(b => b.className), lv: [...document.querySelectorAll("#opsSide .olv .olp b")].map(b => b.className) }));
+  const g = await page.evaluate(() => ({ gp: [...document.querySelectorAll("#opsSide .gtab .gw b")].map(b => b.className), lv: [...document.querySelectorAll("#opsSide .olv .olp b")].map(b => b.className) }));
   assert.ok(g.gp.length && g.gp.every(c => c === "catB"), g.gp.join()); assert.ok(g.lv.length && g.lv.every(c => c === "catB"), g.lv.join());
 }, ED);
 test("ocu_is_pink", async ({ page }) => {
@@ -284,8 +305,8 @@ test("ground_until_crosses_the_month_end", async ({ page }) => {
     withBook(bi, () => { const A = [...actIndex().values()].filter(a => a.ci === CAT_ADMIN), a = A[A.length - 1], i = S.roster.findIndex(p => p.name || p.id), D = opsDay("2026-10-30");
       [[D.mi, D.d], [D.mi, D.d + 1], [D.mi + 1, 0], [D.mi + 1, 1]].forEach(([m, d]) => { S.m[m].grid[gridRow(i, 1)][d] = a.code; }); out = a.code; });
     cur.opsDay = "2026-10-30"; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps(); return out; });
-  const cols = await COLS(page);
-  assert.ok(cols[1].text.includes(r) && /until 2 Nov/.test(cols[1].text), cols[1].text);
+  const rows = await ROWS(page);
+  assert.ok(rows.some(x => x.act.includes(r) && x.time === "TILL 2 NOV"), JSON.stringify(rows));
 }, ED);
 
 test("sample_ops_room_can_pick_a_seat", async ({ page }) => {

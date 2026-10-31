@@ -70,10 +70,12 @@ const PLANT = `(() => { const bi = books.findIndex(b => b.S.dept === "Pilot"); r
 const goOps = page => page.evaluate(iso => { cur.opsDay = iso; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps(); }, OPSDAY);
 const OPS = { mine: "Ops_Room" };
 
-test("ops_whole_day_rows", async ({ page }) => {
+test("ops_whole_day_rows", async ({ page }) => {   // z112: the planners' WD items are a reference in the + Ops row dialog, not rows of the board
   const codes = await page.evaluate(PLANT); await goOps(page);
-  const rows = await page.evaluate(() => [...document.querySelectorAll(".card.gp .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: r.cells[1].textContent.trim() })));
-  for (const c of codes) assert.ok(rows.some(x => x.time === "WD" && x.act.includes(c)), c + " listed as WD: " + JSON.stringify(rows));
+  const rows = await page.evaluate(() => [...document.querySelectorAll(".card.gp .gtab tbody tr")].map(r => r.cells[1].textContent.trim()));
+  for (const c of codes) assert.ok(!rows.some(x => x.replace(/✎×$/, "") === c), c + " must not be on the board: " + JSON.stringify(rows));
+  await page.click("#grAddBtn"); const h = await page.evaluate(() => document.getElementById("grRef").textContent);
+  for (const c of codes) assert.ok(h.includes(c) && h.includes("WD"), c + " in the reference list: " + h);
 }, OPS);
 test("ops_no_whole_day_rows_when_empty", async ({ page }) => {
   await goOps(page);

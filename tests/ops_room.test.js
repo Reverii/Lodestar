@@ -72,40 +72,41 @@ const PLAN_SET = (page, dept, kind, iso, offs, shift) => page.evaluate(([dept, k
   cur.opsDay = iso; renderOps(); return r; }, [dept, kind, iso, offs, shift]);
 const ROWS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: (c => { c.querySelectorAll(".gbt").forEach(x => x.remove()); return c.textContent.trim(); })(r.cells[1].cloneNode(true)), loc: r.cells[2].textContent.trim(), who: r.cells[3].textContent.trim(), text: r.innerText })));
 
-test("ground_row_with_till_date", async ({ page }) => {
-  const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1, 2], 1);
-  const rows = await ROWS(page);
-  assert.ok(rows.some(x => x.act.includes(r.code) && x.time === "TILL 16 OCT"), JSON.stringify(rows));
-  assert.ok(!rows.some(x => x.act.includes(r.code) && x.time === "PM"), "a run of days is one row, not one per shift");
-}, ED);
-test("ground_one_day_shows_the_shift", async ({ page }) => {
-  const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
-  const rows = await ROWS(page);
-  assert.ok(rows.some(x => x.act.includes(r.code) && x.time === "PM"), JSON.stringify(rows));
-}, ED);
-test("ground_until_stops_at_month_end", async ({ page }) => {
-  const r = await PLAN_SET(page, "Pilot", "admin", "2026-10-30", [0, 1], 1);
-  const rows = await ROWS(page);
-  assert.ok(rows.some(x => x.act.includes(r.code) && x.time === "TILL 31 OCT"), JSON.stringify(rows));
-}, ED);
-test("ground_table_sorted_and_location_from_note", async ({ page }) => {
-  await page.evaluate(iso => { const mb = masterBook(), D = opsDay(iso);
-    mb.S.gr.push({ row: 900, mi: D.mi, d: D.d, time: "1400-1600", act: "PSM", crew: "ALL", note: "121 CR" }, { row: 901, mi: D.mi, d: D.d, time: "0800", act: "Filming", crew: "ALL", note: "PLAB" }); }, DAY);
-  await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1], 2);   // runs on, so it goes last
-  await PLAN_SET(page, "Pilot", "admin", DAY, [0], 3);
-  await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
-  await PLAN_SET(page, "Pilot", "admin", DAY, [0], 0);
-  const rows = await ROWS(page), grp = t => /^\d/.test(t) ? 0 : t === "AM" ? 1 : t === "PM" ? 2 : t === "NIGHT" ? 3 : t === "WD" ? 4 : 5;
-  const g = rows.map(r => grp(r.time)); assert.deepStrictEqual(g, [...g].sort((a, b) => a - b), "groups in order: " + rows.map(r => r.time).join());
-  const timed = rows.filter(r => grp(r.time) === 0).map(r => r.time); assert.deepStrictEqual(timed, [...timed].sort(), "clock times in order");
-  assert.deepStrictEqual([0, 1, 2, 3, 4, 5].filter(k => !g.includes(k)), [3], "every group but NIGHT is there: " + rows.map(r => r.time).join());
-  const f = rows.find(r => r.act === "Filming"), p = rows.find(r => r.act === "PSM");
-  assert.strictEqual(f.time, "0800H"); assert.strictEqual(f.loc, "PLAB"); assert.strictEqual(p.time, "1400H-1600H"); assert.strictEqual(p.loc, "121 CR");
-  assert.ok(await page.evaluate(() => document.querySelectorAll("#opsSide .gtab tr.gs").length >= 3), "a divider between the groups");
-}, ED);
 // ---- ground programme personnel: merged across departments, borrowed from squadron events, an empty row is a mistake
 const SQ_ADD = (page, iso, o) => page.evaluate(([iso, o]) => { const mb = masterBook(), D = opsDay(iso); mb.S.gr.push(Object.assign({ row: 950, mi: D.mi, d: D.d, time: "", act: "X", crew: "", note: "" }, o)); mb.S.grUsed.add(950); cur.opsDay = iso; renderOps(); }, [iso, o]);
 const WHO_HTML = (page, act) => page.evaluate(act => { const r = [...document.querySelectorAll("#opsSide .gtab tbody tr")].find(r => r.cells[1].textContent.includes(act)); return r ? { html: r.cells[3].innerHTML, text: r.cells[3].textContent.trim(), n: document.querySelectorAll("#opsSide .gtab tbody tr").length } : null; }, act);
+// ---- z112: the board holds only squadron events and the Ops Room's own rows; the planners' items are a reference list in the + Ops row dialog
+const MAN = (page, iso, f) => page.evaluate(([iso, f]) => { cur.opsDay = iso; const ok = grrSave(iso, grrNewKey(), "manual", f); renderOps(); return ok; }, [iso, f]);
+test("ground_planner_items_not_on_the_board", async ({ page }) => {
+  const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
+  const rows = await ROWS(page); assert.ok(!rows.some(x => x.act.includes(r.code)), "a planner's admin item must not appear: " + JSON.stringify(rows));
+}, ED);
+test("ground_reference_list_by_department", async ({ page }) => {
+  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1, 2], 1), b = await PLAN_SET(page, "SUP 1", "admin", DAY, [0], 1);
+  await page.click("#grAddBtn");
+  const t = await page.evaluate(() => [...document.querySelectorAll("#grRef .rh")].map(x => x.textContent.trim()));
+  assert.ok(t.includes("Pilot") && t.includes("SUP 1"), t.join());
+  const h = await page.evaluate(() => document.getElementById("grRef").textContent);
+  assert.ok(h.includes(a.code) && h.includes(a.who) && h.includes(b.who) && /till 16 Oct/.test(h), h);
+  assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#grRef input").length), 0, "reference only: nothing to tick");
+  assert.ok(await page.evaluate(() => document.querySelectorAll("#grWho input[data-gp]:checked").length === 0), "no one is ticked for you");
+}, ED);
+test("ground_manual_rows_sorted", async ({ page }) => {
+  for (const [time, act] of [["1500H", "A AOP"], ["0930", "CST"], ["PM", "SAFSA"], ["AM", "P8 INFRA"], ["WD", "112 ASSESSMENT"], ["TILL 25 OCT", "SIMBEX"], ["NIGHT", "NAV EX"]]) assert.ok(await MAN(page, DAY, { time, act, note: "X", who: "ALL" }), act);
+  const rows = await ROWS(page); assert.deepStrictEqual(rows.map(r => r.act), ["CST", "Sqn Meeting", "A AOP", "P8 INFRA", "SAFSA", "NAV EX", "112 ASSESSMENT", "SIMBEX"], rows.map(r => r.time + " " + r.act).join(" | "));
+  assert.strictEqual(rows[rows.length - 1].time, "TILL 25 OCT"); assert.strictEqual(rows[4].time, "PM");
+}, ED);
+test("ground_till_row_shows_each_day_to_the_date", async ({ page }) => {
+  assert.ok(await MAN(page, DAY, { time: "TILL 16 OCT", act: "O/D SIMBEX", note: "INDIA", who: "ALL" }));
+  const on = async iso => { await page.evaluate(i => { cur.opsDay = i; renderOps(); }, iso); return (await ROWS(page)).some(r => r.act === "O/D SIMBEX"); };
+  assert.ok(await on(DAY) && await on("2026-10-15") && await on("2026-10-16"), "shown until the date"); assert.ok(!(await on("2026-10-17")), "gone after"); assert.ok(!(await on("2026-10-13")), "not before it was added");
+  await page.evaluate(() => { cur.opsDay = "2026-10-15"; renderOps(); });
+  await page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].find(r => r.cells[1].textContent.includes("O/D SIMBEX")).querySelector(".ghide").click()); assert.ok(!(await on("2026-10-15")) && await on("2026-10-16"), "hiding one day keeps the other days");
+}, ED);
+test("ground_time_quick_buttons", async ({ page }) => {
+  await page.click("#grAddBtn"); await page.click("#grQ [data-q='PM']"); assert.strictEqual(await page.inputValue("#grTime"), "PM");
+  await page.fill("#grTill", "2026-10-25"); await page.dispatchEvent("#grTill", "change"); assert.strictEqual(await page.inputValue("#grTime"), "TILL 25 OCT");
+}, ED);
 test("ground_blank_crew_no_personnel", async ({ page }) => {
   await SQ_ADD(page, DAY, { act: "Safety Brief", crew: "" });
   const w = await WHO_HTML(page, "Safety Brief"); assert.ok(w.text.includes("NO PERSONNEL"), w.text); assert.ok(!/TBC|ALL RELEVANT/.test(w.text), w.text);
@@ -117,37 +118,6 @@ test("ground_all_text", async ({ page }) => {
 test("ground_tags_label", async ({ page }) => {
   await SQ_ADD(page, DAY, { act: "SIMS", crew: "S1 S2" });
   const w = await WHO_HTML(page, "SIMS"); assert.ok(w.text.includes("SUP 1, SUP 2") && !w.text.includes("NO PERSONNEL"), w.text);
-}, ED);
-test("ground_merge_departments", async ({ page }) => {
-  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1), b = await PLAN_SET(page, "SUP 1", "admin", DAY, [0], 1);
-  assert.strictEqual(a.code, b.code, "same code in both files");
-  const rows = await ROWS(page), mine = rows.filter(r => r.act.includes(a.code) && r.time === "PM"); assert.strictEqual(mine.length, 1, JSON.stringify(rows));   // (the demo plan already has the code in the AM)
-  assert.ok(mine[0].who.includes(a.who) && mine[0].who.includes(b.who), mine[0].who);
-  assert.strictEqual(await page.evaluate(c => [...document.querySelectorAll("#opsSide .gtab tbody tr")].find(r => r.cells[1].textContent.includes(c) && r.cells[0].textContent.trim() === "PM").cells[3].querySelectorAll(".dept").length, a.code), 2);
-}, ED);
-test("ground_no_merge_other_until", async ({ page }) => {
-  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1], 1); await PLAN_SET(page, "SUP 1", "admin", DAY, [0], 1);
-  const rows = await ROWS(page); assert.strictEqual(rows.filter(r => r.act.includes(a.code) && r.time !== "AM").length, 2, JSON.stringify(rows));
-}, ED);
-test("ground_borrow_from_squadron_event", async ({ page }) => {
-  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
-  await SQ_ADD(page, DAY, { act: a.code, time: "1400-1600", note: "121 CR", crew: "S2" });
-  const rows = (await ROWS(page)).filter(r => r.act.includes(a.code)); assert.strictEqual(rows.length, 1, JSON.stringify(rows));
-  assert.strictEqual(rows[0].time, "1400H-1600H"); assert.strictEqual(rows[0].loc, "121 CR"); assert.ok(rows[0].who.includes(a.who) && rows[0].who.includes("SUP 2"), rows[0].who);
-}, ED);
-test("ground_no_borrow_from_other_day", async ({ page }) => {
-  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [1], 1);   // planned the day after
-  await SQ_ADD(page, DAY, { act: a.code, time: "1400-1600", crew: "S2" });
-  const rows = (await ROWS(page)).filter(r => r.act.includes(a.code)); assert.strictEqual(rows.length, 1);
-  assert.ok(!rows[0].who.includes(a.who), "the other day's person must not appear: " + rows[0].who);
-}, ED);
-test("ground_long_list_plus_n", async ({ page }) => {
-  const r = await page.evaluate(iso => { const bi = books.findIndex(b => isDept(b) && same(b.S.dept, "Pilot")); let code, ids = [];
-    withBook(bi, () => { const A = [...actIndex().values()].filter(a => a.ci === CAT_ADMIN).pop(), D = opsDay(iso); code = A.code;
-      S.roster.map((p, i) => [p, i]).filter(([p]) => p.name || p.id).slice(0, 6).forEach(([p, i]) => { S.m[D.mi].grid[gridRow(i, 1)][D.d] = A.code; ids.push(p.ini || p.id); }); });
-    cur.opsDay = iso; renderOps(); return { code, ids }; }, DAY);
-  const w = await page.evaluate(c => { const td = [...document.querySelectorAll("#opsSide .gtab tbody tr")].find(r => r.cells[1].textContent.includes(c) && r.cells[0].textContent.trim() === "PM").cells[3], m = td.querySelector(".gmore"); return { more: m && m.textContent.trim(), title: m && m.title }; }, r.code);
-  assert.strictEqual(w.more, "+2", JSON.stringify(w)); assert.ok(r.ids.every(i => w.title.includes(i)), w.title);
 }, ED);
 test("ground_strip_grows_and_scrolls", async ({ page }) => {
   await page.evaluate(iso => { const mb = masterBook(), D = opsDay(iso); for (let i = 0; i < 40; i++) mb.S.gr.push({ row: 900 + i, mi: D.mi, d: D.d, time: String(800 + i).padStart(4, "0"), act: "Brief " + i, crew: "ALL", note: "Room " + i }); }, DAY);
@@ -207,12 +177,6 @@ test("standby_rows_flight_size", async ({ page }) => {
   assert.strictEqual(g.sc, g.fc, "seat cell font");
   assert.ok(g.sh >= 0.85 * g.fh, "standby row " + g.sh + " vs flight row " + g.fh);
   assert.ok(g.lab >= g.flab && g.w >= 700, JSON.stringify(g));
-}, ED);
-test("ground_and_leave_names_coloured", async ({ page }) => {
-  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1); await PLAN_SET(page, "Pilot", "leave", DAY, [0], 0);
-  await ALL_CAT(page, "CAT B", "Active");
-  const g = await page.evaluate(() => ({ gp: [...document.querySelectorAll("#opsSide .gtab .gw b")].map(b => b.className), lv: [...document.querySelectorAll("#opsSide .olv .olp b")].map(b => b.className) }));
-  assert.ok(g.gp.length && g.gp.every(c => c === "catB"), g.gp.join()); assert.ok(g.lv.length && g.lv.every(c => c === "catB"), g.lv.join());
 }, ED);
 test("ocu_is_pink", async ({ page }) => {
   await goOps(page, DAY); await ALL_CAT(page, "TRAINEE", "Active");
@@ -345,14 +309,6 @@ test("area_add_hidden_when_projector_clicked", async ({ page }) => {
   await page.click("#opsFull");
   assert.ok(await page.evaluate(() => !document.getElementById("opsAreaAdd") || getComputedStyle(document.getElementById("opsAreaAdd")).display === "none"), "button hidden");
   assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsSide .opsac .v.oe").length), 0, "no empty area lines on the projector");
-}, ED);
-test("ground_until_crosses_the_month_end", async ({ page }) => {
-  const r = await page.evaluate(() => { const bi = books.findIndex(b => isDept(b) && same(b.S.dept, "Pilot")); let out = null;
-    withBook(bi, () => { const A = [...actIndex().values()].filter(a => a.ci === CAT_ADMIN), a = A[A.length - 1], i = S.roster.findIndex(p => p.name || p.id), D = opsDay("2026-10-30");
-      [[D.mi, D.d], [D.mi, D.d + 1], [D.mi + 1, 0], [D.mi + 1, 1]].forEach(([m, d]) => { S.m[m].grid[gridRow(i, 1)][d] = a.code; }); out = a.code; });
-    cur.opsDay = "2026-10-30"; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps(); return out; });
-  const rows = await ROWS(page);
-  assert.ok(rows.some(x => x.act.includes(r) && x.time === "TILL 2 NOV"), JSON.stringify(rows));
 }, ED);
 
 test("sample_ops_room_can_pick_a_seat", async ({ page }) => {

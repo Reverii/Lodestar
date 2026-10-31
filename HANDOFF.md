@@ -3,6 +3,9 @@
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
+## z112 (31 Oct, Brandon): Ops Room ground programme is filled by hand
+Brandon was not happy with the z111 auto-merge. **Now the board shows only squadron events (Master Planner) and the Ops Room's own rows.** The planners' ground items (Meeting, Outstation, WD items) no longer appear by themselves. **+ Ops row** opens the dialog with a read-only "From the department plans" list grouped by department (`opsDeptRef`, with planner cell comments), then Time (quick buttons AM / PM / NIGHT / WD and a TILL date picker), Activity, Location (all typed) and the crew tick boxes (nothing pre-ticked). A manual row with time `TILL 25 OCT` shows every day from the day it was added to that date (hide / pencil on a later day saves a per-day hide / edit). `1500H` now parses as a clock time. Old z111 edits on department rows (`dept|` ids) are ignored. **Not done yet:** My Lodestar still reads the planners' cells, so Ops Room rows do not show there (offered, not confirmed by Brandon). Tests: `ops_room` 42, `wd_row` 19, `my_lodestar` 60, `ground_rows` 13. The z111 notes below describe the old merge; `opsGround` no longer does it.
+
 ## Next session: start here (handoff of 31 Oct 2026, after z111)
 
 **State:** everything is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is on, deciding about making it private is an open item). Dashboard **z111** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.

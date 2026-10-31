@@ -108,6 +108,7 @@ Last updated: 31 Oct 2026 (z111). Tell Claude in this thread when something chan
 - [x] Ops Room redesign (z97, 27 Oct): side cards in a bottom row, Cat colours and a SANS / NSMEN box on every callsign, standby rows at flight size, Codes on the Day Board, Area only when filled, Ground programme by shift with "until", Leave and MC by department, clock, light / dark, no Timeline, fits the screen height (built; to tune on the real projector)
 - [x] Ops Room ground programme as a sorted table (z104, 31 Oct, Brandon): Time | Activity | Location (the Master Planner note) | Personnel; clock times, then AM/PM/NIGHT, WD, then TILL dates; strip grows with the list, auto-scrolls on the projector
 - [?] Ops Room ground programme rework (z111, 31 Oct, Brandon): rows merge across departments, borrow time and location from a squadron event, red NO PERSONNEL when nobody is on a row, pencil / hide / + Ops row saved in a `Ground Rows` sheet in the Ops Room file (awaiting his test)
+- [?] Ops Room ground programme filled by hand (z112, 31 Oct, Brandon): planners' items no longer pulled in; + Ops row shows them as a read-only reference by department; Time quick buttons; TILL rows run to the date (awaiting his test). Open: show Ops Room rows in My Lodestar
 - [ ] On hold (27 Oct, Brandon): a scale control for the whole dashboard
 - [x] Ops Room item closed (28 Oct, Brandon): the redesign stands as shipped (z97 to z99). Not coming back: the Timeline view, the empty-seats filter chip, the Down-chit chip, the Movement leave comments
 

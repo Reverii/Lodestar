@@ -348,10 +348,10 @@ test("help_text_present", async ({ page }) => {
   const t = await page.innerText("#helpBody");
   assert.ok(/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));
 });
-test("version_is_z111", async ({ page }) => {
+test("version_is_z112", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z111 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-31 z111 "), "start screen version");
+  assert.ok(/ z112 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-31 z112 "), "start screen version");
 });
 
 // ---- Regression: the rest of the dashboard still works around My Lodestar

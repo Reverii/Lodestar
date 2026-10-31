@@ -456,7 +456,7 @@ body.ro .edit input,body.ro .edit select{pointer-events:none;color:var(--s600)}
 #grPop select,#grPop input:not([type=checkbox]){padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900)}
 #grPop label.ck{flex-direction:row;align-items:center;gap:5px;text-transform:none;font-size:13px;color:var(--s700);flex:0 0 auto;min-width:0}
 #grPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
-#grPop .gdep{margin-top:6px;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:center}#grPop .gdep b{flex:0 0 100%;font-size:11px;color:var(--s500)}#grPop #grWho{max-height:190px;overflow:auto;border:1px solid var(--s200);border-radius:6px;padding:6px 8px;margin-top:3px}
+#grRef{border:1px solid var(--s200);border-radius:6px;max-height:140px;overflow:auto;margin-bottom:6px;font-size:12px}#grRef .rh{background:var(--s100);padding:2px 8px;font-weight:700;font-size:11px;color:var(--s500);position:sticky;top:0}#grRef .ri{padding:2px 8px;border-top:1px solid var(--s100)}#grRef .ri i{font-style:normal;color:#7c3aed}#grQ{display:flex;gap:4px;margin-top:3px;align-items:center;flex-wrap:wrap}#grQ b{border:1px solid var(--s200);border-radius:5px;padding:0 6px;font-size:11px;cursor:pointer}#grQ .gtill{font-size:11px;display:flex;gap:3px;align-items:center}#grQ input{width:auto;padding:0 2px}#grPop .gdep{margin-top:6px;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:center}#grPop .gdep b{flex:0 0 100%;font-size:11px;color:var(--s500)}#grPop #grWho{max-height:190px;overflow:auto;border:1px solid var(--s200);border-radius:6px;padding:6px 8px;margin-top:3px}
 #grMsg{color:#b91c1c;font-size:12.5px;min-height:16px;margin-top:6px}
 table.gtab td.ga .gbt{visibility:hidden;margin-left:6px;white-space:nowrap}table.gtab tr:hover .gbt{visibility:visible}.gbt button{border:1px solid var(--s300);background:#fff;border-radius:4px;font-size:11px;line-height:1;padding:2px 5px;cursor:pointer;color:var(--s600)}
 .gadd{float:right;font-size:11px;padding:2px 8px}.ghidl{font-size:11.5px;margin-top:6px;color:var(--s500)}.ghidl a{cursor:pointer;text-decoration:underline}.ghidl .gunhide{margin-left:6px}
@@ -1027,7 +1027,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z111</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z112</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1048,7 +1048,8 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
 </div></div>
 <div id="grPop"><div class="box">
   <h2 id="grTitle">Ground programme row</h2>
-  <div class="row"><label>Time<input id="grTime" placeholder="e.g. 1400-1600"></label><label>Activity<input id="grAct" placeholder="e.g. Dinghy drill"></label><label>Location<input id="grLoc" placeholder="e.g. 121 CR"></label></div>
+  <div id="grRef"></div>
+  <div class="row"><label>Time<input id="grTime" placeholder="e.g. 1400-1600"><span id="grQ"><b data-q="AM">AM</b><b data-q="PM">PM</b><b data-q="NIGHT">NIGHT</b><b data-q="WD">WD</b><label class="gtill">TILL <input type="date" id="grTill"></label></span></label><label>Activity<input id="grAct" placeholder="e.g. Dinghy drill"></label><label>Location<input id="grLoc" placeholder="e.g. 121 CR"></label></div>
   <div class="row"><label>Personnel<div id="grWho"></div></label></div>
   <div id="grMsg"></div>
   <div class="btns"><button class="btn" id="grCancel">Cancel</button><button class="btn primary" id="grGo">Save</button></div>
@@ -1634,6 +1635,7 @@ const roleChip = (mi, r, d) => { const t = roleOf(S, mi, r, d); return t ? "<i c
 const GRR_SHEET = "Ground Rows", GRR_ROW0 = 2, GRR_N = 600, GRR_HEAD = ["Date", "Id", "Kind", "Time", "Activity", "Location", "Personnel", "Saved"],
   GRR_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="3" width="14" customWidth="1"/><col min="4" max="4" width="12" customWidth="1"/><col min="5" max="7" width="26" customWidth="1"/><col min="8" max="8" width="17" customWidth="1"/>';
 // kind: "edit" (only the non-empty fields replace the plan's), "hide" (the row is left out), "manual" (a row of the Ops Room's own); f = { time, act, note, who } (who = "ALL" or callsigns joined by " / ")
+const MON3 = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const grrNewKey = () => "m" + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
 const grrCheck = f => !String(f.time || "").trim() ? "Type a time." : !String(f.act || "").trim() ? "Type an activity." : !String(f.who || "").trim() ? "Choose who is on it, or ALL." : "";
 function grrSave(iso, id, kind, f) {
@@ -3852,6 +3854,7 @@ function opsPerson(dept, id, crewS) {
 const hhmm = v => { const m = /^(\d{1,2}):?(\d{2})$/.exec(String(v || "").trim()); return m ? +m[1] * 60 + +m[2] : null; };
 const fmtHM = n => String(Math.floor(((n % 1440) + 1440) % 1440 / 60)).padStart(2, "0") + String(((n % 60) + 60) % 60).padStart(2, "0");
 function opsTimes(t, hrs) {
+  t = String(t || "").replace(/(\d)\s*h\b/gi, "$1");   // 1500H = 1500
   const m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*$/i.exec(t || "");
   if (m) return [m[1].replace(":", "").padStart(4, "0"), m[2].replace(":", "").padStart(4, "0")];
   const a = hhmm(String(t || "").replace(":", "")); if (a == null) return ["", ""];
@@ -4140,6 +4143,28 @@ function opsWho(r) {
   if (r.label) h += (h ? " " : "") + "<span class='glab'>" + esc(r.label) + "</span>";
   return h.trim() || "<span class='nocrew'>NO PERSONNEL</span>";
 }
+// the planners' ground items of the day, by department (read-only reference for the Ops Room's + Ops row dialog)
+function opsDeptRef(D) {
+  const res = [], P = masterBook() && masterBook().S, fmt = (m, e) => new Date(isoOf(D.y, m, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  books.forEach((b, bi) => {
+    if (!isDept(b) || b.S.year !== D.y) return; const items = new Map();
+    withBook(bi, () => {
+      const A = actIndex(), M = S.m[D.mi]; if (!M) return;
+      if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : ""; if (own && !same(own, fromMp)) items.set("g|" + own.toUpperCase(), { act: own, sh: "", until: "", people: [] }); }
+      S.roster.forEach((p, i) => { for (let s = 0; s < rp(); s++) {
+        const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
+        if (!a || !(isWdRow(gridRow(i, s)) ? wdAllowed(a) : a.ci === CAT_ADMIN)) continue;
+        let e = D.d, em = D.mi;
+        for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
+          const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
+        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!items.has(key)) items.set(key, { act: a.code, sh: ["AM", "PM", "NIGHT", "WD"][s], until: em > D.mi || e > D.d ? "till " + fmt(em, e) : "", people: [] });
+        const cn = S.notes && S.notes.get(D.mi + ":" + (gridRow(i, s)) + ":" + D.d); items.get(key).people.push({ ini: p.ini || p.id, note: cn || "" });
+      } });
+    });
+    if (items.size) res.push({ dept: b.S.dept, items: [...items.values()] });
+  });
+  return res;
+}
 function opsGround(D) {
   const out = [], mb = masterBook(), P = mb && mb.S, fmt = (m, e) => new Date(isoOf(D.y, m, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
   // a Master Planner item sits in the column of its start time (06:00-11:59 AM, 12:00-17:59 PM, otherwise NIGHT); no time = AM
@@ -4148,39 +4173,20 @@ function opsGround(D) {
   // squadron events (Master Planner): the note is the location; the crew tags name the groups, ALL means everyone, blank is a mistake
   D.gr.forEach(g => out.push(mk({ src: "sq", id: "sq|" + String(g.act).toUpperCase() + "|" + shOf(g.time) + "|", sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), act: g.act, note: esc(g.note || ""), rt: g.time || "", rn: g.note || "",
     all: crewIsAll(g.crew), label: crewIsAll(g.crew) ? "" : crewTags(g.crew).map(k => CREW_TAGS.find(x => x[0] === k)[1]).join(", ") })));
-  const groups = new Map();   // department items, merged across departments by shift + activity + last day
-  books.forEach((b, bi) => {
-    if (!isDept(b) || b.S.year !== D.y) return;
-    withBook(bi, () => {
-      const A = actIndex(), M = S.m[D.mi]; if (!M) return;
-      if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : "";
-        if (own && !same(own, fromMp)) out.push(mk({ src: "dept", id: "dept|3|" + own.toUpperCase() + "|" + S.dept, sh: 3, k: "1", act: own, depts: [S.dept] })); }
-      S.roster.forEach((p, i) => { for (let s = 0; s < rp(); s++) {
-        const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
-        if (!a || !(isWdRow(gridRow(i, s)) ? wdAllowed(a) : a.ci === CAT_ADMIN)) continue;   // the WD row (s = 3) shows its ground and admin items in a Whole day column   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
-        // the same activity on the next days of this month (same person and shift): "until <last day>"
-        let e = D.d, em = D.mi;   // the last day (and its month) of the run; it carries on into the next month's grid
-        for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
-          const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
-        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", uk: isoOf(D.y, em, e), people: [], notes: [] });
-        const g = groups.get(key), n = p.ini || p.id; g.people.push({ dept: S.dept, ini: n, cls: opsCatCls(p) });
-        const cn = S.notes && S.notes.get(D.mi + ":" + (gridRow(i, s)) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
-      } });
-    });
-  });
-  // a one-day department item of the same activity as a squadron event of the day joins that row (its time and location); the rest are rows of their own
-  groups.forEach(g => {
-    const sq = !g.until && out.find(r => r.src === "sq" && (same(r.act, g.act) || (g.desc && same(r.act, g.desc))));
-    if (sq) { sq.people.push(...g.people); if (g.notes.length) sq.note += (sq.note ? "<br>" : "") + g.notes.join("<br>"); }
-    else out.push(mk({ src: "dept", id: "dept|" + g.s + "|" + String(g.act).toUpperCase() + "|" + g.uk, sh: g.s, k: "2" + g.s, until: g.until, uk: g.uk, act: g.act, desc: g.desc, people: g.people, note: g.notes.join("<br>") }));
-  });
   // the Ops Room's own edits of this day (Ground Rows sheet): hidden rows leave, edits replace only the fields they hold, manual rows join
   const ob = opsBook(), hidden = [];
-  (ob && ob.S.grr || []).filter(e => e.iso === D.iso).forEach(e => {
-    const i = out.findIndex(r => r.id === e.id);
+  // a manual row whose time is "TILL 25 OCT" stays on every day from the day it was added up to that date
+  const tillIso = e => { const m = /^TILL\s+(\d{1,2})\s+([A-Za-z]{3})/i.exec(e.time || ""), mi = m ? MON3.indexOf(m[2].toUpperCase()) : -1; if (mi < 0) return "";
+    const y0 = +e.iso.slice(0, 4); let t = isoOf(y0, mi, +m[1] - 1); if (t < e.iso) t = isoOf(y0 + 1, mi, +m[1] - 1); return t; };
+  const ents = (ob && ob.S.grr || []).filter(e => !String(e.id).startsWith("dept|") && (e.iso === D.iso || (e.kind === "manual" && e.iso < D.iso && tillIso(e) >= D.iso))).sort((x, y) => (y.kind === "manual") - (x.kind === "manual"));
+  ents.forEach(e => {
+    const carried = e.iso !== D.iso, i = out.findIndex(r => r.id === e.id);
     if (e.kind === "hide") { if (i >= 0) hidden.push(out.splice(i, 1)[0]); return; }
-    const r = i >= 0 && e.kind === "edit" ? out[i] : out[out.push(mk({ src: "manual", id: e.id, k: "0", orphan: e.kind === "edit", act: "(was linked)" })) - 1];
-    r.edited = true; if (e.time) { r.when = esc(e.time); r.rt = e.time; r.sh = shOf(e.time); r.k = "0" + e.time; r.until = ""; } else if (r.src === "manual" && !r.when) r.sh = 0;
+    const r = i >= 0 && e.kind === "edit" ? out[i] : out[out.push(mk({ src: carried ? "carried" : "manual", id: e.id, k: "0", orphan: e.kind === "edit", act: "(was linked)" })) - 1];
+    r.edited = true;
+    if (e.time) { r.when = esc(e.time); r.rt = e.time; r.until = ""; r.uk = ""; const kw = String(e.time).trim().toUpperCase(), t = tillIso(e), ki = ["AM", "PM", "NIGHT", "WD"].indexOf(kw);
+      if (ki >= 0) { r.sh = ki; r.k = "0"; } else if (t) { r.until = "until " + fmt(+t.slice(5, 7) - 1, +t.slice(8, 10) - 1); r.uk = t; r.sh = 0; r.k = "0"; } else { r.sh = shOf(e.time); r.k = "0" + e.time; } }
+    else if (r.src !== "sq" && !r.when) r.sh = 0;
     if (e.act) r.act = e.act; if (e.note) { r.note = esc(e.note); r.rn = e.note; }
     if (e.who) { r.all = same(e.who, "ALL"); r.people = r.all ? [] : grrPeople(e.who); r.label = ""; r.depts = []; }
   });
@@ -4355,9 +4361,14 @@ function grOpen(row) {
   const sel = new Set(row ? row.people.map(p => p.ini) : []), all = !!(row && row.all);
   $("grWho").innerHTML = "<label class='ck'><input type='checkbox' id='grAll'" + (all ? " checked" : "") + "> ALL (everyone)</label>" +
     books.filter(isDept).map(b => "<div class='gdep'><b>" + esc(b.S.dept) + "</b>" + b.S.roster.filter(p => p.name || p.id).map(p => { const n = p.ini || p.id; return "<label class='ck'><input type='checkbox' data-gp='" + esc(n) + "'" + (sel.has(n) && !all ? " checked" : "") + "> " + esc(n) + "</label>"; }).join("") + "</div>").join("");
+  const ref = opsDeptRef(D);
+  $("grRef").style.display = ref.length ? "" : "none";
+  $("grRef").innerHTML = "<div class='rh'>FROM THE DEPARTMENT PLANS (reference only)</div>" + ref.map(r => "<div class='rh' style='position:static;background:#fff'>" + esc(r.dept) + "</div>" + r.items.map(it => "<div class='ri'><b>" + esc(it.act) + "</b> " + (it.sh ? "<small class='muted'>" + it.sh + "</small> " : "") + (it.until ? "<small class='muted'>" + it.until + "</small> " : "") + it.people.map(p => esc(p.ini) + (p.note ? " <i>" + esc(p.note) + "</i>" : "")).join(" &middot; ") + "</div>").join("")).join("");
   $("grMsg").textContent = ""; $("grPop").style.display = "flex"; $("grTime").focus();
 }
 function grWhoText() { return $("grAll").checked ? "ALL" : [...document.querySelectorAll("#grWho input[data-gp]")].filter(x => x.checked).map(x => x.dataset.gp).join(" / "); }
+$("grQ").onclick = e => { const q = e.target.dataset && e.target.dataset.q; if (q) $("grTime").value = q; };
+$("grTill").onchange = e => { const v = e.target.value; if (v) $("grTime").value = "TILL " + +v.slice(8, 10) + " " + MON3[+v.slice(5, 7) - 1]; };
 $("grCancel").onclick = () => { $("grPop").style.display = "none"; GRD = null; };
 $("grGo").onclick = () => {
   const g = GRD; if (!g) return; const time = $("grTime").value.trim(), act = $("grAct").value.trim(), loc = $("grLoc").value.trim(), who = grWhoText();
@@ -4858,7 +4869,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z111 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z112 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

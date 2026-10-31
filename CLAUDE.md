@@ -53,7 +53,7 @@ existing macro-heavy ops tool (Oracle).
 | `Flight_Ops_Planner_Dashboard.html` | **the dev build Brandon uses** (~6 MB; embeds SUP 2 as template + the other files as samples) |
 | `release/Flight_Ops_Planner_Dashboard.html` | release build (dev code stripped). Not for Brandon yet |
 | `input/LODESTAR_Data_Input.xlsx` | Brandon's filled real-data workbook (Crew, Flight Codes, Activities, Lists, Public Holidays) |
-| `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, `node tests/atom.test.js` (ATOM currency, synthetic exports from `tests/make_atom_fixture.py`), `node tests/planner_filter.test.js`, `node tests/mp_export.test.js`, `node tests/ops_room.test.js` (Ops Room board, about 40 checks), `node tests/master_calendar.test.js` (Master Planner calendar chips), `node tests/dept_select.test.js` (the SharePoint department screen, stubbed SharePoint), `node tests/other_depts.test.js` (other departments open by themselves, View only), needs the dashboard built first; the ATOM file takes several minutes); `LODE_FILES=<folder>` points them at another set of xlsx files |
+| `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, `node tests/atom.test.js` (ATOM currency, synthetic exports from `tests/make_atom_fixture.py`), `node tests/planner_filter.test.js`, `node tests/mp_export.test.js`, `node tests/ops_room.test.js` (Ops Room board, about 40 checks), `node tests/master_calendar.test.js` (Master Planner calendar chips), `node tests/dept_select.test.js` (the SharePoint department screen, stubbed SharePoint), `node tests/other_depts.test.js` (other departments open by themselves, View only), `node tests/role_tags.test.js` (AC and Pax tags, planner grid and Ops Room), needs the dashboard built first; the ATOM file takes several minutes); `LODE_FILES=<folder>` points them at another set of xlsx files |
 | `docs/superpowers/` | design specs and implementation plans (My Lodestar) |
 | `specs/SUP2_syllabus_items.csv` | real SUP 2 syllabus (47 items); embedded in `.build_planner.py` as `SYL_REAL` |
 | `briefing/` | the web briefing (index.html + demo-data screenshots, 19 slides; no ATOM screenshot: it showed real currency dates). Published by the Pages workflow at `/briefing/` |
@@ -112,7 +112,7 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 2`. The dashboard has
   `const LAYOUT = { dept: 2, master: 2, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
   lower or missing = checked sheet by sheet and listed as "older layout". Bump both sides together when cells move.
-- Dashboard version string: `Dashboard version 2026-10-30 z101` (two places in `.dashboard_source.html`: `#wDiag` and
+- Dashboard version string: `Dashboard version 2026-10-31 z102` (two places in `.dashboard_source.html`: `#wDiag` and
   `spDiag`). Bump the `zNN` number on each change you ship so Brandon can tell builds apart.
 
 ## Key cell layout (department file; full detail in the builders and dashboard constants)

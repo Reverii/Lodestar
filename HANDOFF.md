@@ -5,12 +5,12 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Next session: start here (handoff of 30 Oct 2026)
 
-**State (updated 31 Oct, z101: item 1 below is built on branch `claude/practical-lamport-j13scq`, not yet merged):** everything else is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is now on, deciding about making it private is an open item). Dashboard **z100** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
+**State (updated 31 Oct, z101: item 1 below is built on branch `claude/practical-lamport-j13scq`, not yet merged):** everything else is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is now on, deciding about making it private is an open item). Dashboard **z102** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
 Built and merged since the last handoff: Ops Room redesign (z97), built-in sample fix (z98), Master Planner time ranges (z99), department selector revamp (z100).
 
 **Do next, in this order** (full notes in `PROJECT_CHECKLIST.md` section 9):
 1. **Other departments open by themselves + View only.** Spec `docs/superpowers/specs/2026-10-30-other-departments-design.md`, plan `docs/superpowers/plans/2026-10-30-other-departments.md` are written and reviewed by Brandon's plan; Brandon said go. Use native execution. Brandon's SharePoint: only planners and the Master Planner can edit; everyone can read every file.
-2. **AC and Pax tags in the planner** (item 5; all questions settled: AC tag only, every other pilot is a co-pilot, two ACs allowed on a formation, Pax counts nowhere). Needs its own spec and plan first.
+2. ~~AC and Pax tags in the planner~~ **built 31 Oct (z102)**, on branch `claude/practical-lamport-j13scq`, not merged; Brandon still has to test it on SharePoint. Notes below.
 3. **Fourth row per member** (item 1; dummy data, so rebuild the files fresh, no migration).
 
 **Not to do:** the request function is **omitted** (SharePoint lists do not work on the squadron site). The **full PDF guide** (Planners, Master Planner, Ops Room; audience the users) is **not to be generated until Brandon says so**.
@@ -20,6 +20,12 @@ Built and merged since the last handoff: Ops Room redesign (z97), built-in sampl
 **How to work with Brandon right now:** he is near his weekly usage cap, so keep sessions short: one feature per session, text answers, screenshots only when words will not do, no full ATOM test run unless ATOM code changes (`node tests/atom.test.js` takes minutes). He says "build it" after a mock-up, "go, native" for execution, and "merge to main and push" when he wants a merge. Never overwrite live `.xlsx` files.
 
 **Starting prompt for a new session:** "Read `/home/user/Lodestar/CLAUDE.md`, then `HANDOFF.md` (the section 'Next session: start here') and `PROJECT_CHECKLIST.md` section 9. Start a new branch from main and build the other-departments change from the spec and plan listed there, native execution."
+
+## AC and Pax tags (z102, 31 Oct; spec `docs/superpowers/specs/2026-10-31-ac-pax-tags-design.md`, plan `docs/superpowers/plans/2026-10-31-ac-pax-tags.md`)
+
+- Planner grid: click a flight cell, the popup has "Role on this flight" (None / AC / Pax; AC only in the Pilot file). Chip AC or PAX on the cell. Saved in a `Role Tags` sheet the dashboard creates on first save (no layout change, no stamp bump). Plain Excel does not show it and Excel's monthly totals still count a Pax cell; the dashboard's own numbers (planner totals, My Lodestar, currency, crew rest) skip Pax.
+- Ops Room: the AC-tagged pilot is Captain (replaces the seniority guess for that aircraft); a planner's Pax rides as additional crew with the PAX badge. The Ops Room's saved Pax list wins once it exists; "-" in the Pax column means decided, nobody. Row field `pax` (list) and `rowPax(r, id)` replace `isPax(o, id)` on the board.
+- Tests: `node tests/role_tags.test.js` (15).
 
 ## Other departments and View only (z101, 31 Oct; spec `docs/superpowers/specs/2026-10-30-other-departments-design.md`, plan `docs/superpowers/plans/2026-10-30-other-departments.md`)
 

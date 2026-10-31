@@ -94,6 +94,16 @@ test("read_only_has_no_controls", async ({ page }) => {
   assert.strictEqual(await page.locator(".gedit, .ghide, #grAddBtn").count(), 0);
 }, RO);
 
+test("rollover_clears_ground_rows", async ({ page }) => {
+  await SAVE(page, "old1", "manual", { time: "0900", act: "Old drill", note: "", who: "ALL" });
+  await page.evaluate(() => { grrSave("2027-01-05", "nx1", "manual", { time: "0900", act: "Next Jan drill", note: "", who: "ALL" }); });
+  const t = await page.evaluate(() => { const oi = opsIdx(); let bytes; withBook(oi, () => { bytes = buildXlsx().bytes; }); reparseBook(oi, bytes);
+    const r = rollBook(oi, books[oi].S.year, []), td = new TextDecoder(); const p = Object.keys(r.files).find(k => /worksheets\/sheet\d+\.xml$/.test(k) && /Ground Rows|old1/.test(td.decode(r.files[k])) );
+    const wb = books[oi].WB, sp = wb.paths["Ground Rows"]; return td.decode(r.files[sp]); });
+  assert.ok(/<c r="B2"[^>]*\/>/.test(t) && !/<c r="A2"[^>]*><v>/.test(t), "the old year's row is cleared");
+  assert.ok(/<c r="B3"[^>]*>/.test(t) && !/<c r="B3"[^>]*\/>/.test(t), "next January's row stays");
+}, ED);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

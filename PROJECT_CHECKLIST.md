@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 31 Oct 2026 (z108). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 31 Oct 2026 (z111). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -75,6 +75,7 @@ Last updated: 31 Oct 2026 (z108). Tell Claude in this thread when something chan
 - [x] Master Planning tab: month calendar with flight chips, day side panel, add/remove flights
 - [x] Crew tags per flight (P, L, T, S1, S2), defaults from the flight code
 - [x] Ground Programme sheet and green ground chips
+- [?] Squadron events: ALL crew tag; a blank crew is an error (red NO CREW), new events start empty (z111, 31 Oct, Brandon); old blank rows turn red until filled in
 - [x] Flight Codes sheet is the one list of flight codes (with Mission Type); departments copy it into Activities
 - [x] "Copy flights and ground programme from the Master Planner" into the department file (SUP 2 full; SUP 1/Loadmaster flights only) (checked 24 Oct: all 5 department files are on the same template)
 - [x] Source of truth: the Master Planner (decided 21 Oct). The Flight Programme has been removed
@@ -106,6 +107,7 @@ Last updated: 31 Oct 2026 (z108). Tell Claude in this thread when something chan
 
 - [x] Ops Room redesign (z97, 27 Oct): side cards in a bottom row, Cat colours and a SANS / NSMEN box on every callsign, standby rows at flight size, Codes on the Day Board, Area only when filled, Ground programme by shift with "until", Leave and MC by department, clock, light / dark, no Timeline, fits the screen height (built; to tune on the real projector)
 - [x] Ops Room ground programme as a sorted table (z104, 31 Oct, Brandon): Time | Activity | Location (the Master Planner note) | Personnel; clock times, then AM/PM/NIGHT, WD, then TILL dates; strip grows with the list, auto-scrolls on the projector
+- [?] Ops Room ground programme rework (z111, 31 Oct, Brandon): rows merge across departments, borrow time and location from a squadron event, red NO PERSONNEL when nobody is on a row, pencil / hide / + Ops row saved in a `Ground Rows` sheet in the Ops Room file (awaiting his test)
 - [ ] On hold (27 Oct, Brandon): a scale control for the whole dashboard
 - [x] Ops Room item closed (28 Oct, Brandon): the redesign stands as shipped (z97 to z99). Not coming back: the Timeline view, the empty-seats filter chip, the Down-chit chip, the Movement leave comments
 

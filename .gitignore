@@ -12,3 +12,6 @@ __pycache__/
 Thumbs.db
 # Dummy-name test files that carry real ATOM initials
 atom_test/
+
+# upload bundles made for Brandon, not part of the repo
+*_upload.zip

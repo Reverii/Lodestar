@@ -3,9 +3,10 @@
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
-## Next session: start here (handoff of 31 Oct 2026)
+## Next session: start here (handoff of 31 Oct 2026, after z111)
 
 **State:** everything is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is on, deciding about making it private is an open item). Dashboard **z111** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
+**z111 (merged to main, `e023072`): Ops Room ground programme rework.** Spec `docs/superpowers/specs/2026-10-31-ground-programme-rework-design.md`, plan `docs/superpowers/plans/2026-10-31-ground-programme-rework.md`, details in the z111 bullet below. In short: squadron events take crew `ALL` or tags and a blank crew is an error (red NO CREW in the Master Planner, red NO PERSONNEL in the Ops Room); the Ops Room ground table merges department items across departments and borrows time and location from a matching squadron event; the Ops Room can change, hide and add rows (`Ground Rows` sheet in the Ops Room file, no Excel layout change). Upload the DEV dashboard only. Tests: `ground_rows` 13, `ops_room` 48, `master_calendar` 8, `my_lodestar` 60 (all pass; `atom` not run, untouched).
 Built since the 30 Oct handoff, all merged: other departments open by themselves + View only (z101), AC and Pax tags (z102), WD fourth row with zoom and crew divider (z103), Ops Room ground programme table (z104), Ops Room bottom strip fix (z105), Master Planner export reformat (z106, z107), tab changes (z108). Notes for each below.
 
 **Next, in this order:**
@@ -13,9 +14,13 @@ Built since the 30 Oct handoff, all merged: other departments open by themselves
 2. When he agrees: replace the repo's own `.xlsx` files and the built-in sample with layout-3 files (rebuild fresh, no migration; dummy data only), then rebuild the dashboard.
 3. The full PDF guide only when Brandon says so.
 
+**Known small gaps (deferred minors, only fix if Brandon hits them):** two squadron events with the same activity and shift share one Ops Room edit id; moving a squadron event's time into another shift orphans an Ops Room edit on it (shown as "was linked"). Editing a department-item row's location replaces its cell-comment notes. The Ops Room `Ground Rows` edit of a department row is keyed by shift + code + last day.
+
+**Process notes from the z111 build:** the tests for the Ops Room buttons were written after the code (never seen red); `tests/ops_room.test.js` and `tests/ground_rows.test.js` read the activity cell without the hover buttons (`.gbt`). With the Ops Room as the first file only SUP 1, TACCO, Loadmaster and Pilot open (not SUP 2), and the demo plan already has an admin code in the AM on 14 Oct, so tests read the PM row.
+
 **Not to do:** the request function is **omitted** (SharePoint lists do not work on the squadron site). The **full PDF guide** (Planners, Master Planner, Ops Room; audience the users) is **not to be generated until Brandon says so**.
 
-**Brandon's pending tests on the real SharePoint:** the department selector (does the "by <name>" line show, does the 15-second refresh work, is a week the right red-dot threshold), View only (permission check with a member's account, and the extra seconds to open four more files), AC and Pax tags, the WD row and zoom, the Ops Room on the projector, the Master Planner time ranges and the new export file in desktop Excel, the Changelog filter.
+**Brandon's pending tests on the real SharePoint:** the ground programme rework (old squadron events with a blank crew now show red until filled; pencil, hide, hidden link, + Ops row; ALL tag), the department selector (does the "by <name>" line show, does the 15-second refresh work, is a week the right red-dot threshold), View only (permission check with a member's account, and the extra seconds to open four more files), AC and Pax tags, the WD row and zoom, the Ops Room on the projector, the Master Planner time ranges and the new export file in desktop Excel, the Changelog filter.
 
 **How to work with Brandon right now:** he is near his weekly usage cap, so keep sessions short: one feature per session, text answers, screenshots only when words will not do, no full ATOM test run unless ATOM code changes (`node tests/atom.test.js` takes minutes). He says "build it" after a mock-up, "go, native" for execution, and "merge to main and push" when he wants a merge. Never overwrite live `.xlsx` files.
 

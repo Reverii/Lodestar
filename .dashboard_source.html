@@ -839,7 +839,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <div class="hsep" id="hsep"></div>
   <div id="bookbar"></div>
   <div class="grow"></div>
-  <div class="fileinfo" id="fileinfo">No file open</div>
+  <div class="fileinfo" id="fileinfo">No file open</div><span id="viewOnly" title="SharePoint says you can read this file but not change it." style="display:none;background:#e0e7ff;color:#3730a3;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:600;margin-left:6px">View only</span>
   <button class="btn primary" id="btnOpen">Open my Excel</button>
   <button class="btn" id="btnAdd" disabled title="Other departments' planners, the Duty Roster or the Master Planner">Add other departments</button>
   <button class="btn ur" id="btnUndo" disabled title="Undo (Ctrl+Z)">↶</button><button class="btn ur" id="btnRedo" disabled title="Redo (Ctrl+Y)">↷</button>
@@ -1124,9 +1124,10 @@ let ATOMS = [];   // AtomFile list, see atomParse
 // renderAtom is defined with the ATOM grid below
 let books = [];   // [{WB, S, dirty}]: books[0] is your own file (editable), the rest are other departments (read-only)
 let cur = { m: new Date().getMonth(), sel: null, clip: null, b: 0 };
+const mayEdit = bi => !!books[bi] && !books[bi].noEdit && (bi === 0 || OPS);
 function useBook(i) { const k = books[i]; WB = k.WB; S = k.S; dirty = k.dirty; cur.b = i; }
 function withBook(i, fn) { const keep = cur.b; useBook(i); try { return fn(); } finally { useBook(keep); } }
-function readOnly() { if (cur.b === 0 || OPS) return false; toast("This is " + S.dept + "'s file, open here read-only. Switch to your own department tab to edit."); return true; }
+function readOnly() { if (mayEdit(cur.b)) return false; if (books[cur.b] && books[cur.b].noEdit) { toast("You only have view access to this file."); return true; } toast("This is " + S.dept + "'s file, open here read-only. Switch to your own department tab to edit."); return true; }
 
 // ---------- reading ----------
 function sheetPaths(files) {
@@ -1621,7 +1622,7 @@ function sylPath(Y, st, p) {
 let sylSel = { id: null, stage: null, code: null };
 function sylCtx() {
   const b = isDept(books[cur.b]) ? books[cur.b] : books.find(isDept);
-  return { Y: b && b.S.sylDef, b, st: b && b.S, ed: !!b && (books.indexOf(b) === 0 || OPS) && b.S.hasSyl };
+  return { Y: b && b.S.sylDef, b, st: b && b.S, ed: !!b && (mayEdit(books.indexOf(b))) && b.S.hasSyl };
 }
 const sylAv = p => /instructor/i.test(p.role) ? ["INS", "#2563eb"] : ({ "CAT A": ["A", "#0f172a"], "CAT B": ["B", "#16a34a"], "CAT C": ["C", "#ca8a04"], "CAT D": ["D", "#dc2626"], TRAINEE: ["T", "#c026d3"] })[String(p.cat).toUpperCase()] || ["?", "#64748b"];
 function renderSyl() {
@@ -1932,9 +1933,9 @@ const allChits = st => { const ob = opsBook(); return (st.chits || []).concat(ob
 // where an up-chit for department book bi is saved: its own file, else the Ops Room file; or why it can't be
 function chitTarget(bi) {
   const st = books[bi].S, ob = opsBook(), oi = books.indexOf(ob);
-  if (!(bi === 0 || OPS || oi === 0)) return { err: "Only " + st.dept + " (in its own file) or the Ops Room can up-chit." };
-  if (st.hasChit && (bi === 0 || OPS)) return { bi, own: true };
-  if (ob && ob.S.hasChit && (oi === 0 || OPS)) return { bi: oi, own: false };
+  if (!(mayEdit(bi) || mayEdit(oi))) return { err: "Only " + st.dept + " (in its own file) or the Ops Room can up-chit." };
+  if (st.hasChit && (mayEdit(bi))) return { bi, own: true };
+  if (ob && ob.S.hasChit && mayEdit(oi)) return { bi: oi, own: false };
   return { err: st.dept + "'s planner is an older layout with no Medical Chits sheet" + (ob ? ", and the Ops Room file open here is also an older one" : ", and the Ops Room file isn't open") + ". Upload the new " + (ob ? "Ops_Room_2026.xlsx" : st.dept + " planner") + " to SharePoint (from the project folder) and reopen, then up-chit again." };
 }
 let chitCtx = null;
@@ -2093,9 +2094,11 @@ const todayYMD = () => ymdB(opsToday());
 const todayCol = (y, mi) => { const t = todayYMD(); return t.y === y && t.mi === mi ? t.d : -1; };
 
 // ---------- writing ----------
-function put(sheet, ref, val) { if (cur.b !== 0 && !OPS) return; if (sheet === MON_NX && !S.nx) return; undoNote(); CHIT_GEN++; dirty.set(sheet + "!" + ref, { sheet, ref, val }); updateSave(); }
+function put(sheet, ref, val) { if (!mayEdit(cur.b)) return; if (sheet === MON_NX && !S.nx) return; undoNote(); CHIT_GEN++; dirty.set(sheet + "!" + ref, { sheet, ref, val }); updateSave(); }
 function updateSave() {
   const b = $("btnSave"), n = unsaved(); b.disabled = !books.length;
+  const vo = books.length > 0 && books.every((k, i) => (i !== 0 && !OPS) || k.noEdit);   // nothing here can be edited
+  b.style.display = vo ? "none" : ""; $("viewOnly").style.display = vo ? "" : "none"; $("btnUndo").style.display = $("btnRedo").style.display = vo ? "none" : "";
   const stop = books.find(k => k.dirty.size && k.autoStop), manual = books.some(k => k.dirty.size && !canAuto(k));
   const auto = n && !stop && !manual && !autoMsg;   // everything with changes saves on its own
   b.classList.toggle("dirty", n > 0 && !auto); b.classList.toggle("auto", !!auto || (!n && autoAny()));
@@ -2349,7 +2352,7 @@ async function liveCheck() {
   } finally { liveBusy = false; }
   if (got.length) { liveDone(gotIx); liveRedraw(); toast("Updated from SharePoint: " + got.join(", "), 2500); }
 }
-function liveDone(ix) { if (ix.some(i => i === 0 || OPS)) undoReset(); }   // history starts again only when a file you can edit was re-read; a read-only one (the Ops Room seen from a department) leaves it alone
+function liveDone(ix) { if (ix.some(i => mayEdit(i))) undoReset(); }   // history starts again only when a file you can edit was re-read; a read-only one (the Ops Room seen from a department) leaves it alone
 // two saves at the same moment: the later one can miss the earlier one's cells. Cells this dashboard saved in the last
 // two minutes that are missing from the fresh file are written again.
 function liveHeal(b) {
@@ -2388,7 +2391,7 @@ async function save() {
 async function saveOwn() {
   if (!WB) return;
   let built;
-  if (S.hasCur && !S.kind && (cur.b === 0 || OPS)) curQuiet();
+  if (S.hasCur && !S.kind && (mayEdit(cur.b))) curQuiet();
   const sent = new Map(dirty);
   try { built = logBuild(books[cur.b], sent); } catch (e) { alert("Could not build the Excel file: " + e.message); return; }
   const blob = new Blob([built.bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -2630,8 +2633,8 @@ function renderBooks() {
   }).join("");
   const onb = bar.querySelector(".bk.on"); if (onb) { const l = onb.offsetLeft - bar.offsetLeft, r = l + onb.offsetWidth; if (l < bar.scrollLeft) bar.scrollLeft = l - 4; else if (r > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = r - bar.clientWidth + 4; }
   bbFade(); document.body.classList.toggle("opsm", !!OPS);
-  document.body.classList.toggle("ro", cur.b !== 0 && !OPS);
-  $("robanner").textContent = cur.b !== 0 && !OPS ? "Viewing " + S.dept + " (" + WB.name + ") read-only. Changes can only be made in your own file, " + books[0].S.dept + "." : "";
+  document.body.classList.toggle("ro", !mayEdit(cur.b));
+  $("robanner").textContent = books[cur.b] && books[cur.b].noEdit ? "You only have view access to " + WB.name + ". It is shown read-only." : !mayEdit(cur.b) ? "Viewing " + S.dept + " (" + WB.name + ") read-only. Changes can only be made in your own file, " + books[0].S.dept + "." : "";
   document.title = books.length ? S.dept + " · LODESTAR" : "LODESTAR";
   renderLayout();
 }
@@ -3054,7 +3057,7 @@ function renderCur() {
     $("curNote").innerHTML = S.kind ? "Open a department's planner to see its crew currency." : "<b>" + esc(S.dept) + "'s file has no currency rules yet.</b> Upload the new planner file for this department (from the project folder) to get the currency rules.";
     $("curTable").innerHTML = ""; $("ruleTable").innerHTML = ""; return;
   }
-  const C = computeCurrency(), ed = cur.b === 0 || OPS, R = S.rules, on = R.map(ruleOn), cols = R.map((r, k) => k).filter(k => on[k]);
+  const C = computeCurrency(), ed = mayEdit(cur.b), R = S.rules, on = R.map(ruleOn), cols = R.map((r, k) => k).filter(k => on[k]);
   const nb = C.filter(x => x.bad).length, nd = C.filter(x => !x.bad && x.due).length;
   $("curNote").innerHTML = "<b>As of " + serShort(curToday()) + " " + new Date(Date.UTC(1899, 11, 30) + curToday() * 86400000).getUTCFullYear() + ": " + nb + " crew with a lapsed currency, " + nd + " due soon.</b> Flights on past dates count as flown; change or clear a cell if a flight was cancelled. Flying from before this file goes in the date under each status (tick <b>Edit the dates before the planner</b>). The statuses are written into the Currency sheet when you <b>Save to Excel</b>.";
   const onlyBad = $("curOnlyBad").checked, baseEd = $("curBaseEd").checked && ed;
@@ -3136,7 +3139,7 @@ function renderPlanner() {
   if (S.kind) { $("kpis").innerHTML = ""; $("mpNote").style.display = "none"; rosterNote("plan"); return; }
   // flights from the Master Planner, when it is open
   const mb = masterBook(), mdiff = mb ? mpDiffs(books[cur.b], mb) : [], mset = new Set(mdiff.filter(x => x.mi === cur.m).map(x => x.r + ":" + x.d));
-  const canEdit = cur.b === 0 || OPS;
+  const canEdit = mayEdit(cur.b);
   $("mpNote").style.display = mb ? "" : "none";
   if (mb) $("mpNote").innerHTML = mb.S.year !== S.year ? "<span style='color:#b91c1c'>The Master Planner is for " + mb.S.year + " but this file is for " + S.year + ".</span>" :
     mdiff.length ? "<b style='color:#b45309'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and ground programme differ" : "flights differ") + " from the Master Planner in " + mdiff.length + " slot" + (mdiff.length === 1 ? "" : "s") + " this year (" + mset.size + " this month, outlined amber).</b> " +
@@ -3641,7 +3644,7 @@ function opsDbClick(e) {
 });
 const opsKey = (iso, sh, code, time, n) => [iso, String(sh).toUpperCase(), String(code).toUpperCase(), String(time || "").toUpperCase(), n].join("|");
 const opsIdx = () => books.findIndex(b => b.S.kind === "ops");
-const opsEditable = () => { const i = opsIdx(); return i >= 0 && (i === 0 || OPS); };
+const opsEditable = () => { const i = opsIdx(); return i >= 0 && (mayEdit(i)); };
 const ROLE_RANK = r => { const k = ["instructor", "senior cat a", "junior"].indexOf(String(r || "").toLowerCase()); return k < 0 ? 3 : k; };
 const CAT_RANK = c => { const k = ["CAT A", "CAT B", "CAT C", "CAT D", "TRAINEE"].indexOf(String(c || "").toUpperCase()); return k < 0 ? 5 : k; };
 const isoOf = (y, mi, d) => (y + Math.floor(mi / 12)) + "-" + String(mi % 12 + 1).padStart(2, "0") + "-" + String(d + 1).padStart(2, "0");
@@ -4111,7 +4114,7 @@ $("opsPop").addEventListener("change", e => { if (e.target.id === "opsXAdd" && c
   opsWrite(key, o => opsSeat(o, k, id)); });
 // crew the Ops Room puts on a flight (or a standby) get its code on their department plan in that shift, so their programme shows it
 function oaPlan(D, x, dept, id) {
-  const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept) && b.S.year === D.y); if (bi < 0 || !(OPS || bi === 0)) return;
+  const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept) && b.S.year === D.y); if (bi < 0 || !mayEdit(bi)) return;
   withBook(bi, () => { const i = S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0 || !S.m[D.mi]) return; const rr = i * 3 + x.s, v = S.m[D.mi].grid[rr][D.d];
     if (same(v, x.code) || (v && same(codeBase(v), codeBase(x.code)))) return;
     if (v && !confirm((S.roster[i].id || S.roster[i].name) + " already has " + v + " in " + SHIFTS[x.s] + " on " + S.dept + "'s plan. Replace it with " + x.code + "?")) return;
@@ -4119,7 +4122,7 @@ function oaPlan(D, x, dept, id) {
 }
 // crew the Ops Room takes off a flight lose its code from their plan cell in that shift (only when the cell still holds that code)
 function opsUnplan(D, x, dept, id) {
-  const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept) && b.S.year === D.y); if (bi < 0 || !(OPS || bi === 0)) return;
+  const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept) && b.S.year === D.y); if (bi < 0 || !mayEdit(bi)) return;
   withBook(bi, () => { const i = S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0 || !S.m[D.mi]) return; const rr = i * 3 + x.s, v = S.m[D.mi].grid[rr][D.d];
     if (!v || !(same(v, x.code) || same(codeBase(v), codeBase(x.code)))) return;
     S.m[D.mi].grid[rr][D.d] = ""; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), ""); });
@@ -4266,7 +4269,7 @@ function renderRoster() {
 function renderActs() {
   if (S.kind) { rosterNote("actTable"); $("actWarn").innerHTML = ""; $("catList").innerHTML = ""; $("holList").innerHTML = ""; return; }
   // flights programme: read-only here, it comes from the Master Planner
-  const mb = masterBook(), P = mb && mb.S, fl = S.acts.filter(a => isFlAct(S, a)), d = P ? codeDiffs(S, P) : null, n = d ? codeDiffN(d) : 0, canEd = cur.b === 0 || OPS;
+  const mb = masterBook(), P = mb && mb.S, fl = S.acts.filter(a => isFlAct(S, a)), d = P ? codeDiffs(S, P) : null, n = d ? codeDiffN(d) : 0, canEd = mayEdit(cur.b);
   $("actSync").innerHTML = !P ? "Flight codes are kept on the Master Planner (Master Planner ▾ Flight Codes). Open it with <b>Add other departments</b> to check this list against it." :
     !n ? "<b style='color:#15803d'>✓ Matches the Master Planner's flight codes.</b>" :
     "<b style='color:#b45309'>Differs from the Master Planner:</b> " + [d.missing.length ? "new " + d.missing.join(", ") : "", d.changed.length ? "changed " + d.changed.join(", ") : "", d.extra.length ? "not on the Master Planner " + d.extra.join(", ") : ""].filter(Boolean).map(esc).join(" · ") +
@@ -4350,7 +4353,7 @@ function openPop(k, initial) {
   pop.style.left = Math.max(8, Math.min(window.innerWidth - 260, r.left)) + "px";
   pop.style.top = (r.bottom + 2 + ph <= window.innerHeight ? r.bottom + 2 : r.top - ph >= 8 ? r.top - ph : Math.max(8, window.innerHeight - ph - 8)) + "px";
   $("popTime").style.display = isMaster ? "block" : "none";
-  $("popCN").style.display = !isMaster && S.hasNotes && (cur.b === 0 || OPS) ? "block" : "none";
+  $("popCN").style.display = !isMaster && S.hasNotes && (mayEdit(cur.b)) ? "block" : "none";
   if (!isMaster) $("popCNIn").value = (S.notes && S.notes.get(cur.m + ":" + p0.r + ":" + p0.d)) || "";
   if (isMaster) { const p = keyParts(k); $("popTimeIn").value = S.m[cur.m].mtime[p.r][p.d] || ""; $("popNoteIn").value = S.m[cur.m].mnote[p.r][p.d] || ""; }
   { const iss = isMaster ? [] : curIssues(computeCurrency(), Math.floor(p0.r / 3)), pc = $("popCur");
@@ -4359,7 +4362,7 @@ function openPop(k, initial) {
     let up = "";
     if (!isMaster && !S.kind) { const i = Math.floor(p0.r / 3), C = computeChit(), k = dayOfYear(S.year, cur.m, p0.d);
       if (C[i].down[k]) { iss.unshift("Down-chitted since " + fmtDay(doyISO(S.year, C[i].since[k])) + " (MC): not cleared to fly until up-chitted");
-        if (cur.b === 0 || OPS) up = "<div style='margin-top:4px'><button class='upc' data-upchit='" + cur.b + "|" + i + "|" + isoOf(S.year, cur.m, p0.d) + "'>Up-chit…</button></div>"; } }
+        if (mayEdit(cur.b)) up = "<div style='margin-top:4px'><button class='upc' data-upchit='" + cur.b + "|" + i + "|" + isoOf(S.year, cur.m, p0.d) + "'>Up-chit…</button></div>"; } }
     pc.style.display = iss.length ? "block" : "none"; pc.innerHTML = iss.length ? "<b>⚠ " + esc(S.roster[Math.floor(p0.r / 3)].id || "This person") + (iss.every(x => /^(Crew rest|Down-chitted)/.test(x)) ? "" : " currency") + "</b>" + iss.map(x => "<div>" + esc(x) + "</div>").join("") + up : ""; }
   if (isMaster) popSyl = null; else sylPopInit(k); drawSyl();
   $("popSearch").value = initial || ""; drawPop(); $("popSearch").focus();
@@ -4380,7 +4383,7 @@ function drawPop() {
       (a.pt !== undefined ? "<b class='plt'>" + (a.pt ? "Planned " + esc(a.pt) : "Planned") + (a.there ? " · replaces " + esc(a.there) : "") + "</b>" : a.off ? "<b class='plt off'>Not on the master list</b>" : "") + "</span></div>";
   });
   h += "<div class='it clear' data-code=''>Clear cell</div>";
-  if (popKey && popKey.startsWith("g:") && (cur.b === 0 || OPS)) h += "<div class='it blk' data-blk='1'>📅 Block of days…  <span class='d'>course, attachment, exercise</span></div>";
+  if (popKey && popKey.startsWith("g:") && (mayEdit(cur.b))) h += "<div class='it blk' data-blk='1'>📅 Block of days…  <span class='d'>course, attachment, exercise</span></div>";
   $("popList").innerHTML = h; $("popList").dataset.n = list.length;
   const hi = $("popList").querySelector(".it.hi"); if (hi) hi.scrollIntoView({ block: "nearest" });
 }
@@ -4426,7 +4429,7 @@ function sylClear(st, a) { "ABCDEFH".split("").forEach(L => put("Syllabus Log", 
 // popSyl for crew cell k of the current book, or null when the picker shows no syllabus box
 function sylPopInit(k) {
   popSyl = null;
-  if (!S.sylDef || !S.hasSyl || S.kind || !(cur.b === 0 || OPS) || !k.startsWith("g:")) return;
+  if (!S.sylDef || !S.hasSyl || S.kind || !(mayEdit(cur.b)) || !k.startsWith("g:")) return;
   const p0 = keyParts(k), i = Math.floor(p0.r / 3), sh = p0.r % 3, pr = S.roster[i]; if (!pr || !pr.id) return;
   const iso = isoOf(S.year, cur.m, p0.d), link = sylLink(S, pr.id, iso, sh), path = sylPath(S.sylDef, S, pr);
   if (!link && path.wk < 0) return;
@@ -4541,7 +4544,7 @@ async function openOps(list) {   // list: [{name, buf, handle}]
   const late = n => /sdo_?roster|duty_?roster|flight_?programme|master_?planner|ops_?room/i.test(n);
   const order = list.slice().sort((a, b) => late(a.name) - late(b.name));   // a planner first, the Duty Roster and Master Planner last
   for (const f of order) {
-    try { loadWorkbook(f.buf, f.name, f.handle, !first); if (books.length) first = false; /* an ATOM export is not a book: the next file is still the first */ } catch (e) { errs.push(f.name + ": " + (e.message || e)); }
+    try { const n0 = books.length; loadWorkbook(f.buf, f.name, f.handle, !first); if (f.noEdit && books.length > n0) books[books.length - 1].noEdit = true; if (books.length) first = false; /* an ATOM export is not a book: the next file is still the first */ } catch (e) { errs.push(f.name + ": " + (e.message || e)); }
   }
   if (first) { alert(errs.join("\n") || "No files opened."); return; }
   OPS = true; renderAll();
@@ -4700,6 +4703,13 @@ async function spShowDepts() {
   $("spPick").style.display = "flex";
   spStopDepts(); spDeptT = setInterval(() => { if (!document.hidden) spRefreshDepts(); }, LIVE_MS);
 }
+// can the signed-in person edit this file? Low bit 4 of EffectiveBasePermissions is EditListItems; any error or odd answer counts as yes (as before)
+async function spCanEdit(url) {
+  try {
+    const j = await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(url) + "')/ListItemAllFields/EffectiveBasePermissions");
+    const low = Number(j.d.EffectiveBasePermissions.Low); return isNaN(low) ? true : (low & 4) !== 0;
+  } catch (e) { return true; }
+}
 async function spOpenOps() {
   spStopDepts();
   try { await spList(); } catch (e) { alert(e.message); return; }
@@ -4708,7 +4718,7 @@ async function spOpenOps() {
   $("spTable").querySelectorAll("button").forEach(b => b.disabled = true);
   toast("Opening " + files.length + " files…", 15000);
   const list = [], errs = [];
-  for (const f of files) { try { list.push({ name: f.Name, buf: await spFetch(f), handle: spHandle(f) }); } catch (e) { errs.push(f.Name + ": " + (e.message || e)); } }
+  for (const f of files) { try { list.push({ name: f.Name, buf: await spFetch(f), handle: spHandle(f), noEdit: !(await spCanEdit(f.ServerRelativeUrl)) }); } catch (e) { errs.push(f.Name + ": " + (e.message || e)); } }
   $("spPick").style.display = "none"; spRemember("dept", "Ops Room");
   await openOps(list); toast("Opened all departments");
   if (errs.length) alert(errs.join("\n"));
@@ -4728,6 +4738,7 @@ async function spOpenDept(lab) {
   toast("Opening " + f.Name + "…", 10000);
   try {
     loadWorkbook(await spFetch(f), f.Name, spHandle(f));
+    books[0].noEdit = !(await spCanEdit(f.ServerRelativeUrl));
     spRemember("dept", lab); spRemember("mine", f.Name);
     const errs = [];
     // the Duty Planner plans with every department's file alongside; departments get the Duty Roster to copy their BDO / SDO days from
@@ -4797,7 +4808,7 @@ async function spSave(h, bytes) {
     h.modified = r.d.TimeLastModified || h.modified;
     toast("Saved to SharePoint: " + h.name);
     return true;
-  } catch (e) { alert("Could not save to SharePoint: " + (e.message || e)); return false; }
+  } catch (e) { alert(e && e.status === 403 ? "You only have view access to this file." : "Could not save to SharePoint: " + (e.message || e)); return false; }
 }
 
 // ---------- events ----------
@@ -5426,9 +5437,9 @@ $("plan").addEventListener("click", e => { const m2 = e.target.closest(".m2add")
   if (e.target.closest(".mtoggle, td.mfold")) { cur.mfold = !cur.mfold; spRemember("mfold", cur.mfold); renderPlanner(); return; }
   if (e.target.closest("i.curb:not(.rest)")) { document.querySelector("nav.tabs button[data-v='cur']").click(); return; }
   const gc = e.target.closest("td[data-g]");
-  if (gc) { if (!S.gndRow || (cur.b !== 0 && !OPS)) return; const d = +gc.dataset.g, M = S.m[cur.m];
+  if (gc) { if (!S.gndRow || (!mayEdit(cur.b))) return; const d = +gc.dataset.g, M = S.m[cur.m];
     const v = prompt("Ground programme for " + (d + 1) + " " + monLab(cur.m, S.year) + " (separate items with ;)", M.gnd[d] || ""); if (v == null) return;
-    M.gnd[d] = v.trim(); put(monSheet(cur.m), colL(DAY_COL0 + d) + S.gndRow, M.gnd[d]); renderPlanner(); return; } const t = e.target.closest("td[data-k]"); if (!t) return; select(t.dataset.k); if (cur.b !== 0 && !OPS) return; openPop(t.dataset.k); });
+    M.gnd[d] = v.trim(); put(monSheet(cur.m), colL(DAY_COL0 + d) + S.gndRow, M.gnd[d]); renderPlanner(); return; } const t = e.target.closest("td[data-k]"); if (!t) return; select(t.dataset.k); if (!mayEdit(cur.b)) return; openPop(t.dataset.k); });
 $("popSearch").addEventListener("input", drawPop);
 $("popSearch").addEventListener("keydown", e => {
   const n = +$("popList").dataset.n;

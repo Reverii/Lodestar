@@ -163,6 +163,7 @@ for i in range(N):
         cs_, nm_ = crew[i][:2]
         ini_ = "".join(w[0] for w in nm_.replace("(NS)", "").split()[1:] if w[0].isalpha()).upper()   # sample initials from the name, skipping the rank
         if REAL: ini_ = _real[i]['ini'] or None
+        if seedplan.ATOM_INI: ini_ = nm_   # names are the ATOM initials (no rank), so the initials are the same text
         for j, v in enumerate((cs_, nm_, ini_) + tuple(crew[i][2:])):
             roster.cell(r, 2 + j, v if v != "" else None)
         if REAL and _real[i]['rem']: roster.cell(r, 8, _real[i]['rem'])

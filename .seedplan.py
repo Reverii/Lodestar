@@ -1,7 +1,7 @@
 # Sample data shared by the builders (department planners, Master Planner, Duty Roster), so every file tells the same story:
 # Master Planner flights for 1 Oct - 30 Nov, the Duty Roster's BDO / SDO department per day, and each department's crew plan
 # (flights matching the Master Planner, duty days, standby, sim, admin, leave). Deterministic: same output every build.
-import datetime as dt, random
+import datetime as dt, random, os
 
 YEAR = 2026
 SHIFTS = ["AM", "PM", "NIGHT"]
@@ -43,6 +43,28 @@ SAMPLE_CREW = {
               ("SIDEWINDER", "LTA Amirul Hakim", "CAT D", "Junior", "Active"), ("KING", "2LT Jolene Koh", "TRAINEE", "Junior", "Active"),
               ("ANACONDA", "MAJ (NS) Simon Lau", "CAT A", "Instructor", "NSMEN"), ("CORAL", "CPT (NS) Desmond Yap", "CAT B", "Senior CAT A", "NSMEN")],
 }
+# Opt-in (env LODESTAR_ATOM=<ATOM export .xlsx>): the crew names become the ATOM initials, no rank. Active people are the regulars,
+# NSmen the NSMEN section (Staff/Assigned are left out). The demo callsigns go to the first people so the demo plans stay; the rest have no callsign.
+# Nothing from the ATOM file is stored in this repo: it is read only when the env var is set.
+ATOM_INI = False
+def _atom_crew(demo, path):
+    import openpyxl
+    sheets = {"PILOT": "Pilot", "ACS": "Loadmaster", "TACCO": "TACCO", "SUP1": "SUP 1", "SUP2": "SUP 2"}
+    wb = openpyxl.load_workbook(path, read_only=True, data_only=True); out = {}
+    for sn, dept in sheets.items():
+        if sn not in wb.sheetnames or dept not in demo: continue
+        reg, ns = [], []
+        for r in wb[sn].iter_rows(min_row=3, max_col=4, values_only=True):
+            sec, nm = str(r[0] or "").strip(), str(r[1] or "").strip()
+            if not nm or sec not in ("Active", "NSmen"): continue
+            cat = str(r[2] or "").strip().upper(); cat = "TRAINEE" if cat == "OCU" else "CAT " + cat if cat else "CAT D"
+            role = "Instructor" if str(r[3] or "").strip() else "Senior CAT A" if cat in ("CAT A", "CAT B") else "Junior"
+            (reg if sec == "Active" else ns).append((nm, cat, role, "Active" if sec == "Active" else "NSMEN"))
+        dr = [c[0] for c in demo[dept] if c[4] not in ("SANS", "NSMEN")]; dn = [c[0] for c in demo[dept] if c[4] in ("SANS", "NSMEN")]
+        out[dept] = [((dr[k] if k < len(dr) else ""),) + p for k, p in enumerate(reg)] + [((dn[k] if k < len(dn) else ""),) + p for k, p in enumerate(ns)]
+    return {**demo, **out}
+if os.environ.get("LODESTAR_ATOM"):
+    SAMPLE_CREW = _atom_crew(SAMPLE_CREW, os.environ["LODESTAR_ATOM"]); ATOM_INI = True
 # Duty Roster: who can do each duty (callsign, name, department)
 _crew = {c[0]: (c[1], d) for d, L in SAMPLE_CREW.items() for c in L}
 SDO_CREW = [(cs,) + _crew[cs] for cs in ["ALPHA", "BRAVO", "CHARLIE", "DELTA", "HAWK", "RAPTOR", "FALCON", "EAGLE", "ATLAS", "ZEUS", "APOLLO", "HERMES"]]

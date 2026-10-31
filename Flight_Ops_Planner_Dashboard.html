@@ -547,7 +547,7 @@ body.opsfs main,body.opsfs .view{padding-top:6px}
 .sansbox{background:#16a34a!important;color:#fff!important;border-radius:5px;padding:0 6px;font-style:normal}#v-ops .catT{color:#ec4899!important}
 #opsKey{margin-left:auto;display:inline-flex;gap:8px;align-items:center;font-size:12px;color:var(--s500);font-weight:700}#opsKey b{font-weight:800}
 .opssh{display:inline-block;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;background:#f0f9ff;color:#075985}
-.opssh.s1{background:#fffbeb;color:#92400e}.opssh.s2{background:#1e1b4b;color:#c7d2fe}
+.opssh.s1{background:#fffbeb;color:#92400e}.opssh.s2{background:#1e1b4b;color:#c7d2fe}.opssh.s3{background:#ccfbf1;color:#115e59}
 .opsst{font-size:12px;font-weight:700;color:var(--green)}.opsf.short .opsst{color:#d97706}.opsf.bad .opsst{color:var(--red)}
 .opstag{font-size:11px;font-weight:700;background:#ecfdf5;color:#065f46;border-radius:4px;padding:2px 6px}
 .opstag.no{background:#fef2f2;color:#b91c1c}
@@ -741,7 +741,7 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsSide .ocnt{font-weight:600;color:var(--s500)}
 #opsSide .opsdc h2{flex-wrap:wrap;white-space:nowrap}#opsSide h2 .btn{padding:2px 8px;font-size:12px;white-space:nowrap;margin-left:auto}#opsSide h2 .btn+.btn{margin-left:0}
 #opsSide>.card.rmk{display:flex;flex-direction:column}#opsSide .rmk #opsDayRem{flex:1;min-height:70px}
-.gp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.gcol{min-width:0}.gcol .gi{padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px}.gcol .opssh{margin-bottom:3px}.gcol .owho{margin-top:2px}.gcol .gc{color:#6d28d9;font-style:italic;font-size:11.5px}
+.gp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.gp3.gp4{grid-template-columns:repeat(4,minmax(0,1fr))}.gcol{min-width:0}.gcol .gi{padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px}.gcol .opssh{margin-bottom:3px}.gcol .owho{margin-top:2px}.gcol .gc{color:#6d28d9;font-style:italic;font-size:11.5px}
 .olv .dep{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-top:1px solid var(--s100);font-size:13px}.olv .dep:first-of-type{border-top:0}.olv .dep .dn{min-width:76px;flex:none;color:var(--s500);font-size:11px;text-transform:uppercase;letter-spacing:.3px}.olv .olp{margin-right:10px;white-space:nowrap}.olv .olp b{font-size:14px}.olv .olp small{margin-left:3px;color:var(--s500);font-size:10.5px;font-weight:700}
 .olist .oli{display:flex;gap:8px;padding:5px 0;border-top:1px solid var(--s100);font-size:12.5px;align-items:flex-start}.olist .oli:first-child{border-top:0}
 .olist .ogt{width:74px;flex:none;font-weight:700;white-space:nowrap}.olist .omc{padding:1px 6px;border-radius:4px;font-size:11px;flex:none;min-width:36px;text-align:center}
@@ -2220,7 +2220,7 @@ function buildXlsx() {
 const unsaved = () => books.reduce((n, b) => n + b.dirty.size, 0);
 // ---------- change log: every save adds one line per changed cell to the file's own 'Change Log' sheet
 // (time, who, file, what changed in words, before, after, cell). On SharePoint "who" is the signed-in person.
-const LOG_SHEET = "Change Log", LOG_SKIP = new Set(["Currency", LOG_SHEET, ATOM_SHEET]), LOG_SHIFTS = ["AM", "PM", "NIGHT"], LOG_SLOTS = ["AM 1", "AM 2", "PM 1", "PM 2", "NIGHT 1", "NIGHT 2"];
+const LOG_SHEET = "Change Log", LOG_SKIP = new Set(["Currency", LOG_SHEET, ATOM_SHEET]), LOG_SHIFTS = ["AM", "PM", "NIGHT", "WD"], LOG_SLOTS = ["AM 1", "AM 2", "PM 1", "PM 2", "NIGHT 1", "NIGHT 2"];
 const LOG_HEAD = ["Time", "Name", "Email", "File", "Change", "Before", "After", "Cell"];
 const logWho = () => SP.user ? SP.user.Title : "Offline (" + (books[0] ? books[0].WB.name : "") + ")";
 const logTime = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()); };
@@ -3932,9 +3932,10 @@ function renderOps() {
   const G = opsGround(D), MV = opsMovement(D);
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
   const mv = "<div class='card olv'><h2>Leave and MC</h2>" + MV.map(m => "<div class='dep'><b class='dn'>" + esc(m.dept) + "</b><span class='dw'>" + (m.who || "<span class='muted'>–</span>") + "</span></div>").join("") + "</div>";
-  const gcol = sh => "<div class='gcol'><span class='opssh s" + sh + "'>" + SHIFTS[sh] + "</span>" + G.filter(g => g.sh === sh).map(g =>
+  const GLAB = [...SHIFTS, "Whole day"], wdCol = G.some(g => g.sh === 3);   // the Whole day column only when someone has a WD item
+  const gcol = sh => "<div class='gcol'><span class='opssh s" + sh + "'>" + GLAB[sh] + "</span>" + G.filter(g => g.sh === sh).map(g =>
     "<div class='gi'><b>" + esc(g.act) + "</b> <span class='muted'>" + (g.until || g.when || "") + "</span>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "<div class='owho'>" + g.who + "</div>" + (g.note ? "<div class='gc'>" + g.note + "</div>" : "") + "</div>").join("") + "</div>";
-  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gp3'>" + gcol(0) + gcol(1) + gcol(2) + "</div>" : "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
+  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gp3" + (wdCol ? " gp4" : "") + "'>" + gcol(0) + gcol(1) + gcol(2) + (wdCol ? gcol(3) : "") + "</div>" : "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
   // remarks for the day (Day Board column P of the Ops Room file)
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
@@ -4020,9 +4021,9 @@ function opsGround(D) {
       if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : "";
         if (own && !same(own, fromMp)) out.push({ sh: 0, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "<span class='muted'>" + esc(S.dept) + "'s ground programme row</span>" }); }
       const groups = new Map();
-      S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) {
+      S.roster.forEach((p, i) => { for (let s = 0; s < rp(); s++) {
         const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
-        if (!a || a.ci !== CAT_ADMIN) continue;   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
+        if (!a || !(isWdRow(gridRow(i, s)) ? wdAllowed(a) : a.ci === CAT_ADMIN)) continue;   // the WD row (s = 3) shows its ground and admin items in a Whole day column   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
         // the same activity on the next days of this month (same person and shift): "until <last day>"
         let e = D.d, em = D.mi;   // the last day (and its month) of the run; it carries on into the next month's grid
         for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
@@ -5139,7 +5140,7 @@ $("blkGo").onclick = () => {
   const x = blkCells(), code = $("blkCode").value; if (x.err || !x.cells.length) return;
   for (const c of x.cells) { S.m[c.mi].grid[c.r][c.d] = code; put(monSheet(c.mi), colL(DAY_COL0 + c.d) + (g0() + c.r), code);
     if (c.old && S.hasSyl && !S.kind) {   // a replaced flight no longer carries its Planned syllabus entry (Pass / Fail results stay)
-      const pr = S.roster[rowPerson(c.r)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, c.mi, c.d), c.r % 3) : null;
+      const pr = S.roster[rowPerson(c.r)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, c.mi, c.d), rowShift(c.r)) : null;
       if (lk && lk.res === "Planned") sylClear(S, lk); } }
   const nt = $("blkNote").value.trim(); if (nt && S.hasNotes) { const c0 = x.cells[0]; setNote(c0.mi, c0.r, c0.d, nt); }
   $("blkPop").style.display = "none";
@@ -5204,6 +5205,8 @@ function lodeDay(who, iso) {
       cells.push({ s, code: v, text: a && a.desc ? a.desc : v, note, syl: si ? si.desc || si.code : "", time: isF ? plannedFlights(M, d, s).get(v.toUpperCase()) || "" : "", cancelled: isF ? cxlOf(st, who.p.id, mi, d, s) || "" : "",
         kind: isF ? "flight" : isSb(v) ? "standby" : ci === CAT_SQD ? "duty" : AWAY(ci) ? "away" : "other" });
     }
+    if (rp() > 3) { const wv = M.grid[gridRow(i, 3)][d], wa = wv && A.get(wv.toUpperCase());   // the WD row: a whole-day ground or admin item
+      if (wdAllowed(wa)) cells.push({ s: -1, code: wv, text: wa.desc || wv, note: (st.notes && st.notes.get(mi + ":" + gridRow(i, 3) + ":" + d)) || "", syl: "", time: "", cancelled: "", kind: "wd" }); }
     const items = cells.filter(c => c.kind === "flight");   // a code on all three shifts (leave, BDO) is one all-day item
     for (const code of [...new Set(cells.filter(c => c.kind !== "flight").map(c => c.code))]) {
       const g = cells.filter(c => c.code === code);
@@ -5359,6 +5362,7 @@ function lodeTodayHtml(who, D, isToday, iso) {
   const rows = D.items.filter(x => x.kind !== "flight").map(x => x.kind === "standby" ? it("STANDBY", "gr", esc(x.text), SHIFTS[x.s] || "All day") :
     x.kind === "ground" ? it("GROUND", "am", esc(x.text + (x.time ? " " + x.time : "")), "") :
     x.kind === "away" ? it("AWAY", "gy", esc(x.text), x.s < 0 ? "All day" : SHIFTS[x.s]) :
+    x.kind === "wd" ? it("WHOLE DAY", "gr", esc(x.code + (x.text && !same(x.text, x.code) ? " " + x.text : "")), x.note ? "“" + x.note + "”" : "") :
     x.kind === "duty" ? "" : it(x.s < 0 ? "ALL DAY" : SHIFTS[x.s], "am", esc(x.code + (x.time ? " " + x.time : "")), x.note ? "“" + x.note + "”" : ""));
   rows.push(it("DUTY", "rs", esc(D.duty || "No duty " + (isToday ? "today" : "this day")), D.duty ? "" : D.nextDuty ? "Next: " + D.nextDuty : ""));
   const miss = D.missing.length ? "<div class='lodemiss'>Not open: " + esc(D.missing.join(", ")) + ". Those parts are left out.</div>" : "";

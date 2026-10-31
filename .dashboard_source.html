@@ -5138,7 +5138,7 @@ $("blkGo").onclick = () => {
   const x = blkCells(), code = $("blkCode").value; if (x.err || !x.cells.length) return;
   for (const c of x.cells) { S.m[c.mi].grid[c.r][c.d] = code; put(monSheet(c.mi), colL(DAY_COL0 + c.d) + (g0() + c.r), code);
     if (c.old && S.hasSyl && !S.kind) {   // a replaced flight no longer carries its Planned syllabus entry (Pass / Fail results stay)
-      const pr = S.roster[rowPerson(c.r)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, c.mi, c.d), c.r % 3) : null;
+      const pr = S.roster[rowPerson(c.r)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, c.mi, c.d), rowShift(c.r)) : null;
       if (lk && lk.res === "Planned") sylClear(S, lk); } }
   const nt = $("blkNote").value.trim(); if (nt && S.hasNotes) { const c0 = x.cells[0]; setNote(c0.mi, c0.r, c0.d, nt); }
   $("blkPop").style.display = "none";

@@ -27,7 +27,8 @@ SDO_DEPTS = ["SUP 1", "SUP 2", "Loadmaster"]   # only these departments are rost
 DOES_SDO = DEPT in SDO_DEPTS
 FILTER_ROW = G0 - 1
 CODE_ROW = lambda s, k: 6 + 6 * s + 3 * k   # master code row for shift s, slot k; time row is +1, comment row is +2
-GL = G0 + 3 * N - 1   # last grid row
+PER = 4              # rows per person on the month tabs: AM, PM, NIGHT and WD (whole day, ground and admin items only)
+GL = G0 + PER * N - 1   # last grid row
 D1, D31 = 4, 34       # day columns D..AH
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 MON_NX = "Jan (next year)"   # look-ahead: January of the next year, planned while still in December (Start new year moves it into Jan)
@@ -201,7 +202,7 @@ notes["A3"] = "To remove a comment, clear its row. Callsign can also be the crew
 header(notes, 5, 1, ["Date", "Shift", "Callsign", "Crew Member", "Comment", "Activity", "Key"])
 for col, w in zip("ABCDEFG", [16, 9, 12, 26, 50, 12, 14]): notes.column_dimensions[col].width = w
 _crew_idx = lambda r: f'IFERROR(MATCH(C{r},Roster!$B$6:$B${5+N},0),MATCH(C{r},Roster!$C$6:$C${5+N},0))'
-_grid_row = lambda r: f'{G0}+3*({_crew_idx(r)}-1)+MATCH(B{r},{{"AM","PM","NIGHT"}},0)-1'
+_grid_row = lambda r: f'{G0}+{PER}*({_crew_idx(r)}-1)+MATCH(B{r},{{"AM","PM","NIGHT","WD"}},0)-1'
 for i in range(NOTE_N):
     r = 6 + i
     for c in range(1, 8):
@@ -214,7 +215,7 @@ for i in range(NOTE_N):
     notes.cell(r, 6, f'=IF(OR(A{r}="",C{r}="",B{r}=""),"",IFERROR(INDEX(CHOOSE(' + MIX(f"A{r}") + ',' + ",".join(f"'{mon}'!$D${G0}:$AH${GL}" for mon in MONTHS13) + f'),{_grid_row(r)}-{G0}+1,DAY(A{r}))&"",""))').alignment = CENTER
     notes.cell(r, 7, f'=IF(OR(A{r}="",C{r}="",B{r}="",E{r}=""),"",IFERROR(A{r}&"|"&({_grid_row(r)}),""))').font = f(False, SLATE400, 8)
 notes.freeze_panes = "A6"
-dv = DataValidation(type="list", formula1='"AM,PM,NIGHT"', allow_blank=True); dv.add(f"B6:B{5+NOTE_N}"); notes.add_data_validation(dv)
+dv = DataValidation(type="list", formula1='"AM,PM,NIGHT,WD"', allow_blank=True); dv.add(f"B6:B{5+NOTE_N}"); notes.add_data_validation(dv)
 dv = DataValidation(type="date", operator="between", formula1="DATE(PlanYear,1,1)", formula2="DATE(PlanYear+1,1,31)", allow_blank=True, showErrorMessage=True, errorTitle="Date", error=f"Use a date in {YEAR} or January {YEAR + 1}.")
 dv.add(f"A6:A{5+NOTE_N}"); notes.add_data_validation(dv)
 if not NOFILTER: notes.auto_filter.ref = f"A5:G{5+NOTE_N}"
@@ -265,7 +266,7 @@ if DEPT == "SUP 2" and not REAL:
                            ("S2-SAMPLE2", None, None, None, None, "Can Friday's AM flight start 0900 instead? Ground school runs late", dt.date(YEAR, 10, 1))]):
         for c, x in enumerate(v, start=1):
             if x is not None: req.cell(6 + i, c, x)
-dv = DataValidation(type="list", formula1='"AM,PM,NIGHT"', allow_blank=True); dv.add(f"C6:C{5+REQ_N}"); req.add_data_validation(dv)
+dv = DataValidation(type="list", formula1='"AM,PM,NIGHT,WD"', allow_blank=True); dv.add(f"C6:C{5+REQ_N}"); req.add_data_validation(dv)
 dv = DataValidation(type="list", formula1='"Add flight,Change,Cancel,Other"', allow_blank=True, showErrorMessage=False); dv.add(f"D6:D{5+REQ_N}"); req.add_data_validation(dv)
 req.freeze_panes = "A6"; req.sheet_properties.tabColor = "D97706"
 
@@ -546,16 +547,20 @@ dv = DataValidation(type="custom", formula1=f"COUNTIF($A$6:$A${5+NA},A6)=1", all
 apply_cat_cf(acts, f"A6:A{5+NA}", "A6")
 acts.cell(4, 5, "Blank = 1").font = f(italic=True, color=SLATE500, size=8)
 dv = DataValidation(type="whole", operator="between", formula1="1", formula2="9", allow_blank=True); dv.add(f"E6:E{5+NA}"); acts.add_data_validation(dv)
-header(acts, 5, 12, ["Sorties (calc)", "Flight #", "Flight list"])
+header(acts, 5, 12, ["Sorties (calc)", "Flight #", "Flight list", "WD #", "WD list"])
 for i in range(NA):
     r = 6 + i
     acts.cell(r, 12, f'=IF($A{r}="","",IF($E{r}="",1,$E{r}))')
     acts.cell(r, 13, f'=IF(AND($A{r}<>"",$C{r}=$G$6),COUNTIFS($A$6:$A{r},"<>",$C$6:$C{r},$G$6),"")')
     acts.cell(r, 14, f'=IFERROR(INDEX($A$6:$A${5+NA},MATCH({i + 1},$M$6:$M${5+NA},0)),"")')
-for col in "LMN":
+    # the WD row takes ground and admin items only
+    acts.cell(r, 15, f'=IF(AND($A{r}<>"",OR($C{r}={catref("Ground Duty")},$C{r}={catref("Admin")})),COUNTIFS($A$6:$A{r},"<>",$C$6:$C{r},{catref("Ground Duty")})+COUNTIFS($A$6:$A{r},"<>",$C$6:$C{r},{catref("Admin")}),"")')
+    acts.cell(r, 16, f'=IFERROR(INDEX($A$6:$A${5+NA},MATCH({i + 1},$O$6:$O${5+NA},0)),"")')
+for col in "LMNOP":
     acts.column_dimensions[col].hidden = True
 name("ActSort", f"Activities!$L$6:$L${5+NA}")
 name("FlightCodes", f"Activities!$N$6:$N${5+NA}" if STATICNAMES else f"Activities!$N$6:INDEX(Activities!$N$6:$N${5+NA},MAX(1,COUNTIF(Activities!$C$6:$C${5+NA},Activities!$G$6)))")
+name("WdCodes", f"Activities!$P$6:$P${5+NA}" if STATICNAMES else f"Activities!$P$6:INDEX(Activities!$P$6:$P${5+NA},MAX(1,COUNTIF(Activities!$C$6:$C${5+NA},{catref('Ground Duty')})+COUNTIF(Activities!$C$6:$C${5+NA},{catref('Admin')})))")
 name("ActCodesAll", f"Activities!$A$6:$A${5+NA}")
 name("ActCat", f"Activities!$C$6:$C${5+NA}")
 name("ActHrs", f"Activities!$D$6:$D${5+NA}")
@@ -728,7 +733,9 @@ seeds = seedplan.FIXED
 # sample SDO calendar for October: day -> dept (8 Oct is given to SUP 1 but nobody from SUP 1 is on SDO, to show the warning)
 sdo_seed = {1: "SUP 1", 2: "SUP 2", 3: "SUP 2", 4: "SUP 2", 5: "Loadmaster", 6: "SUP 1", 7: "Loadmaster", 8: "SUP 1", 9: "SUP 2"}
 SHIFTS = ["AM", "PM", "NIGHT"]
-SHIFT_STYLE = {"AM": ("F0F9FF", "075985"), "PM": ("FFFBEB", "92400E"), "NIGHT": ("1E1B4B", "C7D2FE")}
+SHIFT_STYLE = {"AM": ("F0F9FF", "075985"), "PM": ("FFFBEB", "92400E"), "NIGHT": ("1E1B4B", "C7D2FE"), "WD": ("CCFBF1", "115E59")}
+ROW_LABELS = SHIFTS + ["WD"]
+WD_TINT = "F0FDFA"
 KPI = [  # label, formula builder, accent, numfmt
     ("Total Flights", lambda: f"=SUM(AI{G0}:AI{GL})", "1D4ED8", "0"),
     ("Total Flying Hrs", lambda: f"=SUM(AJ{G0}:AJ{GL})", "0F766E", "0.0"),
@@ -896,32 +903,32 @@ for m, mon in enumerate(MONTHS13, start=1):
 
     # crew blocks
     for i in range(N):
-        r0 = G0 + 3 * i; rr = 6 + i
+        r0 = G0 + PER * i; rr = 6 + i
         band = SANS_FILL if is_sans(i) else "FFFFFF" if i % 2 == 0 else SLATE50
         ws.merge_cells(start_row=r0, start_column=2, end_row=r0 + 1, end_column=2)
-        for s in range(3):
+        for s in range(PER):
             a = ws.cell(r0 + s, 1, f'=IF(Roster!$C${rr}="","",IF(Roster!$B${rr}="","#"&{i + 1},Roster!$B${rr}&""))')
             a.font = f(True, SLATE700, 9); a.alignment = Alignment(horizontal="center", vertical="center", shrink_to_fit=True)
             if s:
-                a.number_format = ";;;"   # same value on all three rows so the filter keeps the block together
+                a.number_format = ";;;"   # same value on all four rows so the filter keeps the block together
         b = ws.cell(r0, 2, f'=IF(Roster!$C${rr}="","",Roster!$C${rr})'); b.font = f(True, SLATE800, 11)
         b.alignment = Alignment(horizontal="left", vertical="bottom", indent=1, wrap_text=True)
         rl = ws.cell(r0 + 2, 2, f'=IF(Roster!$C${rr}="","",Roster!$F${rr}&IF(OR(Roster!$G${rr}="SANS",Roster!$G${rr}="NSMEN"),"  |  "&Roster!$G${rr},""))'); rl.font = f(False, SLATE500, 9)
         rl.alignment = Alignment(horizontal="left", vertical="top", indent=1, shrink_to_fit=True)
-        for s, sh in enumerate(SHIFTS):
+        for s, sh in enumerate(ROW_LABELS):
             r = r0 + s
             bg, fg = SHIFT_STYLE[sh]
             sc = ws.cell(r, 3, sh); sc.fill = fill(bg); sc.font = Font(name="Consolas", bold=True, color=fg, size=9); sc.alignment = CENTER
-            bottom = heavy if s == 2 else Side(style="thin", color=SLATE200)
+            bottom = heavy if s == PER - 1 else Side(style="thin", color=SLATE200)
             for c in range(1, LASTC + 1):
                 cell = ws.cell(r, c)
                 cell.border = Border(left=thin, right=thin, top=Side(style="thin", color=SLATE200) if s else Side(style="thick", color="7E22CE") if i == REG_N else heavy, bottom=bottom)
                 if c != 3 and (c <= 2 or not is_sans(i) or c > D31):
-                    cell.fill = fill(band)
+                    cell.fill = fill(WD_TINT if s == PER - 1 and D1 <= c <= D31 else band)
                 if D1 <= c <= D31:
                     cell.alignment = Alignment(horizontal="center", vertical="center", shrink_to_fit=True); cell.font = f(False, SLATE700, 10)
             ws.row_dimensions[r].height = 19
-        blk3 = f"$D{r0}:$AH{r0 + 2}"
+        blk3 = f"$D{r0}:$AH{r0 + 2}"   # the three shift rows: flights, hours and duty never sit in WD
         for k, (lab, cat, mode, col) in enumerate(METRICS):
             hc = f"{CL(MC0 + k)}$3"
             if mode == "entries":
@@ -932,14 +939,14 @@ for m, mon in enumerate(MONTHS13, start=1):
                 rows = "+".join(f"($D{r0 + s}:$AH{r0 + s}=\"{dc}\")" for s in range(3) for dc in DUTY_CODES)
                 fx = f"SUMPRODUCT(--(({rows})>0))"
             else:
-                rows = "+".join(f"COUNTIFS(ActCodesAll,$D{r0 + s}:$AH{r0 + s},ActCat,{hc})" for s in range(3))
+                rows = "+".join(f"COUNTIFS(ActCodesAll,$D{r0 + s}:$AH{r0 + s},ActCat,{hc})" for s in range(PER))
                 fx = f"SUMPRODUCT(--(({rows})>0))"
-            ws.merge_cells(start_row=r0, start_column=MC0 + k, end_row=r0 + 2, end_column=MC0 + k)
+            ws.merge_cells(start_row=r0, start_column=MC0 + k, end_row=r0 + PER - 1, end_column=MC0 + k)
             c = ws.cell(r0, MC0 + k, f'=IF($A{r0}="","",{fx})')
             c.alignment = CENTER; c.font = f(True, SLATE900, 12)
             c.number_format = "0.0;-0.0;-" if mode == "hours" else "0;-0;-"
         if i not in crew:
-            for s in range(3):
+            for s in range(PER):
                 ws.row_dimensions[r0 + s].hidden = not NOFILTER
     nonblank_filter(ws, f"A{FILTER_ROW}:A{GL}", 0)
 
@@ -947,13 +954,13 @@ for m, mon in enumerate(MONTHS13, start=1):
     ws.cell(S0, 2, "DAILY SUMMARY").font = f(True, SLATE900, 11)
     def persons(L, cats):
         parts = []
-        for s in range(3):
-            rng = f"{L}${G0 + s}:{L}${GL - 2 + s}"
+        for s in range(PER):
+            rng = f"{L}${G0 + s}:{L}${GL - (PER - 1) + s}"
             parts += [f"COUNTIFS(ActCodesAll,{rng},ActCat,{catref(c)})" for c in cats]
-        return f"SUMPRODUCT(($C${G0}:$C${GL - 2}=\"AM\")*(({'+'.join(parts)})>0))"
+        return f"SUMPRODUCT(($C${G0}:$C${GL - (PER - 1)}=\"AM\")*(({'+'.join(parts)})>0))"
     def persons_duty(L):
-        parts = [f'({L}${G0 + s}:{L}${GL - 2 + s}="{dc}")' for s in range(3) for dc in DUTY_CODES]
-        return f"SUMPRODUCT(($C${G0}:$C${GL - 2}=\"AM\")*(({'+'.join(parts)})>0))"
+        parts = [f'({L}${G0 + s}:{L}${GL - (PER - 1) + s}="{dc}")' for s in range(3) for dc in DUTY_CODES]
+        return f"SUMPRODUCT(($C${G0}:$C${GL - (PER - 1)}=\"AM\")*(({'+'.join(parts)})>0))"
     for lab in SUMMARY:
         r = SUM_ROW[lab]
         ws.cell(r, 2, lab).font = f(lab in ("Total flights", "SDO on duty", "Available crew"), SLATE800, 10)
@@ -997,10 +1004,10 @@ for m, mon in enumerate(MONTHS13, start=1):
     ws.conditional_formatting.add("D4:AH5", FormulaRule(formula=['AND(D$5<>"",COUNTIF(Holidays,D$5)>0)'], fill=fill("9F1239"), font=Font(color="FFFFFF", bold=True)))
     ws.conditional_formatting.add("D4:AH5", FormulaRule(formula=['AND(D$5<>"",WEEKDAY(D$5,2)>5)'], fill=fill(SLATE700), font=Font(color=AMBER300, bold=True)))
     ws.conditional_formatting.add(f"B{G0}:B{GL}", FormulaRule(
-        formula=[f'INDEX(CrewStatus,INT((ROW()-{G0})/3)+1)="Inactive"'], font=Font(color=SLATE400, italic=True, strike=True), stopIfTrue=True))
-    cat_cf(ws, f"B{G0}:B{GL}", f"INT((ROW()-{G0})/3)+1")
-    dv = DataValidation(type="list", formula1="ActCodes", allow_blank=True, showErrorMessage=True, errorStyle="stop",
-                        errorTitle="Unknown activity", error="Pick an activity from the dropdown. New activities go on the Activities sheet.")
+        formula=[f'INDEX(CrewStatus,INT((ROW()-{G0})/{PER})+1)="Inactive"'], font=Font(color=SLATE400, italic=True, strike=True), stopIfTrue=True))
+    cat_cf(ws, f"B{G0}:B{GL}", f"INT((ROW()-{G0})/{PER})+1")
+    dv = DataValidation(type="list", formula1=f'IF($C{G0}="WD",WdCodes,ActCodes)', allow_blank=True, showErrorMessage=True, errorStyle="stop",
+                        errorTitle="Unknown activity", error="Pick an activity from the dropdown. New activities go on the Activities sheet. The WD row takes ground and admin items only.")
     dv.add(grid); ws.add_data_validation(dv)
 
     ws.column_dimensions["A"].width = 11; ws.column_dimensions["B"].width = 27; ws.column_dimensions["C"].width = 8
@@ -1035,7 +1042,7 @@ for m, mon in enumerate(MONTHS13, start=1):
         ids = {c[0]: k for k, c in crew.items()}
         for (pid, dd, sh), code in seedplan.plan(DEPT).items():
             if pid in ids and dd.month == m:
-                ws.cell(G0 + 3 * ids[pid] + SHIFTS.index(sh), D1 + dd.day - 1, code)
+                ws.cell(G0 + PER * ids[pid] + SHIFTS.index(sh), D1 + dd.day - 1, code)
         for dd in seedplan.days():
             if dd.month != m: continue
             for rr, (code, tm, nt) in enumerate(seedplan.dept_slots(dd, DEPT)):
@@ -1079,7 +1086,7 @@ name("MonthIdx", "Dashboard!$Z$1")
 dash["Z1"] = "=MATCH($B$5,{" + ",".join(f'"{x}"' for x in MONTHS_FULL) + "},0)"
 dash.column_dimensions["Z"].hidden = True
 # layout stamp: the dashboard compares it with the layout it was written for (bump it when cell positions change)
-dash["Z2"] = "LODESTAR dept layout 2"; dash.column_dimensions["Z"].hidden = True
+dash["Z2"] = "LODESTAR dept layout 3"; dash.column_dimensions["Z"].hidden = True
 dv = DataValidation(type="list", formula1='"' + ",".join(str(y) for y in range(2025, 2036)) + '"'); dv.add("A5"); dash.add_data_validation(dv)
 dv = DataValidation(type="list", formula1='"' + ",".join(MONTHS_FULL) + '"'); dv.add("B5"); dash.add_data_validation(dv)
 def pick(cellref):
@@ -1099,7 +1106,7 @@ header(dash, T0 + 1, 1, ["Callsign", "Crew Member", "Role", "Status"] + [m[0] fo
 for k, (lab, cat, mode, col) in enumerate(METRICS):
     dash.cell(T0 + 1, 5 + k).fill = fill(col)
 for i in range(N):
-    r = T0 + 2 + i; rr = 6 + i; gr = G0 + 3 * i
+    r = T0 + 2 + i; rr = 6 + i; gr = G0 + PER * i
     dash.cell(r, 1, f'=IF(Roster!$B${rr}="","",Roster!$B${rr})').font = f(True, SLATE900, 10)
     dash.cell(r, 2, f'=IF(Roster!$C${rr}="","",Roster!$C${rr})').font = f(True, SLATE800, 10)
     dash.cell(r, 3, f'=IF(Roster!$C${rr}="","",Roster!$F${rr}&"")').font = f(False, SLATE700, 10)
@@ -1191,26 +1198,26 @@ if HAS_DUTY:
     card(daily, 7, 7, 1, "Duty Day", f'=IF(NOT('+INYR('$A$5')+'),"",IF(INDEX({sdoref},1,DAY($A$5))="","No",INDEX({sdoref},1,DAY($A$5))))', "BE123C", "@")
 else:
     card(daily, 7, 7, 1, "SDO Day", f'=IF(NOT('+INYR('$A$5')+'),"",IF(INDEX({sdoref},1,DAY($A$5))="","No","Yes"))', "BE123C", "@")
-header(daily, 10, 1, ["Callsign", "Crew Member", "Role", "AM", "PM", "NIGHT"])
+header(daily, 10, 1, ["Callsign", "Crew Member", "Role", "AM", "PM", "NIGHT", "WD"])
 chooser = "CHOOSE(" + MIX("$A$5") + "," + ",".join(f"'{mon}'!$D${G0}:$AH${GL}" for mon in MONTHS13) + ")"
 for i in range(N):
     r = 11 + i; rr = 6 + i
     daily.cell(r, 1, f'=IF(Roster!$B${rr}="","",Roster!$B${rr})').font = f(True, SLATE900, 10)
     daily.cell(r, 2, f'=IF(Roster!$C${rr}="","",Roster!$C${rr})').font = f(True, SLATE800, 10)
     daily.cell(r, 3, f'=IF(Roster!$C${rr}="","",Roster!$F${rr}&IF(OR(Roster!$G${rr}="SANS",Roster!$G${rr}="NSMEN")," | "&Roster!$G${rr},""))').font = f(False, SLATE700, 10)
-    for s in range(3):
-        c = daily.cell(r, 4 + s, f'=IF(OR($B{r}="",NOT('+INYR('$A$5')+')),"",INDEX({chooser},{3 * i + s + 1},DAY($A$5))&"")')
+    for s in range(PER):
+        c = daily.cell(r, 4 + s, f'=IF(OR($B{r}="",NOT('+INYR('$A$5')+f')),"",INDEX({chooser},{PER * i + s + 1},DAY($A$5))&"")')
         c.alignment = CENTER; c.font = f(False, SLATE700, 10)
-    for c in range(1, 7):
+    for c in range(1, 8):
         daily.cell(r, c).border = BOX
         if is_sans(i) and c <= 3: daily.cell(r, c).fill = fill(SANS_FILL)
     if i not in crew:
         daily.row_dimensions[r].hidden = not NOFILTER
-nonblank_filter(daily, f"A10:F{10 + N}", 1)
-apply_cat_cf(daily, f"D11:F{10 + N}", "D11")
+nonblank_filter(daily, f"A10:G{10 + N}", 1)
+apply_cat_cf(daily, f"D11:G{10 + N}", "D11")
 daily.conditional_formatting.add(f"A11:B{10 + N}", FormulaRule(formula=['INDEX(CrewStatus,ROW()-10)="Inactive"'], font=Font(color=SLATE400, italic=True, strike=True), stopIfTrue=True))
 cat_cf(daily, f"B11:B{10 + N}", "ROW()-10")
-for col, w in zip("ABCDEFGH", [12, 26, 14, 15, 15, 15, 14, 3]):
+for col, w in zip("ABCDEFGH", [12, 26, 14, 15, 15, 15, 15, 3]):
     daily.column_dimensions[col].width = w
 daily.freeze_panes = "A11"
 

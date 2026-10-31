@@ -70,27 +70,25 @@ const PLANT = `(() => { const bi = books.findIndex(b => b.S.dept === "Pilot"); r
 const goOps = page => page.evaluate(iso => { cur.opsDay = iso; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps(); }, OPSDAY);
 const OPS = { mine: "Ops_Room" };
 
-test("ops_whole_day_column", async ({ page }) => {
+test("ops_whole_day_rows", async ({ page }) => {
   const codes = await page.evaluate(PLANT); await goOps(page);
-  const r = await page.evaluate(() => { const g = document.querySelector(".card.gp .gp3"); const cols = [...g.querySelectorAll(".gcol")];
-    return { four: g.classList.contains("gp4"), n: cols.length, head: cols[3] && cols[3].querySelector(".opssh").textContent, txt: cols[3] ? cols[3].innerText : "", others: cols.slice(0, 3).map(c => c.querySelector(".opssh").textContent) }; });
-  assert.ok(r.four && r.n === 4, JSON.stringify(r)); assert.strictEqual(r.head, "Whole day"); assert.deepStrictEqual(r.others, ["AM", "PM", "NIGHT"]);
-  for (const c of codes) assert.ok(r.txt.includes(c), c + " in the Whole day column: " + r.txt);
+  const rows = await page.evaluate(() => [...document.querySelectorAll(".card.gp .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: r.cells[1].textContent.trim() })));
+  for (const c of codes) assert.ok(rows.some(x => x.time === "WD" && x.act.includes(c)), c + " listed as WD: " + JSON.stringify(rows));
 }, OPS);
-test("ops_no_whole_day_column_when_empty", async ({ page }) => {
+test("ops_no_whole_day_rows_when_empty", async ({ page }) => {
   await goOps(page);
-  const r = await page.evaluate(() => { const g = document.querySelector(".card.gp .gp3"); return g ? [g.classList.contains("gp4"), g.querySelectorAll(".gcol").length] : "none"; });
-  assert.ok(r === "none" || (r[0] === false && r[1] === 3), JSON.stringify(r));
+  const r = await page.evaluate(() => [...document.querySelectorAll(".card.gp .gtab tbody tr td:first-child")].map(td => td.textContent.trim()));
+  assert.ok(!r.includes("WD"), JSON.stringify(r));
 }, OPS);
 test("ops_seats_unchanged_by_wd", async ({ page }) => {
   const r = await page.evaluate(([iso, plant]) => { const snap = () => JSON.stringify([opsDay(iso).rows.map(x => x.seats.map(c => c && c.id)), [...opsFlown()]]); const a = snap(); eval(plant); return [a, snap()]; }, [OPSDAY, PLANT]);
   assert.strictEqual(r[0], r[1]);
 }, OPS);
 test("ops_whole_day_wraps", async ({ page }) => {
-  await page.evaluate(() => { const og = opsGround; window.opsGround = D => og(D).concat(Array.from({ length: 40 }, (_, i) => ({ sh: 3, k: "2" + i, when: "", until: "until 30 Oct", act: "Safety brief " + i, desc: "", who: "<b>ABCDEFGH" + i + "</b>", note: "" }))); });
+  await page.evaluate(() => { const og = opsGround; window.opsGround = D => og(D).concat(Array.from({ length: 40 }, (_, i) => ({ sh: 3, grp: 3, key: "9", k: "2" + i, when: "", until: "until 30 Oct", act: "Safety brief " + i, desc: "", who: "<b>ABCDEFGH" + i + "</b>", note: "" }))); });
   await goOps(page);
-  const r = await page.evaluate(() => { const c = document.querySelector(".card.gp"), cols = [...c.querySelectorAll(".gcol")]; return { fits: c.scrollWidth <= c.clientWidth + 1, w: cols.map(x => Math.round(x.getBoundingClientRect().width)) }; });
-  assert.ok(r.fits, "card does not overflow sideways"); assert.ok(r.w.length === 4 && r.w.every(w => w > 60), r.w.join());
+  const r = await page.evaluate(() => { const c = document.querySelector(".card.gp"), t = c.querySelector(".gtab"); return { fits: c.scrollWidth <= c.clientWidth + 1 && t.scrollWidth <= t.clientWidth + 1, rows: t.tBodies[0].rows.length }; });
+  assert.ok(r.fits, "card does not overflow sideways"); assert.ok(r.rows >= 40, r.rows);
 }, OPS);
 test("lode_shows_wd_item", async ({ page }) => {
   const r = await page.evaluate(([plant, iso]) => { const bi = 0; const A = actIndex(), ad = S.acts.find(a => a.code && (A.get(a.code.toUpperCase()) || {}).ci === CAT_ADMIN).code; S.m[9].grid[gridRow(0, 3)][13] = ad;

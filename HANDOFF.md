@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Next session: start here (handoff of 30 Oct 2026)
 
-**State (updated 31 Oct, z101: item 1 below is built on branch `claude/practical-lamport-j13scq`, not yet merged):** everything else is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is now on, deciding about making it private is an open item). Dashboard **z102** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
+**State (updated 31 Oct, z101: item 1 below is built on branch `claude/practical-lamport-j13scq`, not yet merged):** everything else is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is now on, deciding about making it private is an open item). Dashboard **z103** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
 Built and merged since the last handoff: Ops Room redesign (z97), built-in sample fix (z98), Master Planner time ranges (z99), department selector revamp (z100).
 
 **Do next, in this order** (full notes in `PROJECT_CHECKLIST.md` section 9):
@@ -20,6 +20,16 @@ Built and merged since the last handoff: Ops Room redesign (z97), built-in sampl
 **How to work with Brandon right now:** he is near his weekly usage cap, so keep sessions short: one feature per session, text answers, screenshots only when words will not do, no full ATOM test run unless ATOM code changes (`node tests/atom.test.js` takes minutes). He says "build it" after a mock-up, "go, native" for execution, and "merge to main and push" when he wants a merge. Never overwrite live `.xlsx` files.
 
 **Starting prompt for a new session:** "Read `/home/user/Lodestar/CLAUDE.md`, then `HANDOFF.md` (the section 'Next session: start here') and `PROJECT_CHECKLIST.md` section 9. Start a new branch from main and build the other-departments change from the spec and plan listed there, native execution."
+
+## WD fourth row, zoom and crew divider (z103, 31 Oct; spec `docs/superpowers/specs/2026-10-31-wd-row-design.md`, plan `docs/superpowers/plans/2026-10-31-wd-row.md`)
+
+- Every department file gets four rows per person: AM, PM, NIGHT and **WD** (whole day). WD takes Ground Duty and Admin activities only (own dropdown list `WdCodes`, teal label). Flights, Sim, leave, duty and standby stay in the three shift rows, so currency, rest, down-chit and seats do not read WD. A WD item counts once in Gnd Duty for the day.
+- Layout stamp `dept layout 3`. The dashboard reads both layouts: `S.rp` is 4 from layout 3, else 3 (`gridRow(i, s)`, `rowPerson`, `rowShift`, `isWdRow`). An older file opens with the "older layout" warning and no WD row.
+- Ops Room: a Whole day column on the ground programme card when someone has a WD item. My Lodestar shows WD as "WHOLE DAY". Change Log names the slot WD.
+- Zoom control (100 / 90 / 85 / 80 / 75 %) in the top bar; the planner opens at 85 %, other tabs at 100 % until a level is chosen (remembered in the browser); the Ops Room tab is always 100 % (it keeps its own size buttons). Heavy 3 px divider above each person's block.
+- Fixed on the way: the builder's Daily View formula had a missing f-string prefix and wrote a literal `{chooser}`.
+- **Files:** the repo's own `.xlsx` files and the dashboard's built-in sample are still layout 2 until Brandon agrees to replace them (rebuild fresh, no migration; dummy data only). Fresh sets are built with `python3 .lodestar_build.py excel <folder> [--data input/LODESTAR_Data_Input.xlsx]`.
+- Tests: `node tests/wd_row.test.js` (19, needs `LODE_FILES` pointing at a layout-3 set), `python3 tests/wd_builder.test.py` (14).
 
 ## AC and Pax tags (z102, 31 Oct; spec `docs/superpowers/specs/2026-10-31-ac-pax-tags-design.md`, plan `docs/superpowers/plans/2026-10-31-ac-pax-tags.md`)
 

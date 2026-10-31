@@ -255,7 +255,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfb .v{padding:6px 8px;border:1px solid var(--s200);border-radius:6px;font-size:14px}.spfb .v.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb .tags{display:flex;gap:4px;align-items:center}.spfb .tag{border:1px solid var(--s300);border-radius:4px;padding:2px 8px;font:800 12px Arial,sans-serif;color:var(--s500);cursor:pointer;background:#fff}
 .spfb .tag.on{color:#fff;border-color:transparent}.spfb .tag.tP.on{background:#1d4ed8}.spfb .tag.tL.on{background:#0f766e}.spfb .tag.tT.on{background:#b45309}.spfb .tag.tS1.on{background:#7e22ce}.spfb .tag.tS2.on{background:#be123c}
-.spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}
+.spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}.nocrew{color:#b91c1c;font:800 11px Arial,sans-serif;background:#fee2e2;border-radius:3px;padding:1px 5px}.spfb .tag.tALL.on{background:#0f172a}
 .spb .addb{display:block;width:100%;border:2px dashed #93c5fd;background:#eff6ff;color:#1d4ed8;font-weight:800;padding:9px;border-radius:8px;font-size:14.5px;cursor:pointer;margin-top:10px}.spb .addb:hover{background:#dbeafe}
 .fGND{background:#dcfce7;color:#166534;border-left:4px solid #16a34a}
 .spfb .v.set.g{background:#dcfce7;color:#166534}
@@ -1627,6 +1627,10 @@ function mkCodes(st) { st.codes = st.codeAll.filter(k => k.code).map(k => Object
 const codeCrew = (P, code) => { const x = P.codes.find(k => same(k.code, code)); return x ? x.crew : ""; };
 const flCrew = (P, f) => f.crew || codeCrew(P, f.code);
 const NOFLY = "NO FLY";
+// squadron events: ALL means every department; a blank crew is an input mistake (flagged, never "everyone"). Flights keep needsDept (blank = every department).
+const crewIsAll = v => /(^|[\s,+\/;&])ALL($|[\s,+\/;&])/i.test(String(v || ""));
+const crewMissing = v => !crewIsAll(v) && !crewTags(v).length;
+const needsDeptGr = (v, dept) => { if (crewIsAll(v)) return true; const me = CREW_TAGS.find(([k, n]) => same(n, dept)); return !!me && crewTags(v).includes(me[0]); };
 const needsDept = (v, dept) => { const t = crewTags(v); if (!t.length) return true; const me = CREW_TAGS.find(([k, n]) => same(n, dept)); return !!me && t.includes(me[0]); };
 // ---------- Syllabus: the shared Syllabus file (stages, sets, items, chances) + each department's own Syllabus Log (attempts).
 // The tab shows each person's path as a skill tree. It never changes the Cat Status or Role: that waits for the approved paperwork.
@@ -1865,7 +1869,7 @@ function deptSlots(P, mi, d, dept) {
   return out;
 }
 // the ground programme line a department holds for one day: "CRM Lecture 1400-1600; Sqn Meeting 1500"
-const deptGround = (P, mi, d, dept) => grDay(P, mi, d).filter(g => g.act && needsDept(g.crew, dept)).map(g => g.act + (g.time ? " " + g.time : "")).join("; ");
+const deptGround = (P, mi, d, dept) => grDay(P, mi, d).filter(g => g.act && needsDeptGr(g.crew, dept)).map(g => g.act + (g.time ? " " + g.time : "")).join("; ");
 // slots where a department's MASTER rows don't match the Master Planner: [{mi, d, r, code, time, note}]
 function mpDiffs(bk, mb) {
   const out = []; if (!bk || !mb || mb.S.legacy || bk.S.year !== mb.S.year) return out;
@@ -2767,7 +2771,7 @@ function renderMp() {
         const G = grDay(P, mi, d), items = (dayOff ? [] : L.map(f => ({ f }))).concat(G.map(g => ({ g }))), show = items.length > 4 ? 3 : 4;
         items.slice(0, show).forEach(({ f, g }) => {
           if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(f.time, (P.codes.find(k => same(k.code, f.code)) || {}).hrs) || (f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
-          else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Squadron event · " + [g.time, g.act, cw.length ? "crew " + cw.join(" ") : "everyone", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
+          else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Squadron event · " + [g.time, g.act, crewIsAll(g.crew) ? "crew ALL" : cw.length ? "crew " + cw.join(" ") : "NO CREW", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (crewIsAll(g.crew) ? "<span class='c'>ALL</span>" : cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "<span class='c nocrew'>!</span>") + "</div>"; }
         });
         if (items.length > show) h += "<div class='more'>+" + (items.length - show) + " more</div>";
         if (!lock && !dayOff) h += "<button class='plus' data-add='" + d + "' title='Add a flight on " + (d + 1) + " " + monLab(mi, y) + "'>+</button>";
@@ -2805,7 +2809,7 @@ function renderMp() {
     if (!GL.length) p += "<div class='empty' style='padding:6px 4px'>No squadron events.</div>";
     for (const g of GL) {
       const cw = crewTags(g.crew), key = "data-grow='" + g.row + "'";
-      const tags = "<div class='tags'>" + CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag gtag t" + k + (cw.includes(k) ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length ? "<span class='all'>everyone</span>" : "") + "</div>";
+      const isAll = crewIsAll(g.crew), tags = "<div class='tags'>" + (!lock || isAll ? "<span class='tag gtag tALL" + (isAll ? " on" : "") + "' data-t='ALL' " + key + " title='Every department'>ALL</span>" : "") + CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag gtag t" + k + (cw.includes(k) ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (crewMissing(g.crew) ? "<span class='nocrew' title='Pick ALL or the crew tags'>NO CREW</span>" : "") + "</div>";
       p += "<div class='spf'><div class='spfh fGND'>GROUND" + (g.time ? " · " + esc(g.time) : "") + (lock ? "" : "<button class='rm grm' " + key + " title='Remove'>×</button>") + "</div><div class='spfb'>";
       if (lock) p += "<div class='v set g'>" + esc(g.act) + "</div><div class='v'>" + esc(g.time) + "</div>" + tags + (g.note ? "<div class='v nt'>" + esc(g.note) + "</div>" : "");
       else p += "<input " + key + " data-gf='act' class='gact' list='grList' value='" + esc(g.act) + "' placeholder='Activity, e.g. CRM Lecture'><input " + key + " data-gf='time' value='" + esc(g.time) + "' placeholder='Time'>" + tags + "<input " + key + " data-gf='note' class='nt' value='" + esc(g.note) + "' placeholder='Comment'>";
@@ -3044,7 +3048,7 @@ $("mpWrap").addEventListener("click", e => {
       } else {
         const g = S.gr.find(x => x.row === +gtg.dataset.grow); if (!g) return;
         const t = crewTags(g.crew), k = gtg.dataset.t, nt = t.includes(k) ? t.filter(x => x !== k) : t.concat(k);
-        g.crew = CREW_TAGS.map(x => x[0]).filter(x => nt.includes(x)).join(" "); put("Ground Programme", "D" + g.row, g.crew);
+        g.crew = k === "ALL" ? (crewIsAll(g.crew) ? "" : "ALL") : CREW_TAGS.map(x => x[0]).filter(x => nt.includes(x)).join(" ");   // ALL and role tags exclude each other put("Ground Programme", "D" + g.row, g.crew);
       }
     });
     renderMp();
@@ -5282,7 +5286,7 @@ function lodeDay(who, iso) {
       const g = cells.filter(c => c.code === code);
       if (g.length === 3) items.push(Object.assign({}, g[0], { s: -1, note: g.map(c => c.note).find(Boolean) || "" })); else items.push(...g);
     }
-    const gm = mb && mb.S.year === y ? grDay(mb.S, mi, d).filter(g => g.act && needsDept(g.crew, st.dept)).map(g => [g.act, g.time || ""]) : [], seen = new Set(gm.map(([t, tm]) => (t + " " + tm).trim().toLowerCase()));
+    const gm = mb && mb.S.year === y ? grDay(mb.S, mi, d).filter(g => g.act && needsDeptGr(g.crew, st.dept)).map(g => [g.act, g.time || ""]) : [], seen = new Set(gm.map(([t, tm]) => (t + " " + tm).trim().toLowerCase()));
     const gr = gm.concat(st.gndRow && M.gnd[d] ? String(M.gnd[d]).split("; ").filter(x => x && !seen.has(x.trim().toLowerCase())).map(x => [x, ""]) : []);   // the department's own row is usually a copy of the Master Planner's
     gr.forEach(([t, tm]) => items.push({ s: -1, kind: "ground", code: "", text: t, time: tm, cancelled: "", note: "", syl: "" }));
     const key = x => x.time && lodeMins(x.time) != null ? lodeMins(x.time) : x.s < 0 ? -1 : [0, 720, 1080][x.s];

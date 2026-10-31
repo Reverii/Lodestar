@@ -2547,7 +2547,7 @@ function opsFlown() {
     const r = D.rows.find(z => z.key === k), h = opsDur(o.atd, o.ata); if (!r || h == null) continue;
     const who = r.seats.filter(c => c && c.id).map(c => [c.dept, c.id]);
     const X = opsXtra(o); for (const dep in X) X[dep].forEach(id => who.push([dep, id]));
-    new Set(who.filter(([dep, id]) => !isPax(o, id)).map(w => [w[0], w[1], D.mi].join("|").toUpperCase())).forEach(key => { const v = map.get(key) || { h: 0, n: 0 }; v.h += h; v.n++; map.set(key, v); }); }
+    new Set(who.filter(([dep, id]) => !rowPax(r, id)).map(w => [w[0], w[1], D.mi].join("|").toUpperCase())).forEach(key => { const v = map.get(key) || { h: 0, n: 0 }; v.h += h; v.n++; map.set(key, v); }); }
   OPS_FLN_CACHE = { sig, map }; return map;
 }
 const cxlOf = (st, id, mi, d, s) => { if (!id || opsIdx() < 0) return null; return opsCancelled().get([st.dept, id, mi, d, s].join("|").toUpperCase()) || null; };
@@ -3709,7 +3709,7 @@ function opsCrewOn(y, mi, d) {
       S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < 3; s++) { const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][d]; const a = v && A.get(String(v).toUpperCase());
         // standby crew (P1 / P2 / BU) belong to no shift: whichever shift the plan marks, they go in one whole-day list (kept in slot 2 so saved Ops Room rows still match)
         const sbk = a && a.ci !== CAT_FLIGHT && isSb(a.code) ? 2 : -1; if (sbk >= 0 && out.sb[2].some(c => c.dept === S.dept && c.i === i && same(c.code, v))) continue;
-        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), note: (S.notes && S.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "" }); } }); });
+        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: a.ci === CAT_FLIGHT ? roleOf(S, mi, i * 3 + s, d) : "", note: (S.notes && S.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "" }); } }); });
   });
   return out;
 }
@@ -3751,17 +3751,21 @@ function opsDay(iso) {
     crew[s].forEach(c => (byDept[c.dept.toLowerCase()] = byDept[c.dept.toLowerCase()] || []).push(c));
     const fl = flights.filter(x => x.s === s);
     fl.forEach(x => { x.seats = OPS_SEATS.map(() => Array(x.ac).fill(null)); });
+    // a planner's AC tag: the tagged pilot is the Captain of an aircraft and the next pilot planned on the flight (roster order) its co-pilot; two AC tags on a formation take one aircraft each
+    for (const x of fl) { const L = byDept.pilot || [], cap = OPS_SEATS.findIndex(z => z[0] === "Aircraft Captain"), cop = cap + 1; if (!x.need[cap]) continue;
+      const on = L.filter(c => c.tag !== "PAX" && sameCode(c.code, x.code)), acs = on.filter(c => c.tag === "AC").slice(0, x.ac), rest = on.filter(c => !acs.includes(c));
+      acs.forEach((c, a) => { x.seats[cap][a] = c; L.splice(L.indexOf(c), 1); const q = x.need[cop] ? rest.shift() : null; if (q) { x.seats[cop][a] = q; L.splice(L.indexOf(q), 1); } }); }
     for (const pass of [0, 1]) for (const x of fl) for (const dep of [...new Set(OPS_SEATS.map(z => z[1]))]) {
       const ks = OPS_SEATS.map((z, k) => z[1] === dep && x.need[k] ? k : -1).filter(k => k >= 0); if (!ks.length) continue;
       const L = byDept[dep.toLowerCase()] || [];
       for (let a = 0; a < x.ac; a++) for (const k of ks) {
         if (x.seats[k][a]) continue;
-        const j = L.findIndex(c => pass === 1 || sameCode(c.code, x.code)); if (j < 0) continue;
+        const j = L.findIndex(c => c.tag !== "PAX" && (pass === 1 || sameCode(c.code, x.code))); if (j < 0) continue;
         x.seats[k][a] = L.splice(j, 1)[0];
       }
     }
     // the more senior pilot is the Aircraft Captain
-    fl.forEach(x => { for (let a = 0; a < x.ac; a++) { const c = x.seats[0][a], p = x.seats[1][a]; if (c && p && (ROLE_RANK(p.role) - ROLE_RANK(c.role) || CAT_RANK(p.cat) - CAT_RANK(c.cat)) < 0) { x.seats[0][a] = p; x.seats[1][a] = c; } } });
+    fl.forEach(x => { for (let a = 0; a < x.ac; a++) { const c = x.seats[0][a], p = x.seats[1][a]; if (c && p && (c.tag === "AC" || p.tag === "AC" ? p.tag === "AC" && c.tag !== "AC" : (ROLE_RANK(p.role) - ROLE_RANK(c.role) || CAT_RANK(p.cat) - CAT_RANK(c.cat)) < 0)) { x.seats[0][a] = p; x.seats[1][a] = c; } } });
     // crew planned on a flight's code beyond its seats (a third SUP 2 on MSN-3.0) ride along as additional crew on it, not dropped
     fl.forEach(x => { x.auto = Array.from({ length: x.ac }, () => ({})); });
     for (const k in byDept) byDept[k] = byDept[k].filter(c => { const x = fl.find(z => sameCode(c.code, z.code) && OPS_SEATS.some((q, j) => same(q[1], c.dept) && z.need[j])); if (!x) return true;
@@ -3779,7 +3783,8 @@ function opsDay(iso) {
     const pd = opsDur(etd, eta), pdur = pd != null ? pd : x.hrs || null, adur = o && o.atd && o.ata ? opsDur(o.atd, o.ata) : null;
     // planned additional crew, unless the Ops Room already put them in a seat or on its own additional crew list
     const xt = opsXtra(o), auto = {}; Object.entries(x.auto[a] || {}).forEach(([dep, L]) => { const M = L.filter(c => !seats.some(z => z && same(z.dept, c.dept) && same(z.id, c.id)) && !(xt[dep] || []).some(id => same(id, c.id))); if (M.length) auto[dep] = M; });
-    rows.push({ x, a, key, o, seats, auto, etd, eta, etd0, eta0, pdur, adur, dur: adur != null ? adur : pdur });
+    const pax = o && String(o.pax || "").trim() ? paxList(o) : Object.values(x.auto[a] || {}).flat().filter(c => c.tag === "PAX" && !seats.some(z => z && same(z.dept, c.dept) && same(z.id, c.id))).map(c => c.id);
+    rows.push({ x, a, key, o, seats, auto, pax, etd, eta, etd0, eta0, pdur, adur, dur: adur != null ? adur : pdur });
   } });
   // standby rows: crew on P1 / P2 / BU in their plans, seats by department (two pilots: the senior one is the Captain)
   const sb = [];
@@ -3792,7 +3797,7 @@ function opsDay(iso) {
     if (auto[0] && auto[1] && (ROLE_RANK(auto[1].role) - ROLE_RANK(auto[0].role) || CAT_RANK(auto[1].cat) - CAT_RANK(auto[0].cat)) < 0) auto.splice(0, 2, auto[1], auto[0]);
     const key = x.key + "|1", o = ob && ob.fc.get(key) || null;
     const seats = OPS_SEATS.map((z, k) => { const v = o && o.seat[k]; return v ? Object.assign({}, opsPerson(z[1], v, crew.sb[s]), { set: true }) : auto[k]; });
-    sb.push({ x, a: 0, key, o, seats, extra: L, etd: "", eta: "", etd0: "", eta0: "", dur: null });
+    sb.push({ x, a: 0, key, o, seats, pax: paxList(o), extra: L, etd: "", eta: "", etd0: "", eta0: "", dur: null });
   });
   const status = (P.mp[mi] && P.mp[mi].status[d]) || "";
   return { iso, y, mi, d, flights, rows, sb, gr: grDay(P, mi, d), spare, status, crew };
@@ -3829,7 +3834,7 @@ function opsXtraHtml(r, k) {
   if (!L.length || k === 0) return au;   // Pilot extras show once, under the Pilot (co-pilot) seat, not the Aircraft Captain
   const D = opsDay(cur.opsDay);
   return L.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]), dw = downOn(dep, id, D.iso);
-    return "<div class='oxt' title='" + esc("Additional crew: " + id + (p.name ? " · " + p.name : "") + " (" + dep + ")" + (dw ? "\n⚠ DOWN-CHITTED" : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b>" + (dw ? "<i class='opsb down'>DOWN</i>" : "") + (isPax(r.o, id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(dep, id, r) + "</div>"; }).join("") + au;
+    return "<div class='oxt' title='" + esc("Additional crew: " + id + (p.name ? " · " + p.name : "") + " (" + dep + ")" + (dw ? "\n⚠ DOWN-CHITTED" : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b>" + (dw ? "<i class='opsb down'>DOWN</i>" : "") + (rowPax(r, id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(dep, id, r) + "</div>"; }).join("") + au;
 }
 function opsCrewCell(r, k, ed) {
   if (!r.x.need[k]) return "<td class='oc na' title='Not needed on this flight'>–</td>";
@@ -3839,7 +3844,7 @@ function opsCrewCell(r, k, ed) {
   const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso);
   const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.note ? "\nComment: " + c.note : "") + (c.set ? "\nSet in the Ops Room" : "");
   return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" +
-    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (isPax(r.o, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
+    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (rowPax(r, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
 }
 function opsTail(r, ed, one) {
   // shown as plain text: the actual tail in bold, the standby tail small under it; click the cell to pick from the fleet
@@ -4103,14 +4108,14 @@ function opsOpenPop(key, k, keep) {
     list.map(p => "<option value='" + esc(p.id) + "'" + (c && c.set && same(c.id, p.id) ? " selected" : "") + ">" + esc(opsName(p) + " · " + p.id + " " + p.name + (p.code && !sameCode(p.code, r.x.code) ? " (" + p.code + ")" : "") + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>").join("") + "</optgroup>" +
     "<optgroup label='Others in the " + esc(dep) + " roster'>" + rest.map(p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>").join("") + "</optgroup></select></label>";
   if (c && !r.x.sb) h += "<div class='pb'><button class='btn" + (r.o && same(r.o.mc, c.id) ? " primary" : "") + "' data-pmc='1'>Mission Commander</button><button class='btn" + (r.o && same(r.o.crmo, c.id) ? " primary" : "") + "' data-pcr='1'>CRMO</button>" +
-    "<button class='btn pax" + (isPax(r.o, c.id) ? " on" : "") + "' data-ppx='" + esc(c.id) + "'>Pax</button>" +
+    "<button class='btn pax" + (rowPax(r, c.id) ? " on" : "") + "' data-ppx='" + esc(c.id) + "'>Pax</button>" +
     (k < 2 && r.seats[0] && r.seats[1] ? "<button class='btn' data-psw='1'>⇅ Swap Captain / Pilot</button>" : "") + "</div>";
   if (!r.x.sb) {   // more crew from this department on the same aircraft
     const xs = opsXtra(r.o)[dep] || [], taken = id => (c && same(c.id, id)) || xs.some(x => same(x, id)) || (dep === "Pilot" && r.seats.some(q => q && same(q.dept, dep) && same(q.id, id)));
     const opt = p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>";
     h += "<div class='pxl'><div class='pxh'>Additional " + esc(dep) + " crew</div>" + xs.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]);
       return "<div class='pxr'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b><span class='muted'>" + esc(id + (p.name ? " · " + p.name : "")) + "</span>" + (downOn(dep, id, D.iso) ? "<i class='opsb down'>DOWN</i>" : "") +
-        "<button class='btn pax" + (isPax(r.o, id) ? " on" : "") + "' data-ppx='" + esc(id) + "'>Pax</button><button class='pxd' data-pxd='" + esc(id) + "' title='Take off this aircraft'>×</button></div>"; }).join("") +
+        "<button class='btn pax" + (rowPax(r, id) ? " on" : "") + "' data-ppx='" + esc(id) + "'>Pax</button><button class='pxd' data-pxd='" + esc(id) + "' title='Take off this aircraft'>×</button></div>"; }).join("") +
       "<select id='opsXAdd'><option value=''>+ Add " + esc(dep) + " crew…</option><optgroup label='Flying this shift'>" + pool.filter(p => !taken(p.id)).map(opt).join("") + "</optgroup><optgroup label='Others in the " + esc(dep) + " roster'>" + rest.filter(p => !taken(p.id)).map(opt).join("") + "</optgroup></select></div>";
   }
   pop.innerHTML = h; pop.style.display = "block";
@@ -4122,8 +4127,11 @@ function opsSeat(o, k, id) { o.seat[k] = id || ""; }
 // additional crew on an aircraft, per department, beyond the one seat each department has; and the passengers (Pax) among the crew
 function opsXtra(o) { const m = {}; String(o && o.xtra || "").split(";").forEach(part => { const i = part.indexOf(":"); if (i < 0) return; const d = part.slice(0, i).trim(), ids = part.slice(i + 1).split(",").map(x => x.trim()).filter(Boolean); if (d && ids.length) m[d] = (m[d] || []).concat(ids); }); return m; }
 const opsXtraStr = m => Object.entries(m).filter(([d, L]) => L.length).map(([d, L]) => d + ": " + L.join(", ")).join("; ");
-const paxList = o => String(o && o.pax || "").split(",").map(x => x.trim()).filter(Boolean);
+const paxList = o => String(o && o.pax || "").split(",").map(x => x.trim()).filter(x => x && x !== "-");   // "-" = the Ops Room decided: nobody is a passenger
 const isPax = (o, id) => paxList(o).some(x => same(x, id));
+// who is a passenger on a row: the Ops Room's saved list once it has one (even "-", nobody), else the people the planners tagged Pax
+const rowPax = (r, id) => (r.pax || []).some(x => same(x, id));
+const opsTogglePax = (o, r, id) => { const L = (r.pax || []).slice(), n = rowPax(r, id) ? L.filter(x => !same(x, id)) : L.concat(id); o.pax = n.length ? n.join(", ") : "-"; };
 $("opsMain").addEventListener("click", e => {
   const sbs = e.target.closest("[data-sbset]"); if (sbs) { if (!opsEditable()) return; const D0 = opsDay(cur.opsDay), ref = opsSbRef(D0); if (!ref) { toast("Open the Ops Room file to keep the standby sets."); return; }
     const oi = opsIdx(), v = sbs.dataset.sbset === "1" ? "1" : "2"; books[oi].S.db[ref] = v; withBook(oi, () => put("Day Board", ref, v)); renderBooks(); renderOps(); return; }
@@ -4223,8 +4231,8 @@ $("opsPop").addEventListener("click", e => {
   if (b.dataset.pmc) opsWrite(key, o => { o.mc = same(o.mc, c.id) ? "" : c.id; if (o.mc && same(o.crmo, o.mc)) { o.crmo = ""; toast(o.mc + " is now the MC, so the CRMO is cleared."); } });
   else if (b.dataset.pcr) opsWrite(key, o => { o.crmo = same(o.crmo, c.id) ? "" : c.id; if (o.crmo && same(o.crmo, o.mc)) { o.mc = ""; toast(o.crmo + " is now the CRMO, so the MC is cleared."); } });
   else if (b.dataset.psw) opsWrite(key, (o, rr) => { const a = rr.seats[0], p = rr.seats[1]; opsSeat(o, 0, p.id); opsSeat(o, 1, a.id); });
-  else if (b.dataset.ppx) { const id = b.dataset.ppx; opsWrite(key, o => { const L = paxList(o); o.pax = (isPax(o, id) ? L.filter(x => !same(x, id)) : L.concat(id)).join(", "); }); }
-  else if (b.dataset.pxd) { const id = b.dataset.pxd, dep = OPS_SEATS[k][1]; opsUnplan(D, r.x, dep, id); opsWrite(key, o => { const m = opsXtra(o); m[dep] = (m[dep] || []).filter(x => !same(x, id)); o.xtra = opsXtraStr(m); if (isPax(o, id)) o.pax = paxList(o).filter(x => !same(x, id)).join(", "); }); }
+  else if (b.dataset.ppx) { const id = b.dataset.ppx; opsWrite(key, (o, row) => opsTogglePax(o, row, id)); }
+  else if (b.dataset.pxd) { const id = b.dataset.pxd, dep = OPS_SEATS[k][1]; opsUnplan(D, r.x, dep, id); opsWrite(key, (o, row) => { const m = opsXtra(o); m[dep] = (m[dep] || []).filter(x => !same(x, id)); o.xtra = opsXtraStr(m); if (rowPax(row, id)) opsTogglePax(o, row, id); }); }
 });
 document.addEventListener("click", e => { const p = $("opsPop"); if (e.target.isConnected && p.style.display === "block" && !p.contains(e.target) && !e.target.closest("td[data-oc],[data-ost]")) { p.style.display = "none"; cur.opsPop = null; } });
 $("opsSide").addEventListener("change", e => {

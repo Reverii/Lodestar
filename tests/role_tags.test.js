@@ -75,6 +75,39 @@ test("pax_cell_not_counted", async ({ page }) => {
   assert.ok(r.my1 < r.my0, "My Lodestar flights drop"); assert.strictEqual(r.ac, r.f0, "an AC tag still counts");
 });
 
+
+// Ops Room: the demo set has a two-aircraft formation on 14 Oct (AM). Planner tags go straight into the Pilot book's map.
+const OPS = { mine: "Ops_Room" }, DAYI = "2026-10-14";
+const TAG = `(id, tag) => { const bi = books.findIndex(b => b.S.dept === "Pilot"); withBook(bi, () => { const i = S.roster.findIndex(p => p.id === id), M = S.m[9]; let s = 0; for (; s < 3; s++) if (M.grid[i * 3 + s][13]) break; S.roleTags.set("9:" + (i * 3 + s) + ":13", tag); }); }`;
+const seatIds = r => r.seats.slice(0, 2).map(c => c && c.id);
+test("ac_tag_makes_captain", async ({ page }) => {
+  const r = await page.evaluate(([TAG, iso]) => { const tag = eval(TAG), base = opsDay(iso).rows.map(x => seatIds(x));
+    function seatIds(r) { return r.seats.slice(0, 2).map(c => c && c.id); }
+    tag("ADDER", "AC"); const D = opsDay(iso); return { base, a: seatIds(D.rows[0]), b: seatIds(D.rows[1]) }; }, [TAG, DAYI]);
+  assert.deepStrictEqual(r.base[0], ["MAMBA", "ADDER"]);
+  assert.deepStrictEqual(r.a, ["ADDER", "MAMBA"]); assert.deepStrictEqual(r.b, r.base[1], "an untagged aircraft keeps today's seating");
+}, OPS);
+test("two_ac_formation_pairs_in_roster_order", async ({ page }) => {
+  const r = await page.evaluate(([TAG, iso]) => { const tag = eval(TAG); tag("ADDER", "AC"); tag("KING", "AC"); const D = opsDay(iso), f = x => x.seats.slice(0, 2).map(c => c && c.id); return [f(D.rows[0]), f(D.rows[1])]; }, [TAG, DAYI]);
+  assert.deepStrictEqual(r, [["ADDER", "MAMBA"], ["KING", "TAIPAN"]]);
+}, OPS);
+test("planner_pax_not_seated", async ({ page }) => {
+  const r = await page.evaluate(([TAG, iso]) => { const tag = eval(TAG); tag("TAIPAN", "PAX"); const D = opsDay(iso), x = D.rows.find(q => q.pax.length);   // the planner's Pax rides along on one of the two aircraft
+    return { seated: D.rows.flatMap(q => q.seats.filter(Boolean).map(c => c.id)), extra: Object.values(x.auto).flat().map(c => c.id), pax: x.pax }; }, [TAG, DAYI]);
+  assert.ok(!r.seated.includes("TAIPAN"), r.seated.join()); assert.ok(r.extra.includes("TAIPAN"), r.extra.join()); assert.deepStrictEqual(r.pax, ["TAIPAN"]);
+}, OPS);
+test("ops_removal_sticks", async ({ page }) => {
+  const r = await page.evaluate(([TAG, iso]) => { const tag = eval(TAG); tag("TAIPAN", "PAX"); cur.opsDay = iso; const a = opsDay(iso).rows.findIndex(q => q.pax.length), key = opsDay(iso).rows[a].key;
+    opsWrite(key, (o, row) => opsTogglePax(o, row, "TAIPAN")); const o = books[opsIdx()].S.fc.get(key), x = opsDay(iso).rows[a];
+    return { pax: o.pax, now: x.pax }; }, [TAG, DAYI]);
+  assert.strictEqual(r.pax, "-"); assert.deepStrictEqual(r.now, []);
+}, OPS);
+test("ops_seat_beats_pax_tag", async ({ page }) => {
+  const r = await page.evaluate(([TAG, iso]) => { const tag = eval(TAG); tag("MAMBA", "PAX"); cur.opsDay = iso; const key = opsDay(iso).rows[0].key;
+    opsWrite(key, o => { o.seat[0] = "MAMBA"; }); const x = opsDay(iso).rows[0]; return { seat: x.seats[0] && x.seats[0].id, pax: x.pax }; }, [TAG, DAYI]);
+  assert.strictEqual(r.seat, "MAMBA"); assert.deepStrictEqual(r.pax, []);
+}, OPS);
+
 module.exports.tests = tests;
 (async () => {
   const only = process.argv[2];

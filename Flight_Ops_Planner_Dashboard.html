@@ -839,7 +839,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <div class="hsep" id="hsep"></div>
   <div id="bookbar"></div>
   <div class="grow"></div>
-  <div class="fileinfo" id="fileinfo">No file open</div><span id="viewOnly" title="SharePoint says you can read this file but not change it." style="display:none;background:#e0e7ff;color:#3730a3;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:600;margin-left:6px">View only</span>
+  <div class="fileinfo" id="fileinfo">No file open</div><span id="openingOthers" style="display:none;font-size:12px;color:#475569;margin-left:8px"></span><span id="viewOnly" title="SharePoint says you can read this file but not change it." style="display:none;background:#e0e7ff;color:#3730a3;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:600;margin-left:6px">View only</span>
   <button class="btn primary" id="btnOpen">Open my Excel</button>
   <button class="btn" id="btnAdd" disabled title="Other departments' planners, the Duty Roster or the Master Planner">Add other departments</button>
   <button class="btn ur" id="btnUndo" disabled title="Undo (Ctrl+Z)">↶</button><button class="btn ur" id="btnRedo" disabled title="Redo (Ctrl+Y)">↷</button>
@@ -4607,7 +4607,7 @@ async function spInit() {
   try { await spList(); } catch (e) { spDiag("site " + SP.web + " found, but couldn't list folder " + folder + " (" + (e.message || e) + ")"); return; }
   if (!SP.files.length) { spDiag("no .xlsx files found in " + folder); return; }
   spDiag("connected to " + folder + ", " + SP.files.length + " Excel files");
-  SP.on = true; liveStart(); logWhoAmI();
+  SP.on = true; $("btnAdd").style.display = "none"; liveStart(); logWhoAmI();
   $("wOpen").textContent = "Open from SharePoint";
   document.querySelector("#welcome p.muted").textContent = "Opened from SharePoint: the Excel files in this folder (" + folder.split("/").pop() + ") open and save directly here. Saving replaces the file on SharePoint, so make sure nobody is editing the same file in Excel at the same time.";
   if (!books.length) { /*DEV*/ devUi(); if (devGet("auto") === "1") { devOpen(); return; } /*/DEV*/ spShowDepts(); }
@@ -4732,6 +4732,22 @@ function spDeptExtras(key) {   // the files opened beside a department's own: th
   extra.push(spFileFor("opsroom"));
   return extra;
 }
+let spOthersBusy = false;
+// the other department planners, read-only, one at a time in the background after your own file is showing
+async function spOpenOthers(own) {
+  if (spOthersBusy) return; spOthersBusy = true;
+  const bar = $("openingOthers"), errs = [];
+  try {
+    const todo = SP_DEPTS.slice(0, 5).map(d => spFileFor(d[1])).filter(x => x && x.Name !== own.Name && !books.some(b => b.WB.name === x.Name));
+    let n = 0;
+    for (const x of todo) {
+      bar.textContent = "Opening other departments… " + (++n) + " of " + todo.length; bar.style.display = "";
+      try { if (!books.some(b => b.WB.name === x.Name)) loadWorkbook(await spFetch(x), x.Name, spHandle(x), true); } catch (e) { errs.push(x.Name + ": " + (e.message || e)); }
+    }
+    if (todo.length) { renderBooks(); renderAll(); }
+  } finally { bar.style.display = "none"; spOthersBusy = false; }
+  if (errs.length) toast("Could not open: " + errs.join("; "), 8000);
+}
 async function spOpenDept(lab) {
   spStopDepts();
   const key = SP_DEPTS.find(d => d[0] === lab)[1], f = spFileFor(key);
@@ -4748,6 +4764,7 @@ async function spOpenDept(lab) {
     for (const x of extra) if (x && x.Name !== f.Name) { try { loadWorkbook(await spFetch(x), x.Name, spHandle(x), true); } catch (e) { errs.push(x.Name + ": " + (e.message || e)); } }
     $("spPick").style.display = "none"; renderAll(); toast("Opened " + f.Name);
     if (errs.length) alert(errs.join("\n"));
+    if (key !== "dutyroster" && key !== "masterplanner") spOpenOthers(f);
   } catch (e) { alert(e.message || e); spShowDepts(); }
 }
 $("spTable").addEventListener("click", e => {

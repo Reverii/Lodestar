@@ -255,7 +255,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfb .v{padding:6px 8px;border:1px solid var(--s200);border-radius:6px;font-size:14px}.spfb .v.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb .tags{display:flex;gap:4px;align-items:center}.spfb .tag{border:1px solid var(--s300);border-radius:4px;padding:2px 8px;font:800 12px Arial,sans-serif;color:var(--s500);cursor:pointer;background:#fff}
 .spfb .tag.on{color:#fff;border-color:transparent}.spfb .tag.tP.on{background:#1d4ed8}.spfb .tag.tL.on{background:#0f766e}.spfb .tag.tT.on{background:#b45309}.spfb .tag.tS1.on{background:#7e22ce}.spfb .tag.tS2.on{background:#be123c}
-.spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}.glab{color:#6d28d9;font-style:italic}.gmore{color:var(--s500);font-weight:700;cursor:help}.nocrew{color:#b91c1c;font:800 11px Arial,sans-serif;background:#fee2e2;border-radius:3px;padding:1px 5px}.spfb .tag.tALL.on{background:#0f172a}
+.spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}.was{font:700 10px Arial,sans-serif;color:#92400e;background:#fef3c7;border-radius:3px;padding:1px 4px}.glab{color:#6d28d9;font-style:italic}.gmore{color:var(--s500);font-weight:700;cursor:help}.nocrew{color:#b91c1c;font:800 11px Arial,sans-serif;background:#fee2e2;border-radius:3px;padding:1px 5px}.spfb .tag.tALL.on{background:#0f172a}
 .spb .addb{display:block;width:100%;border:2px dashed #93c5fd;background:#eff6ff;color:#1d4ed8;font-weight:800;padding:9px;border-radius:8px;font-size:14.5px;cursor:pointer;margin-top:10px}.spb .addb:hover{background:#dbeafe}
 .fGND{background:#dcfce7;color:#166534;border-left:4px solid #16a34a}
 .spfb .v.set.g{background:#dcfce7;color:#166534}
@@ -1614,6 +1614,44 @@ function roleSet(mi, r, d, tag) {
 }
 // the AC / PAX label on a planner cell
 const roleChip = (mi, r, d) => { const t = roleOf(S, mi, r, d); return t ? "<i class='rtag " + t.toLowerCase() + "'>" + (t === "AC" ? "AC" : "PAX") + "</i>" : ""; };
+// ---------- Ops Room ground programme edits: the Ground Rows sheet of the Ops Room file (made by the dashboard on the first edit)
+const GRR_SHEET = "Ground Rows", GRR_ROW0 = 2, GRR_N = 600, GRR_HEAD = ["Date", "Id", "Kind", "Time", "Activity", "Location", "Personnel", "Saved"],
+  GRR_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="3" width="14" customWidth="1"/><col min="4" max="4" width="12" customWidth="1"/><col min="5" max="7" width="26" customWidth="1"/><col min="8" max="8" width="17" customWidth="1"/>';
+// kind: "edit" (only the non-empty fields replace the plan's), "hide" (the row is left out), "manual" (a row of the Ops Room's own); f = { time, act, note, who } (who = "ALL" or callsigns joined by " / ")
+const grrNewKey = () => "m" + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+const grrCheck = f => !String(f.time || "").trim() ? "Type a time." : !String(f.act || "").trim() ? "Type an activity." : !String(f.who || "").trim() ? "Choose who is on it, or ALL." : "";
+function grrSave(iso, id, kind, f) {
+  const oi = opsIdx(); if (oi < 0 || !mayEdit(oi)) return false;
+  if (kind === "manual") { const bad = grrCheck(f); if (bad) { toast(bad, 4000); return false; } }
+  let ok = true;
+  withBook(oi, () => {
+    sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
+    let e = S.grr.find(x => x.iso === iso && x.id === id);
+    if (!e) {
+      let row = GRR_ROW0; while (S.grrUsed.has(row) && row < GRR_ROW0 + GRR_N) row++;
+      if (row >= GRR_ROW0 + GRR_N) { toast("The Ground Rows sheet is full. Clear old rows in Excel to make room.", 5000); ok = false; return; }
+      const D = ymd(iso, S.year); e = { row, iso, id, kind, time: "", act: "", note: "", who: "" };
+      put(GRR_SHEET, "A" + row, dateSerial(D.y, D.mi, D.d)); put(GRR_SHEET, "B" + row, id); S.grr.push(e); S.grrUsed.add(row);
+    }
+    e.kind = kind; for (const k of ["time", "act", "note", "who"]) if (f[k] !== undefined) e[k] = String(f[k]).trim();
+    [["C", e.kind], ["D", e.time], ["E", e.act], ["F", e.note], ["G", e.who], ["H", new Date().toISOString().slice(0, 16).replace("T", " ")]].forEach(([L, v]) => put(GRR_SHEET, L + e.row, v));
+  });
+  return ok;
+}
+function grrClear(iso, id) {
+  const oi = opsIdx(); if (oi < 0 || !mayEdit(oi)) return;
+  withBook(oi, () => { const e = S.grr.find(x => x.iso === iso && x.id === id); if (!e) return;
+    "ABCDEFGH".split("").forEach(L => put(GRR_SHEET, L + e.row, "")); S.grr = S.grr.filter(x => x !== e); S.grrUsed.delete(e.row); });
+}
+// show a hidden row again: its edits come back, or the entry goes if it held none
+function grrUnhide(iso, id) {
+  const ob = opsBook(), e = ob && ob.S.grr.find(x => x.iso === iso && x.id === id); if (!e) return;
+  if (e.time || e.act || e.note || e.who) grrSave(iso, id, "edit", {}); else grrClear(iso, id);
+}
+// the Ops Room's picks of people for a row: "ALL" or callsigns, looked up in the open department rosters
+function grrPeople(text) {
+  return String(text || "").split(/\s*[\/,]\s*/).map(t => t.trim()).filter(Boolean).map(t => { for (const b of books) { if (!isDept(b)) continue; const p = b.S.roster.find(x => same(x.ini || x.id, t)); if (p) return { dept: b.S.dept, ini: p.ini || p.id, cls: opsCatCls(p) }; } return { dept: "", ini: t, cls: "" }; });
+}
 // the Master Planner: a list of flights (Flights sheet, rows 6..1005: A date, B shift, C code, D time, E crew, F comment), any number per shift,
 // plus a Day Status sheet (one row per date of the year from row 6, status in C). The month tabs are a view built by Excel formulas.
 const FL_ROW0 = 6, FL_N = 1000, GR_ROW0 = 6, GR_N = 500;
@@ -2199,6 +2237,7 @@ function buildXlsx() {
   const bySheet = {};
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
   if (bySheet[ROLE_SHEET]) sheetEnsure(WB, ROLE_SHEET, ["Date", "Shift", "Callsign", "Tag"], ROLE_COLS);
+  if (bySheet[GRR_SHEET]) sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
@@ -3664,6 +3703,13 @@ function readOps(name) {
       if (dv != null || code) st.oaUsed.add(r);
       if (typeof dv !== "number" || si < 0 || !code) continue; const D = ymd(serialToISO(dv), st.year);
       st.oa.push({ row: r, y: D.y, mi: D.mi, d: D.d, s: si, code, time: timeStr(a["D" + r]), crew: str(a["E" + r]), note: str(a["F" + r]), oa: true }); } }
+  // Ground Rows sheet (made by the dashboard on the first Ops Room edit): header row 1, rows 2.. (A date, B id, C kind edit / hide / manual, D time, E activity, F location, G personnel, H saved)
+  st.grr = []; st.grrUsed = new Set();
+  if (WB.paths[GRR_SHEET]) { const c = readCells(GRR_SHEET);
+    for (let r = GRR_ROW0; r < GRR_ROW0 + GRR_N; r++) { const dv = c["A" + r], id = str(c["B" + r]), kind = str(c["C" + r]).toLowerCase();
+      if (dv != null || id) st.grrUsed.add(r);
+      if (typeof dv !== "number" || !id || !/^(edit|hide|manual)$/.test(kind)) continue;
+      st.grr.push({ row: r, iso: serialToISO(dv), id, kind, time: timeStr(c["D" + r]), act: str(c["E" + r]), note: str(c["F" + r]), who: str(c["G" + r]) }); } }
   st.hasDb = !!WB.paths["Day Board"]; st.db = {};
   if (st.hasDb) { const g = readCells("Day Board"); for (const ref in g) { const m = /^([B-Q])(\d+)$/.exec(ref); if (m && +m[2] >= 6) st.db[ref] = str(g[ref]); } }
   return st;
@@ -4112,9 +4158,20 @@ function opsGround(D) {
     if (sq) { sq.people.push(...g.people); if (g.notes.length) sq.note += (sq.note ? "<br>" : "") + g.notes.join("<br>"); }
     else out.push(mk({ src: "dept", id: "dept|" + g.s + "|" + String(g.act).toUpperCase() + "|" + g.uk, sh: g.s, k: "2" + g.s, until: g.until, uk: g.uk, act: g.act, desc: g.desc, people: g.people, note: g.notes.join("<br>") }));
   });
+  // the Ops Room's own edits of this day (Ground Rows sheet): hidden rows leave, edits replace only the fields they hold, manual rows join
+  const ob = opsBook(), hidden = [];
+  (ob && ob.S.grr || []).filter(e => e.iso === D.iso).forEach(e => {
+    const i = out.findIndex(r => r.id === e.id);
+    if (e.kind === "hide") { if (i >= 0) hidden.push(out.splice(i, 1)[0]); return; }
+    const r = i >= 0 && e.kind === "edit" ? out[i] : out[out.push(mk({ src: "manual", id: e.id, k: "0", orphan: e.kind === "edit", act: "(was linked)" })) - 1];
+    r.edited = true; if (e.time) { r.when = esc(e.time); r.sh = shOf(e.time); r.k = "0" + e.time; r.until = ""; } else if (r.src === "manual" && !r.when) r.sh = 0;
+    if (e.act) r.act = e.act; if (e.note) r.note = esc(e.note);
+    if (e.who) { r.all = same(e.who, "ALL"); r.people = r.all ? [] : grrPeople(e.who); r.label = ""; r.depts = []; }
+  });
   // the table order: clock times first (by time), then AM / PM / NIGHT, then whole day, then items running on to a later day (by their last day)
   out.forEach(g => { const m = hhmm(opsTimes(g.when, 0)[0]); g.grp = m != null ? 0 : g.until ? 3 : g.sh === 3 ? 2 : 1; g.key = g.grp === 0 ? String(m).padStart(5, "0") : g.grp === 3 ? g.uk : String(g.sh); });
-  out.forEach(r => { r.who = opsWho(r); });
+  out.forEach(r => { r.who = opsWho(r) + (r.orphan ? " <span class='was' title='The plan this edit belonged to has changed'>was linked</span>" : ""); });
+  out.hidden = hidden;
   return out.sort((x, y) => x.grp - y.grp || (x.key < y.key ? -1 : x.key > y.key ? 1 : 0) || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0) || (x.act < y.act ? -1 : x.act > y.act ? 1 : 0));
 }
 // the month so far: sorties planned, flown, cancelled (by reason) and not closed, from the Ops Room's outcomes

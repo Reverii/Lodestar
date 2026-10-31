@@ -861,13 +861,12 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
 <div id="laybanner"></div>
 <nav class="tabs">
   <button data-v="lode">My Lodestar</button>
-  <div class="tdd lft" id="plMenu"><button id="plTabBtn" type="button" class="on">Planner ▾</button>
-    <div class="tmenu"><button data-v="plan" class="on">Planner <small>the month plan</small></button><button data-v="syl">Syllabus Tracking <small>training path, Pass / Fail per item</small></button></div></div>
-  <button data-v="ov">Overview</button>
+  <div class="tdd lft" id="plMenu"><button id="plTabBtn" type="button" class="on">Planning ▾</button>
+    <div class="tmenu"><button data-v="plan" class="on">Planner <small>the month plan</small></button><button data-v="ov">Overview <small>departments, months and crew totals</small></button><button data-v="syl">Syllabus Tracking <small>training path, Pass / Fail per item</small></button></div></div>
   <button data-v="roster">Crew Roster</button>
   <button data-v="cur">Currency</button>
   <button data-v="acts">Activities</button>
-  <button data-v="log">Changes</button>
+  <button data-v="log">Changelog</button>
   <button data-v="ops" style="display:none">Ops Room</button>
   <span class="tsp"></span>
   <div class="tdd" id="mpMenu"><button class="rt" id="mpTabBtn" type="button">Master Planner</button>
@@ -1017,7 +1016,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z107</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z108</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2305,10 +2304,10 @@ function logBuild(b, sent) {
   if (W) { b.WB.files = W.files; b.WB.paths = W.paths; }
   try { return buildXlsx(); } catch (e) { b.WB.files = keep.files; b.WB.paths = keep.paths; throw e; }
 }
-// ---------- Changes tab: the latest lines of every open file's Change Log
+// ---------- Changelog tab: the latest lines of your own department's, the Master Planner's and the Ops Room's Change Log (every open file in Ops Room mode)
 function logRead() {
   const out = [];
-  books.forEach(b => { if (!b.WB.paths[LOG_SHEET]) return; const c = cellsAt(b, b.WB.files, LOG_SHEET);
+  books.forEach((b, bi) => { if (!b.WB.paths[LOG_SHEET]) return; if (!OPS && bi !== 0 && b.S.kind !== "master" && b.S.kind !== "ops") return; const c = cellsAt(b, b.WB.files, LOG_SHEET);
     for (let r = 2; ; r++) { if (c["A" + r] == null && c["E" + r] == null) { if (c["A" + (r + 1)] == null) break; continue; }
       out.push({ t: str(c["A" + r]), who: str(c["B" + r]), file: str(c["D" + r]) || b.S.dept, what: str(c["E" + r]), a: str(c["F" + r]), z: str(c["G" + r]), cell: str(c["H" + r]) }); } });
   return out.sort((x, y) => x.t < y.t ? 1 : x.t > y.t ? -1 : 0);
@@ -4731,7 +4730,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z107 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z108 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5560,12 +5559,12 @@ const HELP = {
     "<li>Struck-through flight: cancelled in the Ops Room. Blue column: today. Weekends dark, public holidays red.</li></ul>" +
     "<h3>Tools</h3><ul><li><b>Find in this month</b>: outlines matching codes, times, comments and names; Enter jumps to the next.</li><li><b>Today</b>: jumps to today's month and column.</li><li><b>Block of days…</b> (bottom of the cell list): one activity over a date range, e.g. a course or detachment.</li><li><b>↶ ↷</b> (top right) or Ctrl+Z / Ctrl+Y: undo and redo before you save.</li></ul>"],
   ov: ["Overview", "<p>Your department's year at a glance: flights, flying hours, ground duties, duty days and gaps per month, with a chart and each person's totals. Click a month to open it on the Planner.</p>"],
-  syl: ["Syllabus Tracking", "<p>Under <b>Planner ▾</b>. Each of your department's crew as a skill tree: the stages along the top (OCU, CAT C, CAT B, CAT A, Instructor), and under the stage they are working on the <b>Sim track</b> and <b>Flight track</b> side by side, then the <b>Check</b> once both tracks are passed. Click a stage to look at it, and click an item to see its attempts.</p>" +
+  syl: ["Syllabus Tracking", "<p>Under <b>Planning ▾</b>. Each of your department's crew as a skill tree: the stages along the top (OCU, CAT C, CAT B, CAT A, Instructor), and under the stage they are working on the <b>Sim track</b> and <b>Flight track</b> side by side, then the <b>Check</b> once both tracks are passed. Click a stage to look at it, and click an item to see its attempts.</p>" +
     "<p><b>Chances are per item</b>: every item has the default number of chances from the Syllabus Settings sheet, unless the item sets its own. Fails before the first pass use up chances; at 0 left the item shows ⛔ out of chances. Nothing is blocked: it is a flag for the chain of command.</p>" +
     "<p>Enter a result in the item pop-up: date, instructor, remarks, then <b>✓ Pass</b> or <b>✕ Fail</b>. It goes on your file's <b>Syllabus Log</b> sheet (× deletes a wrong entry). When every item of a stage is passed it shows <b>Stage complete, awaiting paperwork</b>. The dashboard never changes Cat Status or Role: update the Roster by hand once the paperwork is approved.</p>" +
     "<p><b>From the Planner:</b> click a crew cell, open the gold <b>🎓 Syllabus</b> box (off by default) and tick the item, then pick the flight or sim. The cell gets a gold corner and the item under the code; the item shows <b>planned</b> here. On the day or after, click the cell again to record <b>✓ Pass</b> or <b>✕ Fail</b>. Only Pass and Fail use a chance.</p>" +
     "<p>The stages, items and chances are on your own planner file's <b>Syllabus Settings</b>, <b>Syllabus Stages</b> and <b>Syllabus Items</b> sheets (edit them in Excel). Only your department's crew are listed.</p>"],
-  log: ["Changes", "<p>Every change saved from this dashboard, newest first: when, who, which file, what changed in words, and the value before and after. On SharePoint the name is the person signed in to SharePoint, so it follows their access rights: someone without edit rights on a file cannot save it, so cannot appear in its log.</p><p>Each Excel file keeps its own log on a <b>Change Log</b> sheet (added automatically the first time something is saved). This tab shows the logs of every file you have open; filter by person, file, day or text. Hover a change to see the exact sheet and cell.</p>"],
+  log: ["Changelog", "<p>Every change saved from this dashboard to your own department's file, the Master Planner and the Ops Room, newest first: when, who, which file, what changed in words, and the value before and after. On SharePoint the name is the person signed in to SharePoint, so it follows their access rights: someone without edit rights on a file cannot save it, so cannot appear in its log.</p><p>Each Excel file keeps its own log on a <b>Change Log</b> sheet (added automatically the first time something is saved). This tab shows only your own department, the Master Planner and the Ops Room (everything in Ops Room mode); filter by person, file, day or text. Hover a change to see the exact sheet and cell.</p>"],
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
@@ -5594,7 +5593,7 @@ document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.onclick = ()
   if (b.dataset.v !== "lode" && $("v-lode").classList.contains("on")) lodeMarkSeen();   // leaving My Lodestar: what changed counts from now on
   document.querySelectorAll("nav.tabs button[data-v]").forEach(x => x.classList.toggle("on", x === b));
   $("mpTabBtn").classList.toggle("on", !!b.closest("#mpMenu")); $("mpMenu").classList.remove("open");
-  $("plTabBtn").classList.toggle("on", !!b.closest("#plMenu")); $("plMenu").classList.remove("open"); if (b.closest("#plMenu")) $("plTabBtn").textContent = (b.dataset.v === "syl" ? "Syllabus Tracking" : "Planner") + " ▾";
+  $("plTabBtn").classList.toggle("on", !!b.closest("#plMenu")); $("plMenu").classList.remove("open");
   if (b.dataset.v === "codes") renderCodes();
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + b.dataset.v));
   applyPageZoom();

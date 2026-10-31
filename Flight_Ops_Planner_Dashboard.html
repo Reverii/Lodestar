@@ -255,7 +255,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfb .v{padding:6px 8px;border:1px solid var(--s200);border-radius:6px;font-size:14px}.spfb .v.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb .tags{display:flex;gap:4px;align-items:center}.spfb .tag{border:1px solid var(--s300);border-radius:4px;padding:2px 8px;font:800 12px Arial,sans-serif;color:var(--s500);cursor:pointer;background:#fff}
 .spfb .tag.on{color:#fff;border-color:transparent}.spfb .tag.tP.on{background:#1d4ed8}.spfb .tag.tL.on{background:#0f766e}.spfb .tag.tT.on{background:#b45309}.spfb .tag.tS1.on{background:#7e22ce}.spfb .tag.tS2.on{background:#be123c}
-.spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}.nocrew{color:#b91c1c;font:800 11px Arial,sans-serif;background:#fee2e2;border-radius:3px;padding:1px 5px}.spfb .tag.tALL.on{background:#0f172a}
+.spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}.glab{color:#6d28d9;font-style:italic}.gmore{color:var(--s500);font-weight:700;cursor:help}.nocrew{color:#b91c1c;font:800 11px Arial,sans-serif;background:#fee2e2;border-radius:3px;padding:1px 5px}.spfb .tag.tALL.on{background:#0f172a}
 .spb .addb{display:block;width:100%;border:2px dashed #93c5fd;background:#eff6ff;color:#1d4ed8;font-weight:800;padding:9px;border-radius:8px;font-size:14.5px;cursor:pointer;margin-top:10px}.spb .addb:hover{background:#dbeafe}
 .fGND{background:#dcfce7;color:#166534;border-left:4px solid #16a34a}
 .spfb .v.set.g{background:#dcfce7;color:#166534}
@@ -4068,18 +4068,31 @@ function opsHrs(r, oc) {
 }
 // ground items of a day: Master Planner ground programme, each department's own GROUND PROGRAMME row entries it typed itself,
 // and crew on a ground activity (anything but flights, leave and off) grouped by department, shift and activity
+// the Personnel cell of a ground row: department chip and callsigns in Cat colours (first four, then +N with the full list on hover),
+// the crew-tag groups, ALL RELEVANT PERSONNEL when ALL was chosen, and a red NO PERSONNEL when nobody is on it (an input mistake)
+function opsWho(r) {
+  if (r.all) return "ALL RELEVANT PERSONNEL";
+  const runs = []; r.people.slice(0, 4).forEach(p => { const l = runs[runs.length - 1]; if (l && l.dept === p.dept) l.n.push(p); else runs.push({ dept: p.dept, n: [p] }); });
+  let h = r.depts.map(d => deptChip(d)).join(" ") + runs.map(x => deptChip(x.dept) + " " + x.n.map(p => "<b class='" + p.cls + "'>" + esc(p.ini) + "</b>").join(" / ")).join(" ");
+  if (r.people.length > 4) h += " <span class='gmore' title='" + esc(r.people.map(p => p.ini).join(", ")) + "'>+" + (r.people.length - 4) + "</span>";
+  if (r.label) h += (h ? " " : "") + "<span class='glab'>" + esc(r.label) + "</span>";
+  return h.trim() || "<span class='nocrew'>NO PERSONNEL</span>";
+}
 function opsGround(D) {
   const out = [], mb = masterBook(), P = mb && mb.S, fmt = (m, e) => new Date(isoOf(D.y, m, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
   // a Master Planner item sits in the column of its start time (06:00-11:59 AM, 12:00-17:59 PM, otherwise NIGHT); no time = AM
   const shOf = t => { const m = hhmm(opsTimes(t, 0)[0]); return m == null || (m >= 360 && m < 720) ? 0 : m >= 720 && m < 1080 ? 1 : 2; };
-  D.gr.forEach(g => out.push({ sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), until: "", act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));   // the note is the location
+  const mk = o => Object.assign({ people: [], depts: [], label: "", all: false, desc: "", until: "", when: "", note: "", id: "" }, o);
+  // squadron events (Master Planner): the note is the location; the crew tags name the groups, ALL means everyone, blank is a mistake
+  D.gr.forEach(g => out.push(mk({ src: "sq", id: "sq|" + String(g.act).toUpperCase() + "|" + shOf(g.time) + "|", sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), act: g.act, note: esc(g.note || ""),
+    all: crewIsAll(g.crew), label: crewIsAll(g.crew) ? "" : crewTags(g.crew).map(k => CREW_TAGS.find(x => x[0] === k)[1]).join(", ") })));
+  const groups = new Map();   // department items, merged across departments by shift + activity + last day
   books.forEach((b, bi) => {
     if (!isDept(b) || b.S.year !== D.y) return;
     withBook(bi, () => {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
       if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : "";
-        if (own && !same(own, fromMp)) out.push({ sh: 3, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "" }); }
-      const groups = new Map();
+        if (own && !same(own, fromMp)) out.push(mk({ src: "dept", id: "dept|3|" + own.toUpperCase() + "|" + S.dept, sh: 3, k: "1", act: own, depts: [S.dept] })); }
       S.roster.forEach((p, i) => { for (let s = 0; s < rp(); s++) {
         const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
         if (!a || !(isWdRow(gridRow(i, s)) ? wdAllowed(a) : a.ci === CAT_ADMIN)) continue;   // the WD row (s = 3) shows its ground and admin items in a Whole day column   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
@@ -4087,15 +4100,21 @@ function opsGround(D) {
         let e = D.d, em = D.mi;   // the last day (and its month) of the run; it carries on into the next month's grid
         for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
           const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
-        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", uk: isoOf(D.y, em, e), who: [], notes: [] });
-        const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + opsCatCls(p) + "'>" + esc(n) + "</b>");
+        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", uk: isoOf(D.y, em, e), people: [], notes: [] });
+        const g = groups.get(key), n = p.ini || p.id; g.people.push({ dept: S.dept, ini: n, cls: opsCatCls(p) });
         const cn = S.notes && S.notes.get(D.mi + ":" + (gridRow(i, s)) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
       } });
-      groups.forEach(g => out.push({ sh: g.s, k: "2" + g.s, when: "", until: g.until, uk: g.uk, act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
     });
+  });
+  // a one-day department item of the same activity as a squadron event of the day joins that row (its time and location); the rest are rows of their own
+  groups.forEach(g => {
+    const sq = !g.until && out.find(r => r.src === "sq" && (same(r.act, g.act) || (g.desc && same(r.act, g.desc))));
+    if (sq) { sq.people.push(...g.people); if (g.notes.length) sq.note += (sq.note ? "<br>" : "") + g.notes.join("<br>"); }
+    else out.push(mk({ src: "dept", id: "dept|" + g.s + "|" + String(g.act).toUpperCase() + "|" + g.uk, sh: g.s, k: "2" + g.s, until: g.until, uk: g.uk, act: g.act, desc: g.desc, people: g.people, note: g.notes.join("<br>") }));
   });
   // the table order: clock times first (by time), then AM / PM / NIGHT, then whole day, then items running on to a later day (by their last day)
   out.forEach(g => { const m = hhmm(opsTimes(g.when, 0)[0]); g.grp = m != null ? 0 : g.until ? 3 : g.sh === 3 ? 2 : 1; g.key = g.grp === 0 ? String(m).padStart(5, "0") : g.grp === 3 ? g.uk : String(g.sh); });
+  out.forEach(r => { r.who = opsWho(r); });
   return out.sort((x, y) => x.grp - y.grp || (x.key < y.key ? -1 : x.key > y.key ? 1 : 0) || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0) || (x.act < y.act ? -1 : x.act > y.act ? 1 : 0));
 }
 // the month so far: sorties planned, flown, cancelled (by reason) and not closed, from the Ops Room's outcomes

@@ -105,6 +105,44 @@ test("log_names_wd", async ({ page }) => {
   assert.ok(r.length === 1 && /WD$/.test(r[0]), JSON.stringify(r));
 });
 
+// zoom control and crew divider
+const bodyZoom = page => page.evaluate(() => document.body.style.zoom);
+test("zoom_default_85_on_planner", async ({ page }) => {
+  await go(page);
+  assert.strictEqual(await bodyZoom(page), "0.85"); assert.strictEqual(await page.evaluate(() => $("zoomLvl").textContent), "85%");
+  await page.evaluate(() => document.querySelector("nav.tabs button[data-v='ov']").click());
+  assert.strictEqual(await bodyZoom(page), "1", "100% outside the planner until a level is chosen");
+});
+test("zoom_steps_and_remembered", async ({ page }) => {
+  await go(page);
+  await page.click("#zoomOut"); await page.click("#zoomOut");
+  assert.strictEqual(await page.evaluate(() => $("zoomLvl").textContent), "75%"); assert.strictEqual(await bodyZoom(page), "0.75");
+  assert.strictEqual(await page.evaluate(() => $("zoomOut").disabled), true, "the floor holds at 75%");
+  await page.click("#zoomIn"); assert.strictEqual(await page.evaluate(() => $("zoomLvl").textContent), "80%");
+  await page.click("#zoomOut");
+  await page.reload();
+  assert.strictEqual(await page.evaluate(() => savedZoom()), 75);
+});
+test("zoom_ops_room_is_100", async ({ page }) => {
+  await go(page); await page.click("#zoomOut");
+  await page.evaluate(() => document.querySelector("nav.tabs button[data-v='ops']").click());
+  assert.strictEqual(await bodyZoom(page), "1");
+  await page.evaluate(() => document.querySelector("nav.tabs button[data-v='plan']").click());
+  assert.strictEqual(await bodyZoom(page), "0.8");
+});
+test("zoom_bad_saved_value_falls_back", async ({ page }) => {
+  const r = await page.evaluate(() => { const out = []; for (const v of ["abc", "50", "", "85.5"]) { localStorage.setItem("lodeZoom", v); out.push(savedZoom()); } localStorage.removeItem("lodeZoom"); out.push(savedZoom()); return out; });
+  assert.deepStrictEqual(r, [null, null, null, null, null]);
+});
+test("divider_between_crew", async ({ page }) => {
+  await go(page);
+  const r = await page.evaluate(() => { document.body.style.zoom = "1";   // read the rule at 100%
+    const first = [...document.querySelectorAll("#plan tbody tr.pfirst")], c = first[1] && first[1].querySelector("td.c"), id = first[0] && first[0].querySelector("td.idc");
+    const n = [...document.querySelectorAll("#plan td.shAM")].filter(td => td.closest("tr").querySelector("td[data-k^='g:']")).length;
+    return { n: first.length, crew: n, w: c && getComputedStyle(c).borderTopWidth, col: c && getComputedStyle(c).borderTopColor, idStyle: id && id.getAttribute("style") }; });
+  assert.strictEqual(r.n, r.crew, JSON.stringify(r)); assert.strictEqual(r.w, "3px"); assert.strictEqual(r.col, "rgb(15, 23, 42)"); assert.ok(!r.idStyle, "no tint on the identity cells");
+});
+
 module.exports.tests = tests;
 (async () => {
   const only = process.argv[2];

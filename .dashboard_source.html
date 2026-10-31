@@ -120,7 +120,7 @@ td.hol{background:#ffe4e6}
 .cat6{background:#ede9fe!important;color:#5b21b6}.cat7{background:#fce7f3!important;color:#9d174d}.cat8{background:#dcfce7!important;color:#14532d}
 .catX{background:#fee2e2!important;color:#991b1b;text-decoration:underline wavy}
 .sh{font-family:Consolas,monospace;font-weight:700;font-size:11px;text-align:center}
-.shWD{background:#ccfbf1!important;color:#115e59}tr.wdrow td.c:empty{background:#f0fdfa}
+.shWD{background:#ccfbf1!important;color:#115e59}tr.pfirst td{border-top:3px solid #0f172a}#zoomBar{display:inline-flex;align-items:center;gap:2px;margin-right:4px}#zoomBar b{min-width:38px;text-align:center;font-size:12px;color:#fff}tr.wdrow td.c:empty{background:#f0fdfa}
 .shAM{background:#f0f9ff!important;color:#075985}.shPM{background:#fffbeb!important;color:#92400e}.shNIGHT{background:#1e1b4b!important;color:#c7d2fe}
 tr.blkend td,tr.blkend th{border-bottom:2px solid var(--s400)}
 .who{padding:2px 8px!important;line-height:1.2}
@@ -845,6 +845,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <div class="fileinfo" id="fileinfo">No file open</div><span id="openingOthers" style="display:none;font-size:12px;color:#475569;margin-left:8px"></span><span id="viewOnly" title="SharePoint says you can read this file but not change it." style="display:none;background:#e0e7ff;color:#3730a3;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:600;margin-left:6px">View only</span>
   <button class="btn primary" id="btnOpen">Open my Excel</button>
   <button class="btn" id="btnAdd" disabled title="Other departments' planners, the Duty Roster or the Master Planner">Add other departments</button>
+  <span id="zoomBar" title="Make everything smaller or larger (not the Ops Room, which has its own size buttons)"><button class="btn ur" id="zoomOut">−</button><b id="zoomLvl">85%</b><button class="btn ur" id="zoomIn">+</button></span>
   <button class="btn ur" id="btnUndo" disabled title="Undo (Ctrl+Z)">↶</button><button class="btn ur" id="btnRedo" disabled title="Redo (Ctrl+Y)">↷</button>
   <button class="btn save" id="btnSave" disabled>Save to Excel</button>
 </header>
@@ -3294,7 +3295,7 @@ function renderPlanner() {
     const AR = atomCurrent() ? atomFor(cur.b, i) : null;   // this person's ATOM row, looked up once
     const RPB = rp();   // rows in this person's block: 4 with WD, 3 in a file from before layout 3
     for (let s = 0; s < RPB; s++) {
-      h += "<tr class='" + (isWdRow(gridRow(i, s)) ? "wdrow " : "") + (s === RPB - 1 ? "blkend" : "") + (inact ? " inactive" : "") + (ns ? " sans" : "") + "'>";
+      h += "<tr class='" + (s === 0 ? "pfirst " : "") + (isWdRow(gridRow(i, s)) ? "wdrow " : "") + (s === RPB - 1 ? "blkend" : "") + (inact ? " inactive" : "") + (ns ? " sans" : "") + "'>";
       if (s === 0) h += "<td class='stk1 idc' rowspan=" + RPB + ">" + esc(p.id) + "</td><td class='stk2 who' rowspan=" + RPB + " title='" + esc([p.cat, p.role, p.status].filter(Boolean).join(" | ")) + "'><b class='" + catCls(p.cat) + "'>" + esc(p.name) + "</b>" + (RS && (() => { const k0 = dayOfYear(S.year, mi, 0), L = []; for (let d = 0; d < dim; d++) if (RS[i].run[k0 + d] >= REST_DAYS) L.push(d + 1); return L.length ? "<i class='curb rest' title='" + esc("Crew rest: flying " + REST_DAYS + "+ days in a row on " + MONTHS[mi] + " " + L.join(", ")) + "'>REST</i>" : ""; })() || "") + (CH && (() => { const D = CH[i].down, L = []; for (let d = 0; d < dim; d++) if (D[ck0 + d]) L.push(d); if (!L.length) return ""; const now = L.includes(tD), last = L[L.length - 1];
         const runs = []; L.forEach(d => { const r = runs[runs.length - 1]; if (r && r[1] === d - 1) r[1] = d; else runs.push([d, d]); });
         return "<i class='curb " + (now || tD < 0 ? "down" : "downx") + "' data-upchit='" + cur.b + "|" + i + "|" + isoOf(y, mi, now ? tD : last) + "' title='" + esc("Down-chitted (MC), not cleared to fly: " + runs.map(r => (r[0] + 1) + (r[1] > r[0] ? "-" + (r[1] + 1) : "")).join(", ") + " " + MONTHS[mi] + (canEdit ? "\nClick to up-chit" : "")) + "'>DOWN</i>"; })() || "") + "<span>" + esc(p.role + (ns ? "  |  " + p.status.toUpperCase() : "")) + "</span></td>";
@@ -5465,6 +5466,14 @@ $("devGo").onclick = () => devOpen();
 $("devPick").onclick = () => devOpen(true);
 $("devAuto").onchange = e => devSet("auto", e.target.checked ? "1" : "0");
 $("devMine").onchange = e => devSet("mine", e.target.value);
+// ---------- page zoom: the whole UI except the Ops Room, which has its own size buttons. A level a person picks is remembered in their browser;
+// until then the planner opens at 85% and everything else at 100%.
+const ZOOMS = [100, 90, 85, 80, 75];
+function savedZoom() { try { const z = +localStorage.getItem("lodeZoom"); return ZOOMS.includes(z) ? z : null; } catch (e) { return null; } }
+function zoomNow() { const v = document.querySelector(".view.on"), id = v ? v.id : ""; return id === "v-ops" ? 100 : savedZoom() || (id === "v-plan" ? 85 : 100); }
+function applyPageZoom() { const z = zoomNow(); document.body.style.zoom = z / 100; $("zoomLvl").textContent = z + "%"; $("zoomOut").disabled = z <= ZOOMS[ZOOMS.length - 1]; $("zoomIn").disabled = z >= ZOOMS[0]; }
+function stepZoom(dir) { const cur0 = savedZoom() || zoomNow(), k = Math.max(0, Math.min(ZOOMS.length - 1, ZOOMS.indexOf(cur0) + dir)); try { localStorage.setItem("lodeZoom", ZOOMS[k]); } catch (e) {} applyPageZoom(); }
+$("zoomOut").addEventListener("click", () => stepZoom(1)); $("zoomIn").addEventListener("click", () => stepZoom(-1));
 document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.addEventListener("click", () => { if (document.body.classList.contains("devmode")) devSet("tab", b.dataset.v); }));
 devUi();
 /*/DEV*/
@@ -5516,6 +5525,7 @@ document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.onclick = ()
   $("plTabBtn").classList.toggle("on", !!b.closest("#plMenu")); $("plMenu").classList.remove("open"); if (b.closest("#plMenu")) $("plTabBtn").textContent = (b.dataset.v === "syl" ? "Syllabus Tracking" : "Planner") + " ▾";
   if (b.dataset.v === "codes") renderCodes();
   document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-" + b.dataset.v));
+  applyPageZoom();
   if (b.dataset.v === "cur") renderCur();
   if (b.dataset.v === "lode") renderLode();
   if (b.dataset.v === "log") renderLog();

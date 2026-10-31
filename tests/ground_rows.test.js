@@ -59,6 +59,41 @@ test("change_log_gets_the_sheet", async ({ page }) => {
   assert.ok(t.includes("Ground Rows"), "the Ground Rows sheet is in the saved workbook");
 }, ED);
 
+// ---- the controls on the card
+const OPEN = page => page.evaluate(iso => { cur.opsDay = iso; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps(); }, DAY);
+const rowLoc = (page, act) => page.locator("#opsSide .gtab tbody tr", { hasText: act });
+test("pencil_edit_flow", async ({ page }) => {
+  await SQ_ADD(page, { act: "Safety Brief", time: "0730-0800", note: "Room A", crew: "S1" }); await OPEN(page);
+  await rowLoc(page, "Safety Brief").hover(); await rowLoc(page, "Safety Brief").locator(".gedit").click();
+  await page.fill("#grLoc", "Room C"); await page.click("#grGo");
+  assert.strictEqual((await ROW(page, "Safety Brief")).loc, "Room C"); assert.strictEqual(await CELL(page, "F2"), "Room C"); assert.strictEqual(await CELL(page, "D2"), "");
+}, ED);
+test("hide_flow", async ({ page }) => {
+  await SQ_ADD(page, { act: "Safety Brief", time: "0730-0800", crew: "S1" }); await OPEN(page);
+  await rowLoc(page, "Safety Brief").hover(); await rowLoc(page, "Safety Brief").locator(".ghide").click();
+  assert.strictEqual(await ROW(page, "Safety Brief"), undefined);
+  assert.strictEqual((await page.locator(".ghidlink").textContent()).trim(), "hidden (1)");
+  await page.click(".ghidlink"); await page.click(".gunhide"); assert.ok(await ROW(page, "Safety Brief"), "back after Unhide");
+}, ED);
+test("add_manual_flow", async ({ page }) => {
+  await OPEN(page); await page.click("#grAddBtn");
+  await page.fill("#grTime", "0900"); await page.fill("#grAct", "Fire drill"); await page.click("#grGo");
+  assert.ok((await page.textContent("#grMsg")).includes("Choose who"), "asks for people"); assert.strictEqual(await page.isVisible("#grPop"), true, "dialog stays open");
+  await page.locator("#grWho input[data-gp]").nth(0).check(); await page.locator("#grWho input[data-gp]").nth(1).check(); await page.click("#grGo");
+  const r = await ROW(page, "Fire drill"); assert.ok(r && r.time === "0900H" && r.who.includes("/"), JSON.stringify(r));
+  await rowLoc(page, "Fire drill").hover(); await rowLoc(page, "Fire drill").locator(".ghide").click();
+  assert.strictEqual(await ROW(page, "Fire drill"), undefined, "a manual row is deleted, not hidden"); assert.strictEqual(await page.locator(".ghidlink").count(), 0);
+}, ED);
+test("all_option_manual", async ({ page }) => {
+  await OPEN(page); await page.click("#grAddBtn"); await page.fill("#grTime", "1000"); await page.fill("#grAct", "PSM"); await page.check("#grAll"); await page.click("#grGo");
+  assert.ok((await ROW(page, "PSM")).who.includes("ALL RELEVANT PERSONNEL"));
+}, ED);
+test("read_only_has_no_controls", async ({ page }) => {
+  await SQ_ADD(page, { act: "Safety Brief", crew: "" }); await OPEN(page);
+  assert.ok((await ROW(page, "Safety Brief")).who.includes("NO PERSONNEL"), "the red mark is still there");
+  assert.strictEqual(await page.locator(".gedit, .ghide, #grAddBtn").count(), 0);
+}, RO);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

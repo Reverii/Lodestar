@@ -449,6 +449,17 @@ body.ro .edit input,body.ro .edit select{pointer-events:none;color:var(--s600)}
 .opsgrid>div>.card+.card{margin-top:12px}
 .opsgrid{display:grid;grid-template-columns:5fr 4fr 3fr;gap:12px;align-items:start}
 .opsb.oa{background:#7c3aed;color:#fff}
+#grPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
+#grPop .box{background:#fff;border-radius:12px;padding:20px;max-width:520px;width:94%}
+#grPop h2{margin:0 0 4px}#grPop .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+#grPop label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase;flex:1;min-width:110px}
+#grPop select,#grPop input:not([type=checkbox]){padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900)}
+#grPop label.ck{flex-direction:row;align-items:center;gap:5px;text-transform:none;font-size:13px;color:var(--s700);flex:0 0 auto;min-width:0}
+#grPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+#grPop .gdep{margin-top:6px;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:center}#grPop .gdep b{flex:0 0 100%;font-size:11px;color:var(--s500)}#grPop #grWho{max-height:190px;overflow:auto;border:1px solid var(--s200);border-radius:6px;padding:6px 8px;margin-top:3px}
+#grMsg{color:#b91c1c;font-size:12.5px;min-height:16px;margin-top:6px}
+table.gtab td.ga .gbt{visibility:hidden;margin-left:6px;white-space:nowrap}table.gtab tr:hover .gbt{visibility:visible}.gbt button{border:1px solid var(--s300);background:#fff;border-radius:4px;font-size:11px;line-height:1;padding:2px 5px;cursor:pointer;color:var(--s600)}
+.gadd{float:right;font-size:11px;padding:2px 8px}.ghidl{font-size:11.5px;margin-top:6px;color:var(--s500)}.ghidl a{cursor:pointer;text-decoration:underline}.ghidl .gunhide{margin-left:6px}
 #oaPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
 #oaPop .box{background:#fff;border-radius:12px;padding:20px;max-width:520px;width:94%}
 #oaPop h2{margin:0 0 4px}#oaPop .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
@@ -1034,6 +1045,13 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <div class="row" style="align-items:center" id="oaCrew"></div>
   <div class="row"><label>Comment (optional)<input id="oaNote" placeholder="e.g. Tasking from HQ"></label></div>
   <div class="btns"><button class="btn" id="oaCancel">Cancel</button><button class="btn primary" id="oaGo">Add flight</button></div>
+</div></div>
+<div id="grPop"><div class="box">
+  <h2 id="grTitle">Ground programme row</h2>
+  <div class="row"><label>Time<input id="grTime" placeholder="e.g. 1400-1600"></label><label>Activity<input id="grAct" placeholder="e.g. Dinghy drill"></label><label>Location<input id="grLoc" placeholder="e.g. 121 CR"></label></div>
+  <div class="row"><label>Personnel<div id="grWho"></div></label></div>
+  <div id="grMsg"></div>
+  <div class="btns"><button class="btn" id="grCancel">Cancel</button><button class="btn primary" id="grGo">Save</button></div>
 </div></div>
 <div id="mpExpPop"><div class="box">
   <h2>Export flights</h2>
@@ -4031,15 +4049,15 @@ function renderOps() {
   else if (!D.rows.length && !D.sb.length) el.innerHTML = "<div class='muted' style='padding:20px'>No flights on the Master Planner for this day." + (D.status ? " Day status: " + esc(D.status) + "." : "") + (ed ? " Use <b>+ Ops Add</b> for an ad hoc flight." : "") + "</div>";
   else el.innerHTML = opsTable(D, rows, ed);
   // the right-hand column: area and codes, movement, down-chits, ground programme, then the day's remarks filling the rest
-  const G = opsGround(D), MV = opsMovement(D);
+  const G = opsGround(D), MV = opsMovement(D), ged = opsEditable(); OPS_G = G;
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
   const mv = "<div class='card olv'><h2>Leave and MC</h2>" + MV.map(m => "<div class='dep'><b class='dn'>" + esc(m.dept) + "</b><span class='dw'>" + (m.who || "<span class='muted'>–</span>") + "</span></div>").join("") + "</div>";
   // the ground programme as a table sorted by opsGround: Time | Activity | Location (the note) | Personnel
   const GSH = ["AM", "PM", "NIGHT", "WD"];
   let gprev = -1;
   const grow = g => { const lab = g.grp === 0 ? (mpRange(g.when, 0) || g.when) : g.grp === 3 ? g.until.replace(/^until /, "till ").toUpperCase() : GSH[g.sh], cls = g.grp === 0 ? "" : g.grp === 3 ? "till" : "s" + g.sh;
-    const tr = "<tr" + (gprev >= 0 && g.grp !== gprev ? " class='gs'" : "") + "><td class='tm " + cls + "'>" + lab + "</td><td class='ga'><b>" + esc(g.act) + "</b>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "</td><td class='gl'>" + (g.note || "") + "</td><td class='gw'>" + g.who + "</td></tr>"; gprev = g.grp; return tr; };
-  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gsc'><table class='gtab'><colgroup><col class='gt'><col class='gac'><col class='glo'><col></colgroup><thead><tr><th>TIME</th><th>ACTIVITY</th><th>LOCATION</th><th>PERSONNEL</th></tr></thead><tbody>" + G.map(grow).join("") + "</tbody></table></div>" : "<div class='muted'>No squadron events.</div>") + "</div>";
+    const tr = "<tr" + (gprev >= 0 && g.grp !== gprev ? " class='gs'" : "") + "><td class='tm " + cls + "'>" + lab + "</td><td class='ga'><b>" + esc(g.act) + "</b>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + (ged ? "<span class='gbt'><button class='gedit' data-gi='" + G.indexOf(g) + "' title='Change this row'>&#9998;</button><button class='ghide' data-gi='" + G.indexOf(g) + "' title='" + (g.src === "manual" ? "Delete this row" : "Hide this row") + "'>&times;</button></span>" : "") + "</td><td class='gl'>" + (g.note || "") + "</td><td class='gw'>" + g.who + "</td></tr>"; gprev = g.grp; return tr; };
+  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + (ged ? "<button class='addb gadd' id='grAddBtn'>+ Ops row</button>" : "") + "</h2>" + (G.length ? "<div class='gsc'><table class='gtab'><colgroup><col class='gt'><col class='gac'><col class='glo'><col></colgroup><thead><tr><th>TIME</th><th>ACTIVITY</th><th>LOCATION</th><th>PERSONNEL</th></tr></thead><tbody>" + G.map(grow).join("") + "</tbody></table></div>" : "<div class='muted'>No squadron events.</div>") + (ged && G.hidden.length ? "<div class='ghidl'><a class='ghidlink'>hidden (" + G.hidden.length + ")</a>" + (cur.opsHid ? G.hidden.map((h, i) => "<div>" + esc(h.act) + (h.rt ? " " + esc(h.rt) : "") + "<button class='btn gunhide' data-hi='" + i + "'>Unhide</button></div>").join("") : "") + "</div>" : "") + "</div>";
   // remarks for the day (Day Board column P of the Ops Room file)
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
@@ -4128,9 +4146,9 @@ function opsGround(D) {
   const out = [], mb = masterBook(), P = mb && mb.S, fmt = (m, e) => new Date(isoOf(D.y, m, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
   // a Master Planner item sits in the column of its start time (06:00-11:59 AM, 12:00-17:59 PM, otherwise NIGHT); no time = AM
   const shOf = t => { const m = hhmm(opsTimes(t, 0)[0]); return m == null || (m >= 360 && m < 720) ? 0 : m >= 720 && m < 1080 ? 1 : 2; };
-  const mk = o => Object.assign({ people: [], depts: [], label: "", all: false, desc: "", until: "", when: "", note: "", id: "" }, o);
+  const mk = o => Object.assign({ people: [], depts: [], label: "", all: false, desc: "", until: "", when: "", note: "", id: "", rt: "", rn: "" }, o);
   // squadron events (Master Planner): the note is the location; the crew tags name the groups, ALL means everyone, blank is a mistake
-  D.gr.forEach(g => out.push(mk({ src: "sq", id: "sq|" + String(g.act).toUpperCase() + "|" + shOf(g.time) + "|", sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), act: g.act, note: esc(g.note || ""),
+  D.gr.forEach(g => out.push(mk({ src: "sq", id: "sq|" + String(g.act).toUpperCase() + "|" + shOf(g.time) + "|", sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), act: g.act, note: esc(g.note || ""), rt: g.time || "", rn: g.note || "",
     all: crewIsAll(g.crew), label: crewIsAll(g.crew) ? "" : crewTags(g.crew).map(k => CREW_TAGS.find(x => x[0] === k)[1]).join(", ") })));
   const groups = new Map();   // department items, merged across departments by shift + activity + last day
   books.forEach((b, bi) => {
@@ -4164,8 +4182,8 @@ function opsGround(D) {
     const i = out.findIndex(r => r.id === e.id);
     if (e.kind === "hide") { if (i >= 0) hidden.push(out.splice(i, 1)[0]); return; }
     const r = i >= 0 && e.kind === "edit" ? out[i] : out[out.push(mk({ src: "manual", id: e.id, k: "0", orphan: e.kind === "edit", act: "(was linked)" })) - 1];
-    r.edited = true; if (e.time) { r.when = esc(e.time); r.sh = shOf(e.time); r.k = "0" + e.time; r.until = ""; } else if (r.src === "manual" && !r.when) r.sh = 0;
-    if (e.act) r.act = e.act; if (e.note) r.note = esc(e.note);
+    r.edited = true; if (e.time) { r.when = esc(e.time); r.rt = e.time; r.sh = shOf(e.time); r.k = "0" + e.time; r.until = ""; } else if (r.src === "manual" && !r.when) r.sh = 0;
+    if (e.act) r.act = e.act; if (e.note) { r.note = esc(e.note); r.rn = e.note; }
     if (e.who) { r.all = same(e.who, "ALL"); r.people = r.all ? [] : grrPeople(e.who); r.label = ""; r.depts = []; }
   });
   // the table order: clock times first (by time), then AM / PM / NIGHT, then whole day, then items running on to a later day (by their last day)
@@ -4330,6 +4348,36 @@ function opsUnplan(D, x, dept, id) {
     S.m[D.mi].grid[rr][D.d] = ""; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), ""); });
 }
 // ---- Ops Add form: an ad hoc flight on the day shown
+let OPS_G = [], GRD = null;   // the ground rows on screen; the open ground row dialog { iso, id, kind, row }
+function grOpen(row) {
+  const D = opsDay(cur.opsDay); if (!opsEditable() || !D || D.other) return;
+  GRD = { iso: D.iso, id: row ? row.id : grrNewKey(), kind: row && (row.orphan || row.src !== "manual") ? "edit" : "manual", row };
+  $("grTitle").textContent = row ? "Change this ground programme row" : "Add a ground programme row";
+  $("grTime").value = row ? row.rt : ""; $("grAct").value = row ? row.act : ""; $("grLoc").value = row ? row.rn : "";
+  const sel = new Set(row ? row.people.map(p => p.ini) : []), all = !!(row && row.all);
+  $("grWho").innerHTML = "<label class='ck'><input type='checkbox' id='grAll'" + (all ? " checked" : "") + "> ALL (everyone)</label>" +
+    books.filter(isDept).map(b => "<div class='gdep'><b>" + esc(b.S.dept) + "</b>" + b.S.roster.filter(p => p.name || p.id).map(p => { const n = p.ini || p.id; return "<label class='ck'><input type='checkbox' data-gp='" + esc(n) + "'" + (sel.has(n) && !all ? " checked" : "") + "> " + esc(n) + "</label>"; }).join("") + "</div>").join("");
+  $("grMsg").textContent = ""; $("grPop").style.display = "flex"; $("grTime").focus();
+}
+function grWhoText() { return $("grAll").checked ? "ALL" : [...document.querySelectorAll("#grWho input[data-gp]")].filter(x => x.checked).map(x => x.dataset.gp).join(" / "); }
+$("grCancel").onclick = () => { $("grPop").style.display = "none"; GRD = null; };
+$("grGo").onclick = () => {
+  const g = GRD; if (!g) return; const time = $("grTime").value.trim(), act = $("grAct").value.trim(), loc = $("grLoc").value.trim(), who = grWhoText();
+  let f; if (g.kind === "manual") { f = { time, act, note: loc, who }; const bad = grrCheck(f); if (bad) { $("grMsg").textContent = bad; return; } }
+  else { const r = g.row, ow = r.all ? "ALL" : r.people.map(p => p.ini).join(" / "); f = {};
+    if (time !== r.rt) f.time = time; if (act !== r.act) f.act = act; if (loc !== r.rn) f.note = loc; if (who !== ow) f.who = who; }
+  if ((g.kind === "manual" || Object.keys(f).length) && !grrSave(g.iso, g.id, g.kind, f)) return;
+  $("grPop").style.display = "none"; GRD = null; renderOps();
+};
+document.addEventListener("click", e => {
+  const t = e.target.closest("#opsSide .gedit, #opsSide .ghide, #grAddBtn, #opsSide .ghidlink, #opsSide .gunhide"); if (!t || !opsEditable()) return;
+  const D = opsDay(cur.opsDay), row = t.dataset.gi != null ? OPS_G[+t.dataset.gi] : null;
+  if (t.id === "grAddBtn") grOpen(null);
+  else if (t.classList.contains("gedit")) grOpen(row);
+  else if (t.classList.contains("ghide")) { if (row.src === "manual") grrClear(D.iso, row.id); else grrSave(D.iso, row.id, "hide", {}); renderOps(); }
+  else if (t.classList.contains("ghidlink")) { cur.opsHid = !cur.opsHid; renderOps(); }
+  else if (t.classList.contains("gunhide")) { grrUnhide(D.iso, OPS_G.hidden[+t.dataset.hi].id); renderOps(); }
+});
 function oaOpen() {
   const ob = opsBook(), oi = books.indexOf(ob), mb = masterBook();
   if (!ob || !opsEditable()) { alert("Ops Add needs the Ops Room file open in Ops Room mode."); return; }

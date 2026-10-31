@@ -1,25 +1,31 @@
-# LODESTAR handoff (2026-10-25)
+# LODESTAR handoff (updated 2026-10-31)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
-## Next session: start here (handoff of 30 Oct 2026)
+## Next session: start here (handoff of 31 Oct 2026)
 
-**State (updated 31 Oct, z101: item 1 below is built on branch `claude/practical-lamport-j13scq`, not yet merged):** everything else is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is now on, deciding about making it private is an open item). Dashboard **z104** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
-Built and merged since the last handoff: Ops Room redesign (z97), built-in sample fix (z98), Master Planner time ranges (z99), department selector revamp (z100).
+**State:** everything is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is on, deciding about making it private is an open item). Dashboard **z108** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
+Built since the 30 Oct handoff, all merged: other departments open by themselves + View only (z101), AC and Pax tags (z102), WD fourth row with zoom and crew divider (z103), Ops Room ground programme table (z104), Ops Room bottom strip fix (z105), Master Planner export reformat (z106, z107), tab changes (z108). Notes for each below.
 
-**Do next, in this order** (full notes in `PROJECT_CHECKLIST.md` section 9):
-1. **Other departments open by themselves + View only.** Spec `docs/superpowers/specs/2026-10-30-other-departments-design.md`, plan `docs/superpowers/plans/2026-10-30-other-departments.md` are written and reviewed by Brandon's plan; Brandon said go. Use native execution. Brandon's SharePoint: only planners and the Master Planner can edit; everyone can read every file.
-2. ~~AC and Pax tags in the planner~~ **built 31 Oct (z102)**, on branch `claude/practical-lamport-j13scq`, not merged; Brandon still has to test it on SharePoint. Notes below.
-3. **Fourth row per member** (item 1; dummy data, so rebuild the files fresh, no migration).
+**Next, in this order:**
+1. Nothing is queued by Brandon. Wait for his SharePoint test results (list below) and fix what he finds.
+2. When he agrees: replace the repo's own `.xlsx` files and the built-in sample with layout-3 files (rebuild fresh, no migration; dummy data only), then rebuild the dashboard.
+3. The full PDF guide only when Brandon says so.
 
 **Not to do:** the request function is **omitted** (SharePoint lists do not work on the squadron site). The **full PDF guide** (Planners, Master Planner, Ops Room; audience the users) is **not to be generated until Brandon says so**.
 
-**Brandon's pending tests on the real SharePoint:** the department selector (does the "by <name>" line show, does the 15-second refresh work, is a week the right red-dot threshold), the Ops Room redesign on the projector, the Master Planner time ranges.
+**Brandon's pending tests on the real SharePoint:** the department selector (does the "by <name>" line show, does the 15-second refresh work, is a week the right red-dot threshold), View only (permission check with a member's account, and the extra seconds to open four more files), AC and Pax tags, the WD row and zoom, the Ops Room on the projector, the Master Planner time ranges and the new export file in desktop Excel, the Changelog filter.
 
 **How to work with Brandon right now:** he is near his weekly usage cap, so keep sessions short: one feature per session, text answers, screenshots only when words will not do, no full ATOM test run unless ATOM code changes (`node tests/atom.test.js` takes minutes). He says "build it" after a mock-up, "go, native" for execution, and "merge to main and push" when he wants a merge. Never overwrite live `.xlsx` files.
 
-**Starting prompt for a new session:** "Read `/home/user/Lodestar/CLAUDE.md`, then `HANDOFF.md` (the section 'Next session: start here') and `PROJECT_CHECKLIST.md` section 9. Start a new branch from main and build the other-departments change from the spec and plan listed there, native execution."
+**Starting prompt for a new session:** "Read `/home/user/Lodestar/CLAUDE.md`, then `HANDOFF.md` (the section 'Next session: start here') and `PROJECT_CHECKLIST.md`. Start a new branch from main."
+
+## Tabs, Changelog, export, bottom strip (z105 to z108, 31 Oct)
+
+- **z108 tabs.** The tab is now **Planning ▾** (always that text) with Planner, Overview and Syllabus Tracking inside it; Overview is no longer a top-level tab. **Changes is now Changelog** and shows only your own department's file (`books[0]`), the Master Planner and the Ops Room file; Ops Room mode (`OPS`) still shows every open file. Duty Roster and other departments are left out. My Lodestar's "What changed" still reads every log. Code: `logRead`, the `nav.tabs` block. `tests/my_lodestar.test.js` version check now matches the current zNN (it was stuck on z104).
+- **z106, z107 Master Planner export.** Brandon found the export unprofessional and said the List is not required. Now **one Calendar sheet only**, no layout choice in the Export dialog. Title banner, month bands, weekend tint, amber no-flying days. Every day is two columns (flight with time | hours), one row per flight, the date strip shows day number and day total; week hours merged per week; month total row; landscape A4 fitted to one page wide, footer with the title. `mpExportBytes(P, o)`, styles registered by name in `XL` / `XS`, `xlsxBuild` supports freeze, filter, print titles, tab colour (unused by the calendar now). The "Hours by flight code" table went with the List; offer it back under the calendar if asked. Tests: `node tests/mp_export.test.js` (11).
+- **z105 Ops Room bottom strip.** With nothing on the ground programme there is no table to measure, so the strip fell back to 22% of the screen height and was huge on tall screens. Now it is 160 px (`opsGrowStrip`). The Leave and MC card scrolls when five department rows do not fit; Brandon has not asked for it to grow.
 
 ## Ops Room ground programme as a table (z104, 31 Oct)
 

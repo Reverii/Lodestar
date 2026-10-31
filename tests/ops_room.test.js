@@ -68,7 +68,7 @@ test("area_add_button_absent_read_only", async ({ page }) => {
 const PLAN_SET = (page, dept, kind, iso, offs, shift) => page.evaluate(([dept, kind, iso, offs, shift]) => {
   const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept)); let r = null;
   withBook(bi, () => { const all = [...actIndex().values()].filter(a => a.ci === (kind === "admin" ? CAT_ADMIN : CAT_LEAVE)), A = all[all.length - 1], D = opsDay(iso), i = S.roster.findIndex(p => p.name || p.id);
-    offs.forEach(o => { S.m[D.mi].grid[i * 3 + shift][D.d + o] = A.code; }); r = { code: A.code, who: S.roster[i].ini || S.roster[i].id }; });
+    offs.forEach(o => { S.m[D.mi].grid[gridRow(i, shift)][D.d + o] = A.code; }); r = { code: A.code, who: S.roster[i].ini || S.roster[i].id }; });
   cur.opsDay = iso; renderOps(); return r; }, [dept, kind, iso, offs, shift]);
 const COLS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gp3 .gcol")].map(c => ({ head: c.querySelector(".opssh").textContent.trim(), text: c.innerText })));
 
@@ -282,7 +282,7 @@ test("area_add_hidden_when_projector_clicked", async ({ page }) => {
 test("ground_until_crosses_the_month_end", async ({ page }) => {
   const r = await page.evaluate(() => { const bi = books.findIndex(b => isDept(b) && same(b.S.dept, "Pilot")); let out = null;
     withBook(bi, () => { const A = [...actIndex().values()].filter(a => a.ci === CAT_ADMIN), a = A[A.length - 1], i = S.roster.findIndex(p => p.name || p.id), D = opsDay("2026-10-30");
-      [[D.mi, D.d], [D.mi, D.d + 1], [D.mi + 1, 0], [D.mi + 1, 1]].forEach(([m, d]) => { S.m[m].grid[i * 3 + 1][d] = a.code; }); out = a.code; });
+      [[D.mi, D.d], [D.mi, D.d + 1], [D.mi + 1, 0], [D.mi + 1, 1]].forEach(([m, d]) => { S.m[m].grid[gridRow(i, 1)][d] = a.code; }); out = a.code; });
     cur.opsDay = "2026-10-30"; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps(); return out; });
   const cols = await COLS(page);
   assert.ok(cols[1].text.includes(r) && /until 2 Nov/.test(cols[1].text), cols[1].text);

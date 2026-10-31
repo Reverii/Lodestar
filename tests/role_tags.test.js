@@ -78,7 +78,7 @@ test("pax_cell_not_counted", async ({ page }) => {
 
 // Ops Room: the demo set has a two-aircraft formation on 14 Oct (AM). Planner tags go straight into the Pilot book's map.
 const OPS = { mine: "Ops_Room" }, DAYI = "2026-10-14";
-const TAG = `(id, tag) => { const bi = books.findIndex(b => b.S.dept === "Pilot"); withBook(bi, () => { const i = S.roster.findIndex(p => p.id === id), M = S.m[9]; let s = 0; for (; s < 3; s++) if (M.grid[i * 3 + s][13]) break; S.roleTags.set("9:" + (i * 3 + s) + ":13", tag); }); }`;
+const TAG = `(id, tag) => { const bi = books.findIndex(b => b.S.dept === "Pilot"); withBook(bi, () => { const i = S.roster.findIndex(p => p.id === id), M = S.m[9]; let s = 0; for (; s < 3; s++) if (M.grid[gridRow(i, s)][13]) break; S.roleTags.set("9:" + gridRow(i, s) + ":13", tag); }); }`;
 const seatIds = r => r.seats.slice(0, 2).map(c => c && c.id);
 test("ac_tag_makes_captain", async ({ page }) => {
   const r = await page.evaluate(([TAG, iso]) => { const tag = eval(TAG), base = opsDay(iso).rows.map(x => seatIds(x));

@@ -122,7 +122,7 @@ test("day_ops_row_details", async ({ page }) => {
 test("day_ground_and_duty", async ({ page }) => {
   const g = await day(page, "VIPER", "2026-10-07");
   assert.deepStrictEqual(g.items.filter(x => x.kind === "ground").map(x => [x.text, x.time, x.s]), [["CRM Lecture", "1400-1600", -1]]);
-  const f = await page.evaluate(() => { const st = books[0].S; for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) for (let s = 0; s < 3; s++) if (/^SDO$/i.test(st.m[9].grid[i*3+s][d] || "")) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; });
+  const f = await page.evaluate(() => { const st = books[0].S; for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) for (let s = 0; s < 3; s++) if (/^SDO$/i.test(st.m[9].grid[gridRow(i, s)][d] || "")) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; });
   const D = await day(page, f.id, f.iso);
   assert.strictEqual(D.duty, "SDO");
   assert.ok(D.items.some(x => x.kind === "duty" && x.code === "SDO"));
@@ -130,12 +130,12 @@ test("day_ground_and_duty", async ({ page }) => {
   assert.ok(/SDO/.test(prev), "nextDuty: " + prev);
 });
 test("day_leave_is_away", async ({ page }) => {
-  const f = await page.evaluate(() => { const st = books[0].S; for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) if (/^LL$/i.test(st.m[9].grid[i*3][d] || "")) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; });
+  const f = await page.evaluate(() => { const st = books[0].S; for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) if (/^LL$/i.test(st.m[9].grid[gridRow(i, 0)][d] || "")) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; });
   const D = await day(page, f.id, f.iso);
   assert.ok(D.items.some(x => x.kind === "away" && x.code === "LL"), JSON.stringify(D.items));
 });
 test("day_empty_plan_is_free", async ({ page }) => {
-  const f = await page.evaluate(() => { const st = books[0].S, mb = masterBook(); for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) { if ([0,1,2].every(s => !st.m[9].grid[i*3+s][d]) && !grDay(mb.S, 9, d).some(g => g.act) && !st.m[9].gnd[d]) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; } });
+  const f = await page.evaluate(() => { const st = books[0].S, mb = masterBook(); for (let i = 0; i < st.roster.length; i++) for (let d = 0; d < 31; d++) { if ([0,1,2].every(s => !st.m[9].grid[gridRow(i, s)][d]) && !grDay(mb.S, 9, d).some(g => g.act) && !st.m[9].gnd[d]) return { id: st.roster[i].id, iso: isoOf(2026, 9, d) }; } });
   const D = await day(page, f.id, f.iso);
   assert.strictEqual(D.known, true);
   assert.deepStrictEqual(D.items, []);
@@ -179,7 +179,7 @@ test("rest_counts_run_to_day", async ({ page }) => {
   assert.strictEqual((await cards(page, "HAWK", "2026-10-26")).rest.text, "Rested");
 });
 test("rest_flags_at_five", async ({ page }) => {
-  await page.evaluate(() => { const st = books[0].S, i = st.roster.findIndex(p => p.id === "VIPER"); [2, 3, 4].forEach(d => { st.m[9].grid[i * 3][d] = "FLT-2.0"; }); });
+  await page.evaluate(() => { const st = books[0].S, i = st.roster.findIndex(p => p.id === "VIPER"); [2, 3, 4].forEach(d => { st.m[9].grid[gridRow(i, 0)][d] = "FLT-2.0"; }); });
   const c = await cards(page, "VIPER", "2026-10-05");
   assert.deepStrictEqual([c.rest.run, c.rest.flagged], [5, true]);
 });
@@ -377,7 +377,7 @@ test("edit_undo_redo_save_roundtrip", async ({ page, errs }) => {
 });
 test("block_of_days_drops_planned_syllabus", async ({ page }) => {
   await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='plan']").click(); document.querySelector("#month").value = "9"; document.querySelector("#month").dispatchEvent(new Event("change")); });
-  await page.click("#plan td[data-k='g:17:26']"); await page.click("#popList .it.blk");
+  await page.click("#plan td[data-k='" + await page.evaluate(() => "g:" + gridRow(5, 2) + ":26") + "']"); await page.click("#popList .it.blk");
   await page.selectOption("#blkCode", "OIL"); await page.check("#blkOver"); await page.uncheck("#blkS0"); await page.uncheck("#blkS1"); await page.click("#blkGo"); await page.waitForTimeout(300);
   assert.deepStrictEqual(await page.evaluate(() => S.syl.filter(x => x.id === "OWL" && x.iso === "2026-10-27").length), 0);
 }, { fresh: true, today: "2026-10-26", title: "Sarah Lim" });

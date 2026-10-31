@@ -281,8 +281,8 @@ const opsMode = page => page.evaluate(() => { OPS = true; });
 // ---- Task 9: Planner warnings
 // V TAN (SUP 2, roster person 0): Night Curr ends 27 Oct, MAS ended 16 Oct. Rule: NVG-* needs Night Curr (and MAS in the second rule).
 const rule = (page, rows) => page.evaluate(rows => { OPS = true; rows.forEach((r, n) => atomNeedsSet(n, r[0], r[1], r[2] || "Any")); }, rows);
-const plan = async (page, ix, shift, day, code) => page.evaluate(([ix, shift, day, code]) => { useBook(0); cur.m = 9; S.m[9].grid[ix * 3 + shift][day - 1] = code; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [ix, shift, day, code]);
-const cellOf = (page, ix, shift, day) => page.evaluate(([ix, shift, day]) => { const td = document.querySelector("#plan td[data-k='g:" + (ix * 3 + shift) + ":" + (day - 1) + "']"); return td ? { cls: td.className, title: td.title, txt: td.innerText } : null; }, [ix, shift, day]);
+const plan = async (page, ix, shift, day, code) => page.evaluate(([ix, shift, day, code]) => { useBook(0); cur.m = 9; S.m[9].grid[gridRow(ix, shift)][day - 1] = code; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [ix, shift, day, code]);
+const cellOf = (page, ix, shift, day) => page.evaluate(([ix, shift, day]) => { const td = document.querySelector("#plan td[data-k='g:" + (gridRow(ix, shift)) + ":" + (day - 1) + "']"); return td ? { cls: td.className, title: td.title, txt: td.innerText } : null; }, [ix, shift, day]);
 // ---- Task 10: Ops Room seat mark (2026-10-26 FLT-2.0: captain ADDER, pilot SIDEWINDER, loadmaster TITAN)
 const opsMarks = (page, day) => page.evaluate(day => { cur.opsDay = day || "2026-10-26"; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps();
   return [...document.querySelectorAll("#v-ops td.oc")].filter(td => td.querySelector("i.opsb.atomx")).map(td => [td.querySelector("b").textContent.trim(), td.querySelector("i.opsb.atomx").title]); }, day);
@@ -436,8 +436,8 @@ test("dept_cannot_write_the_ops_room_file", async ({ page }) => {
 });
 
 // ---- v2 Task 7: Planner layer 1 (expiry-day marker) and layer 2 (alert)
-const planMonth = (page, mi, edits, dept) => page.evaluate(([mi, edits, dept]) => { useBook(dept ? books.findIndex(b => !b.S.kind && b.S.dept === dept) : 0); cur.sel = null; cur.m = mi; edits.forEach(([ix, shift, day, code]) => { S.m[mi].grid[ix * 3 + shift][day - 1] = code; }); renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [mi, edits, dept || null]);
-const cellAt = (page, ix, shift, day) => page.evaluate(([ix, shift, day]) => { const td = document.querySelector("#plan td[data-k='g:" + (ix * 3 + shift) + ":" + (day - 1) + "']"); return td ? { cls: td.className, title: td.title, txt: td.innerText } : null; }, [ix, shift, day]);
+const planMonth = (page, mi, edits, dept) => page.evaluate(([mi, edits, dept]) => { useBook(dept ? books.findIndex(b => !b.S.kind && b.S.dept === dept) : 0); cur.sel = null; cur.m = mi; edits.forEach(([ix, shift, day, code]) => { S.m[mi].grid[gridRow(ix, shift)][day - 1] = code; }); renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); }, [mi, edits, dept || null]);
+const cellAt = (page, ix, shift, day) => page.evaluate(([ix, shift, day]) => { const td = document.querySelector("#plan td[data-k='g:" + (gridRow(ix, shift)) + ":" + (day - 1) + "']"); return td ? { cls: td.className, title: td.title, txt: td.innerText } : null; }, [ix, shift, day]);
 const L7 = { atom: [FULL()], fresh: true };
 test("marker_on_expiry_day_only", async ({ page }) => {   // V TAN (SUP 2, 0): Night Curr expires 27 Oct
   const [bi, ix] = await setIni(page, "SUP 2", 0, "V TAN"); await planMonth(page, 9, []);

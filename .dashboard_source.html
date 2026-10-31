@@ -1102,6 +1102,9 @@ function findRosterCols(ro) {
 const ROSTER_ROW0 = 6, ACT_ROW0 = 6, MASTER_ROW0 = 6, DAY_COL0 = 4; // D
 // first crew row: 26, or 27 in files with a GROUND PROGRAMME row on row 24 (SUP 2 from 2026-10-21)
 const g0 = (st = S) => st.g0 || 26;
+// crew rows: ROWS_PER rows per person on the month tabs (AM, PM, NIGHT; a 4th WD row once the layout has one); only the first SHIFT_ROWS are shifts
+const ROWS_PER = 3, SHIFT_ROWS = 3, ROW_LABELS = ["AM", "PM", "NIGHT", "WD"];
+const gridRow = (i, s) => i * ROWS_PER + s, rowPerson = r => Math.floor(r / ROWS_PER), rowShift = r => r % ROWS_PER, isWdRow = r => rowShift(r) === 3;
 // master slot j (= shift*2 + slot) has its code on row 6+3j, its time on the row below and its comment below that
 const DASH_CREW_ROW0 = 12, DAILY_ROW0 = 11; // first crew row on the Dashboard crew table and the Daily View
 const mRow = j => MASTER_ROW0 + 3 * j, tRow = j => MASTER_ROW0 + 3 * j + 1, nRow = j => MASTER_ROW0 + 3 * j + 2;
@@ -1498,7 +1501,7 @@ function loadWorkbook(buf, name, handle, other) {
       for (let d = 0; d < 31; d++) { const L = colL(DAY_COL0 + d); row.push(str(c[L + mRow(r)])); trow.push(timeStr(c[L + tRow(r)])); nrow.push(str(c[L + nRow(r)])); }
       master.push(row); mtime.push(trow); mnote.push(nrow);
     }
-    for (let r = 0; r < N * 3; r++) { const row = []; for (let d = 0; d < 31; d++) row.push(str(c[colL(DAY_COL0 + d) + (g0(st) + r)])); grid.push(row); }
+    for (let r = 0; r < N * ROWS_PER; r++) { const row = []; for (let d = 0; d < 31; d++) row.push(str(c[colL(DAY_COL0 + d) + (g0(st) + r)])); grid.push(row); }
     const gnd = []; for (let d = 0; d < 31; d++) gnd.push(st.gndRow ? str(c[colL(DAY_COL0 + d) + st.gndRow]) : "");
     st.m.push({ master, mtime, mnote, grid, gnd });
   }
@@ -1513,7 +1516,7 @@ function loadWorkbook(buf, name, handle, other) {
       const iso = serialToISO(a), D = ymd(iso, st.year); if (D.y !== st.year) continue;
       const ci = st.roster.findIndex(p => p.id && same(p.id, who)) >= 0 ? st.roster.findIndex(p => p.id && same(p.id, who)) : st.roster.findIndex(p => p.name && same(p.name, who));
       if (ci < 0) continue;
-      const k = D.mi + ":" + (ci * 3 + si) + ":" + D.d;
+      const k = D.mi + ":" + (gridRow(ci, si)) + ":" + D.d;
       st.notes.set(k, tx); st.noteRow.set(k, r);
     }
   }
@@ -1527,7 +1530,7 @@ function loadWorkbook(buf, name, handle, other) {
       if (typeof a !== "number" || si < 0 || !who || (tag !== "AC" && tag !== "PAX")) continue;
       const iso = serialToISO(a), D = ymd(iso, st.year); if (D.y !== st.year) continue;
       let ci = st.roster.findIndex(p => p.id && same(p.id, who)); if (ci < 0) ci = st.roster.findIndex(p => p.name && same(p.name, who)); if (ci < 0) continue;
-      const k = D.mi + ":" + (ci * 3 + si) + ":" + D.d; st.roleTags.set(k, tag); st.roleRow.set(k, r);
+      const k = D.mi + ":" + (gridRow(ci, si)) + ":" + D.d; st.roleTags.set(k, tag); st.roleRow.set(k, r);
     }
   }
   // Medical Chits sheet: up-chits (and hand-typed down-chits), rows 6..205 (A callsign, B down-chit, C up-chit, D up-chitted by, E remarks)
@@ -1565,8 +1568,8 @@ function setNote(mi, r, d, tx) {
   if (!row) {
     row = NOTE_ROW0; while (S.noteUsed.has(row) && row < NOTE_ROW0 + NOTE_N) row++;
     if (row >= NOTE_ROW0 + NOTE_N) { alert("The Cell Notes sheet is full. Clear old rows in Excel to make room."); return false; }
-    const p = S.roster[Math.floor(r / 3)];
-    put("Cell Notes", "A" + row, dateSerial(S.year, mi, d)); put("Cell Notes", "B" + row, SHIFTS[r % 3]); put("Cell Notes", "C" + row, p.id || p.name);
+    const p = S.roster[rowPerson(r)];
+    put("Cell Notes", "A" + row, dateSerial(S.year, mi, d)); put("Cell Notes", "B" + row, ROW_LABELS[rowShift(r)]); put("Cell Notes", "C" + row, p.id || p.name);
     S.noteUsed.add(row); S.noteRow.set(k, row);
   }
   put("Cell Notes", "E" + row, tx); S.notes.set(k, tx); return true;
@@ -1589,8 +1592,8 @@ function roleSet(mi, r, d, tag) {
   if (!row) {
     row = ROLE_ROW0; while (S.roleUsed.has(row) && row < ROLE_ROW0 + ROLE_N) row++;
     if (row >= ROLE_ROW0 + ROLE_N) { toast("The Role Tags sheet is full. Clear old rows in Excel to make room.", 5000); return false; }
-    const p = S.roster[Math.floor(r / 3)];
-    put(ROLE_SHEET, "A" + row, dateSerial(S.year, mi, d)); put(ROLE_SHEET, "B" + row, SHIFTS[r % 3]); put(ROLE_SHEET, "C" + row, p.id || p.name);
+    const p = S.roster[rowPerson(r)];
+    put(ROLE_SHEET, "A" + row, dateSerial(S.year, mi, d)); put(ROLE_SHEET, "B" + row, ROW_LABELS[rowShift(r)]); put(ROLE_SHEET, "C" + row, p.id || p.name);
     S.roleUsed.add(row); S.roleRow.set(k, row);
   }
   put(ROLE_SHEET, "D" + row, tag); S.roleTags.set(k, tag); return true;
@@ -1942,7 +1945,7 @@ function computeChit(st = S) {
     const start = new Uint8Array(nd), up = new Uint8Array(nd), down = new Uint8Array(nd), since = new Int16Array(nd).fill(-1);
     if (p.name || p.id) {
       for (let mi = 0; mi < NMON; mi++) { const M = st.m[mi]; if (!M) continue; const dim = daysIn(y, mi), k0 = dayOfYear(y, mi, 0);
-        for (let d = 0; d < dim; d++) for (let s = 0; s < 3; s++) if (dutyKey(M.grid[i * 3 + s][d]) === MC_CODE) { start[k0 + d] = 1; break; } }
+        for (let d = 0; d < dim; d++) for (let s = 0; s < SHIFT_ROWS; s++) if (dutyKey(M.grid[gridRow(i, s)][d]) === MC_CODE) { start[k0 + d] = 1; break; } }
       allChits(st).filter(chitMine(st, p)).forEach(c => { if (c.down != null && c.up == null) { const k = c.down - s0; if (k >= 0 && k < nd) start[k] = 1; }
         if (c.up != null) { const k = c.up - s0; if (k >= 0 && k < nd) up[k] = 1; else if (k < 0) {} } });
       let on = false, sc = -1;
@@ -2015,7 +2018,7 @@ function downOpen(iso) {
 function chitWarn() {
   if (!chitCtx || chitCtx.down) return; const st = books[chitCtx.bi].S, v = $("chitDate").value, i = chitCtx.i, L = [];
   if (v && inYr(v, st.year)) { const k0 = doyOf(v, st.year);
-    for (let mi = 0; mi < NMON; mi++) for (let d = 0; d < daysIn(st.year, mi); d++) if (dayOfYear(st.year, mi, d) >= k0 && [0, 1, 2].some(s => dutyKey(st.m[mi].grid[i * 3 + s][d]) === MC_CODE)) L.push((d + 1) + " " + MONTHS[mi % 12]); }
+    for (let mi = 0; mi < NMON; mi++) for (let d = 0; d < daysIn(st.year, mi); d++) if (dayOfYear(st.year, mi, d) >= k0 && [0, 1, 2].some(s => dutyKey(st.m[mi].grid[gridRow(i, s)][d]) === MC_CODE)) L.push((d + 1) + " " + MONTHS[mi % 12]); }
   $("chitWarn").textContent = L.length ? "MC is still planned on " + L.slice(0, 5).join(", ") + (L.length > 5 ? "…" : "") + ", so they'll be down-chitted again from " + L[0] + "." : "";
   $("chitGo").disabled = !v || v <= doyISO(st.year, chitCtx.sc);
 }
@@ -2189,7 +2192,7 @@ function buildXlsx() {
   const unhide = {};
   S.roster.forEach((pp, i) => {
     if (!pp.name) return;
-    MONTHS.forEach(mo => { (unhide[mo] = unhide[mo] || []).push(g0() + 3 * i, g0() + 3 * i + 1, g0() + 3 * i + 2); });
+    MONTHS.forEach(mo => { (unhide[mo] = unhide[mo] || []).push(...Array.from({ length: ROWS_PER }, (_, q) => g0() + gridRow(i, q))); });
     (unhide.Dashboard = unhide.Dashboard || []).push(DASH_CREW_ROW0 + i);
     (unhide["Daily View"] = unhide["Daily View"] || []).push(DAILY_ROW0 + i);
     if (S.hasCur) (unhide.Currency = unhide.Currency || []).push(CUR_ROW0 + i);
@@ -2224,7 +2227,7 @@ function logWhat(b, sheet, ref, val, old) {
   const st = b.S, col = colN(ref.match(/[A-Z]+/)[0]), row = +ref.match(/\d+/)[0], mi = sheet === MON_NX ? NX_MI : MONTHS.indexOf(sheet);
   if (!st.kind && mi >= 0 && col >= DAY_COL0 && col < DAY_COL0 + 31) {
     const day = (col - DAY_COL0 + 1) + " " + MONTHS[mi % 12] + (mi === NX_MI ? " " + (st.year + 1) : ""), G0 = g0(st);
-    if (row >= G0) { const i = Math.floor((row - G0) / 3), p = st.roster[i]; return { what: (p ? p.id || p.name || "Row " + row : "Row " + row) + ", " + day + " " + LOG_SHIFTS[(row - G0) % 3] }; }
+    if (row >= G0) { const i = rowPerson(row - G0), p = st.roster[i]; return { what: (p ? p.id || p.name || "Row " + row : "Row " + row) + ", " + day + " " + LOG_SHIFTS[rowShift(row - G0)] }; }
     if (row >= MASTER_ROW0 && row < MASTER_ROW0 + 18) { const j = Math.floor((row - MASTER_ROW0) / 3), k = (row - MASTER_ROW0) % 3; return { what: "MASTER " + LOG_SLOTS[j] + (k === 1 ? " time" : k === 2 ? " comment" : "") + ", " + day }; }
     return { what: (st.gndRow && row === st.gndRow ? "Ground programme" : "Duty days") + ", " + day };
   }
@@ -2512,7 +2515,7 @@ function computeRest(st = S) {
   st.roster.forEach((p, i) => {
     const fly = new Array(nd).fill(false), run = new Array(nd).fill(0);
     for (let mi = 0; mi < NMON; mi++) { const G = st.m[mi] && st.m[mi].grid; if (!G) continue;
-      for (let d = 0; d < daysIn(y, mi); d++) for (let s = 0; s < 3; s++) { const v = G[i * 3 + s] && G[i * 3 + s][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && !cxlOf(st, p.id, mi, d, s) && roleOf(st, mi, i * 3 + s, d) !== "PAX") { fly[dayOfYear(y, mi, d)] = true; break; } } }
+      for (let d = 0; d < daysIn(y, mi); d++) for (let s = 0; s < SHIFT_ROWS; s++) { const v = G[gridRow(i, s)] && G[gridRow(i, s)][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && !cxlOf(st, p.id, mi, d, s) && roleOf(st, mi, gridRow(i, s), d) !== "PAX") { fly[dayOfYear(y, mi, d)] = true; break; } } }
     let n = p.restIn || 0, flagged = 0; for (let k = 0; k < nd; k++) { n = fly[k] ? n + 1 : 0; run[k] = n; if (n >= REST_DAYS) flagged++; }
     out.push({ fly, run, flagged, inn: p.restIn || 0 });
   });
@@ -2559,7 +2562,7 @@ function computeCurrency(st = S) {
     // this person's flights: [serial, code, activity]
     const ev = [];
     for (let mi = 0; mi < NMON; mi++) { const G = st.m[mi].grid, dim = daysIn(y, mi);
-      for (let s = 0; s < 3; s++) { const row = G[i * 3 + s]; for (let d = 0; d < dim; d++) { const c = row[d]; if (!c) continue; const a = A.get(c.toUpperCase()); if (a && !(a.ci === CAT_FLIGHT && (cxlOf(st, p.id, mi, d, s) || roleOf(st, mi, i * 3 + s, d) === "PAX"))) ev.push([dateSerial(y, mi, d), c, a]); } } }
+      for (let s = 0; s < SHIFT_ROWS; s++) { const row = G[gridRow(i, s)]; for (let d = 0; d < dim; d++) { const c = row[d]; if (!c) continue; const a = A.get(c.toUpperCase()); if (a && !(a.ci === CAT_FLIGHT && (cxlOf(st, p.id, mi, d, s) || roleOf(st, mi, gridRow(i, s), d) === "PAX"))) ev.push([dateSerial(y, mi, d), c, a]); } } }
     st.rules.forEach((R, k) => {
       if (!ruleOn(R) || !ruleApplies(R, p)) return;
       const need = R.min > 0 ? R.min : 1, warn = R.warn || 0;
@@ -2616,12 +2619,12 @@ function monthStats(mi, A) {
     for (let d = 0; d < 31; d++) {
       const cats = new Set(); let duty = false;
       for (let s = 0; s < 3; s++) {
-        const a = look(M.grid[i * 3 + s][d]); if (!a) continue;
+        const a = look(M.grid[gridRow(i, s)][d]); if (!a) continue;
         cats.add(a.ci);
-        const cu = String(M.grid[i * 3 + s][d]).trim().toUpperCase(); if (cu === "BDO" || cu === "SDO") duty = true;
+        const cu = String(M.grid[gridRow(i, s)][d]).trim().toUpperCase(); if (cu === "BDO" || cu === "SDO") duty = true;
         if (d < dim) { if (cu === "BDO") day[d].nB++; else if (cu === "SDO") day[d].nS++; }
         if (a.ci === CAT_FLIGHT && cxlOf(S, S.roster[i].id, mi, d, s)) continue;   // cancelled in the Ops Room
-        if (a.ci === CAT_FLIGHT && roleOf(S, mi, i * 3 + s, d) === "PAX") continue;   // a passenger: not planned flying (Excel's own totals still count the cell)
+        if (a.ci === CAT_FLIGHT && roleOf(S, mi, gridRow(i, s), d) === "PAX") continue;   // a passenger: not planned flying (Excel's own totals still count the cell)
         if (a.ci === CAT_FLIGHT) { t.fl += a.sorties; t.hrs += a.hours; if (d < dim) { day[d].fl[s] += a.sorties; day[d].hrs += a.hours; } }
       }
       if (cats.has(CAT_GD)) t.gd++; if (cats.has(CAT_SQD)) t.sdo++; if (cats.has(CAT_LEAVE)) t.lv++;
@@ -3275,7 +3278,7 @@ function renderPlanner() {
   const cnDone = new Set();
   // syllabus links on this month's cells: "row:day" -> Syllabus Log row (Planned / Pass / Fail)
   const SYC = new Map(); if (S.hasSyl && S.syl) { const ix = new Map(); S.roster.forEach((p, j) => { if (p.id && !ix.has(p.id.toUpperCase())) ix.set(p.id.toUpperCase(), j); });
-    const pre = isoOf(y, mi, 0).slice(0, 8); S.syl.forEach(a => { if (a.sh < 0 || !a.iso.startsWith(pre) || !ix.has(a.id.toUpperCase())) return; SYC.set((ix.get(a.id.toUpperCase()) * 3 + a.sh) + ":" + (+a.iso.slice(8, 10) - 1), a); }); }
+    const pre = isoOf(y, mi, 0).slice(0, 8); S.syl.forEach(a => { if (a.sh < 0 || !a.iso.startsWith(pre) || !ix.has(a.id.toUpperCase())) return; SYC.set((gridRow(ix.get(a.id.toUpperCase()), a.sh)) + ":" + (+a.iso.slice(8, 10) - 1), a); }); }
   const vis = visibleCrew();
   if (!vis.length) h += "<tr><td colspan='" + (dim + 3 + NT) + "' style='padding:16px;text-align:center;color:var(--s500)'>No crew to show. Add crew in the Crew Roster tab.</td></tr>";
   let sep = false;
@@ -3290,14 +3293,14 @@ function renderPlanner() {
         return "<i class='curb " + (now || tD < 0 ? "down" : "downx") + "' data-upchit='" + cur.b + "|" + i + "|" + isoOf(y, mi, now ? tD : last) + "' title='" + esc("Down-chitted (MC), not cleared to fly: " + runs.map(r => (r[0] + 1) + (r[1] > r[0] ? "-" + (r[1] + 1) : "")).join(", ") + " " + MONTHS[mi] + (canEdit ? "\nClick to up-chit" : "")) + "'>DOWN</i>"; })() || "") + "<span>" + esc(p.role + (ns ? "  |  " + p.status.toUpperCase() : "")) + "</span></td>";
       h += "<td class='stk3 sh sh" + SHIFTS[s] + "'>" + SHIFTS[s] + "</td>";
       for (let d = 0; d < dim; d++) {
-        const v = M.grid[i * 3 + s][d], a = v && A.get(v.toUpperCase());
+        const v = M.grid[gridRow(i, s)][d], a = v && A.get(v.toUpperCase());
         let tip = "";
         if (a && a.ci === CAT_FLIGHT) { const fl = [0, 1].map(k => { const j = s * 2 + k; return M.master[j][d] ? M.master[j][d] + (M.mtime[j][d] ? " " + M.mtime[j][d] : "") + (M.mnote[j][d] ? " (" + M.mnote[j][d] + ")" : "") : ""; }).filter(Boolean); tip = fl.length ? SHIFTS[s] + " programme: " + fl.join(", ") : "No " + SHIFTS[s] + " flight on the master programme"; }
         const sd = st.day[d].miss.length > 0;
         if (sd) tip = (tip ? tip + "\n" : "") + st.day[d].miss.join(" and ") + " day with nobody on it yet";
-        const cn = S.notes && S.notes.get(mi + ":" + (i * 3 + s) + ":" + d);
+        const cn = S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d);
         if (cn) tip = "Comment: " + cn + (tip ? "\n" + tip : "");
-        const sy = SYC.get((i * 3 + s) + ":" + d);
+        const sy = SYC.get((gridRow(i, s)) + ":" + d);
         if (sy) tip = "Syllabus: " + sy.code + " " + (sy.res === "Planned" ? "planned" : sy.res === "Pass" ? "passed" : sy.res === "Fail" ? "failed" : "logged") + (sy.by ? " (" + sy.by + ")" : "") + (tip ? "\n" + tip : "");
         const cx = a && a.ci === CAT_FLIGHT ? cxlOf(S, p.id, mi, d, s) : null; if (cx) tip = "Cancelled in the Ops Room: " + cx + (tip ? "\n" + tip : "");
         const rn = RS && a && a.ci === CAT_FLIGHT && !cx ? RS[i].run[dayOfYear(S.year, mi, d)] : 0, rest = rn >= REST_DAYS;
@@ -3323,7 +3326,7 @@ function renderPlanner() {
         if (am && am.alert) { W.push(["⚠ NOT CURRENT", "bad"]); l1cls += " atomw"; tip = am.alert.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent()) + (tip ? "\n" + tip : ""); }
         if (a && CN.has(i)) { const t = dateSerial(y, mi, d); CN.get(i).forEach(([n, k]) => { const R = S.rules[k], key = i + ":" + k; if (n === t && !cnDone.has(key) && ruleMatch(R, a, v)) { cnDone.add(key); W.push(["⚠ NOT CURRENT", "bad"]); tip = (tip ? tip + "\n" : "") + "Not current for " + R.name + " when this flight is planned (" + curIssues(CC, i).filter(x => x.startsWith(R.name)).join("; ") + ")"; } }); }
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) tip = (tip ? tip + "\n" : "") + "Currency: " + CL.get(i).get(d).map(w => w[2]).join("; ");
-        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (i * 3 + s) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, i * 3 + s, d) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
+        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (gridRow(i, s)) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, gridRow(i, s), d) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
       }
       if (s === 0) h += "<td class='tot' rowspan=3>" + (t.fl || "-") + "</td><td class='tot' rowspan=3>" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const ah = atomHours(cur.b, i, mi); if (ah) return "<td class='tot flown' rowspan=3 title='" + esc("Clocked this month, from ATOM, as of " + ah.asOf) + "'>" + ah.h.toFixed(1) + "</td>"; const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=3 title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=3>" + (t.gd || "-") + "</td><td class='tot' rowspan=3>" + (t.sdo || "-") + "</td><td class='tot' rowspan=3>" + (t.lv || "-") + "</td>";
       h += "</tr>";
@@ -3613,7 +3616,7 @@ function opsDutyPerson(iso, code, deps) {
   books.forEach(b => {
     if (!isDept(b) || b.S.year !== y || (deps && !deps.some(o => same(o, b.S.dept)))) return;
     const M = b.S.m[mi]; if (!M) return;
-    b.S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) if (dutyKey(M.grid[i * 3 + s][d]) === k) on[s].push({ n: p.ini || p.id, c: opsCatCls(p) }); });
+    b.S.roster.forEach((p, i) => { for (let s = 0; s < SHIFT_ROWS; s++) if (dutyKey(M.grid[gridRow(i, s)][d]) === k) on[s].push({ n: p.ini || p.id, c: opsCatCls(p) }); });
   });
   if (!on.some(x => x.length)) return rdep ? rdep + ": ?" : "";
   // a shift nobody is planned on is covered by the previous shift's person (else the next one's): one person on any cell = the whole day,
@@ -3704,10 +3707,10 @@ function opsCrewOn(y, mi, d) {
   books.forEach((b, bi) => {
     if (!isDept(b) || b.S.year !== y) return;
     withBook(bi, () => { const A = actIndex(), M = S.m[mi]; if (!M) return;
-      S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < 3; s++) { const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][d]; const a = v && A.get(String(v).toUpperCase());
+      S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < SHIFT_ROWS; s++) { const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][d]; const a = v && A.get(String(v).toUpperCase());
         // standby crew (P1 / P2 / BU) belong to no shift: whichever shift the plan marks, they go in one whole-day list (kept in slot 2 so saved Ops Room rows still match)
         const sbk = a && a.ci !== CAT_FLIGHT && isSb(a.code) ? 2 : -1; if (sbk >= 0 && out.sb[2].some(c => c.dept === S.dept && c.i === i && same(c.code, v))) continue;
-        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: a.ci === CAT_FLIGHT ? roleOf(S, mi, i * 3 + s, d) : "", note: (S.notes && S.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "" }); } }); });
+        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: a.ci === CAT_FLIGHT ? roleOf(S, mi, gridRow(i, s), d) : "", note: (S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "" }); } }); });
   });
   return out;
 }
@@ -4008,15 +4011,15 @@ function opsGround(D) {
         if (own && !same(own, fromMp)) out.push({ sh: 0, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "<span class='muted'>" + esc(S.dept) + "'s ground programme row</span>" }); }
       const groups = new Map();
       S.roster.forEach((p, i) => { for (let s = 0; s < 3; s++) {
-        const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
+        const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
         if (!a || a.ci !== CAT_ADMIN) continue;   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
         // the same activity on the next days of this month (same person and shift): "until <last day>"
         let e = D.d, em = D.mi;   // the last day (and its month) of the run; it carries on into the next month's grid
-        for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[i * 3 + s][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[i * 3 + s]) break; nv = N.grid[i * 3 + s][0]; }
+        for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
           const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
         const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", who: [], notes: [] });
         const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + opsCatCls(p) + "'>" + esc(n) + "</b>");
-        const cn = S.notes && S.notes.get(D.mi + ":" + (i * 3 + s) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
+        const cn = S.notes && S.notes.get(D.mi + ":" + (gridRow(i, s)) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
       } });
       groups.forEach(g => out.push({ sh: g.s, k: "2" + g.s, when: "", until: g.until, act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
     });
@@ -4053,7 +4056,7 @@ function opsMovement(D) {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
       const dep = order.find(o => same(o, S.dept)); if (!dep) return;
       S.roster.forEach((p, i) => { const mine = new Map();
-        for (let s = 0; s < 3; s++) { const v = M.grid[i * 3 + s] && M.grid[i * 3 + s][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
+        for (let s = 0; s < SHIFT_ROWS; s++) { const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
           if (!a || !(a.ci === CAT_LEAVE || a.ci === CAT_OFF || a.ci === CAT_MED)) continue;
           const k = a.code.toUpperCase(); if (!mine.has(k)) mine.set(k, { a, sh: [] }); mine.get(k).sh.push(s); }
         mine.forEach(m => by.get(dep).push({ r: rank.indexOf(m.a.ci), code: m.a.code, html: "<span class='olp' title='" + esc(m.a.desc || m.a.code) + "'><b class='" + opsCatCls(p) + "'>" + esc(p.ini || p.id) + "</b><small>" + esc(m.a.code) + "</small>" +
@@ -4166,7 +4169,7 @@ $("opsPop").addEventListener("change", e => { if (e.target.id === "opsXAdd" && c
 // crew the Ops Room puts on a flight (or a standby) get its code on their department plan in that shift, so their programme shows it
 function oaPlan(D, x, dept, id) {
   const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept) && b.S.year === D.y); if (bi < 0 || !mayEdit(bi)) return;
-  withBook(bi, () => { const i = S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0 || !S.m[D.mi]) return; const rr = i * 3 + x.s, v = S.m[D.mi].grid[rr][D.d];
+  withBook(bi, () => { const i = S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0 || !S.m[D.mi]) return; const rr = gridRow(i, x.s), v = S.m[D.mi].grid[rr][D.d];
     if (same(v, x.code) || (v && same(codeBase(v), codeBase(x.code)))) return;
     if (v && !confirm((S.roster[i].id || S.roster[i].name) + " already has " + v + " in " + SHIFTS[x.s] + " on " + S.dept + "'s plan. Replace it with " + x.code + "?")) return;
     S.m[D.mi].grid[rr][D.d] = x.code; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), x.code); });
@@ -4174,7 +4177,7 @@ function oaPlan(D, x, dept, id) {
 // crew the Ops Room takes off a flight lose its code from their plan cell in that shift (only when the cell still holds that code)
 function opsUnplan(D, x, dept, id) {
   const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept) && b.S.year === D.y); if (bi < 0 || !mayEdit(bi)) return;
-  withBook(bi, () => { const i = S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0 || !S.m[D.mi]) return; const rr = i * 3 + x.s, v = S.m[D.mi].grid[rr][D.d];
+  withBook(bi, () => { const i = S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0 || !S.m[D.mi]) return; const rr = gridRow(i, x.s), v = S.m[D.mi].grid[rr][D.d];
     if (!v || !(same(v, x.code) || same(codeBase(v), codeBase(x.code)))) return;
     S.m[D.mi].grid[rr][D.d] = ""; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), ""); });
 }
@@ -4386,7 +4389,7 @@ function openPop(k, initial) {
   const p0 = keyParts(k), M0 = S.m[cur.m], isFl = a => (A.get(a.code.toUpperCase()) || {}).ci === CAT_FLIGHT;
   if (isMaster) { popPlan = null; popHi = 0; popItems = S.acts.filter(a => a.code && isFl(a)); }
   else {
-    const cs = p0.r % 3, base = p0.r - cs, cv = String(M0.grid[p0.r][p0.d] || "").toUpperCase();
+    const cs = rowShift(p0.r), base = p0.r - cs, cv = String(M0.grid[p0.r][p0.d] || "").toUpperCase();
     popPlan = { s: cs, nofly: String(M0.mnote[0][p0.d] || "").toUpperCase().startsWith(NOFLY) };
     popItems = [];
     for (let s = 0; s < 3; s++) {
@@ -4408,14 +4411,14 @@ function openPop(k, initial) {
   popRoleDraw(isMaster ? null : p0);
   if (!isMaster) $("popCNIn").value = (S.notes && S.notes.get(cur.m + ":" + p0.r + ":" + p0.d)) || "";
   if (isMaster) { const p = keyParts(k); $("popTimeIn").value = S.m[cur.m].mtime[p.r][p.d] || ""; $("popNoteIn").value = S.m[cur.m].mnote[p.r][p.d] || ""; }
-  { const iss = isMaster ? [] : curIssues(computeCurrency(), Math.floor(p0.r / 3)), pc = $("popCur");
-    if (!isMaster && !S.kind) { const R = computeRest(), i = Math.floor(p0.r / 3), n = restIfFly(R, i, dayOfYear(S.year, cur.m, p0.d));
+  { const iss = isMaster ? [] : curIssues(computeCurrency(), rowPerson(p0.r)), pc = $("popCur");
+    if (!isMaster && !S.kind) { const R = computeRest(), i = rowPerson(p0.r), n = restIfFly(R, i, dayOfYear(S.year, cur.m, p0.d));
       if (n >= REST_DAYS) iss.unshift("Crew rest: a flight here makes " + n + " days of flying in a row (warning from " + REST_DAYS + ")"); }
     let up = "";
-    if (!isMaster && !S.kind) { const i = Math.floor(p0.r / 3), C = computeChit(), k = dayOfYear(S.year, cur.m, p0.d);
+    if (!isMaster && !S.kind) { const i = rowPerson(p0.r), C = computeChit(), k = dayOfYear(S.year, cur.m, p0.d);
       if (C[i].down[k]) { iss.unshift("Down-chitted since " + fmtDay(doyISO(S.year, C[i].since[k])) + " (MC): not cleared to fly until up-chitted");
         if (mayEdit(cur.b)) up = "<div style='margin-top:4px'><button class='upc' data-upchit='" + cur.b + "|" + i + "|" + isoOf(S.year, cur.m, p0.d) + "'>Up-chit…</button></div>"; } }
-    pc.style.display = iss.length ? "block" : "none"; pc.innerHTML = iss.length ? "<b>⚠ " + esc(S.roster[Math.floor(p0.r / 3)].id || "This person") + (iss.every(x => /^(Crew rest|Down-chitted)/.test(x)) ? "" : " currency") + "</b>" + iss.map(x => "<div>" + esc(x) + "</div>").join("") + up : ""; }
+    pc.style.display = iss.length ? "block" : "none"; pc.innerHTML = iss.length ? "<b>⚠ " + esc(S.roster[rowPerson(p0.r)].id || "This person") + (iss.every(x => /^(Crew rest|Down-chitted)/.test(x)) ? "" : " currency") + "</b>" + iss.map(x => "<div>" + esc(x) + "</div>").join("") + up : ""; }
   if (isMaster) popSyl = null; else sylPopInit(k); drawSyl();
   $("popSearch").value = initial || ""; drawPop(); $("popSearch").focus();
 }
@@ -4491,7 +4494,7 @@ function sylClear(st, a) { "ABCDEFH".split("").forEach(L => put("Syllabus Log", 
 function sylPopInit(k) {
   popSyl = null;
   if (!S.sylDef || !S.hasSyl || S.kind || !(mayEdit(cur.b)) || !k.startsWith("g:")) return;
-  const p0 = keyParts(k), i = Math.floor(p0.r / 3), sh = p0.r % 3, pr = S.roster[i]; if (!pr || !pr.id) return;
+  const p0 = keyParts(k), i = rowPerson(p0.r), sh = rowShift(p0.r), pr = S.roster[i]; if (!pr || !pr.id) return;
   const iso = isoOf(S.year, cur.m, p0.d), link = sylLink(S, pr.id, iso, sh), path = sylPath(S.sylDef, S, pr);
   if (!link && path.wk < 0) return;
   popSyl = { k, i, id: pr.id, iso, sh, path, link, sel: link ? link.code : null, open: false, past: iso <= sylToday() };
@@ -4504,7 +4507,7 @@ function sylWarn(x) { const Y = S.sylDef; if (!x || x.pass) return "";
 // an Instructor flying (or in the sim) the same day and shift: the suggested instructor
 function sylIns() {
   const p0 = keyParts(popSyl.k), M = S.m[cur.m], mine = M.grid[p0.r][p0.d], out = [];
-  S.roster.forEach((p, j) => { if (j === popSyl.i || !p.id || !/instructor/i.test(p.role)) return; const v = M.grid[j * 3 + popSyl.sh][p0.d]; if (sylFlyCode(v) >= 0) out.push([same(v, mine) ? 0 : 1, p.id]); });
+  S.roster.forEach((p, j) => { if (j === popSyl.i || !p.id || !/instructor/i.test(p.role)) return; const v = M.grid[gridRow(j, popSyl.sh)][p0.d]; if (sylFlyCode(v) >= 0) out.push([same(v, mine) ? 0 : 1, p.id]); });
   return (out.sort((a, b) => a[0] - b[0])[0] || [])[1] || "";
 }
 function drawSyl() {
@@ -4552,7 +4555,7 @@ function drawSyl() {
 // write the cell's link after its code changed (or the ticked item did): Planned rows only; a recorded Pass / Fail is never touched
 function sylCommit(P, k, code) {
   if (!S.hasSyl || S.kind || !k.startsWith("g:")) return false;
-  const p0 = keyParts(k), sh = p0.r % 3, pr = S.roster[Math.floor(p0.r / 3)]; if (!pr || !pr.id) return false;
+  const p0 = keyParts(k), sh = rowShift(p0.r), pr = S.roster[rowPerson(p0.r)]; if (!pr || !pr.id) return false;
   const iso = isoOf(S.year, cur.m, p0.d), link = sylLink(S, pr.id, iso, sh);
   if (link && link.res !== "Planned") return false;
   const fly = sylFlyCode(code) >= 0, want = !fly ? null : P && same(P.id, pr.id) ? P.sel : link ? link.code : null;
@@ -4584,7 +4587,7 @@ function pick(code, s) {
   if (k.startsWith("m:") && code === "") { $("popTimeIn").value = ""; $("popNoteIn").value = ""; }
   let P = popSyl && popSyl.k === k ? popSyl : null; popSyl = null;
   saveTime(k); closePop();
-  if (s != null && s !== "" && k.startsWith("g:")) { const p = keyParts(k); k = "g:" + (p.r - p.r % 3 + +s) + ":" + p.d; }   // a flight from another shift goes into that shift's cell
+  if (s != null && s !== "" && k.startsWith("g:")) { const p = keyParts(k); k = "g:" + (p.r - rowShift(p.r) + +s) + ":" + p.d; }   // a flight from another shift goes into that shift's cell
   if (P && P.k !== k && P.link) P = null;   // the clicked cell's own link stays with it
   setVal(k, code, true); sylCommit(P, k, code); renderPlanner(); renderOverview(); select(k);
 }
@@ -4593,7 +4596,7 @@ function move(k, dr, dd) {
   let d = Math.max(0, Math.min(dim - 1, p.d + dd));
   const order = [];
   for (const r of cur.mvis || []) order.push("m:" + r);
-  for (const i of visibleCrew()) for (let s = 0; s < 3; s++) order.push("g:" + (i * 3 + s));
+  for (const i of visibleCrew()) for (let s = 0; s < SHIFT_ROWS; s++) order.push("g:" + (gridRow(i, s)));
   let idx = order.indexOf(p.t + ":" + p.r); idx = Math.max(0, Math.min(order.length - 1, idx + dr));
   return order[idx] + ":" + d;
 }
@@ -4917,7 +4920,7 @@ const rollHasF = (files, path, ref) => { if (!path) return false; const m = new 
 // the date each currency rule was last met by 31 Dec (the same count as the Currency tab, every flight of the year counted as flown)
 function rollCurAnchors(st, i, y) {
   const p = st.roster[i], keep = S; S = st; const A = actIndex(); S = keep; const end = dateSerial(y, 11, 30), ev = [];
-  for (let mi = 0; mi < 12; mi++) { const G = st.m[mi].grid; for (let s = 0; s < 3; s++) { const row = G[i * 3 + s]; for (let d = 0; d < daysIn(y, mi); d++) { const c = row[d]; if (!c) continue; const a = A.get(c.toUpperCase()); if (a && !(a.ci === CAT_FLIGHT && (cxlOf(st, p.id, mi, d, s) || roleOf(st, mi, i * 3 + s, d) === "PAX"))) ev.push([dateSerial(y, mi, d), c, a]); } } }
+  for (let mi = 0; mi < 12; mi++) { const G = st.m[mi].grid; for (let s = 0; s < SHIFT_ROWS; s++) { const row = G[gridRow(i, s)]; for (let d = 0; d < daysIn(y, mi); d++) { const c = row[d]; if (!c) continue; const a = A.get(c.toUpperCase()); if (a && !(a.ci === CAT_FLIGHT && (cxlOf(st, p.id, mi, d, s) || roleOf(st, mi, gridRow(i, s), d) === "PAX"))) ev.push([dateSerial(y, mi, d), c, a]); } } }
   return st.rules.map((R, k) => {
     if (!ruleOn(R) || !ruleApplies(R, p)) return null;
     const need = R.min > 0 ? R.min : 1, past = [];
@@ -5076,7 +5079,7 @@ $("rollBtn").onclick = rollOpen; $("rollCancel").onclick = () => { $("rollPop").
 // ---------- Block of days: one activity on a run of days (course, attachment, detachment, overseas exercise), across months of the plan year
 let blk = null;
 function blkOpen(k) {
-  const p = keyParts(k), i = Math.floor(p.r / 3), A = actIndex();
+  const p = keyParts(k), i = rowPerson(p.r), A = actIndex();
   const codes = S.acts.filter(a => a.code && (A.get(a.code.toUpperCase()) || {}).ci !== CAT_FLIGHT);
   const cv = String(S.m[cur.m].grid[p.r][p.d] || ""), def = codes.find(a => same(a.code, cv)) || codes.find(a => /^(outstation|detachment|course)$/i.test(a.code)) || codes[0];
   blk = { i };
@@ -5102,7 +5105,7 @@ function blkCells() {
     if ($("blkWe").checked && (dt.getDay() === 0 || dt.getDay() === 6)) continue;
     if ($("blkHol").checked && hol.has(iso)) continue;
     out.days++;
-    for (const s of sh) { const r = i * 3 + s, old = S.m[mi].grid[r][d];
+    for (const s of sh) { const r = gridRow(i, s), old = S.m[mi].grid[r][d];
       if (same(old, code)) continue;
       if (old && !$("blkOver").checked) out.keep.push({ mi, d, r, old }); else out.cells.push({ mi, d, r, old }); }
   }
@@ -5114,7 +5117,7 @@ function blkPreview() {
   let h;
   if (x.err) h = "<span style='color:#b91c1c'>" + esc(x.err) + "</span>";
   else { h = "<b>" + esc(code) + "</b> on " + x.days + " day" + (x.days === 1 ? "" : "s") + " (" + fmt(f) + (t !== f ? " to " + fmt(t) : "") + "): fills <b>" + x.cells.length + "</b> cell" + (x.cells.length === 1 ? "" : "s") + ".";
-    if (x.keep.length) h += "<div style='color:#b45309;margin-top:4px'>" + x.keep.length + " cell" + (x.keep.length === 1 ? " already has" : "s already have") + " something and " + (x.keep.length === 1 ? "is" : "are") + " kept: " + esc(x.keep.slice(0, 6).map(c => (c.d + 1) + " " + MONTHS[c.mi] + " " + SHIFTS[c.r % 3] + " " + c.old).join(", ")) + (x.keep.length > 6 ? "…" : "") + ". Tick Replace to overwrite them.</div>";
+    if (x.keep.length) h += "<div style='color:#b45309;margin-top:4px'>" + x.keep.length + " cell" + (x.keep.length === 1 ? " already has" : "s already have") + " something and " + (x.keep.length === 1 ? "is" : "are") + " kept: " + esc(x.keep.slice(0, 6).map(c => (c.d + 1) + " " + MONTHS[c.mi] + " " + ROW_LABELS[rowShift(c.r)] + " " + c.old).join(", ")) + (x.keep.length > 6 ? "…" : "") + ". Tick Replace to overwrite them.</div>";
     else if (x.cells.some(c => c.old)) h += "<div style='color:#b45309;margin-top:4px'>Replaces " + x.cells.filter(c => c.old).length + " cell(s) that had something.</div>"; }
   $("blkPrev").innerHTML = h; $("blkGo").disabled = !!x.err || !x.cells.length;
 }
@@ -5125,7 +5128,7 @@ $("blkGo").onclick = () => {
   const x = blkCells(), code = $("blkCode").value; if (x.err || !x.cells.length) return;
   for (const c of x.cells) { S.m[c.mi].grid[c.r][c.d] = code; put(monSheet(c.mi), colL(DAY_COL0 + c.d) + (g0() + c.r), code);
     if (c.old && S.hasSyl && !S.kind) {   // a replaced flight no longer carries its Planned syllabus entry (Pass / Fail results stay)
-      const pr = S.roster[Math.floor(c.r / 3)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, c.mi, c.d), c.r % 3) : null;
+      const pr = S.roster[rowPerson(c.r)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, c.mi, c.d), c.r % 3) : null;
       if (lk && lk.res === "Planned") sylClear(S, lk); } }
   const nt = $("blkNote").value.trim(); if (nt && S.hasNotes) { const c0 = x.cells[0]; setNote(c0.mi, c0.r, c0.d, nt); }
   $("blkPop").style.display = "none";
@@ -5184,8 +5187,8 @@ function lodeDay(who, iso) {
   withBook(who.bi, () => {
     const st = S, A = actIndex(), M = st.m[mi], i = who.i, mb = masterBook(), cells = [];
     for (let s = 0; s < 3; s++) {
-      const v = M.grid[i * 3 + s][d]; if (!v) continue;
-      const a = A.get(v.toUpperCase()), ci = a ? a.ci : -1, isF = ci === CAT_FLIGHT, note = (st.notes && st.notes.get(mi + ":" + (i * 3 + s) + ":" + d)) || "";
+      const v = M.grid[gridRow(i, s)][d]; if (!v) continue;
+      const a = A.get(v.toUpperCase()), ci = a ? a.ci : -1, isF = ci === CAT_FLIGHT, note = (st.notes && st.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "";
       const sl = isF && st.hasSyl && st.sylDef ? sylLink(st, who.p.id, iso, s) : null, si = sl && sl.res === "Planned" ? st.sylDef.items.find(z => same(z.code, sl.code)) : null;
       cells.push({ s, code: v, text: a && a.desc ? a.desc : v, note, syl: si ? si.desc || si.code : "", time: isF ? plannedFlights(M, d, s).get(v.toUpperCase()) || "" : "", cancelled: isF ? cxlOf(st, who.p.id, mi, d, s) || "" : "",
         kind: isF ? "flight" : isSb(v) ? "standby" : ci === CAT_SQD ? "duty" : AWAY(ci) ? "away" : "other" });
@@ -5217,7 +5220,7 @@ function lodeDay(who, iso) {
     out.ops.sort((p, q) => p.s - q.s);
     for (let k = 1; k <= 60 && !out.nextDuty; k++) {
       const n = lodeAddDays(iso, k), q = ymd(n, st.year); if (q.y !== st.year || (q.mi === NX_MI && !st.nx)) break;
-      const hit = [0, 1, 2].map(s => st.m[q.mi].grid[who.i * 3 + s][q.d]).find(v => { const a = v && A.get(v.toUpperCase()); return a && a.ci === CAT_SQD; });
+      const hit = [0, 1, 2].map(s => st.m[q.mi].grid[gridRow(who.i, s)][q.d]).find(v => { const a = v && A.get(v.toUpperCase()); return a && a.ci === CAT_SQD; });
       if (hit) out.nextDuty = hit + " " + lodeFmt(n);
     }
   });
@@ -5304,7 +5307,7 @@ function lodeMonth(who, mi) {
   return withBook(who.bi, () => {
     const st = S, A = actIndex(), t = monthStats(mi, A).crew[who.i], G = st.m[mi].grid, dim = daysIn(st.year, mi), pre = isoOf(st.year, mi, 0).slice(0, 7);
     let cancelled = 0;
-    for (let d = 0; d < dim; d++) for (let s = 0; s < 3; s++) { const v = G[who.i * 3 + s][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && cxlOf(st, who.p.id, mi, d, s)) cancelled++; }
+    for (let d = 0; d < dim; d++) for (let s = 0; s < SHIFT_ROWS; s++) { const v = G[gridRow(who.i, s)][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && cxlOf(st, who.p.id, mi, d, s)) cancelled++; }
     const f = opsFlown().get([st.dept, who.p.id, mi].join("|").toUpperCase()), ah = atomHours(who.bi, who.i, mi);
     return { flights: t.fl, cancelled, hrsFlown: ah ? ah.h : f ? f.h : 0, hrsSrc: ah ? "ATOM" : "", hrsAsOf: ah ? ah.asOf : "", hrsPlanned: t.hrs, ground: t.gd, duty: t.sdo, leave: t.lv, sylPassed: (st.syl || []).filter(x => same(x.id, who.p.id) && x.res === "Pass" && x.iso.slice(0, 7) === pre).length };
   });

@@ -129,6 +129,8 @@ tr.blkend td,tr.blkend th{border-bottom:2px solid var(--s400)}
 tr.inactive .who b{color:var(--s400)!important;text-decoration:line-through}
 td.mpdiff{outline:2px solid #f59e0b;outline-offset:-2px}
 #pop .grp .to{float:right;text-transform:none;font-weight:700;color:#1d4ed8;letter-spacing:0}#pop .grp .to.here{color:#15803d}
+#popRole{padding:8px 8px 0;font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase}#popRole .rbtn{display:flex;gap:5px;margin-top:4px}#popRole button{flex:1;border:1px solid var(--s300);border-radius:5px;padding:5px 0;font-weight:700;font-size:11px;cursor:pointer;background:#f1f5f9;color:#1e293b}#popRole button.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}#popRole button.on[data-role='PAX']{background:#16a34a;border-color:#16a34a}
+td i.rtag{display:block;font-style:normal;font-size:8.5px;font-weight:800;line-height:1.1;letter-spacing:.3px;color:#1d4ed8}td i.rtag.pax{color:#15803d}
 #pop .none{padding:4px 10px 8px;font-size:12px;color:var(--s500);font-style:italic}
 td.c.hassyl{position:relative;line-height:1.1}td.c.hassyl::before{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 7px 7px 0;border-color:transparent #f59e0b transparent transparent}td.c.hassyl.hasnote::before{right:auto;left:0;border-width:7px 7px 0 0;border-color:#f59e0b transparent transparent transparent}
 td.c .sytag{display:block;width:max-content;margin:1px auto 0;font-size:9px;font-weight:800;line-height:1.2;padding:0 4px;border-radius:3px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d}td.c .sytag.ok{background:#dcfce7;color:#166534;border-color:#86efac}td.c .sytag.no{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
@@ -971,7 +973,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     </div>
   </section>
 </main>
-<div id="pop"><div id="popTime" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Flight time (any text, e.g. 0830-1030 or TBC)</label><input id="popTimeIn" placeholder="e.g. 0830-1030" style="width:100%;margin:4px 0 6px;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Comment</label><input id="popNoteIn" placeholder="e.g. Wx dependent" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"></div><div id="popCN" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:#7e22ce;text-transform:uppercase">Comment for this cell</label><input id="popCNIn" placeholder="e.g. Instructor for OWL" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px"></div><div id="popCur" style="display:none"></div><div id="popSyl" style="display:none"></div><input type="search" id="popSearch" placeholder="Type to search…"><div class="list" id="popList"></div></div>
+<div id="pop"><div id="popTime" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Flight time (any text, e.g. 0830-1030 or TBC)</label><input id="popTimeIn" placeholder="e.g. 0830-1030" style="width:100%;margin:4px 0 6px;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Comment</label><input id="popNoteIn" placeholder="e.g. Wx dependent" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"></div><div id="popCN" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:#7e22ce;text-transform:uppercase">Comment for this cell</label><input id="popCNIn" placeholder="e.g. Instructor for OWL" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px"></div><div id="popRole" style="display:none"></div><div id="popCur" style="display:none"></div><div id="popSyl" style="display:none"></div><input type="search" id="popSearch" placeholder="Type to search…"><div class="list" id="popList"></div></div>
 <div id="toast"></div>
 <div id="welcome">
   <div class="box">
@@ -1593,6 +1595,8 @@ function roleSet(mi, r, d, tag) {
   }
   put(ROLE_SHEET, "D" + row, tag); S.roleTags.set(k, tag); return true;
 }
+// the AC / PAX label on a planner cell
+const roleChip = (mi, r, d) => { const t = roleOf(S, mi, r, d); return t ? "<i class='rtag " + t.toLowerCase() + "'>" + (t === "AC" ? "AC" : "PAX") + "</i>" : ""; };
 // the Master Planner: a list of flights (Flights sheet, rows 6..1005: A date, B shift, C code, D time, E crew, F comment), any number per shift,
 // plus a Day Status sheet (one row per date of the year from row 6, status in C). The month tabs are a view built by Excel formulas.
 const FL_ROW0 = 6, FL_N = 1000, GR_ROW0 = 6, GR_N = 500;
@@ -3318,7 +3322,7 @@ function renderPlanner() {
         if (am && am.alert) { W.push(["⚠ NOT CURRENT", "bad"]); l1cls += " atomw"; tip = am.alert.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent()) + (tip ? "\n" + tip : ""); }
         if (a && CN.has(i)) { const t = dateSerial(y, mi, d); CN.get(i).forEach(([n, k]) => { const R = S.rules[k], key = i + ":" + k; if (n === t && !cnDone.has(key) && ruleMatch(R, a, v)) { cnDone.add(key); W.push(["⚠ NOT CURRENT", "bad"]); tip = (tip ? tip + "\n" : "") + "Not current for " + R.name + " when this flight is planned (" + curIssues(CC, i).filter(x => x.startsWith(R.name)).join("; ") + ")"; } }); }
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) tip = (tip ? tip + "\n" : "") + "Currency: " + CL.get(i).get(d).map(w => w[2]).join("; ");
-        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (i * 3 + s) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
+        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (i * 3 + s) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, i * 3 + s, d) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
       }
       if (s === 0) h += "<td class='tot' rowspan=3>" + (t.fl || "-") + "</td><td class='tot' rowspan=3>" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const ah = atomHours(cur.b, i, mi); if (ah) return "<td class='tot flown' rowspan=3 title='" + esc("Clocked this month, from ATOM, as of " + ah.asOf) + "'>" + ah.h.toFixed(1) + "</td>"; const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=3 title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=3>" + (t.gd || "-") + "</td><td class='tot' rowspan=3>" + (t.sdo || "-") + "</td><td class='tot' rowspan=3>" + (t.lv || "-") + "</td>";
       h += "</tr>";
@@ -4392,6 +4396,7 @@ function openPop(k, initial) {
   pop.style.top = (r.bottom + 2 + ph <= window.innerHeight ? r.bottom + 2 : r.top - ph >= 8 ? r.top - ph : Math.max(8, window.innerHeight - ph - 8)) + "px";
   $("popTime").style.display = isMaster ? "block" : "none";
   $("popCN").style.display = !isMaster && S.hasNotes && (mayEdit(cur.b)) ? "block" : "none";
+  popRoleDraw(isMaster ? null : p0);
   if (!isMaster) $("popCNIn").value = (S.notes && S.notes.get(cur.m + ":" + p0.r + ":" + p0.d)) || "";
   if (isMaster) { const p = keyParts(k); $("popTimeIn").value = S.m[cur.m].mtime[p.r][p.d] || ""; $("popNoteIn").value = S.m[cur.m].mnote[p.r][p.d] || ""; }
   { const iss = isMaster ? [] : curIssues(computeCurrency(), Math.floor(p0.r / 3)), pc = $("popCur");
@@ -4405,6 +4410,15 @@ function openPop(k, initial) {
   if (isMaster) popSyl = null; else sylPopInit(k); drawSyl();
   $("popSearch").value = initial || ""; drawPop(); $("popSearch").focus();
 }
+// the "Role on this flight" row of the cell popup: None / AC (Pilot file only) / Pax, on a flight cell the user may edit
+function popRoleDraw(p0) {
+  const el = $("popRole"), v = p0 && S.m[cur.m].grid[p0.r][p0.d], on = !!v && isFlightCode(S, v) && mayEdit(cur.b);
+  el.style.display = on ? "block" : "none"; if (!on) { el.innerHTML = ""; return; }
+  const now = roleOf(S, cur.m, p0.r, p0.d), opts = [["", "None"]].concat(same(S.dept, "Pilot") ? [["AC", "AC"]] : [], [["PAX", "Pax"]]);
+  el.innerHTML = "Role on this flight<div class='rbtn'>" + opts.map(([k, l]) => "<button data-role='" + k + "'" + (k === now ? " class='on'" : "") + ">" + l + "</button>").join("") + "</div>";
+}
+$("popRole").addEventListener("click", e => { const b = e.target.closest("button[data-role]"); if (!b || !popKey) return;
+  const p = keyParts(popKey); if (!roleSet(cur.m, p.r, p.d, b.dataset.role)) return; popRoleDraw(p); renderPlanner(); });
 function drawPop() {
   const q = $("popSearch").value.trim().toLowerCase(), A = actIndex();
   const list = popItems.filter(a => !q || (a.code + " " + a.desc).toLowerCase().includes(q));

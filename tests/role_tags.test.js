@@ -65,6 +65,16 @@ test("view_only_cannot_tag", async ({ page }) => {
   assert.deepStrictEqual(r, [false, false, 0]);
 });
 
+test("pax_cell_not_counted", async ({ page }) => {
+  const r = await page.evaluate(code => {
+    eval(code); const A = actIndex(), n = () => monthStats(9, A).crew[0].fl, f0 = n(), doy = dayOfYear(S.year, 9, 13);
+    const rest0 = computeRest()[0].fly[doy], my0 = lodeMonth({ bi: cur.b, i: 0, p: S.roster[0] }, 9).flights;
+    roleSet(9, 0, 13, "PAX");
+    return { f0, f1: n(), rest0, rest1: computeRest()[0].fly[doy], my0, my1: lodeMonth({ bi: cur.b, i: 0, p: S.roster[0] }, 9).flights, ac: (roleSet(9, 0, 13, "AC"), n()) }; }, PLANT);
+  assert.ok(r.f1 < r.f0, "monthly flights drop: " + r.f0 + " -> " + r.f1); assert.strictEqual(r.rest0, true); assert.strictEqual(r.rest1, false);
+  assert.ok(r.my1 < r.my0, "My Lodestar flights drop"); assert.strictEqual(r.ac, r.f0, "an AC tag still counts");
+});
+
 module.exports.tests = tests;
 (async () => {
   const only = process.argv[2];

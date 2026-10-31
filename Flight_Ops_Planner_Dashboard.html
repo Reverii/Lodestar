@@ -2514,7 +2514,7 @@ function computeRest(st = S) {
   st.roster.forEach((p, i) => {
     const fly = new Array(nd).fill(false), run = new Array(nd).fill(0);
     for (let mi = 0; mi < NMON; mi++) { const G = st.m[mi] && st.m[mi].grid; if (!G) continue;
-      for (let d = 0; d < daysIn(y, mi); d++) for (let s = 0; s < 3; s++) { const v = G[i * 3 + s] && G[i * 3 + s][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && !cxlOf(st, p.id, mi, d, s)) { fly[dayOfYear(y, mi, d)] = true; break; } } }
+      for (let d = 0; d < daysIn(y, mi); d++) for (let s = 0; s < 3; s++) { const v = G[i * 3 + s] && G[i * 3 + s][d], a = v && A.get(String(v).toUpperCase()); if (a && a.ci === CAT_FLIGHT && !cxlOf(st, p.id, mi, d, s) && roleOf(st, mi, i * 3 + s, d) !== "PAX") { fly[dayOfYear(y, mi, d)] = true; break; } } }
     let n = p.restIn || 0, flagged = 0; for (let k = 0; k < nd; k++) { n = fly[k] ? n + 1 : 0; run[k] = n; if (n >= REST_DAYS) flagged++; }
     out.push({ fly, run, flagged, inn: p.restIn || 0 });
   });
@@ -2561,7 +2561,7 @@ function computeCurrency(st = S) {
     // this person's flights: [serial, code, activity]
     const ev = [];
     for (let mi = 0; mi < NMON; mi++) { const G = st.m[mi].grid, dim = daysIn(y, mi);
-      for (let s = 0; s < 3; s++) { const row = G[i * 3 + s]; for (let d = 0; d < dim; d++) { const c = row[d]; if (!c) continue; const a = A.get(c.toUpperCase()); if (a && !(a.ci === CAT_FLIGHT && cxlOf(st, p.id, mi, d, s))) ev.push([dateSerial(y, mi, d), c, a]); } } }
+      for (let s = 0; s < 3; s++) { const row = G[i * 3 + s]; for (let d = 0; d < dim; d++) { const c = row[d]; if (!c) continue; const a = A.get(c.toUpperCase()); if (a && !(a.ci === CAT_FLIGHT && (cxlOf(st, p.id, mi, d, s) || roleOf(st, mi, i * 3 + s, d) === "PAX"))) ev.push([dateSerial(y, mi, d), c, a]); } } }
     st.rules.forEach((R, k) => {
       if (!ruleOn(R) || !ruleApplies(R, p)) return;
       const need = R.min > 0 ? R.min : 1, warn = R.warn || 0;
@@ -2623,6 +2623,7 @@ function monthStats(mi, A) {
         const cu = String(M.grid[i * 3 + s][d]).trim().toUpperCase(); if (cu === "BDO" || cu === "SDO") duty = true;
         if (d < dim) { if (cu === "BDO") day[d].nB++; else if (cu === "SDO") day[d].nS++; }
         if (a.ci === CAT_FLIGHT && cxlOf(S, S.roster[i].id, mi, d, s)) continue;   // cancelled in the Ops Room
+        if (a.ci === CAT_FLIGHT && roleOf(S, mi, i * 3 + s, d) === "PAX") continue;   // a passenger: not planned flying (Excel's own totals still count the cell)
         if (a.ci === CAT_FLIGHT) { t.fl += a.sorties; t.hrs += a.hours; if (d < dim) { day[d].fl[s] += a.sorties; day[d].hrs += a.hours; } }
       }
       if (cats.has(CAT_GD)) t.gd++; if (cats.has(CAT_SQD)) t.sdo++; if (cats.has(CAT_LEAVE)) t.lv++;
@@ -4910,7 +4911,7 @@ const rollHasF = (files, path, ref) => { if (!path) return false; const m = new 
 // the date each currency rule was last met by 31 Dec (the same count as the Currency tab, every flight of the year counted as flown)
 function rollCurAnchors(st, i, y) {
   const p = st.roster[i], keep = S; S = st; const A = actIndex(); S = keep; const end = dateSerial(y, 11, 30), ev = [];
-  for (let mi = 0; mi < 12; mi++) { const G = st.m[mi].grid; for (let s = 0; s < 3; s++) { const row = G[i * 3 + s]; for (let d = 0; d < daysIn(y, mi); d++) { const c = row[d]; if (!c) continue; const a = A.get(c.toUpperCase()); if (a && !(a.ci === CAT_FLIGHT && cxlOf(st, p.id, mi, d, s))) ev.push([dateSerial(y, mi, d), c, a]); } } }
+  for (let mi = 0; mi < 12; mi++) { const G = st.m[mi].grid; for (let s = 0; s < 3; s++) { const row = G[i * 3 + s]; for (let d = 0; d < daysIn(y, mi); d++) { const c = row[d]; if (!c) continue; const a = A.get(c.toUpperCase()); if (a && !(a.ci === CAT_FLIGHT && (cxlOf(st, p.id, mi, d, s) || roleOf(st, mi, i * 3 + s, d) === "PAX"))) ev.push([dateSerial(y, mi, d), c, a]); } } }
   return st.rules.map((R, k) => {
     if (!ruleOn(R) || !ruleApplies(R, p)) return null;
     const need = R.min > 0 ? R.min : 1, past = [];

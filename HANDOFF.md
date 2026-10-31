@@ -5,7 +5,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 
 ## Next session: start here (handoff of 30 Oct 2026)
 
-**State:** everything is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is now on, deciding about making it private is an open item). Dashboard **z100** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
+**State (updated 31 Oct, z101: item 1 below is built on branch `claude/practical-lamport-j13scq`, not yet merged):** everything else is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is now on, deciding about making it private is an open item). Dashboard **z100** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
 Built and merged since the last handoff: Ops Room redesign (z97), built-in sample fix (z98), Master Planner time ranges (z99), department selector revamp (z100).
 
 **Do next, in this order** (full notes in `PROJECT_CHECKLIST.md` section 9):
@@ -20,6 +20,13 @@ Built and merged since the last handoff: Ops Room redesign (z97), built-in sampl
 **How to work with Brandon right now:** he is near his weekly usage cap, so keep sessions short: one feature per session, text answers, screenshots only when words will not do, no full ATOM test run unless ATOM code changes (`node tests/atom.test.js` takes minutes). He says "build it" after a mock-up, "go, native" for execution, and "merge to main and push" when he wants a merge. Never overwrite live `.xlsx` files.
 
 **Starting prompt for a new session:** "Read `/home/user/Lodestar/CLAUDE.md`, then `HANDOFF.md` (the section 'Next session: start here') and `PROJECT_CHECKLIST.md` section 9. Start a new branch from main and build the other-departments change from the spec and plan listed there, native execution."
+
+## Other departments and View only (z101, 31 Oct; spec `docs/superpowers/specs/2026-10-30-other-departments-design.md`, plan `docs/superpowers/plans/2026-10-30-other-departments.md`)
+
+- On SharePoint, after a department opens, the other four planners open read-only one by one in the background ("Opening other departments… n of 4" in the book bar). A failed file is skipped and named once. "Add other departments" is hidden on SharePoint (still there for local files).
+- `mayEdit(bi)` is the one test of what can be edited. A file SharePoint says you cannot edit (`EffectiveBasePermissions`, Low bit 4) gets `noEdit`: no Save, undo or redo, a "View only" chip, edits refused. Any permission-check error counts as editable. A 403 on save says "You only have view access to this file."
+- **Open:** the permission check must be tried on the real SharePoint with a member's account; the extra seconds to open four more files are for Brandon to judge.
+- Tests: `node tests/other_depts.test.js` (10). Not covered: the SharePoint-only hiding of the button (set in `spInit`).
 
 ## Where things stand
 

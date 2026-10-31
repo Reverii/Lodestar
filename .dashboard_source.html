@@ -1016,7 +1016,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z109</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z110</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2767,7 +2767,7 @@ function renderMp() {
         const G = grDay(P, mi, d), items = (dayOff ? [] : L.map(f => ({ f }))).concat(G.map(g => ({ g }))), show = items.length > 4 ? 3 : 4;
         items.slice(0, show).forEach(({ f, g }) => {
           if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(f.time, (P.codes.find(k => same(k.code, f.code)) || {}).hrs) || (f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
-          else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Ground programme · " + [g.time, g.act, cw.length ? "crew " + cw.join(" ") : "everyone", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
+          else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Squadron event · " + [g.time, g.act, cw.length ? "crew " + cw.join(" ") : "everyone", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
         });
         if (items.length > show) h += "<div class='more'>+" + (items.length - show) + " more</div>";
         if (!lock && !dayOff) h += "<button class='plus' data-add='" + d + "' title='Add a flight on " + (d + 1) + " " + monLab(mi, y) + "'>+</button>";
@@ -2801,8 +2801,8 @@ function renderMp() {
   // ground programme for the office (also on no-flying days)
   if (P.hasGr) {
     const GL = grDay(P, mi, sd);
-    p += "<div class='lbl' style='margin-top:16px;color:#166534'>Ground programme</div>";
-    if (!GL.length) p += "<div class='empty' style='padding:6px 4px'>Nothing on the ground programme.</div>";
+    p += "<div class='lbl' style='margin-top:16px;color:#166534'>Squadron events</div>";
+    if (!GL.length) p += "<div class='empty' style='padding:6px 4px'>No squadron events.</div>";
     for (const g of GL) {
       const cw = crewTags(g.crew), key = "data-grow='" + g.row + "'";
       const tags = "<div class='tags'>" + CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag gtag t" + k + (cw.includes(k) ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length ? "<span class='all'>everyone</span>" : "") + "</div>";
@@ -2811,7 +2811,7 @@ function renderMp() {
       else p += "<input " + key + " data-gf='act' class='gact' list='grList' value='" + esc(g.act) + "' placeholder='Activity, e.g. CRM Lecture'><input " + key + " data-gf='time' value='" + esc(g.time) + "' placeholder='Time'>" + tags + "<input " + key + " data-gf='note' class='nt' value='" + esc(g.note) + "' placeholder='Comment'>";
       p += "</div></div>";
     }
-    if (!lock) p += "<datalist id='grList'>" + P.grList.map(x => "<option value='" + esc(x) + "'>").join("") + "</datalist><button class='addb gaddb' data-gadd='" + sd + "'>+ Add ground programme</button>";
+    if (!lock) p += "<datalist id='grList'>" + P.grList.map(x => "<option value='" + esc(x) + "'>").join("") + "</datalist><button class='addb gaddb' data-gadd='" + sd + "'>+ Add squadron event</button>";
   }
   if (lock) p += "<div class='hint'>🔒 View only. Only the Master Planner can change this.</div>";
   $("mpSide").innerHTML = p + "</div>";
@@ -3036,7 +3036,7 @@ $("mpWrap").addEventListener("click", e => {
     withBook(mpIdx(), () => {
       if (gadd) {
         const d = +gadd.dataset.gadd; let r = GR_ROW0; while (S.grUsed.has(r) && r < GR_ROW0 + GR_N) r++;
-        if (r >= GR_ROW0 + GR_N) { alert("The Ground Programme sheet is full. Clear old rows in Excel to make room."); return; }
+        if (r >= GR_ROW0 + GR_N) { alert("The Squadron events sheet (Ground Programme) is full. Clear old rows in Excel to make room."); return; }
         S.gr.push({ row: r, mi, d, time: "", act: "", crew: "", note: "" }); S.grUsed.add(r);
         put("Ground Programme", "A" + r, dateSerial(S.year, mi, d)); ["B", "C", "D", "E"].forEach(L => put("Ground Programme", L + r, "")); focusG = r;
       } else if (grm) {
@@ -3246,9 +3246,9 @@ function renderPlanner() {
   const canEdit = mayEdit(cur.b);
   $("mpNote").style.display = mb ? "" : "none";
   if (mb) $("mpNote").innerHTML = mb.S.year !== S.year ? "<span style='color:#b91c1c'>The Master Planner is for " + mb.S.year + " but this file is for " + S.year + ".</span>" :
-    mdiff.length ? "<b style='color:#b45309'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and ground programme differ" : "flights differ") + " from the Master Planner in " + mdiff.length + " slot" + (mdiff.length === 1 ? "" : "s") + " this year (" + mset.size + " this month, outlined amber).</b> " +
-      (canEdit ? "<button class='btn primary' id='mpSync' style='margin-left:6px;padding:5px 10px'>Copy " + (S.gndRow ? "flights and ground programme" : "flights") + " from the Master Planner</button>" : "<span class='muted'>Only " + esc(S.dept) + " can copy them into its file.</span>") :
-    "<b style='color:#15803d'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and ground programme match" : "flights match") + " the Master Planner.</b>";
+    mdiff.length ? "<b style='color:#b45309'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and squadron events differ" : "flights differ") + " from the Master Planner in " + mdiff.length + " slot" + (mdiff.length === 1 ? "" : "s") + " this year (" + mset.size + " this month, outlined amber).</b> " +
+      (canEdit ? "<button class='btn primary' id='mpSync' style='margin-left:6px;padding:5px 10px'>Copy " + (S.gndRow ? "flights and squadron events" : "flights") + " from the Master Planner</button>" : "<span class='muted'>Only " + esc(S.dept) + " can copy them into its file.</span>") :
+    "<b style='color:#15803d'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and squadron events match" : "flights match") + " the Master Planner.</b>";
   if (mb && mb.S.year === S.year) { const cn = codeDiffN(codeDiffs(S, mb.S)); if (cn) $("mpNote").innerHTML += " <span style='color:#b45309'>Flight codes differ from the Master Planner (" + cn + "); see the Activities tab.</span>"; }
   const A = actIndex(), mi = cur.m, st = monthStats(mi, A), y = S.year, dim = st.dim, M = S.m[mi];
   const FLN = opsFlown(), NT = FLN ? 6 : 5;   // Flown Hrs (every department): actual hours from the Ops Room's ATD / ATA
@@ -3987,7 +3987,7 @@ function renderOps() {
   let gprev = -1;
   const grow = g => { const lab = g.grp === 0 ? (mpRange(g.when, 0) || g.when) : g.grp === 3 ? g.until.replace(/^until /, "till ").toUpperCase() : GSH[g.sh], cls = g.grp === 0 ? "" : g.grp === 3 ? "till" : "s" + g.sh;
     const tr = "<tr" + (gprev >= 0 && g.grp !== gprev ? " class='gs'" : "") + "><td class='tm " + cls + "'>" + lab + "</td><td class='ga'><b>" + esc(g.act) + "</b>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "</td><td class='gl'>" + (g.note || "") + "</td><td class='gw'>" + g.who + "</td></tr>"; gprev = g.grp; return tr; };
-  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gsc'><table class='gtab'><colgroup><col class='gt'><col class='gac'><col class='glo'><col></colgroup><thead><tr><th>TIME</th><th>ACTIVITY</th><th>LOCATION</th><th>PERSONNEL</th></tr></thead><tbody>" + G.map(grow).join("") + "</tbody></table></div>" : "<div class='muted'>Nothing on the ground programme.</div>") + "</div>";
+  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gsc'><table class='gtab'><colgroup><col class='gt'><col class='gac'><col class='glo'><col></colgroup><thead><tr><th>TIME</th><th>ACTIVITY</th><th>LOCATION</th><th>PERSONNEL</th></tr></thead><tbody>" + G.map(grow).join("") + "</tbody></table></div>" : "<div class='muted'>No squadron events.</div>") + "</div>";
   // remarks for the day (Day Board column P of the Ops Room file)
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
@@ -4730,7 +4730,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z109 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z110 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5125,7 +5125,7 @@ function rollOpen() {
   $("rollBody").innerHTML = (prob.length ? "<div class='rollbad'><b>Not ready yet</b><ul>" + prob.map(p => "<li>" + p + "</li>").join("") + "</ul></div>" : "") +
     "<p>Moves all " + books.length + " files from <b>" + y + "</b> to <b>" + (y + 1) + "</b>. " + (SP.on ? "First a copy of each file is saved in an <b>Archive " + y + "</b> folder next to them on SharePoint." : "First a zip of the " + y + " files is downloaded as the archive, then the " + (y + 1) + " files are downloaded as a second zip: put those in your folder in place of the old ones.") + "</p>" +
     "<div class='rollcols'><div><h3>Carried over</h3><ul><li>Crew rosters, Initials, Personnel Info</li><li>Activities and Currency Rules</li><li>Duty Roster crew lists</li><li>Everything already planned for January " + (y + 1) + " (the Jan (next year) tab): it becomes the new January</li><li>Open down-chits (still down on 31 Dec)</li><li>Currency: the date each rule was last met</li><li>Days flying in a row at 31 Dec (crew rest)</li><li>" + (y + 1) + " public holidays" + (SG_HOLS[y + 1] ? "" : " <b style='color:#b45309'>(not known yet: add them)</b>") + "</li></ul></div>" +
-    "<div><h3>Started empty</h3><ul><li>Every month plan, cell note and request</li><li>SDO and BDO days</li><li>Master Planner flights, day status and ground programme</li><li>Ops Room flights, Ops Add and Day Board</li></ul></div></div>" +
+    "<div><h3>Started empty</h3><ul><li>Every month plan, cell note and request</li><li>SDO and BDO days</li><li>Master Planner flights, day status and squadron events</li><li>Ops Room flights, Ops Add and Day Board</li></ul></div></div>" +
     "<p class='muted'>Every flight planned up to 31 Dec counts as flown for currency and crew rest, so run this after the last flying day of " + y + ".</p>";
   $("rollGo").disabled = !!prob.length; $("rollGo").textContent = y ? "Start " + (y + 1) : "Start";
   $("rollPop").style.display = "flex";
@@ -5576,8 +5576,8 @@ const HELP = {
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li></li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +
     "<h3>Tools</h3><ul><li>Click a seat to change it, mark MC / CRMO, or swap Captain and Co-Pilot. Click a text cell to type.</li><li><b>+ Ops Add</b>: an ad hoc flight for the day. It isn't put on the Master Planner; departments see it on their MASTER rows (OPS ADD), and crew you seat on it get it on their plan. Remove it from its status pill.</li><li>A- / A+ sizes the board; Projector hides the menus.</li><li>Save writes every file you changed: the Ops Room file, and a department's file when you up-chit someone from it.</li></ul>"],
-  mp: ["Master Planning", "<p>The Master Planner's calendar: every flight and ground programme item, which all departments copy. Only the Master Planner (its own file) can edit; everyone else sees it locked.</p>" +
-    "<ul><li>Chips: time + code in shift colours, crew tags (P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2; none = everyone). Green chips: ground programme.</li><li>Grey day: no flying (reason on the day). Blue outline: today.</li><li>Click a day to open it on the right: add, change or remove flights and ground items. Arrow keys move days, Esc closes.</li></ul><h3>Export…</h3><p>A clean Excel copy of the flights and planned hours for an outside office: a Calendar sheet (one cell per day, with the day's planned hours, a week-hours column and the reason on no-flying days) and a List sheet (date, shift, flight code, time, planned hours, a total and hours by flight code). Pick the period, and untick any flight code to leave it out of the rows and the totals (your choice is remembered). No crew, names or comments go in the file.</p>"],
+  mp: ["Master Planning", "<p>The Master Planner's calendar: every flight and squadron event, which all departments copy. Only the Master Planner (its own file) can edit; everyone else sees it locked.</p>" +
+    "<ul><li>Chips: time + code in shift colours, crew tags (P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2; none = everyone). Green chips: squadron events (meetings, ceremonies, courses).</li><li>Grey day: no flying (reason on the day). Blue outline: today.</li><li>Click a day to open it on the right: add, change or remove flights and ground items. Arrow keys move days, Esc closes.</li></ul><h3>Export…</h3><p>A clean Excel copy of the flights and planned hours for an outside office: a Calendar sheet (one cell per day, with the day's planned hours, a week-hours column and the reason on no-flying days) and a List sheet (date, shift, flight code, time, planned hours, a total and hours by flight code). Pick the period, and untick any flight code to leave it out of the rows and the totals (your choice is remembered). No crew, names or comments go in the file.</p>"],
   codes: ["Flight Codes", "<p>The one list of flight codes (sorties, hours, default crew, mission type). Set by the Master Planner; departments copy it on their Activities tab.</p>"],
   sdo: ["Duty Planner", "<p>BDO (Base Duty Officer) and SDO (Squadron Duty Orderly). Switch duty at the top. The Duty Roster gives each day to one department; each department copies its days into its own file.</p>" +
     "<ul><li>Coloured tag = the department on duty that day. Amber day: a department's file doesn't match the roster yet. Red day: more than one department.</li><li>Duty crew list: who may do each duty. Blue outline: today. Red: public holiday.</li></ul>"]
@@ -5674,7 +5674,7 @@ $("mpNote").addEventListener("click", e => {
     if (!same(M.mnote[x.r][x.d], x.note)) { M.mnote[x.r][x.d] = x.note; put(sh, L + nRow(x.r), x.note); }
   }
   renderPlanner(); renderOverview();
-  toast("Copied " + diffs.length + " slot" + (diffs.length === 1 ? "" : "s") + " (flights and ground programme) from the Master Planner. Click Save to Excel to keep them.");
+  toast("Copied " + diffs.length + " slot" + (diffs.length === 1 ? "" : "s") + " (flights and squadron events) from the Master Planner. Click Save to Excel to keep them.");
 });
 $("sdoNote").addEventListener("click", e => {
   if (e.target.id !== "sdoSync") return;

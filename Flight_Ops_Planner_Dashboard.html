@@ -1017,7 +1017,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z105</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z106</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2858,71 +2858,126 @@ function mpExportData(P, o) {   // o = { from, to (ISO days), omit: [flight code
   const list = [...byCode.values()].sort((x, y) => x.code < y.code ? -1 : 1);
   return { title: mpExportTitle(P, o), rows, months, totals: { fl: rows.length, hrs: rows.reduce((n, r) => n + r.hrs, 0), byCode: list } };
 }
-// a minimal .xlsx writer: sheets = [{ name, cells: { "A1": { v, s } }, cols: [widths], rowH: { row: points }, merges: ["A1:H1"], landscape }]
-const XL_STYLES = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="ddd dd mmm yyyy"/><numFmt numFmtId="165" formatCode="0.0"/></numFmts>' +
-  '<fonts count="5"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="14"/><name val="Calibri"/></font><font><i/><sz val="11"/><color rgb="FF64748B"/><name val="Calibri"/></font></fonts>' +
-  '<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E293B"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill></fills>' +
-  '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFCBD5E1"/></left><right style="thin"><color rgb="FFCBD5E1"/></right><top style="thin"><color rgb="FFCBD5E1"/></top><bottom style="thin"><color rgb="FFCBD5E1"/></bottom><diagonal/></border></borders>' +
-  '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="12">' +
-  '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
-  '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>' +
-  '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>' +
-  '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +
-  '<xf numFmtId="0" fontId="2" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>' +
-  '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>' +
-  '<xf numFmtId="0" fontId="4" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +
-  '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>' +
-  '<xf numFmtId="165" fontId="1" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"/>' +
-  '<xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>' +
-  '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>' +
-  '<xf numFmtId="0" fontId="1" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1"/>' +
-  '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
-const XS = { dflt: 0, bold: 1, date: 2, wrap: 3, head: 4, title: 5, grey: 6, num: 7, bnum: 8, bwrap: 9, text: 10, btext: 11 };
+// a minimal .xlsx writer: sheets = [{ name, cells: { "A1": { v, s } }, cols: [widths], rowH: { row: points }, merges: ["A1:H1"], landscape, freeze: "A5", filter: "A4:G60", titleRows: "4:4", tab: "FF1E293B" }]
+// styles are registered by name so the sheet code reads as "XS.head", never as a number
+const XL = (() => {
+  const font = (sz, o = {}) => '<font>' + (o.b ? "<b/>" : "") + (o.i ? "<i/>" : "") + '<sz val="' + sz + '"/><color rgb="' + (o.c || "FF0F172A") + '"/><name val="Calibri"/></font>';
+  const fonts = [font(11), font(11, { b: 1 }), font(11, { b: 1, c: "FFFFFFFF" }), font(18, { b: 1, c: "FFFFFFFF" }), font(10, { i: 1, c: "FF64748B" }), font(13, { b: 1, c: "FFFFFFFF" }),
+    font(10, { b: 1, c: "FF334155" }), font(10), font(10, { b: 1, i: 1, c: "FF92400E" }), font(11, { b: 1, c: "FF1E293B" }), font(12, { b: 1, c: "FF1E293B" })];
+  const fill = c => '<fill><patternFill patternType="solid"><fgColor rgb="' + c + '"/><bgColor indexed="64"/></patternFill></fill>';
+  const fills = ['<fill><patternFill patternType="none"/></fill>', '<fill><patternFill patternType="gray125"/></fill>', fill("FF1E293B"), fill("FFF1F5F9"), fill("FF334155"), fill("FFF8FAFC"), fill("FFFEF3C7"), fill("FFE2E8F0"), fill("FF475569"), fill("FFFFFFFF")];
+  const ln = c => '<color rgb="' + c + '"/>';
+  const box = c => '<border><left style="thin">' + ln(c) + '</left><right style="thin">' + ln(c) + '</right><top style="thin">' + ln(c) + '</top><bottom style="thin">' + ln(c) + '</bottom><diagonal/></border>';
+  const borders = ['<border><left/><right/><top/><bottom/><diagonal/></border>', box("FFCBD5E1"), '<border><left/><right/><top/><bottom style="medium">' + ln("FF1E293B") + '</bottom><diagonal/></border>'];
+  const xfs = [], S = {};
+  const add = (name, fo, fi, bo, nf, al) => { S[name] = xfs.length; xfs.push('<xf numFmtId="' + nf + '" fontId="' + fo + '" fillId="' + fi + '" borderId="' + bo + '" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyNumberFormat="1"' + (al ? ' applyAlignment="1"><alignment ' + al + "/></xf>" : "/>")); };
+  const V = 'vertical="center"', T = 'vertical="top" wrapText="1"';
+  add("dflt", 0, 0, 0, 0);
+  add("title", 3, 2, 0, 0, V + ' horizontal="left" indent="1"');
+  add("stamp", 4, 0, 0, 0, V + ' horizontal="left"');
+  add("month", 5, 4, 0, 0, V + ' horizontal="left" indent="1"');
+  add("dow", 2, 8, 1, 0, V + ' horizontal="center"');
+  add("dowEnd", 2, 2, 1, 0, V + ' horizontal="center"');
+  add("dnum", 6, 3, 1, 0, V + ' horizontal="left" indent="1"');
+  add("dnumEnd", 6, 7, 1, 0, V + ' horizontal="left" indent="1"');
+  add("dnumOff", 6, 6, 1, 0, V + ' horizontal="left" indent="1"');
+  add("body", 7, 9, 1, 0, T + ' indent="1"');
+  add("bodyEnd", 7, 5, 1, 0, T + ' indent="1"');
+  add("bodyOff", 8, 6, 1, 0, T + ' indent="1"');
+  add("blank", 7, 7, 1, 0);
+  add("wkHrs", 1, 3, 1, 165, V + ' horizontal="center"');
+  add("totLbl", 9, 3, 1, 0, V + ' horizontal="left" indent="1"');
+  add("totNum", 9, 3, 1, 165, V + ' horizontal="center"');
+  add("lhead", 2, 2, 1, 0, V + ' horizontal="center" wrapText="1"');
+  const L = { "": 9, z: 5 };
+  for (const z in L) {
+    add("date" + z, 0, L[z], 1, 164, V + ' horizontal="left" indent="1"');
+    add("text" + z, 0, L[z], 1, 0, V + ' horizontal="left" indent="1"');
+    add("mid" + z, 0, L[z], 1, 0, V + ' horizontal="center"');
+    add("num" + z, 0, L[z], 1, 165, V + ' horizontal="center"');
+    add("int" + z, 0, L[z], 1, 1, V + ' horizontal="center"');
+  }
+  add("sec", 10, 0, 2, 0, V + ' horizontal="left"');
+  add("shead", 1, 3, 1, 0, V + ' horizontal="left" indent="1"');
+  add("sheadMid", 1, 3, 1, 0, V + ' horizontal="center"');
+  const styles = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="ddd dd mmm yyyy"/><numFmt numFmtId="165" formatCode="0.0"/></numFmts>' +
+    '<fonts count="' + fonts.length + '">' + fonts.join("") + '</fonts><fills count="' + fills.length + '">' + fills.join("") + '</fills><borders count="' + borders.length + '">' + borders.join("") + "</borders>" +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="' + xfs.length + '">' + xfs.join("") + '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  return { S, styles };
+})();
+const XL_STYLES = XL.styles, XS = XL.S;
 function xlsxBuild(sheets) {
   const NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"', R = 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"', H = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
   const f = {};
   f["[Content_Types].xml"] = te.encode(H + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' + sheets.map((_, i) => '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("") + "</Types>");
   f["_rels/.rels"] = te.encode(H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
-  f["xl/workbook.xml"] = te.encode(H + "<workbook " + NS + " " + R + "><sheets>" + sheets.map((s, i) => '<sheet name="' + esc(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>').join("") + "</sheets></workbook>");
+  const abs = ref => ref.replace(/([A-Z]+)(\d+)/g, (m, c, n) => "$" + c + "$" + n), q = n => "'" + n.replace(/'/g, "''") + "'";
+  const names = sheets.map((s, i) => (s.titleRows ? '<definedName name="_xlnm.Print_Titles" localSheetId="' + i + '">' + q(s.name) + "!" + s.titleRows.replace(/(\d+)/g, (m, n) => "$" + n) + "</definedName>" : "") + (s.filter ? '<definedName name="_xlnm._FilterDatabase" localSheetId="' + i + '" hidden="1">' + q(s.name) + "!" + abs(s.filter) + "</definedName>" : "")).join("");
+  f["xl/workbook.xml"] = te.encode(H + "<workbook " + NS + " " + R + '><bookViews><workbookView activeTab="0"/></bookViews><sheets>' + sheets.map((s, i) => '<sheet name="' + esc(s.name) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>').join("") + "</sheets>" + (names ? "<definedNames>" + names + "</definedNames>" : "") + "</workbook>");
   f["xl/_rels/workbook.xml.rels"] = te.encode(H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + sheets.map((_, i) => '<Relationship Id="rId' + (i + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>').join("") + '<Relationship Id="rId' + (sheets.length + 1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
   f["xl/styles.xml"] = te.encode(XL_STYLES);
   sheets.forEach((sh, i) => {
     const byRow = new Map(); for (const ref in sh.cells) { const m = ref.match(/^([A-Z]+)(\d+)$/), r = +m[2]; if (!byRow.has(r)) byRow.set(r, []); byRow.get(r).push([colN(m[1]), ref, sh.cells[ref]]); }
     const rows = [...byRow.keys()].sort((a, b) => a - b).map(r => '<row r="' + r + '"' + (sh.rowH && sh.rowH[r] ? ' ht="' + sh.rowH[r] + '" customHeight="1"' : "") + ">" + byRow.get(r).sort((a, b) => a[0] - b[0]).map(([, ref, c]) => cellXml(ref, ' s="' + (c.s || 0) + '"', c.v)).join("") + "</row>").join("");
-    f["xl/worksheets/sheet" + (i + 1) + ".xml"] = te.encode(H + "<worksheet " + NS + ">" + (sh.landscape ? '<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>' : "") + '<sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/>' +
+    const fr = sh.freeze ? +sh.freeze.match(/\d+/)[0] - 1 : 0;
+    const view = '<sheetViews><sheetView workbookViewId="0" showGridLines="0"' + (i === 0 ? ' tabSelected="1"' : "") + ">" + (fr ? '<pane ySplit="' + fr + '" topLeftCell="' + sh.freeze + '" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="' + sh.freeze + '" sqref="' + sh.freeze + '"/>' : "") + "</sheetView></sheetViews>";
+    f["xl/worksheets/sheet" + (i + 1) + ".xml"] = te.encode(H + "<worksheet " + NS + ">" + "<sheetPr>" + (sh.tab ? '<tabColor rgb="' + sh.tab + '"/>' : "") + (sh.landscape ? '<pageSetUpPr fitToPage="1"/>' : "") + "</sheetPr>" + view + '<sheetFormatPr defaultRowHeight="15"/>' +
       "<cols>" + (sh.cols || []).map((w, k) => '<col min="' + (k + 1) + '" max="' + (k + 1) + '" width="' + w + '" customWidth="1"/>').join("") + "</cols><sheetData>" + rows + "</sheetData>" +
+      (sh.filter ? '<autoFilter ref="' + sh.filter + '"/>' : "") +
       (sh.merges && sh.merges.length ? '<mergeCells count="' + sh.merges.length + '">' + sh.merges.map(m => '<mergeCell ref="' + m + '"/>').join("") + "</mergeCells>" : "") +
-      '<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/>' + (sh.landscape ? '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/>' : "") + "</worksheet>");
+      '<pageMargins left="0.4" right="0.4" top="0.6" bottom="0.6" header="0.3" footer="0.3"/>' + (sh.landscape ? '<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>' : "") +
+      '<headerFooter><oddFooter>&amp;L121 SQN&amp;CPage &amp;P of &amp;N&amp;R' + esc(sh.footer || "") + "</oddFooter></headerFooter></worksheet>");
   });
   return fflate.zipSync(f, { level: 6 });
 }
 const xlSerial = iso => { const [y, m, d] = iso.split("-").map(Number); return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 86400000); };
+const r1 = n => Math.round(n * 10) / 10;
 function mpExportBytes(P, o, layout) {   // layout: "cal", "list" or "both"
-  const D = mpExportData(P, o), stamp = "Exported " + fmtLong(opsToday()), sheets = [];
+  const D = mpExportData(P, o), stamp = "Exported " + fmtLong(opsToday()), sheets = [], banner = (cells, merges, cols, last) => {
+    cells["A1"] = { v: D.title, s: XS.title }; cells["A2"] = { v: stamp, s: XS.stamp };
+    for (let k = 1; k < cols; k++) { cells["ABCDEFGH"[k] + "1"] = { v: "", s: XS.title }; }
+    merges.push("A1:" + last + "1", "A2:" + last + "2");
+  };
   if (layout !== "list") {
-    const cells = {}, rowH = {}, merges = []; let r = 1;
-    cells["A1"] = { v: D.title, s: XS.title }; merges.push("A1:H1"); cells["A2"] = { v: stamp, s: XS.dflt }; r = 4;
+    const cells = {}, rowH = { 1: 36, 2: 18 }, merges = []; let r = 4;
+    banner(cells, merges, 8, "H");
     for (const m of D.months) {
-      cells["A" + r] = { v: m.label, s: XS.bold }; merges.push("A" + r + ":H" + r); r++;
-      MPX_DOW.concat(["Week hours"]).forEach((h, k) => { cells["ABCDEFGH"[k] + r] = { v: h, s: XS.head }; }); r++;
+      cells["A" + r] = { v: m.label, s: XS.month }; for (let k = 1; k < 8; k++) cells["ABCDEFGH"[k] + r] = { v: "", s: XS.month }; merges.push("A" + r + ":H" + r); rowH[r] = 26; r++;
+      MPX_DOW.concat(["Week hours"]).forEach((h, k) => { cells["ABCDEFGH"[k] + r] = { v: h, s: k > 4 ? XS.dowEnd : XS.dow }; }); rowH[r] = 20; r++;
       for (const w of m.weeks) {
-        let wh = 0, most = 2;
-        w.forEach((c, k) => { const L = "ABCDEFG"[k]; if (!c) { cells[L + r] = { v: "", s: XS.wrap }; return; } wh += c.hrs; most = Math.max(most, c.lines.length); cells[L + r] = { v: c.lines.join("\n"), s: c.status ? XS.grey : XS.wrap }; });
-        cells["H" + r] = { v: Math.round(wh * 10) / 10, s: XS.bnum }; rowH[r] = Math.max(48, most * 15 + 6); r++;
+        let wh = 0, most = 1;
+        w.forEach((c, k) => {
+          const L = "ABCDEFG"[k], end = k > 4;
+          if (!c) { cells[L + r] = { v: "", s: XS.blank }; cells[L + (r + 1)] = { v: "", s: XS.blank }; return; }
+          wh += c.hrs; const body = c.status ? [c.status] : c.lines.slice(1, 1 + c.fl); most = Math.max(most, body.length);
+          cells[L + r] = { v: (c.d + 1) + (c.fl ? "      " + c.hrs.toFixed(1) + " h" : ""), s: c.status ? XS.dnumOff : end ? XS.dnumEnd : XS.dnum };
+          cells[L + (r + 1)] = { v: body.join("\n"), s: c.status ? XS.bodyOff : end ? XS.bodyEnd : XS.body };
+        });
+        cells["H" + r] = { v: r1(wh), s: XS.wkHrs }; cells["H" + (r + 1)] = { v: "", s: XS.wkHrs }; merges.push("H" + r + ":H" + (r + 1));
+        rowH[r] = 19; rowH[r + 1] = Math.max(34, most * 14 + 8); r += 2;
       }
-      cells["A" + r] = { v: m.label + " total: " + m.fl + " flight" + (m.fl === 1 ? "" : "s"), s: XS.bold }; cells["H" + r] = { v: Math.round(m.hrs * 10) / 10, s: XS.bnum }; r += 2;
+      cells["A" + r] = { v: m.label + " total: " + m.fl + " flight" + (m.fl === 1 ? "" : "s"), s: XS.totLbl }; for (let k = 1; k < 7; k++) cells["ABCDEFGH"[k] + r] = { v: "", s: XS.totLbl };
+      merges.push("A" + r + ":G" + r); cells["H" + r] = { v: r1(m.hrs), s: XS.totNum }; rowH[r] = 22; r += 2;
     }
-    sheets.push({ name: "Calendar", cells, cols: [24, 24, 24, 24, 24, 24, 24, 12], rowH, merges, landscape: true });
+    sheets.push({ name: "Calendar", cells, cols: [23, 23, 23, 23, 23, 23, 23, 13], rowH, merges, landscape: true, tab: "FF1E293B", footer: D.title });
   }
   if (layout !== "cal") {
-    const cells = {}; let r = 1;
-    cells["A1"] = { v: D.title, s: XS.title }; cells["A2"] = { v: stamp, s: XS.dflt };
-    ["Date", "Day", "Shift", "Flight code", "Description", "Time", "Planned hours"].forEach((h, k) => { cells["ABCDEFG"[k] + 4] = { v: h, s: XS.head }; }); r = 5;
-    for (const x of D.rows) { cells["A" + r] = { v: xlSerial(x.iso), s: XS.date }; [x.dow, x.shift, x.code, x.desc, x.time].forEach((v, k) => { cells["BCDEF"[k] + r] = { v, s: XS.text }; }); cells["G" + r] = { v: x.hrs, s: XS.num }; r++; }
-    cells["A" + r] = { v: "Total", s: XS.btext }; cells["G" + r] = { v: Math.round(D.totals.hrs * 10) / 10, s: XS.bnum }; r += 2;
-    cells["D" + r] = { v: "Hours by flight code", s: XS.bold }; r++;
-    for (const c of D.totals.byCode) { cells["D" + r] = { v: c.code, s: XS.text }; cells["E" + r] = { v: c.desc, s: XS.text }; cells["F" + r] = { v: c.fl, s: XS.text }; cells["G" + r] = { v: Math.round(c.hrs * 10) / 10, s: XS.num }; r++; }
-    sheets.push({ name: "List", cells, cols: [18, 8, 9, 14, 40, 8, 14], merges: [], landscape: true });
+    const cells = {}, rowH = { 1: 36, 2: 18, 4: 24 }, merges = []; let r = 5;
+    banner(cells, merges, 7, "G");
+    ["Date", "Day", "Shift", "Flight code", "Description", "Time", "Planned hours"].forEach((h, k) => { cells["ABCDEFG"[k] + 4] = { v: h, s: XS.lhead }; });
+    const first = r;
+    for (const x of D.rows) {
+      const z = (r - first) % 2 ? "z" : "";
+      cells["A" + r] = { v: xlSerial(x.iso), s: XS["date" + z] }; cells["B" + r] = { v: x.dow, s: XS["mid" + z] }; cells["C" + r] = { v: x.shift, s: XS["mid" + z] };
+      cells["D" + r] = { v: x.code, s: XS["text" + z] }; cells["E" + r] = { v: x.desc, s: XS["text" + z] }; cells["F" + r] = { v: x.time, s: XS["mid" + z] }; cells["G" + r] = { v: x.hrs, s: XS["num" + z] }; rowH[r] = 19; r++;
+    }
+    const last = r - 1;
+    cells["A" + r] = { v: "Total", s: XS.totLbl }; for (const L of "BCDEF") cells[L + r] = { v: "", s: XS.totLbl };
+    cells["G" + r] = { v: r1(D.totals.hrs), s: XS.totNum }; rowH[r] = 22; merges.push("A" + r + ":F" + r); r += 2;
+    cells["D" + r] = { v: "Hours by flight code", s: XS.sec }; for (const L of "EFG") cells[L + r] = { v: "", s: XS.sec }; merges.push("D" + r + ":G" + r); rowH[r] = 22; r++;
+    ["Flight code", "Description", "Flights", "Hours"].forEach((h, k) => { cells["DEFG"[k] + r] = { v: h, s: k < 2 ? XS.shead : XS.sheadMid }; }); r++;
+    D.totals.byCode.forEach((c, k) => { const z = k % 2 ? "z" : ""; cells["D" + r] = { v: c.code, s: XS["text" + z] }; cells["E" + r] = { v: c.desc, s: XS["text" + z] }; cells["F" + r] = { v: c.fl, s: XS["int" + z] }; cells["G" + r] = { v: r1(c.hrs), s: XS["num" + z] }; rowH[r] = 19; r++; });
+    sheets.push({ name: "List", cells, cols: [18, 8, 9, 14, 42, 12, 15], rowH, merges, landscape: true, freeze: "A5", filter: last >= first ? "A4:G" + last : "", titleRows: "4:4", tab: "FF2563EB", footer: D.title });
   }
   return xlsxBuild(sheets);
 }
@@ -4689,7 +4744,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z105 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z106 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

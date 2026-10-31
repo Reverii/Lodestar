@@ -70,7 +70,7 @@ const PLAN_SET = (page, dept, kind, iso, offs, shift) => page.evaluate(([dept, k
   withBook(bi, () => { const all = [...actIndex().values()].filter(a => a.ci === (kind === "admin" ? CAT_ADMIN : CAT_LEAVE)), A = all[all.length - 1], D = opsDay(iso), i = S.roster.findIndex(p => p.name || p.id);
     offs.forEach(o => { S.m[D.mi].grid[gridRow(i, shift)][D.d + o] = A.code; }); r = { code: A.code, who: S.roster[i].ini || S.roster[i].id }; });
   cur.opsDay = iso; renderOps(); return r; }, [dept, kind, iso, offs, shift]);
-const ROWS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: r.cells[1].textContent.trim(), loc: r.cells[2].textContent.trim(), who: r.cells[3].textContent.trim(), text: r.innerText })));
+const ROWS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: (c => { c.querySelectorAll(".gbt").forEach(x => x.remove()); return c.textContent.trim(); })(r.cells[1].cloneNode(true)), loc: r.cells[2].textContent.trim(), who: r.cells[3].textContent.trim(), text: r.innerText })));
 
 test("ground_row_with_till_date", async ({ page }) => {
   const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1, 2], 1);

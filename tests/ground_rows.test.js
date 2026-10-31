@@ -8,7 +8,7 @@ const RO = { mine: "Flight_Ops_Planner_SUP2" };   // a department view (Ops Room
 const ED = { mine: "Ops_Room" };                    // the Ops Room view (everything editable)
 const DAY = "2026-10-14";
 const SQ_ADD = (page, o) => page.evaluate(([iso, o]) => { const mb = masterBook(), D = opsDay(iso); mb.S.gr.push(Object.assign({ row: 950, mi: D.mi, d: D.d, time: "", act: "X", crew: "", note: "" }, o)); mb.S.grUsed.add(950); cur.opsDay = iso; renderOps(); }, [DAY, o]);
-const ROWS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: r.cells[1].textContent.trim(), loc: r.cells[2].textContent.trim(), who: r.cells[3].textContent.trim(), text: r.innerText })));
+const ROWS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: (c => { c.querySelectorAll(".gbt").forEach(x => x.remove()); return c.textContent.trim(); })(r.cells[1].cloneNode(true)), loc: r.cells[2].textContent.trim(), who: r.cells[3].textContent.trim(), text: r.innerText })));
 const ROW = async (page, act) => (await ROWS(page)).find(r => r.act.includes(act));
 const ID = (page, act) => page.evaluate(([iso, act]) => opsGround(opsDay(iso)).find(r => r.act === act).id, [DAY, act]);
 const SAVE = (page, id, kind, f) => page.evaluate(([iso, id, kind, f]) => { const ok = grrSave(iso, id, kind, f); cur.opsDay = iso; renderOps(); return ok; }, [DAY, id, kind, f]);

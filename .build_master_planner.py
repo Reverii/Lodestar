@@ -162,7 +162,7 @@ name("DayStat", f"'Day Status'!$C$6:$C${5 + ndays}")
 # ---- Ground Programme: office / ground events per day (any number), shown on the calendar under the date
 NG = 500
 gp = wb.create_sheet("Ground Programme", wb.sheetnames.index("Day Status") + 1)
-banner(gp, "GROUND PROGRAMME", "Ground events for the office: lectures, briefs, sim, meetings. One per row, any number per day. Crew blank = everyone; or tags P L T S1 S2.", 5)
+banner(gp, "GROUND PROGRAMME", "Ground events for the office: lectures, briefs, sim, meetings. One per row, any number per day. Crew: ALL, or tags P L T S1 S2. Blank is an error.", 5)
 header(gp, 5, ["Date", "Time", "Activity", "Crew (blank = all)", "Comment"], {3: "15803D"})
 gsample = seedplan.GROUND
 for i in range(NG):

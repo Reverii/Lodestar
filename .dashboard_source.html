@@ -255,7 +255,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfb .v{padding:6px 8px;border:1px solid var(--s200);border-radius:6px;font-size:14px}.spfb .v.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb .tags{display:flex;gap:4px;align-items:center}.spfb .tag{border:1px solid var(--s300);border-radius:4px;padding:2px 8px;font:800 12px Arial,sans-serif;color:var(--s500);cursor:pointer;background:#fff}
 .spfb .tag.on{color:#fff;border-color:transparent}.spfb .tag.tP.on{background:#1d4ed8}.spfb .tag.tL.on{background:#0f766e}.spfb .tag.tT.on{background:#b45309}.spfb .tag.tS1.on{background:#7e22ce}.spfb .tag.tS2.on{background:#be123c}
-.spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}
+.spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}.was{font:700 10px Arial,sans-serif;color:#92400e;background:#fef3c7;border-radius:3px;padding:1px 4px}.glab{color:#6d28d9;font-style:italic}.gmore{color:var(--s500);font-weight:700;cursor:help}.nocrew{color:#b91c1c;font:800 11px Arial,sans-serif;background:#fee2e2;border-radius:3px;padding:1px 5px}.spfb .tag.tALL.on{background:#0f172a}
 .spb .addb{display:block;width:100%;border:2px dashed #93c5fd;background:#eff6ff;color:#1d4ed8;font-weight:800;padding:9px;border-radius:8px;font-size:14.5px;cursor:pointer;margin-top:10px}.spb .addb:hover{background:#dbeafe}
 .fGND{background:#dcfce7;color:#166534;border-left:4px solid #16a34a}
 .spfb .v.set.g{background:#dcfce7;color:#166534}
@@ -449,6 +449,17 @@ body.ro .edit input,body.ro .edit select{pointer-events:none;color:var(--s600)}
 .opsgrid>div>.card+.card{margin-top:12px}
 .opsgrid{display:grid;grid-template-columns:5fr 4fr 3fr;gap:12px;align-items:start}
 .opsb.oa{background:#7c3aed;color:#fff}
+#grPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
+#grPop .box{background:#fff;border-radius:12px;padding:20px;max-width:520px;width:94%}
+#grPop h2{margin:0 0 4px}#grPop .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+#grPop label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase;flex:1;min-width:110px}
+#grPop select,#grPop input:not([type=checkbox]){padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900)}
+#grPop label.ck{flex-direction:row;align-items:center;gap:5px;text-transform:none;font-size:13px;color:var(--s700);flex:0 0 auto;min-width:0}
+#grPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+#grPop .gdep{margin-top:6px;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:center}#grPop .gdep b{flex:0 0 100%;font-size:11px;color:var(--s500)}#grPop #grWho{max-height:190px;overflow:auto;border:1px solid var(--s200);border-radius:6px;padding:6px 8px;margin-top:3px}
+#grMsg{color:#b91c1c;font-size:12.5px;min-height:16px;margin-top:6px}
+table.gtab td.ga .gbt{visibility:hidden;margin-left:6px;white-space:nowrap}table.gtab tr:hover .gbt{visibility:visible}.gbt button{border:1px solid var(--s300);background:#fff;border-radius:4px;font-size:11px;line-height:1;padding:2px 5px;cursor:pointer;color:var(--s600)}
+.gadd{float:right;font-size:11px;padding:2px 8px}.ghidl{font-size:11.5px;margin-top:6px;color:var(--s500)}.ghidl a{cursor:pointer;text-decoration:underline}.ghidl .gunhide{margin-left:6px}
 #oaPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
 #oaPop .box{background:#fff;border-radius:12px;padding:20px;max-width:520px;width:94%}
 #oaPop h2{margin:0 0 4px}#oaPop .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
@@ -1016,7 +1027,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z110</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-10-31 z111</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1034,6 +1045,13 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <div class="row" style="align-items:center" id="oaCrew"></div>
   <div class="row"><label>Comment (optional)<input id="oaNote" placeholder="e.g. Tasking from HQ"></label></div>
   <div class="btns"><button class="btn" id="oaCancel">Cancel</button><button class="btn primary" id="oaGo">Add flight</button></div>
+</div></div>
+<div id="grPop"><div class="box">
+  <h2 id="grTitle">Ground programme row</h2>
+  <div class="row"><label>Time<input id="grTime" placeholder="e.g. 1400-1600"></label><label>Activity<input id="grAct" placeholder="e.g. Dinghy drill"></label><label>Location<input id="grLoc" placeholder="e.g. 121 CR"></label></div>
+  <div class="row"><label>Personnel<div id="grWho"></div></label></div>
+  <div id="grMsg"></div>
+  <div class="btns"><button class="btn" id="grCancel">Cancel</button><button class="btn primary" id="grGo">Save</button></div>
 </div></div>
 <div id="mpExpPop"><div class="box">
   <h2>Export flights</h2>
@@ -1612,6 +1630,44 @@ function roleSet(mi, r, d, tag) {
 }
 // the AC / PAX label on a planner cell
 const roleChip = (mi, r, d) => { const t = roleOf(S, mi, r, d); return t ? "<i class='rtag " + t.toLowerCase() + "'>" + (t === "AC" ? "AC" : "PAX") + "</i>" : ""; };
+// ---------- Ops Room ground programme edits: the Ground Rows sheet of the Ops Room file (made by the dashboard on the first edit)
+const GRR_SHEET = "Ground Rows", GRR_ROW0 = 2, GRR_N = 600, GRR_HEAD = ["Date", "Id", "Kind", "Time", "Activity", "Location", "Personnel", "Saved"],
+  GRR_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="3" width="14" customWidth="1"/><col min="4" max="4" width="12" customWidth="1"/><col min="5" max="7" width="26" customWidth="1"/><col min="8" max="8" width="17" customWidth="1"/>';
+// kind: "edit" (only the non-empty fields replace the plan's), "hide" (the row is left out), "manual" (a row of the Ops Room's own); f = { time, act, note, who } (who = "ALL" or callsigns joined by " / ")
+const grrNewKey = () => "m" + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+const grrCheck = f => !String(f.time || "").trim() ? "Type a time." : !String(f.act || "").trim() ? "Type an activity." : !String(f.who || "").trim() ? "Choose who is on it, or ALL." : "";
+function grrSave(iso, id, kind, f) {
+  const oi = opsIdx(); if (oi < 0 || !mayEdit(oi)) return false;
+  if (kind === "manual") { const bad = grrCheck(f); if (bad) { toast(bad, 4000); return false; } }
+  let ok = true;
+  withBook(oi, () => {
+    sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
+    let e = S.grr.find(x => x.iso === iso && x.id === id);
+    if (!e) {
+      let row = GRR_ROW0; while (S.grrUsed.has(row) && row < GRR_ROW0 + GRR_N) row++;
+      if (row >= GRR_ROW0 + GRR_N) { toast("The Ground Rows sheet is full. Clear old rows in Excel to make room.", 5000); ok = false; return; }
+      const D = ymd(iso, S.year); e = { row, iso, id, kind, time: "", act: "", note: "", who: "" };
+      put(GRR_SHEET, "A" + row, dateSerial(D.y, D.mi, D.d)); put(GRR_SHEET, "B" + row, id); S.grr.push(e); S.grrUsed.add(row);
+    }
+    e.kind = kind; for (const k of ["time", "act", "note", "who"]) if (f[k] !== undefined) e[k] = String(f[k]).trim();
+    [["C", e.kind], ["D", e.time], ["E", e.act], ["F", e.note], ["G", e.who], ["H", new Date().toISOString().slice(0, 16).replace("T", " ")]].forEach(([L, v]) => put(GRR_SHEET, L + e.row, v));
+  });
+  return ok;
+}
+function grrClear(iso, id) {
+  const oi = opsIdx(); if (oi < 0 || !mayEdit(oi)) return;
+  withBook(oi, () => { const e = S.grr.find(x => x.iso === iso && x.id === id); if (!e) return;
+    "ABCDEFGH".split("").forEach(L => put(GRR_SHEET, L + e.row, "")); S.grr = S.grr.filter(x => x !== e); S.grrUsed.delete(e.row); });
+}
+// show a hidden row again: its edits come back, or the entry goes if it held none
+function grrUnhide(iso, id) {
+  const ob = opsBook(), e = ob && ob.S.grr.find(x => x.iso === iso && x.id === id); if (!e) return;
+  if (e.time || e.act || e.note || e.who) grrSave(iso, id, "edit", {}); else grrClear(iso, id);
+}
+// the Ops Room's picks of people for a row: "ALL" or callsigns, looked up in the open department rosters
+function grrPeople(text) {
+  return String(text || "").split(/\s*[\/,]\s*/).map(t => t.trim()).filter(Boolean).map(t => { for (const b of books) { if (!isDept(b)) continue; const p = b.S.roster.find(x => same(x.ini || x.id, t)); if (p) return { dept: b.S.dept, ini: p.ini || p.id, cls: opsCatCls(p) }; } return { dept: "", ini: t, cls: "" }; });
+}
 // the Master Planner: a list of flights (Flights sheet, rows 6..1005: A date, B shift, C code, D time, E crew, F comment), any number per shift,
 // plus a Day Status sheet (one row per date of the year from row 6, status in C). The month tabs are a view built by Excel formulas.
 const FL_ROW0 = 6, FL_N = 1000, GR_ROW0 = 6, GR_N = 500;
@@ -1627,6 +1683,10 @@ function mkCodes(st) { st.codes = st.codeAll.filter(k => k.code).map(k => Object
 const codeCrew = (P, code) => { const x = P.codes.find(k => same(k.code, code)); return x ? x.crew : ""; };
 const flCrew = (P, f) => f.crew || codeCrew(P, f.code);
 const NOFLY = "NO FLY";
+// squadron events: ALL means every department; a blank crew is an input mistake (flagged, never "everyone"). Flights keep needsDept (blank = every department).
+const crewIsAll = v => /(^|[\s,+\/;&])ALL($|[\s,+\/;&])/i.test(String(v || ""));
+const crewMissing = v => !crewIsAll(v) && !crewTags(v).length;
+const needsDeptGr = (v, dept) => { if (crewIsAll(v)) return true; const me = CREW_TAGS.find(([k, n]) => same(n, dept)); return !!me && crewTags(v).includes(me[0]); };
 const needsDept = (v, dept) => { const t = crewTags(v); if (!t.length) return true; const me = CREW_TAGS.find(([k, n]) => same(n, dept)); return !!me && t.includes(me[0]); };
 // ---------- Syllabus: the shared Syllabus file (stages, sets, items, chances) + each department's own Syllabus Log (attempts).
 // The tab shows each person's path as a skill tree. It never changes the Cat Status or Role: that waits for the approved paperwork.
@@ -1865,7 +1925,7 @@ function deptSlots(P, mi, d, dept) {
   return out;
 }
 // the ground programme line a department holds for one day: "CRM Lecture 1400-1600; Sqn Meeting 1500"
-const deptGround = (P, mi, d, dept) => grDay(P, mi, d).filter(g => g.act && needsDept(g.crew, dept)).map(g => g.act + (g.time ? " " + g.time : "")).join("; ");
+const deptGround = (P, mi, d, dept) => grDay(P, mi, d).filter(g => g.act && needsDeptGr(g.crew, dept)).map(g => g.act + (g.time ? " " + g.time : "")).join("; ");
 // slots where a department's MASTER rows don't match the Master Planner: [{mi, d, r, code, time, note}]
 function mpDiffs(bk, mb) {
   const out = []; if (!bk || !mb || mb.S.legacy || bk.S.year !== mb.S.year) return out;
@@ -2193,6 +2253,7 @@ function buildXlsx() {
   const bySheet = {};
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
   if (bySheet[ROLE_SHEET]) sheetEnsure(WB, ROLE_SHEET, ["Date", "Shift", "Callsign", "Tag"], ROLE_COLS);
+  if (bySheet[GRR_SHEET]) sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
@@ -2767,7 +2828,7 @@ function renderMp() {
         const G = grDay(P, mi, d), items = (dayOff ? [] : L.map(f => ({ f }))).concat(G.map(g => ({ g }))), show = items.length > 4 ? 3 : 4;
         items.slice(0, show).forEach(({ f, g }) => {
           if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(f.time, (P.codes.find(k => same(k.code, f.code)) || {}).hrs) || (f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
-          else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Squadron event · " + [g.time, g.act, cw.length ? "crew " + cw.join(" ") : "everyone", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
+          else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Squadron event · " + [g.time, g.act, crewIsAll(g.crew) ? "crew ALL" : cw.length ? "crew " + cw.join(" ") : "NO CREW", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (crewIsAll(g.crew) ? "<span class='c'>ALL</span>" : cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "<span class='c nocrew'>!</span>") + "</div>"; }
         });
         if (items.length > show) h += "<div class='more'>+" + (items.length - show) + " more</div>";
         if (!lock && !dayOff) h += "<button class='plus' data-add='" + d + "' title='Add a flight on " + (d + 1) + " " + monLab(mi, y) + "'>+</button>";
@@ -2805,7 +2866,7 @@ function renderMp() {
     if (!GL.length) p += "<div class='empty' style='padding:6px 4px'>No squadron events.</div>";
     for (const g of GL) {
       const cw = crewTags(g.crew), key = "data-grow='" + g.row + "'";
-      const tags = "<div class='tags'>" + CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag gtag t" + k + (cw.includes(k) ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length ? "<span class='all'>everyone</span>" : "") + "</div>";
+      const isAll = crewIsAll(g.crew), tags = "<div class='tags'>" + (!lock || isAll ? "<span class='tag gtag tALL" + (isAll ? " on" : "") + "' data-t='ALL' " + key + " title='Every department'>ALL</span>" : "") + CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag gtag t" + k + (cw.includes(k) ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (crewMissing(g.crew) ? "<span class='nocrew' title='Pick ALL or the crew tags'>NO CREW</span>" : "") + "</div>";
       p += "<div class='spf'><div class='spfh fGND'>GROUND" + (g.time ? " · " + esc(g.time) : "") + (lock ? "" : "<button class='rm grm' " + key + " title='Remove'>×</button>") + "</div><div class='spfb'>";
       if (lock) p += "<div class='v set g'>" + esc(g.act) + "</div><div class='v'>" + esc(g.time) + "</div>" + tags + (g.note ? "<div class='v nt'>" + esc(g.note) + "</div>" : "");
       else p += "<input " + key + " data-gf='act' class='gact' list='grList' value='" + esc(g.act) + "' placeholder='Activity, e.g. CRM Lecture'><input " + key + " data-gf='time' value='" + esc(g.time) + "' placeholder='Time'>" + tags + "<input " + key + " data-gf='note' class='nt' value='" + esc(g.note) + "' placeholder='Comment'>";
@@ -3044,7 +3105,7 @@ $("mpWrap").addEventListener("click", e => {
       } else {
         const g = S.gr.find(x => x.row === +gtg.dataset.grow); if (!g) return;
         const t = crewTags(g.crew), k = gtg.dataset.t, nt = t.includes(k) ? t.filter(x => x !== k) : t.concat(k);
-        g.crew = CREW_TAGS.map(x => x[0]).filter(x => nt.includes(x)).join(" "); put("Ground Programme", "D" + g.row, g.crew);
+        g.crew = k === "ALL" ? (crewIsAll(g.crew) ? "" : "ALL") : CREW_TAGS.map(x => x[0]).filter(x => nt.includes(x)).join(" ");   // ALL and role tags exclude each other put("Ground Programme", "D" + g.row, g.crew);
       }
     });
     renderMp();
@@ -3658,6 +3719,13 @@ function readOps(name) {
       if (dv != null || code) st.oaUsed.add(r);
       if (typeof dv !== "number" || si < 0 || !code) continue; const D = ymd(serialToISO(dv), st.year);
       st.oa.push({ row: r, y: D.y, mi: D.mi, d: D.d, s: si, code, time: timeStr(a["D" + r]), crew: str(a["E" + r]), note: str(a["F" + r]), oa: true }); } }
+  // Ground Rows sheet (made by the dashboard on the first Ops Room edit): header row 1, rows 2.. (A date, B id, C kind edit / hide / manual, D time, E activity, F location, G personnel, H saved)
+  st.grr = []; st.grrUsed = new Set();
+  if (WB.paths[GRR_SHEET]) { const c = readCells(GRR_SHEET);
+    for (let r = GRR_ROW0; r < GRR_ROW0 + GRR_N; r++) { const dv = c["A" + r], id = str(c["B" + r]), kind = str(c["C" + r]).toLowerCase();
+      if (dv != null || id) st.grrUsed.add(r);
+      if (typeof dv !== "number" || !id || !/^(edit|hide|manual)$/.test(kind)) continue;
+      st.grr.push({ row: r, iso: serialToISO(dv), id, kind, time: timeStr(c["D" + r]), act: str(c["E" + r]), note: str(c["F" + r]), who: str(c["G" + r]) }); } }
   st.hasDb = !!WB.paths["Day Board"]; st.db = {};
   if (st.hasDb) { const g = readCells("Day Board"); for (const ref in g) { const m = /^([B-Q])(\d+)$/.exec(ref); if (m && +m[2] >= 6) st.db[ref] = str(g[ref]); } }
   return st;
@@ -3979,15 +4047,15 @@ function renderOps() {
   else if (!D.rows.length && !D.sb.length) el.innerHTML = "<div class='muted' style='padding:20px'>No flights on the Master Planner for this day." + (D.status ? " Day status: " + esc(D.status) + "." : "") + (ed ? " Use <b>+ Ops Add</b> for an ad hoc flight." : "") + "</div>";
   else el.innerHTML = opsTable(D, rows, ed);
   // the right-hand column: area and codes, movement, down-chits, ground programme, then the day's remarks filling the rest
-  const G = opsGround(D), MV = opsMovement(D);
+  const G = opsGround(D), MV = opsMovement(D), ged = opsEditable(); OPS_G = G;
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
   const mv = "<div class='card olv'><h2>Leave and MC</h2>" + MV.map(m => "<div class='dep'><b class='dn'>" + esc(m.dept) + "</b><span class='dw'>" + (m.who || "<span class='muted'>–</span>") + "</span></div>").join("") + "</div>";
   // the ground programme as a table sorted by opsGround: Time | Activity | Location (the note) | Personnel
   const GSH = ["AM", "PM", "NIGHT", "WD"];
   let gprev = -1;
   const grow = g => { const lab = g.grp === 0 ? (mpRange(g.when, 0) || g.when) : g.grp === 3 ? g.until.replace(/^until /, "till ").toUpperCase() : GSH[g.sh], cls = g.grp === 0 ? "" : g.grp === 3 ? "till" : "s" + g.sh;
-    const tr = "<tr" + (gprev >= 0 && g.grp !== gprev ? " class='gs'" : "") + "><td class='tm " + cls + "'>" + lab + "</td><td class='ga'><b>" + esc(g.act) + "</b>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + "</td><td class='gl'>" + (g.note || "") + "</td><td class='gw'>" + g.who + "</td></tr>"; gprev = g.grp; return tr; };
-  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + "</h2>" + (G.length ? "<div class='gsc'><table class='gtab'><colgroup><col class='gt'><col class='gac'><col class='glo'><col></colgroup><thead><tr><th>TIME</th><th>ACTIVITY</th><th>LOCATION</th><th>PERSONNEL</th></tr></thead><tbody>" + G.map(grow).join("") + "</tbody></table></div>" : "<div class='muted'>No squadron events.</div>") + "</div>";
+    const tr = "<tr" + (gprev >= 0 && g.grp !== gprev ? " class='gs'" : "") + "><td class='tm " + cls + "'>" + lab + "</td><td class='ga'><b>" + esc(g.act) + "</b>" + (g.desc && !same(g.desc, g.act) ? " <span class='muted'>" + esc(g.desc) + "</span>" : "") + (ged ? "<span class='gbt'><button class='gedit' data-gi='" + G.indexOf(g) + "' title='Change this row'>&#9998;</button><button class='ghide' data-gi='" + G.indexOf(g) + "' title='" + (g.src === "manual" ? "Delete this row" : "Hide this row") + "'>&times;</button></span>" : "") + "</td><td class='gl'>" + (g.note || "") + "</td><td class='gw'>" + g.who + "</td></tr>"; gprev = g.grp; return tr; };
+  const gr = "<div class='card gp'><h2>Ground programme" + cnt(G.length) + (ged ? "<button class='addb gadd' id='grAddBtn'>+ Ops row</button>" : "") + "</h2>" + (G.length ? "<div class='gsc'><table class='gtab'><colgroup><col class='gt'><col class='gac'><col class='glo'><col></colgroup><thead><tr><th>TIME</th><th>ACTIVITY</th><th>LOCATION</th><th>PERSONNEL</th></tr></thead><tbody>" + G.map(grow).join("") + "</tbody></table></div>" : "<div class='muted'>No squadron events.</div>") + (ged && (G.hidden || []).length ? "<div class='ghidl'><a class='ghidlink'>hidden (" + G.hidden.length + ")</a>" + (cur.opsHid ? G.hidden.map((h, i) => "<div>" + esc(h.act) + (h.rt ? " " + esc(h.rt) : "") + "<button class='btn gunhide' data-hi='" + i + "'>Unhide</button></div>").join("") : "") + "</div>" : "") + "</div>";
   // remarks for the day (Day Board column P of the Ops Room file)
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
@@ -4062,18 +4130,31 @@ function opsHrs(r, oc) {
 }
 // ground items of a day: Master Planner ground programme, each department's own GROUND PROGRAMME row entries it typed itself,
 // and crew on a ground activity (anything but flights, leave and off) grouped by department, shift and activity
+// the Personnel cell of a ground row: department chip and callsigns in Cat colours (first four, then +N with the full list on hover),
+// the crew-tag groups, ALL RELEVANT PERSONNEL when ALL was chosen, and a red NO PERSONNEL when nobody is on it (an input mistake)
+function opsWho(r) {
+  if (r.all) return "ALL RELEVANT PERSONNEL";
+  const runs = []; r.people.slice(0, 4).forEach(p => { const l = runs[runs.length - 1]; if (l && l.dept === p.dept) l.n.push(p); else runs.push({ dept: p.dept, n: [p] }); });
+  let h = r.depts.map(d => deptChip(d)).join(" ") + runs.map(x => deptChip(x.dept) + " " + x.n.map(p => "<b class='" + p.cls + "'>" + esc(p.ini) + "</b>").join(" / ")).join(" ");
+  if (r.people.length > 4) h += " <span class='gmore' title='" + esc(r.people.map(p => p.ini).join(", ")) + "'>+" + (r.people.length - 4) + "</span>";
+  if (r.label) h += (h ? " " : "") + "<span class='glab'>" + esc(r.label) + "</span>";
+  return h.trim() || "<span class='nocrew'>NO PERSONNEL</span>";
+}
 function opsGround(D) {
   const out = [], mb = masterBook(), P = mb && mb.S, fmt = (m, e) => new Date(isoOf(D.y, m, e) + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
   // a Master Planner item sits in the column of its start time (06:00-11:59 AM, 12:00-17:59 PM, otherwise NIGHT); no time = AM
   const shOf = t => { const m = hhmm(opsTimes(t, 0)[0]); return m == null || (m >= 360 && m < 720) ? 0 : m >= 720 && m < 1080 ? 1 : 2; };
-  D.gr.forEach(g => out.push({ sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), until: "", act: g.act, desc: "", who: esc(crewTags(g.crew).join(" ") || "All"), note: esc(g.note || "") }));   // the note is the location
+  const mk = o => Object.assign({ people: [], depts: [], label: "", all: false, desc: "", until: "", when: "", note: "", id: "", rt: "", rn: "" }, o);
+  // squadron events (Master Planner): the note is the location; the crew tags name the groups, ALL means everyone, blank is a mistake
+  D.gr.forEach(g => out.push(mk({ src: "sq", id: "sq|" + String(g.act).toUpperCase() + "|" + shOf(g.time) + "|", sh: shOf(g.time), k: "0" + (g.time || "~"), when: esc(g.time || ""), act: g.act, note: esc(g.note || ""), rt: g.time || "", rn: g.note || "",
+    all: crewIsAll(g.crew), label: crewIsAll(g.crew) ? "" : crewTags(g.crew).map(k => CREW_TAGS.find(x => x[0] === k)[1]).join(", ") })));
+  const groups = new Map();   // department items, merged across departments by shift + activity + last day
   books.forEach((b, bi) => {
     if (!isDept(b) || b.S.year !== D.y) return;
     withBook(bi, () => {
       const A = actIndex(), M = S.m[D.mi]; if (!M) return;
       if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : "";
-        if (own && !same(own, fromMp)) out.push({ sh: 3, k: "1", when: "", until: "", act: own, desc: "", who: deptChip(S.dept), note: "" }); }
-      const groups = new Map();
+        if (own && !same(own, fromMp)) out.push(mk({ src: "dept", id: "dept|3|" + own.toUpperCase() + "|" + S.dept, sh: 3, k: "1", act: own, depts: [S.dept] })); }
       S.roster.forEach((p, i) => { for (let s = 0; s < rp(); s++) {
         const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
         if (!a || !(isWdRow(gridRow(i, s)) ? wdAllowed(a) : a.ci === CAT_ADMIN)) continue;   // the WD row (s = 3) shows its ground and admin items in a Whole day column   // crew part: Admin only (Meeting, Outstation); duties are on the Day Board, standby in the table, leave/MC under Leave and MC
@@ -4081,15 +4162,32 @@ function opsGround(D) {
         let e = D.d, em = D.mi;   // the last day (and its month) of the run; it carries on into the next month's grid
         for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
           const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
-        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", uk: isoOf(D.y, em, e), who: [], notes: [] });
-        const g = groups.get(key), n = p.ini || p.id; g.who.push("<b class='" + opsCatCls(p) + "'>" + esc(n) + "</b>");
+        const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!groups.has(key)) groups.set(key, { s, act: a.code, desc: a.desc, until: em > D.mi || e > D.d ? "until " + fmt(em, e) : "", uk: isoOf(D.y, em, e), people: [], notes: [] });
+        const g = groups.get(key), n = p.ini || p.id; g.people.push({ dept: S.dept, ini: n, cls: opsCatCls(p) });
         const cn = S.notes && S.notes.get(D.mi + ":" + (gridRow(i, s)) + ":" + D.d); if (cn) g.notes.push("<b>" + esc(n) + ":</b> " + esc(cn));
       } });
-      groups.forEach(g => out.push({ sh: g.s, k: "2" + g.s, when: "", until: g.until, uk: g.uk, act: g.act, desc: g.desc, who: deptChip(S.dept) + " " + g.who.join(", "), note: g.notes.join("<br>") }));
     });
+  });
+  // a one-day department item of the same activity as a squadron event of the day joins that row (its time and location); the rest are rows of their own
+  groups.forEach(g => {
+    const sq = !g.until && out.find(r => r.src === "sq" && (same(r.act, g.act) || (g.desc && same(r.act, g.desc))));
+    if (sq) { sq.people.push(...g.people); if (g.notes.length) sq.note += (sq.note ? "<br>" : "") + g.notes.join("<br>"); }
+    else out.push(mk({ src: "dept", id: "dept|" + g.s + "|" + String(g.act).toUpperCase() + "|" + g.uk, sh: g.s, k: "2" + g.s, until: g.until, uk: g.uk, act: g.act, desc: g.desc, people: g.people, note: g.notes.join("<br>") }));
+  });
+  // the Ops Room's own edits of this day (Ground Rows sheet): hidden rows leave, edits replace only the fields they hold, manual rows join
+  const ob = opsBook(), hidden = [];
+  (ob && ob.S.grr || []).filter(e => e.iso === D.iso).forEach(e => {
+    const i = out.findIndex(r => r.id === e.id);
+    if (e.kind === "hide") { if (i >= 0) hidden.push(out.splice(i, 1)[0]); return; }
+    const r = i >= 0 && e.kind === "edit" ? out[i] : out[out.push(mk({ src: "manual", id: e.id, k: "0", orphan: e.kind === "edit", act: "(was linked)" })) - 1];
+    r.edited = true; if (e.time) { r.when = esc(e.time); r.rt = e.time; r.sh = shOf(e.time); r.k = "0" + e.time; r.until = ""; } else if (r.src === "manual" && !r.when) r.sh = 0;
+    if (e.act) r.act = e.act; if (e.note) { r.note = esc(e.note); r.rn = e.note; }
+    if (e.who) { r.all = same(e.who, "ALL"); r.people = r.all ? [] : grrPeople(e.who); r.label = ""; r.depts = []; }
   });
   // the table order: clock times first (by time), then AM / PM / NIGHT, then whole day, then items running on to a later day (by their last day)
   out.forEach(g => { const m = hhmm(opsTimes(g.when, 0)[0]); g.grp = m != null ? 0 : g.until ? 3 : g.sh === 3 ? 2 : 1; g.key = g.grp === 0 ? String(m).padStart(5, "0") : g.grp === 3 ? g.uk : String(g.sh); });
+  out.forEach(r => { r.who = opsWho(r) + (r.orphan ? " <span class='was' title='The plan this edit belonged to has changed'>was linked</span>" : ""); });
+  out.hidden = hidden;
   return out.sort((x, y) => x.grp - y.grp || (x.key < y.key ? -1 : x.key > y.key ? 1 : 0) || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0) || (x.act < y.act ? -1 : x.act > y.act ? 1 : 0));
 }
 // the month so far: sorties planned, flown, cancelled (by reason) and not closed, from the Ops Room's outcomes
@@ -4248,6 +4346,36 @@ function opsUnplan(D, x, dept, id) {
     S.m[D.mi].grid[rr][D.d] = ""; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), ""); });
 }
 // ---- Ops Add form: an ad hoc flight on the day shown
+let OPS_G = [], GRD = null;   // the ground rows on screen; the open ground row dialog { iso, id, kind, row }
+function grOpen(row) {
+  const D = opsDay(cur.opsDay); if (!opsEditable() || !D || D.other) return;
+  GRD = { iso: D.iso, id: row ? row.id : grrNewKey(), kind: row && (row.orphan || row.src !== "manual") ? "edit" : "manual", row };
+  $("grTitle").textContent = row ? "Change this ground programme row" : "Add a ground programme row";
+  $("grTime").value = row ? row.rt : ""; $("grAct").value = row ? row.act : ""; $("grLoc").value = row ? row.rn : "";
+  const sel = new Set(row ? row.people.map(p => p.ini) : []), all = !!(row && row.all);
+  $("grWho").innerHTML = "<label class='ck'><input type='checkbox' id='grAll'" + (all ? " checked" : "") + "> ALL (everyone)</label>" +
+    books.filter(isDept).map(b => "<div class='gdep'><b>" + esc(b.S.dept) + "</b>" + b.S.roster.filter(p => p.name || p.id).map(p => { const n = p.ini || p.id; return "<label class='ck'><input type='checkbox' data-gp='" + esc(n) + "'" + (sel.has(n) && !all ? " checked" : "") + "> " + esc(n) + "</label>"; }).join("") + "</div>").join("");
+  $("grMsg").textContent = ""; $("grPop").style.display = "flex"; $("grTime").focus();
+}
+function grWhoText() { return $("grAll").checked ? "ALL" : [...document.querySelectorAll("#grWho input[data-gp]")].filter(x => x.checked).map(x => x.dataset.gp).join(" / "); }
+$("grCancel").onclick = () => { $("grPop").style.display = "none"; GRD = null; };
+$("grGo").onclick = () => {
+  const g = GRD; if (!g) return; const time = $("grTime").value.trim(), act = $("grAct").value.trim(), loc = $("grLoc").value.trim(), who = grWhoText();
+  let f; if (g.kind === "manual") { f = { time, act, note: loc, who }; const bad = grrCheck(f); if (bad) { $("grMsg").textContent = bad; return; } }
+  else { const r = g.row, ow = r.all ? "ALL" : r.people.map(p => p.ini).join(" / "); f = {};
+    if (time !== r.rt) f.time = time; if (act !== r.act) f.act = act; if (loc !== r.rn) f.note = loc; if (who !== ow) f.who = who; }
+  if ((g.kind === "manual" || Object.keys(f).length) && !grrSave(g.iso, g.id, g.kind, f)) return;
+  $("grPop").style.display = "none"; GRD = null; renderOps();
+};
+document.addEventListener("click", e => {
+  const t = e.target.closest("#opsSide .gedit, #opsSide .ghide, #grAddBtn, #opsSide .ghidlink, #opsSide .gunhide"); if (!t || !opsEditable()) return;
+  const D = opsDay(cur.opsDay), row = t.dataset.gi != null ? OPS_G[+t.dataset.gi] : null;
+  if (t.id === "grAddBtn") grOpen(null);
+  else if (t.classList.contains("gedit")) grOpen(row);
+  else if (t.classList.contains("ghide")) { if (row.src === "manual") grrClear(D.iso, row.id); else grrSave(D.iso, row.id, "hide", {}); renderOps(); }
+  else if (t.classList.contains("ghidlink")) { cur.opsHid = !cur.opsHid; renderOps(); }
+  else if (t.classList.contains("gunhide")) { grrUnhide(D.iso, OPS_G.hidden[+t.dataset.hi].id); renderOps(); }
+});
 function oaOpen() {
   const ob = opsBook(), oi = books.indexOf(ob), mb = masterBook();
   if (!ob || !opsEditable()) { alert("Ops Add needs the Ops Room file open in Ops Room mode."); return; }
@@ -4730,7 +4858,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z110 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-10-31 z111 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5080,6 +5208,8 @@ function rollBook(bi, y, opsCarry) {
       const nxOa = new Set((st.oa || []).filter(f => f.y === y && f.mi === NX_MI).map(f => f.row));
       edit("Flight Crew", x => rollClear(x, keepRows(rows(OPS_ROW0, OPS_ROW0 + OPS_N - 1, 1, 40), nxFc)));
       edit("Ops Add", x => rollClear(x, keepRows(rows(OA_ROW0, OA_ROW0 + OA_N - 1, 1, 10), nxOa)));
+      const nxGr = new Set((st.grr || []).filter(e => ymd(e.iso, y).mi === NX_MI).map(e => e.row));   // Ground Rows: the Ops Room's ground programme edits
+      edit(GRR_SHEET, x => rollClear(x, keepRows(rows(GRR_ROW0, GRR_ROW0 + GRR_N - 1, 1, 8), nxGr)));
       edit("Day Board", x => rollClear(x, rows(6, 5 + nDays(y), 2, 17)));
       const k0 = dayOfYear(y, NX_MI, 0); let nb = 0;
       for (let d = 0; d < 31; d++) for (let c = 2; c <= 17; c++) { const v = st.db[colL(c) + (6 + k0 + d)]; if (v) { set("Day Board", colL(c) + (6 + d), v); nb++; } }
@@ -5282,7 +5412,7 @@ function lodeDay(who, iso) {
       const g = cells.filter(c => c.code === code);
       if (g.length === 3) items.push(Object.assign({}, g[0], { s: -1, note: g.map(c => c.note).find(Boolean) || "" })); else items.push(...g);
     }
-    const gm = mb && mb.S.year === y ? grDay(mb.S, mi, d).filter(g => g.act && needsDept(g.crew, st.dept)).map(g => [g.act, g.time || ""]) : [], seen = new Set(gm.map(([t, tm]) => (t + " " + tm).trim().toLowerCase()));
+    const gm = mb && mb.S.year === y ? grDay(mb.S, mi, d).filter(g => g.act && needsDeptGr(g.crew, st.dept)).map(g => [g.act, g.time || ""]) : [], seen = new Set(gm.map(([t, tm]) => (t + " " + tm).trim().toLowerCase()));
     const gr = gm.concat(st.gndRow && M.gnd[d] ? String(M.gnd[d]).split("; ").filter(x => x && !seen.has(x.trim().toLowerCase())).map(x => [x, ""]) : []);   // the department's own row is usually a copy of the Master Planner's
     gr.forEach(([t, tm]) => items.push({ s: -1, kind: "ground", code: "", text: t, time: tm, cancelled: "", note: "", syl: "" }));
     const key = x => x.time && lodeMins(x.time) != null ? lodeMins(x.time) : x.s < 0 ? -1 : [0, 720, 1080][x.s];
@@ -5577,7 +5707,7 @@ const HELP = {
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +
     "<h3>Tools</h3><ul><li>Click a seat to change it, mark MC / CRMO, or swap Captain and Co-Pilot. Click a text cell to type.</li><li><b>+ Ops Add</b>: an ad hoc flight for the day. It isn't put on the Master Planner; departments see it on their MASTER rows (OPS ADD), and crew you seat on it get it on their plan. Remove it from its status pill.</li><li>A- / A+ sizes the board; Projector hides the menus.</li><li>Save writes every file you changed: the Ops Room file, and a department's file when you up-chit someone from it.</li></ul>"],
   mp: ["Master Planning", "<p>The Master Planner's calendar: every flight and squadron event, which all departments copy. Only the Master Planner (its own file) can edit; everyone else sees it locked.</p>" +
-    "<ul><li>Chips: time + code in shift colours, crew tags (P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2; none = everyone). Green chips: squadron events (meetings, ceremonies, courses).</li><li>Grey day: no flying (reason on the day). Blue outline: today.</li><li>Click a day to open it on the right: add, change or remove flights and ground items. Arrow keys move days, Esc closes.</li></ul><h3>Export…</h3><p>A clean Excel copy of the flights and planned hours for an outside office: a Calendar sheet (one cell per day, with the day's planned hours, a week-hours column and the reason on no-flying days) and a List sheet (date, shift, flight code, time, planned hours, a total and hours by flight code). Pick the period, and untick any flight code to leave it out of the rows and the totals (your choice is remembered). No crew, names or comments go in the file.</p>"],
+    "<ul><li>Chips: time + code in shift colours, crew tags (P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2; on a flight, none = the flight code's crew). Green chips: squadron events (meetings, ceremonies, courses); their crew is ALL or tags, and a red NO CREW means nobody was chosen.</li><li>Grey day: no flying (reason on the day). Blue outline: today.</li><li>Click a day to open it on the right: add, change or remove flights and ground items. Arrow keys move days, Esc closes.</li></ul><h3>Export…</h3><p>A clean Excel copy of the flights and planned hours for an outside office: a Calendar sheet (one cell per day, with the day's planned hours, a week-hours column and the reason on no-flying days) and a List sheet (date, shift, flight code, time, planned hours, a total and hours by flight code). Pick the period, and untick any flight code to leave it out of the rows and the totals (your choice is remembered). No crew, names or comments go in the file.</p>"],
   codes: ["Flight Codes", "<p>The one list of flight codes (sorties, hours, default crew, mission type). Set by the Master Planner; departments copy it on their Activities tab.</p>"],
   sdo: ["Duty Planner", "<p>BDO (Base Duty Officer) and SDO (Squadron Duty Orderly). Switch duty at the top. The Duty Roster gives each day to one department; each department copies its days into its own file.</p>" +
     "<ul><li>Coloured tag = the department on duty that day. Amber day: a department's file doesn't match the roster yet. Red day: more than one department.</li><li>Duty crew list: who may do each duty. Blue outline: today. Red: public holiday.</li></ul>"]

@@ -70,7 +70,7 @@ const PLAN_SET = (page, dept, kind, iso, offs, shift) => page.evaluate(([dept, k
   withBook(bi, () => { const all = [...actIndex().values()].filter(a => a.ci === (kind === "admin" ? CAT_ADMIN : CAT_LEAVE)), A = all[all.length - 1], D = opsDay(iso), i = S.roster.findIndex(p => p.name || p.id);
     offs.forEach(o => { S.m[D.mi].grid[gridRow(i, shift)][D.d + o] = A.code; }); r = { code: A.code, who: S.roster[i].ini || S.roster[i].id }; });
   cur.opsDay = iso; renderOps(); return r; }, [dept, kind, iso, offs, shift]);
-const ROWS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: r.cells[1].textContent.trim(), loc: r.cells[2].textContent.trim(), who: r.cells[3].textContent.trim(), text: r.innerText })));
+const ROWS = page => page.evaluate(() => [...document.querySelectorAll("#opsSide .gtab tbody tr")].map(r => ({ time: r.cells[0].textContent.trim(), act: (c => { c.querySelectorAll(".gbt").forEach(x => x.remove()); return c.textContent.trim(); })(r.cells[1].cloneNode(true)), loc: r.cells[2].textContent.trim(), who: r.cells[3].textContent.trim(), text: r.innerText })));
 
 test("ground_row_with_till_date", async ({ page }) => {
   const r = await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1, 2], 1);
@@ -90,7 +90,7 @@ test("ground_until_stops_at_month_end", async ({ page }) => {
 }, ED);
 test("ground_table_sorted_and_location_from_note", async ({ page }) => {
   await page.evaluate(iso => { const mb = masterBook(), D = opsDay(iso);
-    mb.S.gr.push({ row: 900, mi: D.mi, d: D.d, time: "1400-1600", act: "PSM", crew: "", note: "121 CR" }, { row: 901, mi: D.mi, d: D.d, time: "0800", act: "Filming", crew: "", note: "PLAB" }); }, DAY);
+    mb.S.gr.push({ row: 900, mi: D.mi, d: D.d, time: "1400-1600", act: "PSM", crew: "ALL", note: "121 CR" }, { row: 901, mi: D.mi, d: D.d, time: "0800", act: "Filming", crew: "ALL", note: "PLAB" }); }, DAY);
   await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1], 2);   // runs on, so it goes last
   await PLAN_SET(page, "Pilot", "admin", DAY, [0], 3);
   await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
@@ -103,8 +103,54 @@ test("ground_table_sorted_and_location_from_note", async ({ page }) => {
   assert.strictEqual(f.time, "0800H"); assert.strictEqual(f.loc, "PLAB"); assert.strictEqual(p.time, "1400H-1600H"); assert.strictEqual(p.loc, "121 CR");
   assert.ok(await page.evaluate(() => document.querySelectorAll("#opsSide .gtab tr.gs").length >= 3), "a divider between the groups");
 }, ED);
+// ---- ground programme personnel: merged across departments, borrowed from squadron events, an empty row is a mistake
+const SQ_ADD = (page, iso, o) => page.evaluate(([iso, o]) => { const mb = masterBook(), D = opsDay(iso); mb.S.gr.push(Object.assign({ row: 950, mi: D.mi, d: D.d, time: "", act: "X", crew: "", note: "" }, o)); mb.S.grUsed.add(950); cur.opsDay = iso; renderOps(); }, [iso, o]);
+const WHO_HTML = (page, act) => page.evaluate(act => { const r = [...document.querySelectorAll("#opsSide .gtab tbody tr")].find(r => r.cells[1].textContent.includes(act)); return r ? { html: r.cells[3].innerHTML, text: r.cells[3].textContent.trim(), n: document.querySelectorAll("#opsSide .gtab tbody tr").length } : null; }, act);
+test("ground_blank_crew_no_personnel", async ({ page }) => {
+  await SQ_ADD(page, DAY, { act: "Safety Brief", crew: "" });
+  const w = await WHO_HTML(page, "Safety Brief"); assert.ok(w.text.includes("NO PERSONNEL"), w.text); assert.ok(!/TBC|ALL RELEVANT/.test(w.text), w.text);
+}, ED);
+test("ground_all_text", async ({ page }) => {
+  await SQ_ADD(page, DAY, { act: "PSM", crew: "ALL" });
+  assert.ok((await WHO_HTML(page, "PSM")).text.includes("ALL RELEVANT PERSONNEL"));
+}, ED);
+test("ground_tags_label", async ({ page }) => {
+  await SQ_ADD(page, DAY, { act: "SIMS", crew: "S1 S2" });
+  const w = await WHO_HTML(page, "SIMS"); assert.ok(w.text.includes("SUP 1, SUP 2") && !w.text.includes("NO PERSONNEL"), w.text);
+}, ED);
+test("ground_merge_departments", async ({ page }) => {
+  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1), b = await PLAN_SET(page, "SUP 1", "admin", DAY, [0], 1);
+  assert.strictEqual(a.code, b.code, "same code in both files");
+  const rows = await ROWS(page), mine = rows.filter(r => r.act.includes(a.code) && r.time === "PM"); assert.strictEqual(mine.length, 1, JSON.stringify(rows));   // (the demo plan already has the code in the AM)
+  assert.ok(mine[0].who.includes(a.who) && mine[0].who.includes(b.who), mine[0].who);
+  assert.strictEqual(await page.evaluate(c => [...document.querySelectorAll("#opsSide .gtab tbody tr")].find(r => r.cells[1].textContent.includes(c) && r.cells[0].textContent.trim() === "PM").cells[3].querySelectorAll(".dept").length, a.code), 2);
+}, ED);
+test("ground_no_merge_other_until", async ({ page }) => {
+  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0, 1], 1); await PLAN_SET(page, "SUP 1", "admin", DAY, [0], 1);
+  const rows = await ROWS(page); assert.strictEqual(rows.filter(r => r.act.includes(a.code) && r.time !== "AM").length, 2, JSON.stringify(rows));
+}, ED);
+test("ground_borrow_from_squadron_event", async ({ page }) => {
+  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [0], 1);
+  await SQ_ADD(page, DAY, { act: a.code, time: "1400-1600", note: "121 CR", crew: "S2" });
+  const rows = (await ROWS(page)).filter(r => r.act.includes(a.code)); assert.strictEqual(rows.length, 1, JSON.stringify(rows));
+  assert.strictEqual(rows[0].time, "1400H-1600H"); assert.strictEqual(rows[0].loc, "121 CR"); assert.ok(rows[0].who.includes(a.who) && rows[0].who.includes("SUP 2"), rows[0].who);
+}, ED);
+test("ground_no_borrow_from_other_day", async ({ page }) => {
+  const a = await PLAN_SET(page, "Pilot", "admin", DAY, [1], 1);   // planned the day after
+  await SQ_ADD(page, DAY, { act: a.code, time: "1400-1600", crew: "S2" });
+  const rows = (await ROWS(page)).filter(r => r.act.includes(a.code)); assert.strictEqual(rows.length, 1);
+  assert.ok(!rows[0].who.includes(a.who), "the other day's person must not appear: " + rows[0].who);
+}, ED);
+test("ground_long_list_plus_n", async ({ page }) => {
+  const r = await page.evaluate(iso => { const bi = books.findIndex(b => isDept(b) && same(b.S.dept, "Pilot")); let code, ids = [];
+    withBook(bi, () => { const A = [...actIndex().values()].filter(a => a.ci === CAT_ADMIN).pop(), D = opsDay(iso); code = A.code;
+      S.roster.map((p, i) => [p, i]).filter(([p]) => p.name || p.id).slice(0, 6).forEach(([p, i]) => { S.m[D.mi].grid[gridRow(i, 1)][D.d] = A.code; ids.push(p.ini || p.id); }); });
+    cur.opsDay = iso; renderOps(); return { code, ids }; }, DAY);
+  const w = await page.evaluate(c => { const td = [...document.querySelectorAll("#opsSide .gtab tbody tr")].find(r => r.cells[1].textContent.includes(c) && r.cells[0].textContent.trim() === "PM").cells[3], m = td.querySelector(".gmore"); return { more: m && m.textContent.trim(), title: m && m.title }; }, r.code);
+  assert.strictEqual(w.more, "+2", JSON.stringify(w)); assert.ok(r.ids.every(i => w.title.includes(i)), w.title);
+}, ED);
 test("ground_strip_grows_and_scrolls", async ({ page }) => {
-  await page.evaluate(iso => { const mb = masterBook(), D = opsDay(iso); for (let i = 0; i < 40; i++) mb.S.gr.push({ row: 900 + i, mi: D.mi, d: D.d, time: String(800 + i).padStart(4, "0"), act: "Brief " + i, crew: "", note: "Room " + i }); }, DAY);
+  await page.evaluate(iso => { const mb = masterBook(), D = opsDay(iso); for (let i = 0; i < 40; i++) mb.S.gr.push({ row: 900 + i, mi: D.mi, d: D.d, time: String(800 + i).padStart(4, "0"), act: "Brief " + i, crew: "ALL", note: "Room " + i }); }, DAY);
   await goOps(page, DAY);
   const r = await page.evaluate(() => { const w = document.getElementById("opsWrap"), s = document.getElementById("opsSide"), sc = document.querySelector("#opsSide .gsc"), f = document.getElementById("opsMain").getBoundingClientRect();
     return { side: s.getBoundingClientRect().height, wrap: w.getBoundingClientRect().height, scrolls: sc.scrollHeight > sc.clientHeight + 1, page: document.documentElement.scrollHeight > innerHeight + 1 }; });
@@ -328,8 +374,8 @@ test("sample_ops_room_can_pick_a_seat", async ({ page }) => {
   for (const t of tests) {
     if (only && !t.name.includes(only)) continue;
     ran++; let S = null;
-    try { S = await boot(Object.assign({}, t.opts)); await t.fn(S); if (S.errs.length) throw new Error("page errors: " + S.errs.join(" | ").slice(0, 300)); pass++; console.log("ok   " + t.name); }
-    catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 300)); }
+    try { S = await boot(Object.assign({}, t.opts)); await t.fn(S); if (S.errs.length) throw new Error("page errors: " + S.errs.join(" | ").slice(0, 3000)); pass++; console.log("ok   " + t.name); }
+    catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 3000)); }
     if (S) await S.close();
   }
   console.log(pass + "/" + ran + " pass");

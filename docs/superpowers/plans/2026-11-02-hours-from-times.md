@@ -60,7 +60,7 @@
 
 - [ ] **Step 1: Failing test** in `tests/hours_builder.test.py`: build the demo Master Planner; assert no flight code starts with `2x`; at least one flight row has G = 2; every flight row has a time of the form `HHMM-HHMM`.
 - [ ] **Step 2:** Run it; Expected FAIL.
-- [ ] **Step 3:** Change `.realdata.py` to read columns Code, Description, Crew, Mission Type, Syllabus tag (it must also accept the old 7-column sheet and ignore Sorties and Hrs, so Brandon's existing input file still loads); edit the input workbook accordingly (copy first, keep the old as `input/_old_`... no: keep it in git history only); update the seed flights.
+- [ ] **Step 3:** Change `.realdata.py` to read columns Code, Description, Crew, Mission Type, Syllabus tag (it must also accept the old 7-column sheet and ignore Sorties and Hrs, so Brandon's existing input file still loads); edit the input workbook accordingly (the old version stays in git history); update the seed flights.
 - [ ] **Step 4:** Test PASS; `python3 .lodestar_build.py excel ../lodestar_rebuild` completes for all 8 files.
 - [ ] **Step 5:** Commit.
 

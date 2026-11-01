@@ -1,7 +1,13 @@
-# LODESTAR handoff (updated 2026-11-01, after z120)
+# LODESTAR handoff (updated 2026-11-01, after z122)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
+
+## z122 (1 Nov, Brandon): Ops Room flight table fills a tall window
+- `opsFill()` (end of `opsFit`): when the day is quiet the whole flight table is enlarged (CSS `zoom`, up to 1.6) to use the free height; width and height are measured and corrected so it matches its box. Test: `tall_window_enlarges_the_flight_table` in `tests/ops_room.test.js`. Cap 1.6 is a choice; Brandon can ask for more.
+
+## z121 (1 Nov, Brandon): Open my Excel and Add other departments hidden
+- Both buttons are hidden (kept in the page so the code still finds them), since every file opens by itself. The LODESTAR logo (top left) goes back to the department screen on SharePoint, so a department can still be switched; z120 remembers the department across a reload, so the logo is the only way back.
 
 ## z120 (1 Nov, Brandon): Refresh instead of reload
 - Brandon: the browser's refresh sent everyone back to the login (department) screen.

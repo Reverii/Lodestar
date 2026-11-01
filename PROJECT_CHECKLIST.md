@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 1 Nov 2026 (z120). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 1 Nov 2026 (z122). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -206,3 +206,5 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [x] Crew matrix (z119, 1 Nov, Brandon; confirmed working, the flight code Mission Type must read exactly like the matrix Mission): CAT needed per seat on MAS TRG / OPS / TACT, warns on the flight card, Planner and Ops Room; the matrix is a Crew Matrix sheet in the Master Planner file (edit in Excel), built-in default until then; warn only (awaiting his look; he types the Mission Type on the MAS flight codes)
 - [ ] Decide (GitHub Pro now on): make the repo private, and whether the Pages links (dashboard, briefing) stay public.
 - [?] Refresh (z120, 1 Nov, Brandon): ⟳ Refresh button plus F5 / Ctrl+R re-read the files without going back to the login screen; a real reload returns to your department and tab (Ctrl+Shift+R is the full reload)
+- [?] Top bar (z121, 1 Nov, Brandon): Open my Excel and Add other departments hidden; the LODESTAR logo goes back to the department screen
+- [?] Ops Room (z122, 1 Nov, Brandon): the flight table is enlarged (up to 1.6x) to fill a tall window

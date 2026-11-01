@@ -26,6 +26,13 @@ test("no_timeline", async ({ page }) => {
 const AREA_SET = (page, vals) => page.evaluate(vals => { const st = books[opsIdx()].S, row = 6 + dayOfYear(...Object.values((({ y, mi, d }) => ({ y, mi, d }))(opsDay(cur.opsDay))));
   OPS_DB_CELLS.filter(c => c.stack >= 0).forEach(c => { st.db[c.col + row] = vals[c.sub] || ""; }); renderOps(); }, vals);
 
+test("tall_window_enlarges_the_flight_table", async ({ page }) => {   // z122: a quiet day on a tall screen no longer leaves the flight box empty
+  await page.setViewportSize({ width: 1900, height: 2000 }); await goOps(page, DAY);
+  const r = await page.evaluate(() => { opsFit(); const tb = document.querySelector("table.opst"), m = $("opsMain"), a = tb.getBoundingClientRect(), b = m.getBoundingClientRect(); return { z: +tb.style.zoom || 1, dw: Math.abs(a.width - b.width), dh: a.height - b.height, over: m.scrollHeight - m.clientHeight, ps: !!document.querySelector("table.opst tr.f") }; });
+  assert.ok(r.z > 1.2 && r.z <= 1.6, "zoom " + r.z); assert.ok(r.dw < 3, "width off by " + r.dw); assert.ok(r.dh < 3 && r.over < 3, JSON.stringify(r));
+  await page.setViewportSize({ width: 1280, height: 720 }); const q = await page.evaluate(() => { opsFit(); const m = $("opsMain"); return { z: +document.querySelector("table.opst").style.zoom || 1, over: m.scrollHeight - m.clientHeight }; });
+  assert.ok(q.over < 3, "no scroll created on a small window: " + JSON.stringify(q));
+}, ED);
 test("side_cards_below_table", async ({ page }) => {
   await goOps(page, DAY);
   const g = await page.evaluate(() => { const s = document.getElementById("opsSide").getBoundingClientRect(), m = document.getElementById("opsMain").getBoundingClientRect(), w = document.getElementById("opsWrap").getBoundingClientRect();

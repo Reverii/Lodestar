@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 1 Nov 2026 (z117). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 1 Nov 2026 (z118). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -202,5 +202,6 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [x] Planner cell picker on right-click (z113, 1 Nov, Brandon): left click only selects; right-click (or Enter / typing) opens the picker; help texts updated. Confirmed working (1 Nov). Open ideas, not picked: an on-screen hint, long-press for touch screens
 - [x] Flight card (z114, 1 Nov, Brandon): left click on a cell shows its details, the cell comment (typed there now, no longer in the picker) and, on a flight, the crew from every department in seat columns (AC, Pilot, LM, TACCO, SUP 1, SUP 2); a MASTER cell shows its time and comment (z114 to z117). Confirmed working (1 Nov)
 - [x] MASTER rows locked in the Planner (z114, 1 Nov, Brandon): fully locked, they fill only from the Master Planner copy button and Ops Add. Confirmed working (1 Nov)
+- [?] My Lodestar "My month" calendar (z118, 1 Nov, Brandon): whole month as a grid, click a flight for the flight card with crew, click a day to move Today; month arrows (awaiting his look)
 - [ ] Decide (GitHub Pro now on): make the repo private, and whether the Pages links (dashboard, briefing) stay public.
 

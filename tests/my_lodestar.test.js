@@ -241,8 +241,8 @@ test("prev_next_day_moves_focus", async ({ page }) => {
   await page.click("#lodePrev"); await page.click("#lodePrev"); assert.ok(/Sunday 25 Oct 2026/.test(await page.innerText("#v-lode")));
 });
 test("fits_1280x720_without_scroll", async ({ page }) => {
-  await shown(page);
-  const r = await page.evaluate(() => { const v = document.getElementById("v-lode"); return { over: v.scrollHeight - v.clientHeight, page: document.documentElement.scrollHeight }; });
+  await shown(page);   // the top of the page (cards, Today, Next 7 days) fits one screen; the My month calendar sits below it and is reached by scrolling
+  const r = await page.evaluate(() => { const v = document.getElementById("v-lode"); document.getElementById("lodeCal").style.display = "none"; return { over: v.scrollHeight - v.clientHeight, page: document.documentElement.scrollHeight }; });
   assert.ok(r.over <= 1 && r.page <= 720, JSON.stringify(r));
 });
 test("unknown_day_message", async ({ page }) => {
@@ -348,10 +348,10 @@ test("help_text_present", async ({ page }) => {
   const t = await page.innerText("#helpBody");
   assert.ok(/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));
 });
-test("version_is_z117", async ({ page }) => {
+test("version_is_z118", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z117 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-11-01 z117 "), "start screen version");
+  assert.ok(/ z118 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-11-01 z118 "), "start screen version");
 });
 
 // ---- Regression: the rest of the dashboard still works around My Lodestar
@@ -419,6 +419,40 @@ test("cards_on_unknown_day_say_so", async ({ page }) => {
 }, { fresh: true, today: "2026-10-26", title: "Sarah Lim" });
 
 // ---- runner
+
+// ---- z118: My month calendar
+test("month_grid_shows_the_month", async ({ page }) => {
+  await page.evaluate(() => { SP.user = { Title: "Sarah Lim" }; }); await shown(page, "2026-10-14");
+  const r = await page.evaluate(() => ({ title: document.querySelector("#lodeCal .calnav b").textContent, days: document.querySelectorAll("#lodeCal .cd[data-day]").length, pills: document.querySelectorAll("#lodeCal .pl[data-iso]").length, sel: document.querySelector("#lodeCal .cd.sel").dataset.day, cells: document.querySelectorAll("#lodeCal .cd").length % 7 }));
+  assert.strictEqual(r.title, "October 2026"); assert.strictEqual(r.days, 31); assert.ok(r.pills > 0, "pills"); assert.strictEqual(r.sel, "2026-10-14"); assert.strictEqual(r.cells, 0);
+});
+test("month_arrows_and_today", async ({ page }) => {
+  await shown(page, "2026-10-14");
+  await page.click("#lodeMonNext"); assert.strictEqual(await page.innerText("#lodeCal .calnav b"), "November 2026");
+  await page.click("#lodeMonPrev"); await page.click("#lodeMonPrev"); assert.strictEqual(await page.innerText("#lodeCal .calnav b"), "September 2026");
+  await page.click("#lodeMonToday"); assert.strictEqual(await page.innerText("#lodeCal .calnav b"), "October 2026");
+});
+test("month_click_day_moves_today_card", async ({ page }) => {
+  await shown(page, "2026-10-14");
+  await page.click("#lodeCal .cd[data-day='2026-10-20'] > b");
+  assert.ok(/Tuesday 20 Oct 2026/.test(await page.innerText("#v-lode")));
+  assert.strictEqual(await page.evaluate(() => document.querySelector("#lodeCal .cd.sel").dataset.day), "2026-10-20");
+});
+test("month_click_flight_opens_card_with_crew", async ({ page, errs }) => {
+  await shown(page, "2026-10-14");
+  const iso = await page.evaluate(() => document.querySelector("#lodeCal .pl.fl[data-iso]").dataset.iso);
+  await page.click("#lodeCal .cd[data-day='" + iso + "'] .pl.fl");
+  const c = await page.evaluate(() => { const e = document.getElementById("cellCard"); return { on: e.style.display, t: e.innerText, you: !!e.querySelector(".you"), input: !!e.querySelector("input") }; });
+  assert.strictEqual(c.on, "block"); assert.ok(/crew on this flight/i.test(c.t), c.t); assert.ok(/Planned:/.test(c.t), c.t); assert.ok(c.you, "me highlighted"); assert.ok(!c.input, "read-only");
+  await page.keyboard.press("Escape"); assert.strictEqual(await page.evaluate(() => document.getElementById("cellCard").style.display), "none");
+  assert.deepStrictEqual(errs, []);
+});
+test("month_click_other_item_card_has_no_crew", async ({ page }) => {
+  await shown(page, "2026-10-14");
+  const r = await page.evaluate(() => { const p = document.querySelector("#lodeCal .pl[data-iso]:not(.fl):not(.sy):not(.cx)"); if (!p) return null; p.click(); const e = document.getElementById("cellCard"); return { on: e.style.display, t: e.innerText }; });
+  assert.ok(r, "an item that is not a flight"); assert.strictEqual(r.on, "block"); assert.ok(!/crew on this flight/i.test(r.t), r.t);
+});
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0, S = null;

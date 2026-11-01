@@ -4110,9 +4110,9 @@ function opsDay(iso) {
   for (let s = 0; s < 3; s++) mpShift(P, mi, d, s).concat(oaShift(y, mi, d, s)).forEach(f => {
     if (!f.code) return;
     const k0 = [s, f.code.toUpperCase(), (f.time || "").toUpperCase()].join("|"); seen[k0] = (seen[k0] || 0) + 1;
-    const ck = P.codes.find(k => same(k.code, f.code)) || { sort: 1, hrs: 0, desc: "" };
-    const ac = Math.max(1, Math.round(ck.sort || 1)), tags = crewTags(flCrew(P, f));
-    flights.push({ f, s, ac, code: f.code, desc: ck.desc, hrs: ck.hrs, key: opsKey(iso, SHIFTS[s], f.code, f.time, seen[k0]), need: OPS_SEATS.map(x => !tags.length || tags.includes(x[2])), seats: [] });
+    const ck = P.codes.find(k => same(k.code, f.code)) || { desc: "" };
+    const ac = flSort(f), tags = crewTags(flCrew(P, f));   // one row per sortie (a running change is one flight with 2 or 3)
+    flights.push({ f, s, ac, code: f.code, desc: ck.desc, hrs: mpFlHrs(P, f).h, key: opsKey(iso, SHIFTS[s], f.code, f.time, seen[k0]), need: OPS_SEATS.map(x => !tags.length || tags.includes(x[2])), seats: [] });
   });
   const spare = [[], [], []];
   for (let s = 0; s < 3; s++) {

@@ -331,6 +331,18 @@ test("sample_ops_room_can_pick_a_seat", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsMain td.oc.miss[data-oc]").length), before - 1, "the seat is filled");
 }, { blank: true });
 
+
+// ---- hours from the time range, sorties from the flight (z126): a running change is one flight with 2 or 3 sorties
+test("sorties_on_the_flight_make_the_rows", async ({ page }) => {
+  const r = await page.evaluate(() => { const P = masterBook().S, mk = n => { const f = P.fl.find(f => f.mi === 9 && f.d === 12 && f.code); f.sort = n; return opsDay("2026-10-13").rows.filter(x => x.x.code === f.code && x.x.s === f.s).length; };
+    const one = mk(1), three = mk(3); return { one, three }; });
+  assert.deepStrictEqual(r, { one: 1, three: 3 });
+}, ED);
+test("flight_rows_carry_the_hours_of_their_range", async ({ page }) => {
+  const r = await page.evaluate(() => { const D = opsDay("2026-10-01"), x = D.rows.find(z => z.x.code === "FLT-2.0" && z.x.s === 0); return { hrs: x.x.hrs, n: D.rows.filter(z => z.x.code === "FLT-2.0" && z.x.s === 0).length }; });
+  assert.deepStrictEqual(r, { hrs: 4, n: 2 });   // demo: FLT-2.0 0830-1230 with Sorties 2
+}, ED);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

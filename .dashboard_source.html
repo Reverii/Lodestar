@@ -886,6 +886,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <button class="btn" id="btnAdd" disabled title="Other departments' planners, the Duty Roster or the Master Planner">Add other departments</button>
   <span id="zoomBar" title="Make everything smaller or larger (not the Ops Room, which has its own size buttons)"><button class="btn ur" id="zoomOut">−</button><b id="zoomLvl">85%</b><button class="btn ur" id="zoomIn">+</button></span>
   <button class="btn ur" id="btnUndo" disabled title="Undo (Ctrl+Z)">↶</button><button class="btn ur" id="btnRedo" disabled title="Redo (Ctrl+Y)">↷</button>
+  <button class="btn ur" id="btnRefresh" style="display:none" title="Refresh from SharePoint (F5 or Ctrl+R). Keeps you signed in. Ctrl+Shift+R reloads the whole page.">⟳ Refresh</button>
   <button class="btn save" id="btnSave" disabled>Save to Excel</button>
 </header>
 <div id="robanner"></div>
@@ -1049,7 +1050,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z119</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z120</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2480,11 +2481,11 @@ async function autoRun() {
   }
 }
 // pull other people's saves: every 15 seconds, and when you come back to this window
-async function liveCheck() {
-  if (liveBusy || autoBusy || !SP.on || !books.length) return; liveBusy = true; const got = [], gotIx = [];
+async function liveCheck(manual) {
+  if (liveBusy || autoBusy || !SP.on || !books.length) return manual ? -1 : undefined; liveBusy = true; const got = [], gotIx = []; let held = 0;
   try {
     for (const b of books.slice()) {
-      const h = b.WB.handle; if (!h || !h.sp || b.dirty.size) continue;
+      const h = b.WB.handle; if (!h || !h.sp) continue; if (b.dirty.size) { held++; continue; }
       try {
         const j = await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(h.url) + "')?$select=TimeLastModified");
         if (j.d.TimeLastModified === h.modified || b.dirty.size) continue;
@@ -2495,6 +2496,40 @@ async function liveCheck() {
     }
   } finally { liveBusy = false; }
   if (got.length) { liveDone(gotIx); liveRedraw(); toast("Updated from SharePoint: " + got.join(", "), 2500); }
+  return manual ? { n: got.length, held } : undefined;
+}
+// Refresh (button, F5, Ctrl+R): read the files again from SharePoint without reloading the page, so you stay signed in on the same tab and day
+let softBusy = false;
+async function softRefresh() {
+  if (!SP.on) { toast("Refresh works when the dashboard is opened from SharePoint.", 2500); return; }
+  if (softBusy) return; softBusy = true; const bt = $("btnRefresh"); bt.disabled = true; bt.textContent = "⟳ Refreshing…";
+  try {
+    if (spDeptsOpen()) { await spRefreshDepts(); toast("Refreshed", 1500); return; }
+    let r = await liveCheck(true);
+    if (r === -1) { await new Promise(z => setTimeout(z, 1500)); r = await liveCheck(true); }
+    if (r === -1 || !r) toast("Busy saving, try again in a moment.", 2500);
+    else if (r.n) { /* liveCheck already said what it updated */ if (r.held) toast("Updated. Your own unsaved changes were kept.", 3000); }
+    else toast(r.held ? "Nothing new. Your own changes are still saving." : "Already up to date", 2000);
+  } catch (e) { toast("Could not refresh: " + (e.message || e), 4000); }
+  finally { softBusy = false; bt.disabled = false; bt.textContent = "⟳ Refresh"; }
+}
+$("btnRefresh").onclick = softRefresh;
+// F5 and Ctrl+R refresh the data, not the page. Ctrl+Shift+R and Ctrl+F5 stay the full reload (needed after a new dashboard version is uploaded).
+document.addEventListener("keydown", e => {
+  if (!SP.on || e.altKey || e.shiftKey) return;
+  const k = String(e.key).toLowerCase();
+  if ((k === "f5" && !e.ctrlKey) || (k === "r" && (e.ctrlKey || e.metaKey))) { e.preventDefault(); softRefresh(); }
+});
+// the page itself reloaded anyway (browser reload button): the department and tab are remembered for this browser tab, so you land back where you were
+const sessSave = o => { try { const c = JSON.parse(sessionStorage.getItem("fop_sess") || "null") || {}; sessionStorage.setItem("fop_sess", JSON.stringify(Object.assign(c, o))); } catch (e) { } };
+const sessGet = () => { try { return JSON.parse(sessionStorage.getItem("fop_sess") || "null"); } catch (e) { return null; } };
+const sessClear = () => { try { sessionStorage.removeItem("fop_sess"); } catch (e) { } };
+async function sessResume() {
+  const s = sessGet(); if (!s || !s.dept) return false;
+  if (s.dept === "Ops Room") await spOpenOps(); else if (SP_DEPTS.some(d => d[0] === s.dept)) await spOpenDept(s.dept); else return false;
+  if (!books.length) return false;
+  const b = s.v && document.querySelector("nav.tabs button[data-v='" + s.v + "']"); if (b) b.click();
+  return true;
 }
 function liveDone(ix) { if (ix.some(i => mayEdit(i))) undoReset(); }   // history starts again only when a file you can edit was re-read; a read-only one (the Ops Room seen from a department) leaves it alone
 // two saves at the same moment: the later one can miss the earlier one's cells. Cells this dashboard saved in the last
@@ -5051,7 +5086,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z119 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z120 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5072,10 +5107,10 @@ async function spInit() {
   try { await spList(); } catch (e) { spDiag("site " + SP.web + " found, but couldn't list folder " + folder + " (" + (e.message || e) + ")"); return; }
   if (!SP.files.length) { spDiag("no .xlsx files found in " + folder); return; }
   spDiag("connected to " + folder + ", " + SP.files.length + " Excel files");
-  SP.on = true; $("btnAdd").style.display = "none"; liveStart(); logWhoAmI();
+  SP.on = true; $("btnAdd").style.display = "none"; $("btnRefresh").style.display = ""; liveStart(); logWhoAmI();
   $("wOpen").textContent = "Open from SharePoint";
   document.querySelector("#welcome p.muted").textContent = "Opened from SharePoint: the Excel files in this folder (" + folder.split("/").pop() + ") open and save directly here. Saving replaces the file on SharePoint, so make sure nobody is editing the same file in Excel at the same time.";
-  if (!books.length) { /*DEV*/ devUi(); if (devGet("auto") === "1") { devOpen(); return; } /*/DEV*/ spShowDepts(); }
+  if (!books.length) { /*DEV*/ devUi(); if (devGet("auto") === "1") { devOpen(); return; } /*/DEV*/ if (await sessResume()) return; spShowDepts(); }
 }
 // the files in the folder with their last-changed time and, where SharePoint allows it, who changed them (some sites refuse the expand: then the plain list is used and nobody is named)
 async function spList() {
@@ -5162,6 +5197,7 @@ function spRenderDepts() {
   $("spKey").innerHTML = "<span><i class='fresh g'></i>Changed today</span><span><i class='fresh a'></i>Changed this week</span><span><i class='fresh r'></i>Not changed for a week or more</span>";
 }
 async function spShowDepts() {
+  sessClear();
   try { await spList(); } catch (e) { alert(e.message); return; }
   spAdd = false;
   $("spTitle").style.display = $("spNote").style.display = "none"; $("spKey").style.display = "flex"; document.querySelector("#spPick .box").classList.add("wide");
@@ -5186,7 +5222,7 @@ async function spOpenOps() {
   toast("Opening " + files.length + " files…", 15000);
   const list = [], errs = [];
   for (const f of files) { try { list.push({ name: f.Name, buf: await spFetch(f), handle: spHandle(f), noEdit: !(await spCanEdit(f.ServerRelativeUrl)) }); } catch (e) { errs.push(f.Name + ": " + (e.message || e)); } }
-  $("spPick").style.display = "none"; spRemember("dept", "Ops Room");
+  $("spPick").style.display = "none"; spRemember("dept", "Ops Room"); sessSave({ dept: "Ops Room" });
   await openOps(list); toast("Opened all departments");
   if (errs.length) alert(errs.join("\n"));
 }
@@ -5222,7 +5258,7 @@ async function spOpenDept(lab) {
   try {
     loadWorkbook(await spFetch(f), f.Name, spHandle(f));
     books[0].noEdit = !(await spCanEdit(f.ServerRelativeUrl));
-    spRemember("dept", lab); spRemember("mine", f.Name);
+    spRemember("dept", lab); spRemember("mine", f.Name); sessSave({ dept: lab });
     const errs = [];
     // the Duty Planner plans with every department's file alongside; departments get the Duty Roster to copy their BDO / SDO days from
     const extra = spDeptExtras(key);
@@ -5971,6 +6007,7 @@ document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.onclick = ()
   if (b.dataset.v === "log") renderLog();
   if (b.dataset.v === "syl") renderSyl();
   if (b.dataset.v === "ops") opsFit();
+  sessSave({ v: b.dataset.v });
   closePop();
 });
 $("month").onchange = e => { cur.m = +e.target.value; cur.sel = null; renderPlanner(); renderOverview(); };

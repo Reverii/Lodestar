@@ -16,9 +16,9 @@ test("row_helpers_exist", async ({ page }) => {
 const go = page => page.evaluate(() => { document.querySelector("nav.tabs button[data-v='plan']").click(); cur.m = 9; renderPlanner(); });
 const FIXTURE = require("path").join(__dirname, "fixtures", "SUP2_layout2.xlsx");   // a layout-2 SUP 2 file (three rows per person)
 
-test("rows_per_is_four_and_stamp_three", async ({ page }) => {
+test("rows_per_is_four_and_stamp_four", async ({ page }) => {
   const r = await page.evaluate(() => ({ rp: ROWS_PER, srp: books[0].S.rp, lay: LAYOUT.dept, older: books.filter(b => !b.S.kind).map(b => b.S.lay.older) }));
-  assert.strictEqual(r.rp, 4); assert.strictEqual(r.srp, 4); assert.strictEqual(r.lay, 3); assert.ok(r.older.every(x => x === false), "no layout warning on the fresh set: " + r.older.join());
+  assert.strictEqual(r.rp, 4); assert.strictEqual(r.srp, 4); assert.strictEqual(r.lay, 4); assert.ok(r.older.every(x => x === false), "no layout warning on the fresh set: " + r.older.join());
 });
 test("wd_row_renders_teal", async ({ page }) => {
   await go(page);

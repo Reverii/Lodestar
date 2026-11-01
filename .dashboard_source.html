@@ -1073,7 +1073,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z126</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z127</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2254,7 +2254,7 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-upch
 // ---------- layout check: each file kind has a layout number, stamped by the builder on its Dashboard sheet (Z2, "LODESTAR dept layout 1").
 // A higher stamp than this dashboard knows = the file is newer (saving could write to the wrong cells). Files without a stamp (or with a lower one)
 // are checked by the sheets and rows this dashboard uses; anything missing is listed as "older layout".
-const LAYOUT = { dept: 3, master: 3, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
+const LAYOUT = { dept: 4, master: 3, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
 const LAYOUT_NAME = { dept: "planner", master: "Master Planner", roster: "Duty Roster", ops: "Ops Room" };
 function layoutCheck(st) {
   const kind = st.kind || "dept", z = WB.paths["Dashboard"] ? str(readCells("Dashboard").Z2) : "", m = /(\w+)\s+layout\s+(\d+)/i.exec(z), miss = [];
@@ -5275,7 +5275,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z126 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z127 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

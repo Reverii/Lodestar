@@ -389,6 +389,7 @@ table.allday .free{color:var(--s400);font-size:11.5px}
 #cellCard .cseats{border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}#cellCard .cseats>div{display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
 #cellCard .csh{background:#1e293b;color:#fff;font-size:10.5px;font-weight:700;padding:4px 0}#cellCard .csn{padding:5px 0 0;font-weight:800;font-size:13px}#cellCard .csn:last-child{padding-bottom:5px}
 #cellCard .you{background:#dbeafe;border-radius:4px}#cellCard .cnone{color:#94a3b8;font-weight:400}#cellCard .cpax{font-size:9px;font-weight:800;color:#166534;background:#dcfce7;border-radius:3px;padding:0 3px;margin-left:2px}
+#cellCard input{width:100%;margin:2px 0 4px;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px;font:inherit}
 #cellCard .cleg{margin-top:5px;color:#94a3b8;font-size:11px}
 td.mc{cursor:not-allowed}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--s900);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:200;max-width:90%}
@@ -1003,7 +1004,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   </section>
 </main>
 <div id="cellCard"></div>
-<div id="pop"><div id="popTime" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Flight time (any text, e.g. 0830-1030 or TBC)</label><input id="popTimeIn" placeholder="e.g. 0830-1030" style="width:100%;margin:4px 0 6px;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Comment</label><input id="popNoteIn" placeholder="e.g. Wx dependent" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"></div><div id="popCN" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:#7e22ce;text-transform:uppercase">Comment for this cell</label><input id="popCNIn" placeholder="e.g. Instructor for OWL" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px"></div><div id="popRole" style="display:none"></div><div id="popCur" style="display:none"></div><div id="popSyl" style="display:none"></div><input type="search" id="popSearch" placeholder="Type to search…"><div class="list" id="popList"></div></div>
+<div id="pop"><div id="popTime" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Flight time (any text, e.g. 0830-1030 or TBC)</label><input id="popTimeIn" placeholder="e.g. 0830-1030" style="width:100%;margin:4px 0 6px;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Comment</label><input id="popNoteIn" placeholder="e.g. Wx dependent" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"></div><div id="popRole" style="display:none"></div><div id="popCur" style="display:none"></div><div id="popSyl" style="display:none"></div><input type="search" id="popSearch" placeholder="Type to search…"><div class="list" id="popList"></div></div>
 <div id="toast"></div>
 <div id="welcome">
   <div class="box">
@@ -1037,7 +1038,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z115</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z116</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4623,25 +4624,39 @@ function cardCrew(mi, d, s, code) {   // seat columns -> list of crew planned on
     const dp = String(c.dept).toLowerCase(), k = dp === "pilot" ? (c.tag === "AC" ? 0 : 1) : CARD_DEPT[dp]; if (k != null) cols[k].push(c); });
   return cols;
 }
+let cardKey = null;
 function openCard(k) {
   const el = cellEl(k), c = $("cellCard"); if (!el) return false;
-  const p = keyParts(k); if (k.startsWith("m:") || isWdRow(p.r)) return false;
-  const A = actIndex(), v = S.m[cur.m].grid[p.r][p.d], a = v && A.get(String(v).toUpperCase()); if (!a || a.ci !== CAT_FLIGHT) return false;
-  const s = rowShift(p.r), me = rowPerson(p.r), cols = cardCrew(cur.m, p.d, s, v), rows = Math.max(1, ...cols.map(x => x.length));
-  const ac = S.acts.find(x => same(x.code, v)), M0 = S.m[cur.m];
-  // this flight's own MASTER line (time and comment), matched on code in the cell's shift: not the whole day's programme
-  const ml = [0, 1].map(j => s * 2 + j).filter(j => sameCode(M0.master[j][p.d], v)).map(j => (M0.mtime[j][p.d] || "no time yet") + (M0.mnote[j][p.d] ? " (" + M0.mnote[j][p.d] + ")" : ""));
-  const tip = [ml.length ? "Planned: " + ml.join("; ") : "Not on the Master programme for this shift"].concat((el.dataset.cd || "").split("\n").filter(Boolean)).join("\n");
-  let h = "<h4>" + esc(v) + " <span>· " + esc(p.d + 1 + " " + monLab(cur.m, S.year) + " · " + SHIFTS[s]) + "</span></h4>" + (ac && ac.desc ? "<div class='csub'>" + esc(ac.desc) + "</div>" : "") +
-    (tip ? "<div class='cdet'>" + esc(tip) + "</div>" : "") + "<div class='clab'>Crew on this flight</div><div class='cseats'><div class='csh'>" + CARD_SEATS.map(x => "<span>" + x + "</span>").join("") + "</div>";
-  for (let r = 0; r < rows; r++) h += "<div class='csn'>" + cols.map(L => { const x = L[r]; if (!x) return "<span class='cnone'>" + (r === 0 ? "-" : "") + "</span>";
-    return "<span class='" + opsCatCls(x) + (x.dept === S.dept && x.i === me ? " you" : "") + "'>" + esc(opsName(x)) + (x.tag === "PAX" ? "<i class='cpax'>PAX</i>" : "") + "</span>"; }).join("") + "</div>";
-  c.innerHTML = h + "</div><div class='cleg'>Esc or click away to close</div>"; c.style.display = "block";
+  const p = keyParts(k); if (k.startsWith("m:")) return false;
+  const A = actIndex(), M0 = S.m[cur.m], v = String(M0.grid[p.r][p.d] || ""), a = v && A.get(v.toUpperCase()), wd = isWdRow(p.r);
+  const note = (S.notes && S.notes.get(cur.m + ":" + p.r + ":" + p.d)) || "", canNote = !!S.hasNotes && mayEdit(cur.b), flight = !!a && a.ci === CAT_FLIGHT && !wd;
+  if (!v && !note && !canNote) return false;   // nothing to show on an empty cell, unless the planner can add a comment
+  const s = rowShift(p.r), me = rowPerson(p.r), ac = v && S.acts.find(x => same(x.code, v));
+  const lines = (el.dataset.cd || "").split("\n").filter(x => x && !/^Comment:/.test(x));   // the comment has its own box below
+  let det = lines;
+  if (flight) {   // this flight's own MASTER line (time and comment), matched on code in the cell's shift: not the whole day's programme
+    const ml = [0, 1].map(j => s * 2 + j).filter(j => sameCode(M0.master[j][p.d], v)).map(j => (M0.mtime[j][p.d] || "no time yet") + (M0.mnote[j][p.d] ? " (" + M0.mnote[j][p.d] + ")" : ""));
+    det = [ml.length ? "Planned: " + ml.join("; ") : "Not on the Master programme for this shift"].concat(lines); }
+  let h = "<h4>" + esc(v || "No activity") + " <span>· " + esc(p.d + 1 + " " + monLab(cur.m, S.year) + " · " + (wd ? "Whole day" : SHIFTS[s])) + "</span></h4>" + (ac && ac.desc ? "<div class='csub'>" + esc(ac.desc) + "</div>" : "") +
+    (det.length ? "<div class='cdet'>" + esc(det.join("\n")) + "</div>" : "");
+  if (canNote) h += "<div class='clab' style='color:#7e22ce'>Comment for this cell</div><input id='ccIn' data-orig='" + esc(note) + "' value='" + esc(note) + "' placeholder='e.g. Instructor for OWL (Enter saves, Esc cancels)'>";
+  else if (note) h += "<div class='clab' style='color:#7e22ce'>Comment</div><div class='cdet'>" + esc(note) + "</div>";
+  if (flight) {
+    const cols = cardCrew(cur.m, p.d, s, v), rows = Math.max(1, ...cols.map(x => x.length));
+    h += "<div class='clab'>Crew on this flight</div><div class='cseats'><div class='csh'>" + CARD_SEATS.map(x => "<span>" + x + "</span>").join("") + "</div>";
+    for (let r = 0; r < rows; r++) h += "<div class='csn'>" + cols.map(L => { const x = L[r]; if (!x) return "<span class='cnone'>" + (r === 0 ? "-" : "") + "</span>";
+      return "<span class='" + opsCatCls(x) + (x.dept === S.dept && x.i === me ? " you" : "") + "'>" + esc(opsName(x)) + (x.tag === "PAX" ? "<i class='cpax'>PAX</i>" : "") + "</span>"; }).join("") + "</div>";
+    h += "</div>"; }
+  cardKey = k; c.innerHTML = h + "<div class='cleg'>Esc or click away to close</div>"; c.style.display = "block";
   const b = el.getBoundingClientRect(), w = 400, ch = c.offsetHeight, z = parseFloat(document.body.style.zoom) || 1;
-  const vw = window.innerWidth / z, vh = window.innerHeight / z, bl = b.left / z, bt = b.top / z, bb = b.bottom / z, br = b.right / z;
+  const vw = window.innerWidth / z, vh = window.innerHeight / z, bl = b.left / z, bt = b.top / z, br = b.right / z;
   let x = br + 4 + w <= vw ? br + 4 : Math.max(8, bl - w - 4), y = Math.min(Math.max(8, bt), Math.max(8, vh - ch - 8));
   c.style.left = (x + window.scrollX / z) + "px"; c.style.top = (y + window.scrollY / z) + "px"; return true;
 }
+$("cellCard").addEventListener("change", e => { if (e.target.id !== "ccIn" || !cardKey) return; const k = cardKey, p = keyParts(k);
+  if (setNote(cur.m, p.r, p.d, e.target.value)) { e.target.dataset.orig = e.target.value.trim(); renderPlanner(); renderOverview(); select(k); } });
+$("cellCard").addEventListener("keydown", e => { if (e.target.id !== "ccIn") return;
+  if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } else if (e.key === "Escape") { e.target.value = e.target.dataset.orig; closeCard(); } });
 function openPop(k, initial) {
   if (k.startsWith("m:")) { toast(MASTER_LOCK_MSG); return; }   // the MASTER rows are locked
   closeCard();
@@ -4673,9 +4688,7 @@ function openPop(k, initial) {
   pop.style.left = Math.max(8, Math.min(window.innerWidth - 260, r.left)) + "px";
   pop.style.top = (r.bottom + 2 + ph <= window.innerHeight ? r.bottom + 2 : r.top - ph >= 8 ? r.top - ph : Math.max(8, window.innerHeight - ph - 8)) + "px";
   $("popTime").style.display = isMaster ? "block" : "none";
-  $("popCN").style.display = !isMaster && S.hasNotes && (mayEdit(cur.b)) ? "block" : "none";
   popRoleDraw(isMaster ? null : p0);
-  if (!isMaster) $("popCNIn").value = (S.notes && S.notes.get(cur.m + ":" + p0.r + ":" + p0.d)) || "";
   if (isMaster) { const p = keyParts(k); $("popTimeIn").value = S.m[cur.m].mtime[p.r][p.d] || ""; $("popNoteIn").value = S.m[cur.m].mnote[p.r][p.d] || ""; }
   { const iss = isMaster ? [] : curIssues(computeCurrency(), rowPerson(p0.r)), pc = $("popCur");
     if (!isMaster && !S.kind) { const R = computeRest(), i = rowPerson(p0.r), n = restIfFly(R, i, dayOfYear(S.year, cur.m, p0.d));
@@ -4720,11 +4733,11 @@ function drawPop() {
 function closePop(keepTime) {
   if (popKey && !keepTime) { const k = popKey, before = dirty.size; if (saveTime(k) || dirty.size !== before) { popKey = null; renderPlanner(); select(k); } }
   $("pop").style.display = "none"; popKey = null; popSyl = null; drawSyl();
-  const ae = document.activeElement; if (ae === $("popSearch") || ae === $("popTimeIn") || ae === $("popNoteIn") || ae === $("popCNIn")) ae.blur();
+  const ae = document.activeElement; if (ae === $("popSearch") || ae === $("popTimeIn") || ae === $("popNoteIn")) ae.blur();
 }
 function saveTime(k) {
   if (k && k.startsWith("g:")) { let ch = false; if (popSyl && popSyl.k === k) { const P = popSyl; popSyl = null; ch = sylCommit(P, k, getVal(k)); }
-    if ($("popCN").style.display !== "none") { const p = keyParts(k); ch = setNote(cur.m, p.r, p.d, $("popCNIn").value) || ch; } return ch; }
+    return ch; }
   if (!k || !k.startsWith("m:")) return false;
   const p = keyParts(k), M = S.m[cur.m], v = $("popTimeIn").value.trim(), n = $("popNoteIn").value.trim();
   let ch = false;
@@ -4914,7 +4927,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z115 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z116 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5810,7 +5823,7 @@ $("popSearch").addEventListener("keydown", e => {
   else if (e.key === "Enter") { const it = $("popList").querySelectorAll(".it")[popHi]; if (it) pick(it.dataset.code, it.dataset.s); e.preventDefault(); }
   else if (e.key === "Escape") { closePop(); }
 });
-["popTimeIn", "popNoteIn", "popCNIn"].forEach(id => $(id).addEventListener("keydown", e => {
+["popTimeIn", "popNoteIn"].forEach(id => $(id).addEventListener("keydown", e => {
   if (e.key === "Enter" || e.key === "Escape") { e.preventDefault(); const k = popKey; closePop(); if (k) select(k); }
 }));
 function redrawHi() { const its = $("popList").querySelectorAll(".it"); its.forEach((x, i) => x.classList.toggle("hi", i === popHi)); if (its[popHi]) its[popHi].scrollIntoView({ block: "nearest" }); }

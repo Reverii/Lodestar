@@ -41,13 +41,38 @@ test("card_marks_the_clicked_person", async ({ page }) => {
   await page.click("#plan td[data-k='" + c.best.k + "']");
   assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#cellCard .you").length), 1);
 });
-test("other_cells_open_no_card", async ({ page }) => {
+test("master_cell_opens_no_card", async ({ page }) => {
   await go(page); const c = await findCells(page); await page.evaluate(() => { if (cur.mfold) { cur.mfold = false; renderPlanner(); } });
-  for (const k of [c.nonfl, c.wd, c.mk]) {
-    await page.evaluate(() => { const e = document.getElementById("cellCard"); if (e) e.style.display = "none"; });
-    await page.click("#plan td[data-k='" + k + "']");
-    assert.ok(!(await cardOn(page)), "no card on " + k);
+  await page.click("#plan td[data-k='" + c.mk + "']");
+  assert.ok(!(await cardOn(page)), "no card on a MASTER cell");
+});
+test("non_flight_cell_shows_comment_box_only", async ({ page }) => {
+  await go(page); const c = await findCells(page);
+  for (const k of [c.nonfl, c.wd]) {
+    await page.click("#plan td[data-k='" + k + "']"); assert.ok(await cardOn(page), "card on " + k);
+    const r = await page.evaluate(() => ({ box: !!document.getElementById("ccIn"), seats: document.querySelectorAll("#cellCard .cseats").length }));
+    assert.deepStrictEqual(r, { box: true, seats: 0 }, k);
   }
+});
+test("comment_is_saved_from_the_card_and_shown_again", async ({ page }) => {
+  await go(page); const c = await findCells(page);
+  await page.click("#plan td[data-k='" + c.best.k + "']");
+  await page.fill("#ccIn", "Instructor for OWL"); await page.keyboard.press("Enter");
+  const p = await page.evaluate(k => { const q = keyParts(k); return S.notes.get(cur.m + ":" + q.r + ":" + q.d); }, c.best.k);
+  assert.strictEqual(p, "Instructor for OWL");
+  await page.mouse.click(5, 700); await page.click("#plan td[data-k='" + c.best.k + "']");
+  assert.strictEqual(await page.inputValue("#ccIn"), "Instructor for OWL");
+  assert.ok(!/Comment:/.test(await page.evaluate(() => (document.querySelector("#cellCard .cdet") || {}).textContent || "")), "comment is not repeated in the details");
+});
+test("escape_cancels_a_comment_edit", async ({ page }) => {
+  await go(page); const c = await findCells(page);
+  await page.click("#plan td[data-k='" + c.nonfl + "']"); await page.fill("#ccIn", "temp"); await page.keyboard.press("Escape");
+  assert.strictEqual(await page.evaluate(k => { const q = keyParts(k); return S.notes.get(cur.m + ":" + q.r + ":" + q.d) || ""; }, c.nonfl), "");
+});
+test("picker_has_no_comment_box_any_more", async ({ page }) => {
+  await go(page); const c = await findCells(page);
+  await page.click("#plan td[data-k='" + c.best.k + "']", { button: "right" });
+  assert.strictEqual(await page.evaluate(() => !!document.getElementById("popCN") || !!document.getElementById("popCNIn")), false);
 });
 test("right_click_opens_picker_and_closes_card", async ({ page }) => {
   await go(page); const c = await findCells(page);
@@ -63,8 +88,9 @@ test("escape_and_outside_click_close_card", async ({ page }) => {
 });
 test("card_opens_in_view_only_file", async ({ page }) => {
   await go(page); const c = await findCells(page);
-  await page.evaluate(() => { window.mayEdit = () => false; });
+  await page.evaluate(() => { books[0].noEdit = true; });
   await page.click("#plan td[data-k='" + c.best.k + "']"); assert.ok(await cardOn(page));
+  assert.strictEqual(await page.evaluate(() => !!document.getElementById("ccIn")), false, "no comment box when view only");
 });
 
 test("card_details_are_this_cell_only", async ({ page }) => {

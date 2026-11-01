@@ -348,10 +348,10 @@ test("help_text_present", async ({ page }) => {
   const t = await page.innerText("#helpBody");
   assert.ok(/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));
 });
-test("version_is_z120", async ({ page }) => {
+test("version_is_z121", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z120 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-11-01 z120 "), "start screen version");
+  assert.ok(/ z121 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-11-01 z121 "), "start screen version");
 });
 
 // ---- Regression: the rest of the dashboard still works around My Lodestar
@@ -420,7 +420,7 @@ test("cards_on_unknown_day_say_so", async ({ page }) => {
 
 // ---- runner
 
-// ---- z120: My month calendar
+// ---- z121: My month calendar
 test("month_grid_shows_the_month", async ({ page }) => {
   await page.evaluate(() => { SP.user = { Title: "Sarah Lim" }; }); await shown(page, "2026-10-14");
   const r = await page.evaluate(() => ({ title: document.querySelector("#lodeCal .calnav b").textContent, days: document.querySelectorAll("#lodeCal .cd[data-day]").length, pills: document.querySelectorAll("#lodeCal .pl[data-iso]").length, sel: document.querySelector("#lodeCal .cd.sel").dataset.day, cells: document.querySelectorAll("#lodeCal .cd").length % 7 }));

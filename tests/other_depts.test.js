@@ -74,8 +74,8 @@ test("no_double_opening", async ({ page }) => {
   const r = await page.evaluate(async () => { await spOpenDept("SUP 2"); await Promise.all([spOpenOthers(books[0].WB), spOpenOthers(books[0].WB)]); while (spOthersBusy) await new Promise(r => setTimeout(r, 20)); return { f: window.__fetches.slice(), n: books.length }; });
   assert.strictEqual(r.f.length, new Set(r.f).size, r.f.join()); assert.strictEqual(r.n, 8);
 }, BLANK);
-test("button_hidden_on_sharepoint_shown_otherwise", async ({ page }) => {
-  const r = await page.evaluate(() => $("btnAdd").style.display); assert.notStrictEqual(r, "none");
+test("add_button_is_hidden", async ({ page }) => {
+  const r = await page.evaluate(() => $("btnAdd").style.display); assert.strictEqual(r, "none");
 });
 test("position_not_moved", async ({ page }) => {
   await stub(page); 

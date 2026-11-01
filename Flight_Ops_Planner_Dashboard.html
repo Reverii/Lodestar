@@ -882,8 +882,8 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <div id="bookbar"></div>
   <div class="grow"></div>
   <div class="fileinfo" id="fileinfo">No file open</div><span id="openingOthers" style="display:none;font-size:12px;color:#475569;margin-left:8px"></span><span id="viewOnly" title="SharePoint says you can read this file but not change it." style="display:none;background:#e0e7ff;color:#3730a3;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:600;margin-left:6px">View only</span>
-  <button class="btn primary" id="btnOpen">Open my Excel</button>
-  <button class="btn" id="btnAdd" disabled title="Other departments' planners, the Duty Roster or the Master Planner">Add other departments</button>
+  <button class="btn primary" id="btnOpen" style="display:none">Open my Excel</button>
+  <button class="btn" id="btnAdd" style="display:none" disabled title="Other departments' planners, the Duty Roster or the Master Planner">Add other departments</button>
   <span id="zoomBar" title="Make everything smaller or larger (not the Ops Room, which has its own size buttons)"><button class="btn ur" id="zoomOut">−</button><b id="zoomLvl">85%</b><button class="btn ur" id="zoomIn">+</button></span>
   <button class="btn ur" id="btnUndo" disabled title="Undo (Ctrl+Z)">↶</button><button class="btn ur" id="btnRedo" disabled title="Redo (Ctrl+Y)">↷</button>
   <button class="btn ur" id="btnRefresh" style="display:none" title="Refresh from SharePoint (F5 or Ctrl+R). Keeps you signed in. Ctrl+Shift+R reloads the whole page.">⟳ Refresh</button>
@@ -1050,7 +1050,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z120</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z121</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2516,6 +2516,8 @@ async function softRefresh() {
   finally { softBusy = false; bt.disabled = false; bt.textContent = "⟳ Refresh"; }
 }
 $("btnRefresh").onclick = softRefresh;
+// "Open my Excel" and "Add other departments" are hidden (every file opens by itself). The way back to the department screen is the LODESTAR logo.
+{ const lg = document.querySelector("header.top h1"); lg.style.cursor = "pointer"; lg.title = "Back to the department screen (switch department)"; lg.onclick = () => { if (SP.on && books.length) openFile(); }; }
 // F5 and Ctrl+R refresh the data, not the page. Ctrl+Shift+R and Ctrl+F5 stay the full reload (needed after a new dashboard version is uploaded).
 document.addEventListener("keydown", e => {
   if (!SP.on || e.altKey || e.shiftKey) return;
@@ -5088,7 +5090,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z120 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z121 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

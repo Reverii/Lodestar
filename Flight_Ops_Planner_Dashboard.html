@@ -1050,7 +1050,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z121</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z122</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4550,6 +4550,21 @@ function opsFit() {
   const over = m.scrollWidth / Math.max(1, m.clientWidth);
   if (over > 1.001) place(Math.max(0.5, opsZ() / over));
   for (let i = 0; i < 14 && opsZEff > 0.5 && m.scrollHeight > m.clientHeight + 2; i++) place(Math.max(0.5, opsZEff * 0.95));
+  opsFill();
+}
+// a quiet day leaves the flight list short and the rest of its box empty: the whole flight table is enlarged to use that room (up to 1.6 times); the "No more flights" strip takes what is left
+function opsFill() {
+  const m = $("opsMain"), tb = m && m.querySelector("table.opst"); if (!tb) return;
+  tb.style.zoom = tb.style.width = tb.style.height = "";
+  tb.style.height = "auto"; const nat = tb.offsetHeight; tb.style.height = "";   // every row at its own size, the "No more flights" strip at its smallest
+  const avail = m.clientHeight, k = nat > 0 ? Math.min(1.6, (avail - 2) / nat) : 1;
+  if (k > 1.04) {   // the enlarged table must still be exactly as wide and as tall as its box: measure and correct (browsers differ in how zoom and percentages mix)
+    tb.style.zoom = k; const mr = m.getBoundingClientRect();
+    tb.style.width = tb.style.height = "auto"; tb.style.width = m.clientWidth / k + "px";
+    for (let i = 0; i < 3; i++) { const r = tb.getBoundingClientRect(); if (Math.abs(r.width - mr.width) < 2) break; tb.style.width = parseFloat(tb.style.width) * mr.width / Math.max(1, r.width) + "px"; }
+    tb.style.height = m.clientHeight / k + "px";
+    for (let i = 0; i < 3; i++) { const r = tb.getBoundingClientRect(); if (Math.abs(r.height - mr.height) < 2) break; tb.style.height = parseFloat(tb.style.height) * mr.height / Math.max(1, r.height) + "px"; }
+  }
 }
 window.addEventListener("resize", () => opsFit());
 function opsApplyZ() { opsFit(); document.querySelectorAll("#opsSize button").forEach(b => b.disabled = +b.dataset.z < 0 ? opsZi === 0 : opsZi === OPS_ZS.length - 1); $("opsSize").title = "Size " + Math.round(opsZ() * 100) + "%"; }
@@ -5090,7 +5105,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z121 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z122 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

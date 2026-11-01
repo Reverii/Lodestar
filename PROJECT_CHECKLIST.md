@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 1 Nov 2026 (z114). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 1 Nov 2026 (z117). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -199,8 +199,8 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [x] Master Planner export reformatted (z106, z107, 31 Oct, Brandon): Calendar sheet only (List dropped), flight and hours columns inside each day, banner, month bands, weekend tint, one landscape page wide. Awaiting his look in desktop Excel
 - [x] Tabs (z108, 31 Oct, Brandon): Overview moved under Planning (renamed from Planner); Changes renamed Changelog, shows only own department, Master Planner and Ops Room (everything in Ops Room mode)
 - [x] Ops Room bottom cards the same height when the ground programme is empty (z105, 31 Oct)
-- [?] Planner cell picker on right-click (z113, 1 Nov, Brandon): left click only selects; right-click (or Enter / typing) opens the picker; help texts updated. Awaiting his test. Open: an on-screen hint, long-press for touch screens
-- [?] Flight card (z114, 1 Nov, Brandon): left click on a flight cell shows its details and the crew from every department in seat columns (AC, Pilot, LM, TACCO, SUP 1, SUP 2). Awaiting his test
-- [?] MASTER rows locked in the Planner (z114, 1 Nov, Brandon): fully locked, they fill only from the Master Planner copy button and Ops Add. Awaiting his test
+- [x] Planner cell picker on right-click (z113, 1 Nov, Brandon): left click only selects; right-click (or Enter / typing) opens the picker; help texts updated. Confirmed working (1 Nov). Open ideas, not picked: an on-screen hint, long-press for touch screens
+- [x] Flight card (z114, 1 Nov, Brandon): left click on a cell shows its details, the cell comment (typed there now, no longer in the picker) and, on a flight, the crew from every department in seat columns (AC, Pilot, LM, TACCO, SUP 1, SUP 2); a MASTER cell shows its time and comment (z114 to z117). Confirmed working (1 Nov)
+- [x] MASTER rows locked in the Planner (z114, 1 Nov, Brandon): fully locked, they fill only from the Master Planner copy button and Ops Add. Confirmed working (1 Nov)
 - [ ] Decide (GitHub Pro now on): make the repo private, and whether the Pages links (dashboard, briefing) stay public.
 

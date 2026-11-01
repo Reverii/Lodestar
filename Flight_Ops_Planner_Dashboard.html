@@ -1073,7 +1073,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z127</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z128</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2879,11 +2879,17 @@ function actIndex() {
   const map = new Map();
   for (const a of S.acts) if (a.code) {
     const ci = S.cats.findIndex(c => c && c.toLowerCase() === a.cat.toLowerCase());
-    map.set(a.code.toUpperCase(), { ...a, ci, sorties: a.sort == null ? 1 : a.sort, hours: a.hrs || 0 });
+    map.set(a.code.toUpperCase(), { ...a, ci, sorties: 1, hours: 0 });   // sorties and hours are not per code any more: a flight cell counts once; hours come from the MASTER row's time range (cellHrs)
   }
   return map;
 }
 const daysIn = (y, m) => new Date(y, m + 1, 0).getDate();
+// planned hours of one flight cell: the first MASTER slot of that shift and day with the same code and a usable time range (0 when there is none)
+function cellHrs(M, s, d, code) {
+  const c = String(code || "").trim(); if (!c) return 0;
+  for (const j of [s * 2, s * 2 + 1]) { if (M.master[j] && same(M.master[j][d], c)) { const h = mpFlHrs(null, { time: M.mtime[j][d] }).h; if (h > 0) return h; } }
+  return 0;
+}
 function monthStats(mi, A) {
   const y = S.year, dim = daysIn(y, mi), M = S.m[mi];
   const look = v => v ? A.get(v.toUpperCase()) : null;
@@ -2902,7 +2908,7 @@ function monthStats(mi, A) {
         if (d < dim) { if (cu === "BDO") day[d].nB++; else if (cu === "SDO") day[d].nS++; }
         if (a.ci === CAT_FLIGHT && cxlOf(S, S.roster[i].id, mi, d, s)) continue;   // cancelled in the Ops Room
         if (a.ci === CAT_FLIGHT && roleOf(S, mi, gridRow(i, s), d) === "PAX") continue;   // a passenger: not planned flying (Excel's own totals still count the cell)
-        if (a.ci === CAT_FLIGHT) { t.fl += a.sorties; t.hrs += a.hours; if (d < dim) { day[d].fl[s] += a.sorties; day[d].hrs += a.hours; } }
+        if (a.ci === CAT_FLIGHT) { const hh = cellHrs(M, s, d, M.grid[gridRow(i, s)][d]); t.fl += 1; t.hrs += hh; if (d < dim) { day[d].fl[s] += 1; day[d].hrs += hh; } }
       }
       if (rp() > 3) { const w = look(M.grid[gridRow(i, 3)][d]); if (wdAllowed(w)) cats.add(w.ci); }   // the WD row adds its ground or admin item to the day, counted once
       if (cats.has(CAT_GD)) t.gd++; if (cats.has(CAT_SQD)) t.sdo++; if (cats.has(CAT_LEAVE)) t.lv++;
@@ -3411,7 +3417,7 @@ function codeDiffs(st, P) {
   const mine = st.acts.filter(a => isFlAct(st, a));
   for (const k of P.codes) { const a = mine.find(x => same(x.code, k.code));
     if (!a) out.missing.push(k.code);
-    else if (a.desc !== k.desc || (a.hrs || 0) !== (k.hrs || 0) || (a.sort || 1) !== (k.sort || 1) || (st.hasCur && !same(a.mtype, k.mtype)) || (st.hasStag && P.hasStag && !same(a.stag, k.stag))) out.changed.push(k.code); }
+    else if (a.desc !== k.desc || (st.hasCur && !same(a.mtype, k.mtype)) || (st.hasStag && P.hasStag && !same(a.stag, k.stag))) out.changed.push(k.code); }
   for (const a of mine) if (!P.codes.some(k => same(k.code, a.code))) out.extra.push(a.code);
   return out;
 }
@@ -3420,14 +3426,14 @@ const codeDiffN = d => d.missing.length + d.changed.length + d.extra.length;
 function syncCodes() {
   const P = masterBook().S, used = new Set(); S.m.forEach(M => { M.master.forEach(rw => rw.forEach(x => x && used.add(x.toUpperCase()))); M.grid.forEach(rw => rw.forEach(x => x && used.add(x.toUpperCase()))); });
   const fc = flCatName(S), keep = [], drop = [];
-  const list = P.codes.map(k => ({ code: k.code, desc: k.desc, cat: fc, hrs: k.hrs, sort: k.sort > 1 ? k.sort : null, mtype: k.mtype, stag: k.stag || "" }));
+  const list = P.codes.map(k => ({ code: k.code, desc: k.desc, cat: fc, hrs: null, sort: null, mtype: k.mtype, stag: k.stag || "" }));
   for (const a of S.acts) if (isFlAct(S, a) && !P.codes.some(k => same(k.code, a.code))) (used.has(a.code.toUpperCase()) ? keep : drop).push(a);
   const out = list.concat(keep.map(a => Object.assign({}, a))).concat(S.acts.filter(a => a.code && !isFlAct(S, a)).map(a => Object.assign({}, a)));
   if (out.length > NA) { alert("The activity list would need " + out.length + " rows but has room for " + NA + "."); return; }
   for (let i = 0; i < NA; i++) {
     const a = out[i] || { code: "", desc: "", cat: "", hrs: null, sort: null, mtype: "" }, b = S.acts[i], r = ACT_ROW0 + i;
     const set = (f, L, v) => { if ((b[f] == null ? "" : b[f]) !== (v == null ? "" : v)) put("Activities", L + r, v == null ? "" : v); };
-    set("code", "A", a.code); set("desc", "B", a.desc); set("cat", "C", a.cat); set("hrs", "D", a.hrs); set("sort", "E", a.sort); if (S.hasCur) set("mtype", "F", a.mtype || ""); if (S.hasStag) set("stag", "K", a.stag || "");
+    set("code", "A", a.code); set("desc", "B", a.desc); set("cat", "C", a.cat); if (S.hasCur) set("mtype", "F", a.mtype || ""); if (S.hasStag) set("stag", "K", a.stag || "");
     S.acts[i] = { code: a.code, desc: a.desc || "", cat: a.cat || "", hrs: a.hrs == null ? null : a.hrs, sort: a.sort == null ? null : a.sort, mtype: a.mtype || "", stag: a.stag || "" };
   }
   toast("Copied the flight codes from the Master Planner" + (keep.length ? "; kept " + keep.map(a => a.code).join(", ") + " because the plans still use " + (keep.length === 1 ? "it" : "them") : "") + (drop.length ? "; removed " + drop.map(a => a.code).join(", ") : "") + ". Click Save to Excel to keep it.", 6000);
@@ -4802,8 +4808,8 @@ function renderActs() {
     "<b style='color:#b45309'>Differs from the Master Planner:</b> " + [d.missing.length ? "new " + d.missing.join(", ") : "", d.changed.length ? "changed " + d.changed.join(", ") : "", d.extra.length ? "not on the Master Planner " + d.extra.join(", ") : ""].filter(Boolean).map(esc).join(" · ") +
     (canEd ? " <button class='btn primary' id='codeSync' style='margin-left:6px;padding:4px 10px'>Copy flight codes from the Master Planner</button>" : "");
   const flRow = a => { const ci = S.cats.findIndex(c => c && c === a.cat), k = P && P.codes.find(x => same(x.code, a.code)); const bad = P && (!k || d.changed.includes(a.code));
-    return "<tr" + (bad ? " class='mpd'" : "") + "><td><b class='" + (ci >= 0 ? "cat" + ci : "") + "' style='padding:2px 6px;border-radius:4px'>" + esc(a.code) + "</b></td><td>" + esc(a.desc) + "</td><td style='text-align:center'>" + (a.sort || 1) + "</td><td style='text-align:center'>" + (a.hrs == null ? "" : a.hrs) + "</td>" + (S.hasCur ? "<td>" + esc(a.mtype || "") + "</td>" : "") + (S.hasStag ? "<td>" + (a.stag ? "<b class='sylgold'>🎓 " + esc(a.stag) + "</b>" : "") + "</td>" : "") + "</tr>"; };
-  $("actFlTable").innerHTML = "<tr><th>Code</th><th>Description</th><th style='width:70px'>Sorties</th><th style='width:80px'>Flight Hrs</th>" + (S.hasCur ? "<th style='width:100px'>Mission Type</th>" : "") + (S.hasStag ? "<th style='width:110px' title='Set on the Master Planner Flight Codes. The cell picker lists only the syllabus items that match it'>Syllabus tag</th>" : "") + "</tr>" + (fl.length ? fl.map(flRow).join("") : "<tr><td colspan=5 class='muted'>No flight codes yet.</td></tr>");
+    return "<tr" + (bad ? " class='mpd'" : "") + "><td><b class='" + (ci >= 0 ? "cat" + ci : "") + "' style='padding:2px 6px;border-radius:4px'>" + esc(a.code) + "</b></td><td>" + esc(a.desc) + "</td>" + (S.hasCur ? "<td>" + esc(a.mtype || "") + "</td>" : "") + (S.hasStag ? "<td>" + (a.stag ? "<b class='sylgold'>🎓 " + esc(a.stag) + "</b>" : "") + "</td>" : "") + "</tr>"; };
+  $("actFlTable").innerHTML = "<tr><th>Code</th><th>Description</th>" + (S.hasCur ? "<th style='width:100px'>Mission Type</th>" : "") + (S.hasStag ? "<th style='width:110px' title='Set on the Master Planner Flight Codes. The cell picker lists only the syllabus items that match it'>Syllabus tag</th>" : "") + "</tr>" + (fl.length ? fl.map(flRow).join("") : "<tr><td colspan=4 class='muted'>No flight codes yet.</td></tr>");
   // ground programme: the rest, editable, plus a few empty rows to add to
   const ground = S.acts.map((a, i) => i).filter(i => S.acts[i].code ? !isFlAct(S, S.acts[i]) : false), empty = S.acts.map((a, i) => i).filter(i => !S.acts[i].code && !S.acts[i].desc).slice(0, 3);
   const rows = ground.concat(empty), cats = S.cats.filter((c, i) => c && i !== CAT_FLIGHT);
@@ -5277,7 +5283,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z127 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z128 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

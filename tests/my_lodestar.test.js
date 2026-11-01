@@ -97,7 +97,7 @@ test("day_flight_has_time_and_comment", async ({ page }) => {
   const D = await day(page, "HAWK", "2026-10-05");
   assert.strictEqual(D.known, true);
   const f = D.items.filter(x => x.kind === "flight");
-  assert.deepStrictEqual(f.map(x => [x.s, x.code, x.time]), [[0, "FLT-2.0", "0830"], [2, "NVG-2.0", "1930-2130"]]);
+  assert.deepStrictEqual(f.map(x => [x.s, x.code, x.time]), [[0, "FLT-2.0", "0830-1030"], [2, "NVG-2.0", "1930-2130"]]);
   assert.strictEqual(f[0].note, "Lead, brief 0730");
   assert.strictEqual(f[0].cancelled, "");
 }, T3);
@@ -348,10 +348,10 @@ test("help_text_present", async ({ page }) => {
   const t = await page.innerText("#helpBody");
   assert.ok(/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));
 });
-test("version_is_z127", async ({ page }) => {
+test("version_is_z128", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z127 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-11-02 z127 "), "start screen version");
+  assert.ok(/ z128 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-11-02 z128 "), "start screen version");
 });
 
 // ---- Regression: the rest of the dashboard still works around My Lodestar
@@ -402,7 +402,7 @@ test("nil_callsign_people_do_not_share_flights", async ({ page }) => {
   await page.evaluate(() => { mePeople().find(z => z.p.id === "HAWK").p.id = "NIL"; mePeople().find(z => z.p.id === "OWL").p.id = "NIL"; });
   const r = await page.evaluate(() => { const hawk = mePeople().find(z => z.p.name === "CPT Sarah Lim"), owl = mePeople().find(z => z.p.name === "ME2 Nurul Huda");
     return { hawk: lodeDay(hawk, "2026-10-14").ops.map(o => [o.code, o.fromPlan]), owl: lodeDay(owl, "2026-10-14").ops.length, me: lodeDay(hawk, "2026-10-14").ops[0].seats.filter(z => z.me).length }; });
-  assert.deepStrictEqual(r, { hawk: [["2xFLT-1.5", false]], owl: 0, me: 1 });
+  assert.deepStrictEqual(r, { hawk: [["FLT-1.5", false]], owl: 0, me: 1 });
 }, T8);
 test("empty_callsign_still_finds_ops_row", async ({ page }) => {
   await page.evaluate(() => { mePeople().find(z => z.p.id === "HAWK").p.id = ""; });

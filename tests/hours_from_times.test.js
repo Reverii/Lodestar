@@ -53,6 +53,25 @@ test("flight_codes_page_has_no_hours_or_sorties_columns", async ({ page }) => {
   const h = await page.evaluate(() => [...document.querySelectorAll("#codeTable th")].map(x => x.textContent.trim())); assert.ok(!h.some(x => /Sorties|Hrs/.test(x)) && h.includes("Crew") && h.includes("Mission Type"), h.join());
 }, ED);
 
+// ---- Task 7: the department side takes hours from the MASTER row's time range
+const SUP2 = { mine: "Flight_Ops_Planner_SUP2", fresh: true };
+test("cell_hours_come_from_the_matching_master_slot", async ({ page }) => {
+  const r = await page.evaluate(() => { const M = S.m[9]; M.master[0][20] = "FLT-2.0"; M.mtime[0][20] = "0830-1030"; M.master[1][20] = "FLT-2.0"; M.mtime[1][20] = "1000-1130";
+    M.master[2][20] = "FLT-1.5"; M.mtime[2][20] = "1400-1530"; M.master[3][20] = "NVG-2.0"; M.mtime[3][20] = "";
+    return [cellHrs(M, 0, 20, "FLT-2.0"), cellHrs(M, 1, 20, "FLT-1.5"), cellHrs(M, 1, 20, "FLT-2.0"), cellHrs(M, 1, 20, "NVG-2.0"), cellHrs(M, 0, 20, "")]; });
+  assert.deepStrictEqual(r, [2, 1.5, 0, 0, 0]);   // first valid slot (not 3.5), no matching slot or no range = 0, blank cell = 0
+}, SUP2);
+test("person_month_total_uses_the_master_time", async ({ page }) => {
+  const r = await page.evaluate(() => { const M = S.m[9], i = 0, before = monthStats(9, actIndex()).crew[i];
+    M.master[0][21] = "FLT-2.0"; M.mtime[0][21] = "2200-0100"; M.grid[gridRow(i, 0)][21] = "FLT-2.0"; const after = monthStats(9, actIndex()).crew[i]; return { dh: after.hrs - before.hrs, df: after.fl - before.fl }; });
+  assert.deepStrictEqual(r, { dh: 3, df: 1 });   // a flight counts once; 2200-0100 is 3 hours
+}, SUP2);
+test("activities_page_has_no_hours_or_sorties", async ({ page }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='acts']").click(); renderActs(); });
+  const h = await page.evaluate(() => [...document.querySelectorAll("#actFlTable th")].map(x => x.textContent.trim()));
+  assert.ok(h.includes("Code") && h.includes("Description") && !h.some(x => /Sorties|Hrs/.test(x)), h.join());
+}, SUP2);
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0, S = null;
   for (const t of tests) {

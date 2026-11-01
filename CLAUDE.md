@@ -109,10 +109,10 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 
 ## Layout stamps and version
 
-- Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 3`. The dashboard has
-  `const LAYOUT = { dept: 3, master: 2, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
+- Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 4`. The dashboard has
+  `const LAYOUT = { dept: 4, master: 3, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
   lower or missing = checked sheet by sheet and listed as "older layout". Bump both sides together when cells move.
-- Dashboard version string: `Dashboard version 2026-10-31 z103` (two places in `.dashboard_source.html`: `#wDiag` and
+- Dashboard version string: `Dashboard version 2026-11-02 z129` (two places in `.dashboard_source.html`: `#wDiag` and
   `spDiag`). Bump the `zNN` number on each change you ship so Brandon can tell builds apart.
 
 ## Key cell layout (department file; full detail in the builders and dashboard constants)
@@ -124,8 +124,8 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - SDO / BDO Plan: month mi block at column 1+8*(mi%3), title row 6+16*floor(mi/3), week w on title row+3+2w (Mon..Sun);
   13th block (next Jan) at A70-G85. Identical cells in Duty_Roster.
 - Roster columns are found from header row 5 (Callsign | Name | Initials | Cat Status | Role | Status | Remarks).
-- Master Planner Flights rows 6..1005 (A date, B shift, C code, D time, E crew override, F comment); Flight Codes
-  (E crew tags P L T S1 S2, H syllabus tag); Day Status one row per date from row 6 (to row 402 with next Jan).
+- Master Planner Flights rows 6..1005 (A date, B shift, C code, D time, E crew override, F comment, G Sorties typed, blank = 1; L Hrs is a formula from the time); Flight Codes
+  (A code, B description, C crew tags P L T S1 S2, D mission type, E syllabus tag; no hours or sorties per code any more); Day Status one row per date from row 6 (to row 402 with next Jan).
 - Every save appends to the file's own `Change Log` sheet (created on first save by the dashboard).
 - `Ops_Room.xlsx` also carries a dashboard-created sheet `ATOM Currency` (the Ops Room publishes the daily ATOM export there; rows from 8, Initials in A; no names stored).
 

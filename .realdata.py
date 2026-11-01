@@ -26,12 +26,16 @@ if ON:
         if b.upper().startswith("Y"): BDO.append(p)
         if s.upper().startswith("Y"): SDO.append(p)
     ws = wb["Flight Codes"]
+    # columns found by their headers: a new sheet is Code, Description, Crew, Mission Type, Syllabus tag; an older one also had Sorties and Flight Hrs (ignored now)
+    hdr = next(([_s(ws.cell(r, c).value).lower() for c in range(1, 10)] for r in range(1, 12) if _s(ws.cell(r, 1).value).lower() == "code"), ["code", "description", "sorties", "flight hrs", "crew", "mission type", "syllabus tag"])
+    ix = lambda *names: next((i for i, h in enumerate(hdr) if any(h.startswith(n) for n in names)), None)
+    cc, cd, cr, cm_, ct = ix("code"), ix("description"), ix("crew"), ix("mission"), ix("syllabus", "tag")
     for r in range(5, ws.max_row + 1):
-        code, desc, so, hrs, crew, mt, tag = (_s(ws.cell(r, c).value) for c in range(1, 8))
+        g = lambda i: _s(ws.cell(r, i + 1).value) if i is not None else ""
+        code, desc, crew, mt, tag = g(cc), g(cd), g(cr), g(cm_), g(ct)
         if not code or code.lower() == "code": continue
         crew = " ".join(TAG_FIX.get(t, t) for t in crew.upper().replace(",", " ").split())
-        num = lambda x, d: float(x.lower().rstrip("hrs").strip()) if x.lower().rstrip("hrs").strip().replace(".", "", 1).isdigit() else d
-        so_ = num(so, 1); FLIGHT_CODES.append(dict(code=code, desc=desc or code, sorties=int(so_) if float(so_).is_integer() else so_, hrs=num(hrs, 0), crew=crew, mtype=mt.upper(), tag=tag))
+        FLIGHT_CODES.append(dict(code=code, desc=desc or code, crew=crew, mtype=mt.upper(), tag=tag))
     ws = wb["Activities"]
     for r in range(5, ws.max_row + 1):
         code, desc, cat = (_s(ws.cell(r, c).value) for c in range(1, 4))

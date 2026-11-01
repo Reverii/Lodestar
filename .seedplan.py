@@ -8,8 +8,8 @@ SHIFTS = ["AM", "PM", "NIGHT"]
 START, END = dt.date(YEAR, 10, 1), dt.date(YEAR, 11, 30)
 DEPTS = ["SUP 1", "SUP 2", "Loadmaster", "TACCO", "Pilot"]
 TAG = {"Pilot": "P", "Loadmaster": "L", "TACCO": "T", "SUP 1": "S1", "SUP 2": "S2"}
-# code -> (sorties = aircraft, default crew tags)
-CODES = {"FLT-1.5": (1, ""), "FLT-2.0": (1, ""), "FLT-3.0": (1, ""), "NVG-2.0": (1, ""), "2xFLT-1.5": (2, ""), "2xFLT-2.0": (2, ""),
+# code -> (unused, default crew tags); sorties are typed per flight now (a running change = one flight with 2 or 3 sorties)
+CODES = {"FLT-1.5": (1, ""), "FLT-2.0": (1, ""), "FLT-3.0": (1, ""), "NVG-2.0": (1, ""),
          "MSN-3.0": (1, "P T S2"), "PLT-TRG": (1, "P"), "EIS": (1, "S2"), "MAS TRG": (1, "S2")}
 
 def days():
@@ -72,30 +72,31 @@ BDO_CREW = [(cs,) + _crew[cs] for cs in ["VIPER", "HAWK", "ALPHA", "CHARLIE", "C
 
 # ---------------------------------------------------------------- Master Planner
 STATUS = {dt.date(YEAR, 10, 9): "Maintenance", dt.date(YEAR, 10, 16): "Stand-down", dt.date(YEAR, 11, 9): "Public Holiday", dt.date(YEAR + 1, 1, 1): "Public Holiday"}
-_base = {  # October 1-20 (the original samples): day -> shift -> [(code, time, comment, crew)]
-    1: {"AM": [("2xFLT-2.0", "0830-1030", "Formation lead VIPER", ""), ("FLT-1.5", "0900-1030", "", "")],
+_base = {  # October 1-20 (the original samples): day -> shift -> [(code, time, comment, crew[, sorties])]
+    1: {"AM": [("FLT-2.0", "0830-1230", "Formation lead VIPER", "", 2), ("FLT-1.5", "0900-1030", "", "")],
         "PM": [("FLT-2.0", "1400-1600", "", ""), ("FLT-1.5", "1530-1700", "", ""), ("FLT-2.0", "1600-1800", "Ferry back", "")]},
-    2: {"AM": [("FLT-1.5", "0800-0930", "", ""), ("FLT-2.0", "1000-1200", "", "")], "PM": [("FLT-2.0", "1330", "", "")], "NIGHT": [("NVG-2.0", "2000-2200", "", "")]},
-    5: {"AM": [("FLT-2.0", "0830", "", ""), ("FLT-1.5", "TBC", "Wx dependent", "")], "NIGHT": [("NVG-2.0", "1930-2130", "", "")]},
+    2: {"AM": [("FLT-1.5", "0800-0930", "", ""), ("FLT-2.0", "1000-1200", "", "")], "PM": [("FLT-2.0", "1330-1530", "", "")], "NIGHT": [("NVG-2.0", "2000-2200", "", "")]},
+    5: {"AM": [("FLT-2.0", "0830-1030", "", ""), ("FLT-1.5", "1100-1230", "Wx dependent", "")], "NIGHT": [("NVG-2.0", "1930-2130", "", "")]},
     6: {"PM": [("FLT-3.0", "1300-1600", "", "P L")]},
-    7: {"AM": [("FLT-2.0", "0830-1030", "Need 2nd crew", ""), ("FLT-1.5", "1100", "", "")]},
+    7: {"AM": [("FLT-2.0", "0830-1030", "Need 2nd crew", ""), ("FLT-1.5", "1100-1230", "", "")]},
     8: {"AM": [("FLT-2.0", "0900-1100", "Exercise", "P T")]},
     12: {"AM": [("FLT-2.0", "0830-1030", "", "")], "PM": [("FLT-1.5", "1400-1530", "", "")]},
     13: {"NIGHT": [("NVG-2.0", "2000-2200", "", "P S2")]},
-    14: {"AM": [("2xFLT-1.5", "0800-1100", "Check rides", "")]},
+    14: {"AM": [("FLT-1.5", "0800-1100", "Check rides", "", 2)]},
     15: {"PM": [("MSN-3.0", "1300-1600", "Long range", "")]},
     20: {"AM": [("PLT-TRG", "0900-1030", "", "")]},
 }
-FLIGHTS = []   # (date, shift, code, time, comment, crew override)
+FLIGHTS = []   # (date, shift, code, time, comment, crew override, sorties or None = 1)
 for d in sorted(_base):
     for sh in SHIFTS:
         for x in _base[d].get(sh, []): FLIGHTS.append((dt.date(YEAR, 10, d), sh) + x)
 _r = random.Random(121)
 for d in days():
     if d <= dt.date(YEAR, 10, 20) or d.weekday() >= 5 or d in STATUS: continue
-    am = [("FLT-2.0", "0830-1030"), ("FLT-1.5", "1000-1130")] if _r.random() < .55 else [(_r.choice(["FLT-2.0", "FLT-3.0", "2xFLT-2.0", "PLT-TRG"]), "0830-1030")]
+    am = [("FLT-2.0", "0830-1030"), ("FLT-1.5", "1000-1130")] if _r.random() < .55 else [(_r.choice(["FLT-2.0", "FLT-3.0", "FLT-2.0 x2", "PLT-TRG"]), "0830-1030")]
     if am[0][0] == "FLT-3.0": am[0] = ("FLT-3.0", "0800-1100")
-    for code, tm in am: FLIGHTS.append((d, "AM", code, tm, "", ""))
+    if am[0][0] == "FLT-2.0 x2": am[0] = ("FLT-2.0", "0830-1230")   # a running change: one flight, two sorties
+    for k, (code, tm) in enumerate(am): FLIGHTS.append((d, "AM", code, tm, "", "", 2 if tm == "0830-1230" else None))
     if d.weekday() in (0, 2, 4) or _r.random() < .4:
         code = _r.choice(["FLT-2.0", "FLT-2.0", "FLT-1.5", "MSN-3.0"])
         FLIGHTS.append((d, "PM", code, {"FLT-2.0": "1400-1600", "FLT-1.5": "1430-1600", "MSN-3.0": "1300-1600"}[code], "Long range" if code == "MSN-3.0" else "", ""))
@@ -108,6 +109,7 @@ FLIGHTS.append((dt.date(YEAR, 11, 3), "PM", "MAS TRG", "1300-1600", "MAS tactica
 # next January (the look-ahead tab), planned while still in the old year
 FLIGHTS.append((dt.date(YEAR + 1, 1, 4), "AM", "FLT-2.0", "0830-1030", "First flight of the new year", ""))
 FLIGHTS.append((dt.date(YEAR + 1, 1, 5), "PM", "MSN-3.0", "1300-1600", "Long range", ""))
+FLIGHTS = [tuple(f) + (None,) * (7 - len(f)) for f in FLIGHTS]
 GROUND = [(dt.date(YEAR, 10, 1), "0730-0800", "Safety Brief", "", "Monthly safety brief"), (dt.date(YEAR, 10, 7), "1400-1600", "CRM Lecture", "S1 S2", ""),
           (dt.date(YEAR, 10, 9), "0900-1200", "Ground School", "", "While the aircraft are in maintenance"), (dt.date(YEAR, 10, 14), "1500", "Sqn Meeting", "", ""),
           (dt.date(YEAR, 10, 22), "1400-1600", "CRM Lecture", "P T", ""), (dt.date(YEAR, 10, 28), "1500", "Sqn Meeting", "", ""),
@@ -214,8 +216,8 @@ def plan(dept):
         # flights: seats per aircraft (2 for Pilot: Captain + Co-Pilot)
         for s in SHIFTS:
             for f in shift_flights(d, s, dept):
-                ac = CODES.get(f[2], (1, ""))[0]
-                code = f[2].split("x", 1)[1] if f[2][:1].isdigit() and "x" in f[2] else f[2]
+                ac = f[6] or 1   # sorties on the flight = aircraft crews wanted
+                code = f[2]
                 need = ac * (2 if dept == "Pilot" else 1)
                 have = sum(1 for cs in ids if P.get((cs, d, s)) == code)
                 for _ in range(max(0, need - have)):
@@ -242,7 +244,7 @@ if realdata.ON:
     SAMPLE_CREW = {d: realdata.crew_tuples(d) for d in DEPTS}
     SDO_CREW = [(p["cs"], p["name"], p["dept"]) for p in realdata.SDO]
     BDO_CREW = [(p["cs"], p["name"], p["dept"]) for p in realdata.BDO]
-    CODES = {c["code"]: (c["sorties"], c["crew"]) for c in realdata.FLIGHT_CODES}
+    CODES = {c["code"]: (1, c["crew"]) for c in realdata.FLIGHT_CODES}
     STATUS, FLIGHTS, GROUND, FIXED = {}, [], [], []
     DUTY = {"SDO": {}, "BDO": {}}
     def plan(dept): return {}

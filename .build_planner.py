@@ -68,12 +68,13 @@ CATS = [
 CAT_ROW = {c[0]: 6 + i for i, c in enumerate(CATS)}
 METRICS = [
     ("Flights", "Flight", "entries", "172554"),
-    ("Fly Hrs", "Flight", "hours", "042F2E"),
+    ("Fly Hrs (dashboard)", "Flight", "hours", "042F2E"),
     ("Gnd Duty", "Ground Duty", "days", "451A03"),
     ("Sqn Duty", "Squadron Duty", "days", "4C0519"),
     ("Leave", "Leave", "days", SLATE800),
 ]
 MC0 = D31 + 1
+HRS_K = [i for i, m in enumerate(METRICS) if m[2] == "hours"][0]   # the per-person Fly Hrs column: kept in place (cells below and beside it are read by position) but blank and hidden
 DUTY_CODES = ("SDO", "BDO") if HAS_DUTY else ("SDO",)
 LASTC = MC0 + len(METRICS) - 1
 
@@ -478,13 +479,12 @@ if True:
 
 # ---------------------------------------------------------------- Activities
 banner(acts, "ACTIVITY DROPDOWN CATALOG", "Flights programme first (category Flight: copied from the Master Planner's Flight Codes in the dashboard), then the ground programme (everything else). Keep codes in one block with no gaps.", 10)
-header(acts, 5, 1, ["Code", "Description", "Category", "Flight Hrs", "Sorties"])
+header(acts, 5, 1, ["Code", "Description", "Category", "(unused)", "(unused)"])   # D and E: Flight Hrs and Sorties used to be here; hours now come from the Master Planner time range, sorties are typed per flight there
 # flights programme first (the Master Planner's Flight Codes, copied in by the dashboard), then the ground programme
-catalog = [("FLT-1.5", "Routine Sortie (1.5h)", "Flight", 1.5), ("FLT-2.0", "Standard Sortie (2.0h)", "Flight", 2.0),
-           ("FLT-3.0", "Extended Mission (3.0h)", "Flight", 3.0), ("NVG-2.0", "Night Flying Sortie (2.0h)", "Flight", 2.0),
-           ("2xFLT-1.5", "Two routine sorties in one shift", "Flight", 3.0, 2), ("2xFLT-2.0", "Two standard sorties in one shift", "Flight", 4.0, 2),
-           ("MSN-3.0", "Mission sortie: Pilot, TACCO, SUP 2 (3.0h)", "Flight", 3.0), ("PLT-TRG", "Pilot training sortie (1.5h)", "Flight", 1.5),
-           ("EIS", "EIS training sortie (2.0h)", "Flight", 2.0), ("MAS TRG", "MAS tactical training (3.0h)", "Flight", 3.0),
+catalog = [("FLT-1.5", "Routine Sortie (1.5h)", "Flight"), ("FLT-2.0", "Standard Sortie (2.0h)", "Flight"),
+           ("FLT-3.0", "Extended Mission (3.0h)", "Flight"), ("NVG-2.0", "Night Flying Sortie (2.0h)", "Flight"),
+           ("MSN-3.0", "Mission sortie: Pilot, TACCO, SUP 2 (3.0h)", "Flight"), ("PLT-TRG", "Pilot training sortie (1.5h)", "Flight"),
+           ("EIS", "EIS training sortie (2.0h)", "Flight"), ("MAS TRG", "MAS tactical training (3.0h)", "Flight"),
            # ground programme: Brandon's list of 2026-10-21 (Activities_List_to_fill.xlsx)
            ("SIM", "Simulator Training", "Sim", 0), ("SIMCEN", "Simulator Training (SIMCEN)", "Sim", 0),
            ("BU", "Quick Reaction Standby", "Ground Duty", 0),
@@ -498,7 +498,7 @@ catalog = [("FLT-1.5", "Routine Sortie (1.5h)", "Flight", 1.5), ("FLT-2.0", "Sta
            ("MC", "Medical Leave", "Medical", 0), ("Medical Appt", "Medical Appointment", "Medical", 0),
            ("LL", "Local Leave", "Leave", 0), ("OL", "Oversea Leave", "Leave", 0), ("OIL", "OIL", "Off", 0)]
 if REAL:   # the Master Planner's flight codes (all of them), then this department's activities from the data input
-    catalog = [(c["code"], c["desc"], "Flight", c["hrs"]) + ((c["sorties"],) if c["sorties"] != 1 else ()) for c in realdata.FLIGHT_CODES] + \
+    catalog = [(c["code"], c["desc"], "Flight") for c in realdata.FLIGHT_CODES] + \
               [(a["code"], a["desc"], a["cat"], 0) for a in realdata.acts_for(DEPT)]
 for i in range(NA):
     r = 6 + i
@@ -559,12 +559,11 @@ for i in range(NA):
     acts.cell(r, 16, f'=IFERROR(INDEX($A$6:$A${5+NA},MATCH({i + 1},$O$6:$O${5+NA},0)),"")')
 for col in "LMNOP":
     acts.column_dimensions[col].hidden = True
-name("ActSort", f"Activities!$L$6:$L${5+NA}")
 name("FlightCodes", f"Activities!$N$6:$N${5+NA}" if STATICNAMES else f"Activities!$N$6:INDEX(Activities!$N$6:$N${5+NA},MAX(1,COUNTIF(Activities!$C$6:$C${5+NA},Activities!$G$6)))")
 name("WdCodes", f"Activities!$P$6:$P${5+NA}" if STATICNAMES else f"Activities!$P$6:INDEX(Activities!$P$6:$P${5+NA},MAX(1,COUNTIF(Activities!$C$6:$C${5+NA},{catref('Ground Duty')})+COUNTIF(Activities!$C$6:$C${5+NA},{catref('Admin')})))")
 name("ActCodesAll", f"Activities!$A$6:$A${5+NA}")
 name("ActCat", f"Activities!$C$6:$C${5+NA}")
-name("ActHrs", f"Activities!$D$6:$D${5+NA}")
+acts.column_dimensions["D"].hidden = True; acts.column_dimensions["E"].hidden = True
 name("ActCodes", f"Activities!$A$6:$A${5+NA}" if STATICNAMES else f"Activities!$A$6:INDEX(Activities!$A$6:$A${5+NA},MAX(1,COUNTA(Activities!$A$6:$A${5+NA})))")
 name("Categories", f"Activities!$G$6:$G${5+len(CATS)}")
 name("Holidays", "Activities!$I$6:$I$35")
@@ -576,7 +575,7 @@ HAS_CUR = True
 CUR_RULES, CUR_ROW0 = 12, 6
 if HAS_CUR:
     header(acts, 5, 6, ["Mission Type"])
-    mtypes = {"FLT-1.5": "GEN", "FLT-2.0": "GEN", "FLT-3.0": "GEN", "NVG-2.0": "NIGHT", "2xFLT-1.5": "GEN", "2xFLT-2.0": "GEN", "MSN-3.0": "MSN", "PLT-TRG": "TRG", "EIS": "TRG", "MAS TRG": "TRG"}
+    mtypes = {"FLT-1.5": "GEN", "FLT-2.0": "GEN", "FLT-3.0": "GEN", "NVG-2.0": "NIGHT", "MSN-3.0": "MSN", "PLT-TRG": "TRG", "EIS": "TRG", "MAS TRG": "TRG"}
     for i in range(NA):
         r = 6 + i; cell = acts.cell(r, 6); cell.fill = INPUT_FILL; cell.font = INPUT_FONT; cell.border = BOX
         if REAL: mtypes = {c["code"]: c["mtype"] for c in realdata.FLIGHT_CODES if c["mtype"]}
@@ -607,7 +606,7 @@ if HAS_CUR:
     tips = ["How to write a rule",
             "Applies to: All, or Role / Cat Status / Status / Callsigns with the values in Who, comma separated (e.g. Instructor, Senior CAT A  or  VIPER, HAWK).",
             "Counts: Any flight (category Flight on Activities), Mission type (Activities column F, e.g. MSN) or Flight codes (e.g. NVG-2.0, MSN-3.0).",
-            "At least: blank = 1. A 2xFLT code counts as 2 flights.",
+            "At least: blank = 1. Each flight cell counts once.",
             "Warn: the person shows amber this many days before the rule lapses.",
             f"Up to {CUR_RULES} rules. Past dates on the month tabs count as flown; change or clear a cell if the flight was cancelled.",
             "Flying before this file starts: enter each person's last date on the Currency sheet."]
@@ -739,7 +738,7 @@ ROW_LABELS = SHIFTS + ["WD"]
 WD_TINT = "F0FDFA"
 KPI = [  # label, formula builder, accent, numfmt
     ("Total Flights", lambda: f"=SUM(AI{G0}:AI{GL})", "1D4ED8", "0"),
-    ("Total Flying Hrs", lambda: f"=SUM(AJ{G0}:AJ{GL})", "0F766E", "0.0"),
+    ("Flying Hrs (dashboard)", lambda: f"=SUM(AJ{G0}:AJ{GL})", "0F766E", "0.0"),
     ("Ground Duties", lambda: f"=SUM(AK{G0}:AK{GL})", "B45309", "0"),
     ("SDO Planned", lambda: f"=SUM(AL{G0}:AL{GL})", "BE123C", "0"),
     ("Active Crew", lambda: '=(COUNTIFS(CrewName,"<>")-COUNTIFS(CrewName,"<>",CrewStatus,"Inactive"))', SLATE700, "0"),
@@ -809,8 +808,9 @@ for m, mon in enumerate(MONTHS13, start=1):
                 ccell.alignment = Alignment(horizontal="center", vertical="top", shrink_to_fit=True); ccell.number_format = "@"
             ws.row_dimensions[r].height = 18; ws.row_dimensions[rt].height = 15; ws.row_dimensions[rc].height = 15
     ws.merge_cells(start_row=6, start_column=MC0, end_row=23, end_column=LASTC)
-    plan = "+".join(f"SUMPRODUCT(SUMIFS(ActSort,ActCodesAll,D{CODE_ROW(s, k)}:AH{CODE_ROW(s, k)}))" for s in range(3) for k in range(2))
-    short = "+".join(f'SUMPRODUCT(($D$5:$AH$5<>"")*($D${S0 + 1 + s}:$AH${S0 + 1 + s}>0)*((SUMIFS(ActSort,ActCodesAll,$D${CODE_ROW(s, 0)}:$AH${CODE_ROW(s, 0)})+SUMIFS(ActSort,ActCodesAll,$D${CODE_ROW(s, 1)}:$AH${CODE_ROW(s, 1)}))>$D${S0 + 1 + s}:$AH${S0 + 1 + s}))' for s in range(3))
+    ws.column_dimensions[CL(MC0 + HRS_K)].hidden = True   # per-person Fly Hrs: blank in Excel (the dashboard plans hours from the Master Planner time range)
+    plan = "+".join(f'SUMPRODUCT(--(D{CODE_ROW(s, k)}:AH{CODE_ROW(s, k)}<>""))' for s in range(3) for k in range(2))
+    short = "+".join(f'SUMPRODUCT(($D$5:$AH$5<>"")*($D${S0 + 1 + s}:$AH${S0 + 1 + s}>0)*((($D${CODE_ROW(s, 0)}:$AH${CODE_ROW(s, 0)}<>"")+($D${CODE_ROW(s, 1)}:$AH${CODE_ROW(s, 1)}<>""))>$D${S0 + 1 + s}:$AH${S0 + 1 + s}))' for s in range(3))
     ws.cell(3, D1 + len(KPI), "=" + short).number_format = ";;;"
     unc = f"{CL(D1 + len(KPI) - 1)}3"; shr = f"{CL(D1 + len(KPI))}3"
     sm = ws.cell(6, MC0, f'="Planned sorties: "&{plan}&CHAR(10)&"No crew: "&{unc}&" shift(s)"&CHAR(10)&"Short of crew: "&{shr}&" shift(s)"')
@@ -833,7 +833,7 @@ for m, mon in enumerate(MONTHS13, start=1):
                             numFmt=NumberFormat(numFmtId=201, formatCode='"! "@'))
     for s in range(3):
         r1, r2, cr = CODE_ROW(s, 0), CODE_ROW(s, 1), S0 + 1 + s
-        planned = f"(SUMIFS(ActSort,ActCodesAll,D${r1})+SUMIFS(ActSort,ActCodesAll,D${r2}))"
+        planned = f'((D${r1}<>"")+(D${r2}<>""))'
         for rr in (r1, r2):
             rng = f"D{rr}:AH{rr}"
             ws.conditional_formatting.add(rng, FormulaRule(formula=['D$5=""'], fill=fill(SLATE400), stopIfTrue=True))
@@ -933,9 +933,9 @@ for m, mon in enumerate(MONTHS13, start=1):
         for k, (lab, cat, mode, col) in enumerate(METRICS):
             hc = f"{CL(MC0 + k)}$3"
             if mode == "entries":
-                fx = f"SUMPRODUCT(SUMIFS(ActSort,ActCodesAll,{blk3},ActCat,{hc}))"
+                fx = "SUMPRODUCT(" + "+".join(f"COUNTIFS(ActCodesAll,$D{r0 + s}:$AH{r0 + s},ActCat,{hc})" for s in range(3)) + ")"
             elif mode == "hours":
-                fx = f"SUMPRODUCT(SUMIFS(ActHrs,ActCodesAll,{blk3},ActCat,{hc}))"
+                fx = '""'   # hours are planned in the dashboard from the Master Planner time range (no Flight Hrs in Excel any more)
             elif mode == "duty":
                 rows = "+".join(f"($D{r0 + s}:$AH{r0 + s}=\"{dc}\")" for s in range(3) for dc in DUTY_CODES)
                 fx = f"SUMPRODUCT(--(({rows})>0))"
@@ -972,11 +972,11 @@ for m, mon in enumerate(MONTHS13, start=1):
             L = CL(D1 + d)
             if lab.startswith("Flights "):
                 sh = lab.split()[1]
-                fx = f'SUMPRODUCT(($C${G0}:$C${GL}="{sh}")*SUMIFS(ActSort,ActCodesAll,{L}${G0}:{L}${GL},ActCat,{catref("Flight")}))'
+                fx = f'SUMPRODUCT(($C${G0}:$C${GL}="{sh}")*COUNTIFS(ActCodesAll,{L}${G0}:{L}${GL},ActCat,{catref("Flight")}))'
             elif lab == "Total flights":
                 fx = f"SUM({L}{S0 + 1}:{L}{S0 + 3})"
             elif lab == "Fly hrs":
-                fx = f'SUMPRODUCT(SUMIFS(ActHrs,ActCodesAll,{L}${G0}:{L}${GL},ActCat,{catref("Flight")}))'
+                fx = '""'
             elif lab == "SDO on duty":
                 fx = persons_duty(L)
             elif lab == "Gnd duty (crew)":
@@ -990,6 +990,7 @@ for m, mon in enumerate(MONTHS13, start=1):
             c.font = f(lab in ("Total flights", "SDO on duty", "Available crew"), SLATE700, 9)
             c.number_format = "0.0;-0.0;-" if lab == "Fly hrs" else "0;-0;-"
         ws.row_dimensions[r].height = 16
+        if lab == "Fly hrs": ws.row_dimensions[r].hidden = True   # blank in Excel: hours are planned in the dashboard
     ws.conditional_formatting.add(f"D{SDO_ROW}:AH{SDO_ROW}", FormulaRule(
         formula=[f'AND(D${SDO_DEPT_ROW}<>"",D{SDO_ROW}=0)'], fill=fill("F43F5E"), font=Font(color="FFFFFF", bold=True)))
     ws.conditional_formatting.add(f"D{SDO_ROW}:AH{SDO_ROW}", FormulaRule(
@@ -1087,7 +1088,7 @@ name("MonthIdx", "Dashboard!$Z$1")
 dash["Z1"] = "=MATCH($B$5,{" + ",".join(f'"{x}"' for x in MONTHS_FULL) + "},0)"
 dash.column_dimensions["Z"].hidden = True
 # layout stamp: the dashboard compares it with the layout it was written for (bump it when cell positions change)
-dash["Z2"] = "LODESTAR dept layout 3"; dash.column_dimensions["Z"].hidden = True
+dash["Z2"] = "LODESTAR dept layout 4"; dash.column_dimensions["Z"].hidden = True
 dv = DataValidation(type="list", formula1='"' + ",".join(str(y) for y in range(2025, 2036)) + '"'); dv.add("A5"); dash.add_data_validation(dv)
 dv = DataValidation(type="list", formula1='"' + ",".join(MONTHS_FULL) + '"'); dv.add("B5"); dash.add_data_validation(dv)
 def pick(cellref):
@@ -1151,7 +1152,7 @@ apply_cat_cf(dash, f"K{T0 + 2}:K{T0 + 21}", f"K{T0 + 2}")
 Y0 = tr + 3
 dash.cell(Y0, 1, '="YEAR OVERVIEW  |  "&$A$5').font = f(True, SLATE900, 11)
 dash.merge_cells(start_row=Y0, start_column=1, end_row=Y0, end_column=3)
-ylabels = [("Flights", 0, "0"), ("Flying Hrs", 1, "0.0"), ("Ground Duties", 2, "0"), ("SDO Planned", 3, "0"), ("SDO Days Uncovered", 5, "0"), ("Uncrewed Shifts", 6, "0")]
+ylabels = [("Flights", 0, "0"), ("Fly Hrs (dashboard)", 1, "0.0"), ("Ground Duties", 2, "0"), ("SDO Planned", 3, "0"), ("SDO Days Uncovered", 5, "0"), ("Uncrewed Shifts", 6, "0")]
 header(dash, Y0 + 1, 1, ["Month"] + [y[0] for y in ylabels])
 for mi, mon in enumerate(MONTHS):
     r = Y0 + 2 + mi
@@ -1169,7 +1170,7 @@ for j, (lab, k, nf) in enumerate(ylabels):
 for c in range(1, 2 + len(ylabels)):
     dash.cell(yr, c).border = Border(top=Side(style="medium", color=SLATE900)); dash.cell(yr, c).fill = fill(SLATE100)
 dash.conditional_formatting.add(f"A{Y0 + 2}:G{Y0 + 13}", FormulaRule(formula=[f'MonthIdx=ROW()-{Y0 + 1}'], fill=fill("DBEAFE")))
-for j, (title, col) in enumerate((("Flights per month", 2), ("Flying hours per month", 3))):
+for j, (title, col) in enumerate((("Flights per month", 2),)):
     ch = BarChart(); ch.type = "col"; ch.title = title; ch.style = 10 if j == 0 else 12
     ch.add_data(Reference(dash, min_col=col, min_row=Y0 + 1, max_row=Y0 + 13), titles_from_data=True)
     ch.set_categories(Reference(dash, min_col=1, min_row=Y0 + 2, max_row=Y0 + 13))
@@ -1186,7 +1187,7 @@ daily["A5"] = "=TODAY()"; daily["A5"].number_format = "ddd dd-mmm-yyyy"
 daily["A5"].font = f(True, "1D4ED8", 12); daily["A5"].fill = INPUT_FILL; daily["A5"].border = BOX
 daily.merge_cells("A5:B5")
 daily["C5"] = '=IF(NOT(' + INYR("A5") + '),"Date is outside planning year "&PlanYear&" and January "&(PlanYear+1),"")'; daily["C5"].font = f(True, "DC2626")
-dsum = [("Flights", "Total flights", "1D4ED8", "0"), ("Flying Hrs", "Fly hrs", "0F766E", "0.0"),
+dsum = [("Flights", "Total flights", "1D4ED8", "0"), ("Flying Hrs (dashboard)", "Fly hrs", "0F766E", "0.0"),
         ("SDO on Duty", "SDO on duty", "BE123C", "0"), ("On Leave", "On leave (crew)", SLATE700, "0"),
         ("Available Crew", "Available crew", "15803D", "0")]
 for k, (lab, key, accent, nf) in enumerate(dsum):
@@ -1244,7 +1245,7 @@ lines = [
     ("Master rows (top of each month tab): the flight programme. Each shift has two flight slots (AM 1, AM 2, PM 1 ...); pick a flight from the dropdown in each. Leave slot 2 empty if only one flight is planned.", None),
     ("Flight timing: type it in the grey row under each master flight, in any form (0830, 0830-1030, TBC). Display only.", None),
     ("Flight comments: type any short note in the cream row under the time (e.g. 'Wx dependent', 'Need 2nd crew'). Display only; long notes shrink to fit the cell.", None),
-    ("More than two flights in a shift, or one person flying twice in a shift: use a combined code such as 2xFLT-1.5 (Activities sheet, Sorties = 2). It counts as 2 flights and its total hours.", None),
+    ("A flight split into 2 or 3 sorties (a running change) is one flight on the Master Planner with a Sorties number; its crew use the one flight code.", None),
     ("Master warnings: red with a warning sign = flights planned but nobody in that shift is flying. Amber with ! = fewer crew sorties than planned sorties. Green = covered.", None),
     ("Daily View: type any date to see every crew member's AM, PM and NIGHT activity, that day's totals and whether it's an SDO day.", None),
     ("Roster: the crew list (callsign, name with rank, initials, Cat Status, role, status). Activities: the dropdown catalog, categories and public holidays.", None),
@@ -1258,10 +1259,10 @@ lines = [
     ("Don't delete or re-order Roster rows. Month tabs link to the Roster by row, so deleting a row moves everyone's plan onto the wrong person.", "warn"),
     ("", None),
     ("ADDING ACTIVITIES", "h"),
-    ("Type a new code on the Activities sheet directly under the last one (no gaps), pick its category and enter its flight hours. It appears in every dropdown.", None),
+    ("Type a new code on the Activities sheet directly under the last one (no gaps), pick its category. It appears in every dropdown. Flight codes come from the Master Planner.", None),
     ("", None),
     ("HOW TOTALS ARE COUNTED", "h"),
-    ("Flights: one per Flight-category cell, so flying AM and NIGHT on the same day is 2 flights. Fly Hrs adds each activity's Flight Hrs.", None),
+    ("Flights: one per Flight-category cell, so flying AM and NIGHT on the same day is 2 flights. Planned flying hours are shown by the dashboard, from each flight's time range on the Master Planner (Excel does not total them).", None),
     ("Gnd Duty, SDO and Leave are counted in days. A day counts once if any of AM, PM or NIGHT has that category, so a 24h SDO filled into all three rows is 1 SDO.", None),
     ("", None),
     ("NEW YEAR" if REAL else "SAMPLE DATA", "h"),

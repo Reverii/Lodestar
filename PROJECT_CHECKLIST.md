@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 2 Nov 2026 (z124). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 2 Nov 2026 (z128). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -211,3 +211,6 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Change Log (z123, 1 Nov, Brandon): runs of cells in one save are one line, MASTER copies are not logged, repeat edits of a cell merge, rows older than 90 days are dropped (awaiting his look)
 - [ ] Admin mode (Brandon, 1 Nov: build towards the END of the dev stage, after the DEV code is stripped; not now). Plan: an `Admins` sheet in the Master Planner file lists the SharePoint sign-in names; an admin sees a "Maintenance" tab at the far right (nobody else does; no sheet = no admins). Holds Start new year and Change Log clear / 90-day setting (with confirms), creating helper sheets (Crew Matrix, Role Tags, Admins), a health check (version, layout stamps, last saves, Names to fix) and editing the shared files. Not security (SharePoint permissions are); a tidy-up. Open: who is on the list (suggest Brandon plus one backup)
 - [?] Flying Restriction banner (z124, 2 Nov, Brandon): slim red banner at the top of the Ops Room with typed text for a date range; added from the Ops Room (+ Restriction) or the Master Planner day panel (needs the Ops Room file open for editing); saved in a `Flying Restrictions` sheet in the Ops Room file (awaiting his look)
+- [?] Master Planner flight card (z125, 2 Nov, Brandon): planned hours (from the time range, midnight crossing OK), description, mission type, sorties and a day summary; view-only card is plain text (awaiting his look)
+- [?] Streamline (Brandon, 2 Nov; built z126 to z128, awaiting his look and the file replacement): drop Flight Hrs and Sorties from the Activities page, hours from the Master Planner time range everywhere, sorties = number of flights; changes the Excel totals in all five department files, do it with the layout-3 file replacement
+

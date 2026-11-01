@@ -252,6 +252,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfb .tags,.spfb .nt{grid-column:span 2}
 .spfb select.set,.spfb .v.set{background:#dcfce7;color:#166534;font-weight:800}
 .spfb input.nt{font-style:italic;color:#92400e;background:#fffdf5}
+.spfb input.sorb{width:100%}
 .spfb .v{padding:6px 8px;border:1px solid var(--s200);border-radius:6px;font-size:14px}.spfb .v.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb .tags{display:flex;gap:4px;align-items:center}.spfb .tag{border:1px solid var(--s300);border-radius:4px;padding:2px 8px;font:800 12px Arial,sans-serif;color:var(--s500);cursor:pointer;background:#fff}
 .spfb .tag.on{color:#fff;border-color:transparent}.spfb .tag.tP.on{background:#1d4ed8}.spfb .tag.tL.on{background:#0f766e}.spfb .tag.tT.on{background:#b45309}.spfb .tag.tS1.on{background:#7e22ce}.spfb .tag.tS2.on{background:#be123c}
@@ -471,6 +472,11 @@ body.ro .edit input,body.ro .edit select{pointer-events:none;color:var(--s600)}
 #grPop select,#grPop input:not([type=checkbox]){padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900)}
 #grPop label.ck{flex-direction:row;align-items:center;gap:5px;text-transform:none;font-size:13px;color:var(--s700);flex:0 0 auto;min-width:0}
 #grPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+/* Master Planner flight card facts: planned hours, description, mission type */
+#mpSide .spsum{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}#mpSide .spsum span{background:#f1f5f9;border-radius:8px;padding:3px 10px;font-size:12.5px;color:#334155}#mpSide .spsum b{color:#0f172a}
+#mpSide .spfb>div.spdesc,#mpSide .spfb>div.spfacts{grid-column:1/-1}#mpSide .spfb div.v{border:0;background:none;box-shadow:none;padding:0;min-height:0}#mpSide .spfb div.v.set{font-size:17px;font-weight:800;color:#166534}#mpSide .spfb div.v.nt{font-style:italic;color:#64748b;font-size:12.5px;margin-top:4px}
+#mpSide .spdesc{color:#475569;font-size:12.5px;font-weight:400}#mpSide .spfacts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}#mpSide .spfacts span{background:#f1f5f9;border-radius:6px;padding:1px 8px;font-size:12px;color:#334155}
+#mpSide .spfacts .hr{background:#dcfce7;color:#166534;font-weight:800}#mpSide .spfacts .hr.cd{background:#f1f5f9;color:#475569;font-weight:700}#mpSide .spfacts .wn{background:#fee2e2;color:#991b1b;font-weight:700}
 /* Flying Restriction: a slim red banner on the Ops Room, the add dialog, the Master Planner side panel and calendar tag */
 #opsFr{display:flex;flex-direction:column;gap:3px;margin:0 0 6px}#opsFr:empty{display:none}
 .frb{display:flex;align-items:center;gap:10px;background:#b91c1c;color:#fff;border:1px solid #fca5a5;border-radius:6px;padding:3px 10px;font-weight:600;font-size:14px;line-height:1.3}
@@ -1067,7 +1073,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z124</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z129</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1978,8 +1984,12 @@ function readMaster(name) {   // (the Crew Matrix sheet is read at the end)
   const st = { kind: "master", year: null, dept: "Master Planner", roster: [], acts: [], cats: [], hols: [], m: [], sdo: {}, mp: [], codes: [], fl: [] };
   const dash = readCells("Dashboard"); st.year = num(dash.A5) || new Date().getFullYear();
   const fc = readCells("Flight Codes"); st.codeAll = [];
-  for (let i = 0; i < FC_N; i++) { const r = 6 + i; st.codeAll.push({ row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), sort: num(fc["C" + r]), hrs: num(fc["D" + r]), crew: str(fc["E" + r]), mtype: str(fc["F" + r]), stag: str(fc["H" + r]) }); }
-  st.hasStag = /syllabus/i.test(str(fc.H5));
+  // layout 3: A Code, B Description, C Crew, D Mission Type, E Syllabus tag. Older files: C Sorties, D Flight Hrs, E Crew, F Mission Type, H Syllabus tag
+  const oldFc = /sorties/i.test(str(fc.C5));
+  for (let i = 0; i < FC_N; i++) { const r = 6 + i;
+    st.codeAll.push(oldFc ? { row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), sort: num(fc["C" + r]), hrs: num(fc["D" + r]), crew: str(fc["E" + r]), mtype: str(fc["F" + r]), stag: str(fc["H" + r]) }
+      : { row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), crew: str(fc["C" + r]), mtype: str(fc["D" + r]), stag: str(fc["E" + r]) }); }
+  st.fcOld = oldFc; st.hasStag = /syllabus/i.test(str(oldFc ? fc.H5 : fc.E5));
   mkCodes(st);
   st.statuses = []; for (let i = 0; i < 12; i++) { const v = str(fc["G" + (6 + i)]); if (v) st.statuses.push(v); }
   if (!st.statuses.length) st.statuses = ["No Flying", "Stand-down", "Maintenance", "Public Holiday"];
@@ -1995,7 +2005,7 @@ function readMaster(name) {   // (the Crew Matrix sheet is read at the end)
     if (typeof a !== "number" || si < 0) { if (a != null || code) st.flBad = (st.flBad || 0) + 1; continue; }
     const { y, mi, d } = ymd(serialToISO(a), st.year);
     if (y !== st.year || (mi === NX_MI && !st.nx)) continue;
-    st.fl.push({ row: r, mi, d, s: si, code, time: timeStr(c["D" + r]), crew: str(c["E" + r]), note: str(c["F" + r]) });
+    st.fl.push({ row: r, mi, d, s: si, code, time: timeStr(c["D" + r]), crew: str(c["E" + r]), note: str(c["F" + r]), sort: (n => n >= 1 && n <= 9 ? Math.round(n) : 1)(num(c["G" + r])) });
   }
   // Ground Programme sheet: office / ground events, rows 6..505 (A date, B time, C activity, D crew, E comment)
   st.gr = []; st.grUsed = new Set(); st.hasGr = !!WB.paths["Ground Programme"];
@@ -2246,7 +2256,7 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-upch
 // ---------- layout check: each file kind has a layout number, stamped by the builder on its Dashboard sheet (Z2, "LODESTAR dept layout 1").
 // A higher stamp than this dashboard knows = the file is newer (saving could write to the wrong cells). Files without a stamp (or with a lower one)
 // are checked by the sheets and rows this dashboard uses; anything missing is listed as "older layout".
-const LAYOUT = { dept: 3, master: 2, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
+const LAYOUT = { dept: 4, master: 3, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
 const LAYOUT_NAME = { dept: "planner", master: "Master Planner", roster: "Duty Roster", ops: "Ops Room" };
 function layoutCheck(st) {
   const kind = st.kind || "dept", z = WB.paths["Dashboard"] ? str(readCells("Dashboard").Z2) : "", m = /(\w+)\s+layout\s+(\d+)/i.exec(z), miss = [];
@@ -2869,11 +2879,17 @@ function actIndex() {
   const map = new Map();
   for (const a of S.acts) if (a.code) {
     const ci = S.cats.findIndex(c => c && c.toLowerCase() === a.cat.toLowerCase());
-    map.set(a.code.toUpperCase(), { ...a, ci, sorties: a.sort == null ? 1 : a.sort, hours: a.hrs || 0 });
+    map.set(a.code.toUpperCase(), { ...a, ci, sorties: 1, hours: 0 });   // sorties and hours are not per code any more: a flight cell counts once; hours come from the MASTER row's time range (cellHrs)
   }
   return map;
 }
 const daysIn = (y, m) => new Date(y, m + 1, 0).getDate();
+// planned hours of one flight cell: the first MASTER slot of that shift and day with the same code and a usable time range (0 when there is none)
+function cellHrs(M, s, d, code) {
+  const c = String(code || "").trim(); if (!c) return 0;
+  for (const j of [s * 2, s * 2 + 1]) { if (M.master[j] && same(M.master[j][d], c)) { const h = mpFlHrs(null, { time: M.mtime[j][d] }).h; if (h > 0) return h; } }
+  return 0;
+}
 function monthStats(mi, A) {
   const y = S.year, dim = daysIn(y, mi), M = S.m[mi];
   const look = v => v ? A.get(v.toUpperCase()) : null;
@@ -2892,7 +2908,7 @@ function monthStats(mi, A) {
         if (d < dim) { if (cu === "BDO") day[d].nB++; else if (cu === "SDO") day[d].nS++; }
         if (a.ci === CAT_FLIGHT && cxlOf(S, S.roster[i].id, mi, d, s)) continue;   // cancelled in the Ops Room
         if (a.ci === CAT_FLIGHT && roleOf(S, mi, gridRow(i, s), d) === "PAX") continue;   // a passenger: not planned flying (Excel's own totals still count the cell)
-        if (a.ci === CAT_FLIGHT) { t.fl += a.sorties; t.hrs += a.hours; if (d < dim) { day[d].fl[s] += a.sorties; day[d].hrs += a.hours; } }
+        if (a.ci === CAT_FLIGHT) { const hh = cellHrs(M, s, d, M.grid[gridRow(i, s)][d]); t.fl += 1; t.hrs += hh; if (d < dim) { day[d].fl[s] += 1; day[d].hrs += hh; } }
       }
       if (rp() > 3) { const w = look(M.grid[gridRow(i, 3)][d]); if (wdAllowed(w)) cats.add(w.ci); }   // the WD row adds its ground or admin item to the day, counted once
       if (cats.has(CAT_GD)) t.gd++; if (cats.has(CAT_SQD)) t.sdo++; if (cats.has(CAT_LEAVE)) t.lv++;
@@ -2967,12 +2983,11 @@ function renderMp() {
   const P = books[bi].S;
   if (P.legacy) { $("mpKpis").innerHTML = ""; $("mpInfo").innerHTML = "<span style='color:#b91c1c'><b>This Master Planner file is the old layout (6 fixed slots a day).</b> Replace it with the new Master_Planner_2026.xlsx, which keeps a list of flights so you can add as many as you need.</span>"; $("mpCal").innerHTML = ""; $("mpSide").innerHTML = ""; return; }
   const y = P.year, mi = cur.mpM, M = P.mp[mi], dim = daysIn(y, mi), off = (new Date(y, mi, 1).getDay() + 6) % 7;
-  const sortOf = c => { const x = P.codes.find(k => same(k.code, c)); return c ? (x ? x.sort : 1) : 0; };
-  const daySort = d => M.status[d] ? 0 : P.fl.reduce((n, f) => n + (f.mi === mi && f.d === d ? sortOf(f.code) : 0), 0);
+  const daySort = d => M.status[d] ? 0 : P.fl.reduce((n, f) => n + (f.mi === mi && f.d === d && f.code ? flSort(f) : 0), 0);
   let tot = 0, offDays = 0; for (let d = 0; d < dim; d++) { if (M.status[d]) offDays++; tot += daySort(d); }
   // stat cards: this month, with the year underneath (flights on no-flying days don't count)
-  const live = f => f.code && !P.mp[f.mi].status[f.d], hrsOf = c => { const x = P.codes.find(k => same(k.code, c)); return x ? x.hrs : 0; };
-  const stat = list => ({ fl: list.length, so: list.reduce((n, f) => n + sortOf(f.code), 0), hr: list.reduce((n, f) => n + hrsOf(f.code), 0), days: new Set(list.map(f => f.mi + ":" + f.d)).size });
+  const live = f => f.code && !P.mp[f.mi].status[f.d], hrsOf = f => mpFlHrs(P, f).h;
+  const stat = list => ({ fl: list.length, so: list.reduce((n, f) => n + flSort(f), 0), hr: list.reduce((n, f) => n + hrsOf(f), 0), days: new Set(list.map(f => f.mi + ":" + f.d)).size });
   const sm = stat(P.fl.filter(f => f.mi === mi && live(f))), sy = stat(P.fl.filter(f => f.mi < NX_MI && live(f)));   // the year: next January not counted
   let yOff = 0; P.mp.slice(0, 12).forEach(x => x.status.forEach(v => { if (v) yOff++; }));
   const hf = v => (Math.round(v * 10) / 10).toFixed(1);   // also used by the week column
@@ -3015,14 +3030,14 @@ function renderMp() {
     if (d < 0 || d >= dim) h += "<div class='mday out'></div>";
     else {
       const we = i % 7 > 4, dayOff = M.status[d], L = dayFl(d), n = daySort(d);
-      if (!dayOff) { wS += n; wH += L.reduce((a, f) => a + (f.code ? hrsOf(f.code) : 0), 0); }
+      if (!dayOff) { wS += n; wH += L.reduce((a, f) => a + (f.code ? hrsOf(f) : 0), 0); }
       h += "<div class='mday" + (we ? " we" : "") + (d === todayD ? " today" : "") + (d === cur.mpDay ? " sel" : "") + (dayOff ? " nofly" : "") + "' data-day='" + d + "' title='" + (lock ? "Click to see this day" : "Click to plan this day") + "'><div class='dn'>" + (d + 1) + "<small>" + (n ? n + (n === 1 ? " sortie" : " sorties") : "") + "</small></div>";
       if (dayOff) h += "<div class='reason'>NO FLYING<br>" + esc(dayOff) + "</div>";
       { const fr = frFor(isoOf(y, mi, d)); if (fr.length) h += "<div class='frtag' title='" + esc(fr.map(e => e.text).join(" | ")) + "'>RESTRICTION</div>"; }
       {
         const G = grDay(P, mi, d), items = (dayOff ? [] : L.map(f => ({ f }))).concat(G.map(g => ({ g }))), show = items.length > 4 ? 3 : 4;
         items.slice(0, show).forEach(({ f, g }) => {
-          if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(f.time, (P.codes.find(k => same(k.code, f.code)) || {}).hrs) || (f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
+          if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(f.time, 0) || (f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
           else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Squadron event · " + [g.time, g.act, crewIsAll(g.crew) ? "crew ALL" : cw.length ? "crew " + cw.join(" ") : "NO CREW", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (crewIsAll(g.crew) ? "<span class='c'>ALL</span>" : cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "<span class='c nocrew'>!</span>") + "</div>"; }
         });
         if (items.length > show) h += "<div class='more'>+" + (items.length - show) + " more</div>";
@@ -3041,16 +3056,19 @@ function renderMp() {
   let p = "<div class='sph'><button class='nav' data-go='-1' title='Previous day'>‹</button><h3>" + sdt.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) + "</h3><button class='nav' data-go='1' title='Next day'>›</button><button class='nav' data-go='x' title='Close'>✕</button></div><div class='spb'>";
   p += "<div class='lbl'>Day status</div>" + (lock ? "<div class='ro" + (sOff ? " off" : "") + "'>" + (sOff ? "No flying: " + esc(sOff) : "Flying day") + "</div>" :
     "<select class='mpst2" + (sOff ? " on" : "") + "' data-st='" + sd + "'><option value=''>Flying day</option>" + P.statuses.map(x => "<option" + (same(x, sOff) ? " selected" : "") + ">" + esc(x) + "</option>").join("") + (sOff && !P.statuses.some(x => same(x, sOff)) ? "<option selected>" + esc(sOff) + "</option>" : "") + "</select>");
+  if (SL.length && !sOff) { const tot = SL.reduce((n, f) => n + mpFlHrs(P, f).h, 0); p += "<div class='spsum'><span><b>" + SL.length + "</b> flight" + (SL.length === 1 ? "" : "s") + "</span><span><b>" + fmtH(tot) + "</b> planned</span></div>"; }
   if (sOff && SL.length) p += "<div class='warnl'>These flights don't count while the day is set to no flying.</div>";
   if (!SL.length) p += "<div class='empty'>" + (sOff ? "No flying this day." : "No flights planned yet.") + "</div>";
   for (const f of SL) {
-    const own = !!f.crew, cw = crewTags(flCrew(P, f)), key = "data-row='" + f.row + "'";
+    const own = !!f.crew, cw = crewTags(flCrew(P, f)), key = "data-row='" + f.row + "'", fk = P.codes.find(k => same(k.code, f.code)), H = mpFlHrs(P, f);
+    const facts = f.code ? "<div class='spfacts'>" + (H.h > 0 ? "<span class='hr' title='From the time range'>" + fmtH(H.h) + "</span>" : "") + (H.bad ? "<span class='wn'>" + (H.bad === "No end time" ? "No end time" : H.bad === "No time" ? "No time" : "Check time") + "</span>" : "") +
+      (!lock && fk && fk.desc ? "<span>" + esc(fk.desc) + "</span>" : "") + (fk && fk.mtype ? "<span>" + esc(fk.mtype) + "</span>" : "") + (flSort(f) > 1 ? "<span>" + flSort(f) + " sorties</span>" : "") + (H.h > 0 && timeEndsNext(f.time) ? "<span>ends next day</span>" : "") + "</div>" : "";
     const tags = "<div class='tags" + (own ? "" : " def") + "' title='" + (own ? "Crew set for this flight" : "Crew from the flight code" + (cw.length ? "" : ": every department")) + "'>" +
       CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag t" + k + (cw.includes(k) && f.code ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length && f.code ? "<span class='all'>all crew</span>" : "") + "</div>";
     p += "<div class='spf" + (sOff ? " dim" : "") + "'><div class='spfh " + shCls[f.s] + "'>" + SHIFTS[f.s] + (f.time ? " · " + esc(f.time) : "") + (lock ? "" : "<button class='rm' " + key + " title='Remove this flight'>×</button>") + "</div><div class='spfb'>";
-    if (lock) p += "<div class='v set'>" + esc(f.code) + "</div><div class='v'>" + esc(f.time) + "</div>" + tags + (f.note ? "<div class='v nt'>" + esc(f.note) + "</div>" : "");
+    if (lock) p += "<div class='v set'>" + esc(f.code) + "</div>" + (fk && fk.desc ? "<div class='v spdesc'>" + esc(fk.desc) + "</div>" : "") + facts + tags + (f.note ? "<div class='v nt'>" + esc(f.note) + "</div>" : "");
     else p += "<select " + key + " data-f='code' class='" + (f.code ? "set" : "") + "'><option value=''>Flight code…</option>" + P.codes.map(k => "<option value='" + esc(k.code) + "'" + (same(k.code, f.code) ? " selected" : "") + ">" + esc(k.code + (k.crew ? "  (" + k.crew + ")" : "")) + "</option>").join("") +
-      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
+      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + (P.fcOld ? "" : "<input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>") + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
     p += "</div></div>";
   }
   if (!lock && !sOff) p += "<button class='addb' data-add='" + sd + "'>+ Add flight</button><div class='hint'>The time sets the shift: before 1200 AM, before 1800 PM, then NIGHT. Crew comes from the flight code (faded chips); click one to change it for this flight.</div>";
@@ -3097,7 +3115,7 @@ function mpExportData(P, o) {   // o = { from, to (ISO days), omit: [flight code
   for (const f of P.fl) {
     if (!f.code || P.mp[f.mi].status[f.d] || omit.has(f.code.toUpperCase())) continue;   // a no-flying day has no flights (as on the screen)
     const iso = isoOf(P.year, f.mi, f.d); if (iso < o.from || iso > o.to) continue;
-    const k = P.codes.find(x => same(x.code, f.code)), hrs = k ? k.hrs : 0;
+    const k = P.codes.find(x => same(x.code, f.code)), hrs = mpFlHrs(P, f).h;
     rows.push({ iso, mi: f.mi, d: f.d, dow: MPX_DOW[(new Date(P.year, f.mi, f.d + 1).getDay() + 6) % 7], s: f.s, shift: SHIFTS[f.s], code: f.code, desc: k ? k.desc : "", time: f.time || "", hrs, row: f.row });
   }
   rows.sort((a, b) => a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : a.s - b.s || (flOrd(a) < flOrd(b) ? -1 : flOrd(a) > flOrd(b) ? 1 : a.row - b.row));
@@ -3274,7 +3292,7 @@ document.addEventListener("keydown", e => {
 });
 // the shift a flight time falls in, from its start time: before 1200 AM, before 1800 PM, then NIGHT (-1 when there's no time, e.g. TBC)
 const timeShift = t => { const m = String(t || "").match(/(\d{1,2}):?(\d{2})/); if (!m || +m[1] > 24 || +m[2] > 59) return -1; const x = +m[1] * 60 + +m[2]; return x < 720 ? 0 : x < 1080 ? 1 : 2; };
-const FL_COLS = { code: "C", time: "D", crew: "E", note: "F" };
+const FL_COLS = { code: "C", time: "D", crew: "E", note: "F", sort: "G" };
 const flByRow = r => S.fl.find(f => f.row === r);
 $("mpReq").addEventListener("click", e => {
   const rq = e.target.closest("[data-rqtog],[data-rqnew],[data-rqcancel],[data-rqsend],[data-rqa],[data-rqx]"); if (!rq) return;
@@ -3327,11 +3345,11 @@ $("mpWrap").addEventListener("click", e => {
       const f = { row: r, mi, d, s, code: "", time: "", crew: "", note: "" };
       S.fl.push(f); S.fl.sort((a, b) => a.row - b.row);
       put("Flights", "A" + r, dateSerial(S.year, mi, d)); put("Flights", "B" + r, SHIFTS[s]);
-      for (const k in FL_COLS) put("Flights", FL_COLS[k] + r, "");
+      for (const k in FL_COLS) { if (k === "sort" && S.fcOld) continue; put("Flights", FL_COLS[k] + r, ""); }   // an older Master Planner keeps its Sorties formula in G
       focusRow = r; cur.mpDay = d;
     } else if (rm) {
       const r = +rm.dataset.row; S.fl = S.fl.filter(f => f.row !== r);
-      for (const L of ["A", "B", "C", "D", "E", "F"]) put("Flights", L + r, "");
+      for (const L of S.fcOld ? ["A", "B", "C", "D", "E", "F"] : ["A", "B", "C", "D", "E", "F", "G"]) put("Flights", L + r, "");
     } else {
       const f = flByRow(+tg.dataset.row); if (!f) return;
       const t = crewTags(flCrew(S, f)), k = tg.dataset.t;
@@ -3357,7 +3375,7 @@ $("mpWrap").addEventListener("change", e => {
   }
   const k = el.dataset.f; if (!k || !mpEditable() || el.dataset.row == null) return;
   const v = el.value.trim();
-  withBook(mpIdx(), () => { const f = flByRow(+el.dataset.row); if (!f) return; f[k] = v; put("Flights", FL_COLS[k] + f.row, v);
+  withBook(mpIdx(), () => { const f = flByRow(+el.dataset.row); if (!f) return; if (k === "sort") { const n = +v; f.sort = n >= 1 && n <= 9 ? Math.round(n) : 1; put("Flights", "G" + f.row, f.sort > 1 ? f.sort : ""); } else { f[k] = v; put("Flights", FL_COLS[k] + f.row, v); }
     if (k === "time") { const sh = timeShift(v); if (sh >= 0 && sh !== f.s) { f.s = sh; put("Flights", "B" + f.row, SHIFTS[sh]); } } });
   renderMp(); renderPlanner();
 });
@@ -3370,8 +3388,8 @@ function renderCodes() {
     " Crew: P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2 (blank = everyone). Mission Type is used by the currency rules.";
   const show = Math.min(FC_N, Math.max(lastFilled(C, k => k.code || k.desc) + (ed ? 4 : 1), ed ? 6 : 1));
   const inp = (i, f, extra) => "<input data-fc='" + i + "' data-f='" + f + "' value='" + esc(C[i][f] == null ? "" : C[i][f]) + "'" + (extra || "") + (ed ? "" : " disabled") + ">";
-  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:80px'>Sorties</th><th style='width:90px'>Flight Hrs</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only syllabus items whose Track or Description contains this (a comma list = any)'>Syllabus tag</th>" : "") + "</tr>";
-  for (let i = 0; i < show; i++) h += "<tr><td class='n'>" + (i + 1) + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "sort", " type='number' min='1' max='9' placeholder='1'") + "</td><td>" + inp(i, "hrs", " type='number' step='0.1' min='0' max='24'") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td>" + (P.hasStag ? "<td>" + inp(i, "stag", " placeholder='e.g. EIS'") + "</td>" : "") + "</tr>";
+  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only syllabus items whose Track or Description contains this (a comma list = any)'>Syllabus tag</th>" : "") + "</tr>";
+  for (let i = 0; i < show; i++) h += "<tr><td class='n'>" + (i + 1) + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td>" + (P.hasStag ? "<td>" + inp(i, "stag", " placeholder='e.g. EIS'") + "</td>" : "") + "</tr>";
   $("codeTable").innerHTML = h;
   const gap = C.findIndex(k => !k.code), last = lastFilled(C, k => k.code), seen = {}, dups = [];
   C.forEach(k => { if (!k.code) return; const u = k.code.toUpperCase(); if (seen[u]) dups.push(k.code); seen[u] = 1; });
@@ -3379,7 +3397,7 @@ function renderCodes() {
 }
 $("codeTable").addEventListener("change", e => {
   const el = e.target, i = +el.dataset.fc, f = el.dataset.f; if (isNaN(i) || !f || !mpEditable()) return;
-  const COL = { code: "A", desc: "B", sort: "C", hrs: "D", crew: "E", mtype: "F", stag: "H" };
+  const COL = S.fcOld ? { code: "A", desc: "B", sort: "C", hrs: "D", crew: "E", mtype: "F", stag: "H" } : { code: "A", desc: "B", crew: "C", mtype: "D", stag: "E" };
   withBook(mpIdx(), () => {
     const k = S.codeAll[i]; let v = el.value.trim();
     if (f === "sort" || f === "hrs") v = v === "" ? null : +v;
@@ -3399,7 +3417,7 @@ function codeDiffs(st, P) {
   const mine = st.acts.filter(a => isFlAct(st, a));
   for (const k of P.codes) { const a = mine.find(x => same(x.code, k.code));
     if (!a) out.missing.push(k.code);
-    else if (a.desc !== k.desc || (a.hrs || 0) !== (k.hrs || 0) || (a.sort || 1) !== (k.sort || 1) || (st.hasCur && !same(a.mtype, k.mtype)) || (st.hasStag && P.hasStag && !same(a.stag, k.stag))) out.changed.push(k.code); }
+    else if (a.desc !== k.desc || (st.hasCur && !same(a.mtype, k.mtype)) || (st.hasStag && P.hasStag && !same(a.stag, k.stag))) out.changed.push(k.code); }
   for (const a of mine) if (!P.codes.some(k => same(k.code, a.code))) out.extra.push(a.code);
   return out;
 }
@@ -3408,15 +3426,15 @@ const codeDiffN = d => d.missing.length + d.changed.length + d.extra.length;
 function syncCodes() {
   const P = masterBook().S, used = new Set(); S.m.forEach(M => { M.master.forEach(rw => rw.forEach(x => x && used.add(x.toUpperCase()))); M.grid.forEach(rw => rw.forEach(x => x && used.add(x.toUpperCase()))); });
   const fc = flCatName(S), keep = [], drop = [];
-  const list = P.codes.map(k => ({ code: k.code, desc: k.desc, cat: fc, hrs: k.hrs, sort: k.sort > 1 ? k.sort : null, mtype: k.mtype, stag: k.stag || "" }));
+  const list = P.codes.map(k => ({ code: k.code, desc: k.desc, cat: fc, hrs: null, sort: null, mtype: k.mtype, stag: k.stag || "" }));
   for (const a of S.acts) if (isFlAct(S, a) && !P.codes.some(k => same(k.code, a.code))) (used.has(a.code.toUpperCase()) ? keep : drop).push(a);
   const out = list.concat(keep.map(a => Object.assign({}, a))).concat(S.acts.filter(a => a.code && !isFlAct(S, a)).map(a => Object.assign({}, a)));
   if (out.length > NA) { alert("The activity list would need " + out.length + " rows but has room for " + NA + "."); return; }
   for (let i = 0; i < NA; i++) {
     const a = out[i] || { code: "", desc: "", cat: "", hrs: null, sort: null, mtype: "" }, b = S.acts[i], r = ACT_ROW0 + i;
     const set = (f, L, v) => { if ((b[f] == null ? "" : b[f]) !== (v == null ? "" : v)) put("Activities", L + r, v == null ? "" : v); };
-    set("code", "A", a.code); set("desc", "B", a.desc); set("cat", "C", a.cat); set("hrs", "D", a.hrs); set("sort", "E", a.sort); if (S.hasCur) set("mtype", "F", a.mtype || ""); if (S.hasStag) set("stag", "K", a.stag || "");
-    S.acts[i] = { code: a.code, desc: a.desc || "", cat: a.cat || "", hrs: a.hrs == null ? null : a.hrs, sort: a.sort == null ? null : a.sort, mtype: a.mtype || "", stag: a.stag || "" };
+    set("code", "A", a.code); set("desc", "B", a.desc); set("cat", "C", a.cat); set("hrs", "D", null); set("sort", "E", null); if (S.hasCur) set("mtype", "F", a.mtype || ""); if (S.hasStag) set("stag", "K", a.stag || "");
+    S.acts[i] = { code: a.code, desc: a.desc || "", cat: a.cat || "", hrs: null, sort: null, mtype: a.mtype || "", stag: a.stag || "" };
   }
   toast("Copied the flight codes from the Master Planner" + (keep.length ? "; kept " + keep.map(a => a.code).join(", ") + " because the plans still use " + (keep.length === 1 ? "it" : "them") : "") + (drop.length ? "; removed " + drop.map(a => a.code).join(", ") : "") + ". Click Save to Excel to keep it.", 6000);
 }
@@ -4074,6 +4092,18 @@ function opsTimes(t, hrs) {
   return [fmtHM(a), hrs ? fmtHM(a + Math.round(hrs * 60)) : ""];
 }
 // the time shown on a calendar chip: 0830H-1000H (the end is the start plus the flight code's hours, or the typed end), 0830H when only a start is known
+// planned hours of a Master Planner flight from its typed time range (an end earlier than the start means the next day) -> { h, bad: "" | "No time" | "No end time" | "Check time" }
+// a range of 0 or over 12 hours is "Check time"; with no usable range the hours are 0 (there is no code Flight Hrs any more)
+function mpFlHrs(P, f) {
+  const t = String(f.time || "").replace(/(\d)\s*h\b/gi, "$1"), m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*$/i.exec(t);
+  if (!m) return { h: 0, bad: t.trim() ? "No end time" : "No time" };
+  const a = hhmm(m[1].replace(":", "")), b = hhmm(m[2].replace(":", "")); if (a == null || b == null) return { h: 0, bad: "Check time" };
+  let n = b - a; if (n < 0) n += 1440; if (n === 0 || n > 720) return { h: 0, bad: "Check time" };
+  return { h: n / 60, bad: "" };
+}
+const flSort = f => f && f.sort >= 1 ? Math.round(f.sort) : 1;   // sorties typed on the flight (a running change: 2 or 3); blank = 1
+const timeEndsNext = t => { const m = /(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})/i.exec(String(t).replace(/(\d)\s*h\b/gi, "$1")); return !!m && hhmm(m[2].replace(":", "")) < hhmm(m[1].replace(":", "")); };
+const fmtH = v => (Math.round(v * 10) / 10).toFixed(1) + " H";
 function mpRange(time, hrs) { const [a, b] = opsTimes(time, hrs); return a ? a + "H" + (b ? "-" + b + "H" : "") : ""; }
 function opsDur(a, b) { const x = hhmm(a), y = hhmm(b); if (x == null || y == null) return null; let n = y - x; if (n < 0) n += 1440; return n / 60; }
 // one day: the Master Planner's flights, one row per aircraft, with crew picked from the department plans (same code first, then any flight that shift)
@@ -4086,9 +4116,9 @@ function opsDay(iso) {
   for (let s = 0; s < 3; s++) mpShift(P, mi, d, s).concat(oaShift(y, mi, d, s)).forEach(f => {
     if (!f.code) return;
     const k0 = [s, f.code.toUpperCase(), (f.time || "").toUpperCase()].join("|"); seen[k0] = (seen[k0] || 0) + 1;
-    const ck = P.codes.find(k => same(k.code, f.code)) || { sort: 1, hrs: 0, desc: "" };
-    const ac = Math.max(1, Math.round(ck.sort || 1)), tags = crewTags(flCrew(P, f));
-    flights.push({ f, s, ac, code: f.code, desc: ck.desc, hrs: ck.hrs, key: opsKey(iso, SHIFTS[s], f.code, f.time, seen[k0]), need: OPS_SEATS.map(x => !tags.length || tags.includes(x[2])), seats: [] });
+    const ck = P.codes.find(k => same(k.code, f.code)) || { desc: "" };
+    const ac = flSort(f), tags = crewTags(flCrew(P, f));   // one row per sortie (a running change is one flight with 2 or 3)
+    flights.push({ f, s, ac, code: f.code, desc: ck.desc, hrs: mpFlHrs(P, f).h, key: opsKey(iso, SHIFTS[s], f.code, f.time, seen[k0]), need: OPS_SEATS.map(x => !tags.length || tags.includes(x[2])), seats: [] });
   });
   const spare = [[], [], []];
   for (let s = 0; s < 3; s++) {
@@ -4778,8 +4808,8 @@ function renderActs() {
     "<b style='color:#b45309'>Differs from the Master Planner:</b> " + [d.missing.length ? "new " + d.missing.join(", ") : "", d.changed.length ? "changed " + d.changed.join(", ") : "", d.extra.length ? "not on the Master Planner " + d.extra.join(", ") : ""].filter(Boolean).map(esc).join(" · ") +
     (canEd ? " <button class='btn primary' id='codeSync' style='margin-left:6px;padding:4px 10px'>Copy flight codes from the Master Planner</button>" : "");
   const flRow = a => { const ci = S.cats.findIndex(c => c && c === a.cat), k = P && P.codes.find(x => same(x.code, a.code)); const bad = P && (!k || d.changed.includes(a.code));
-    return "<tr" + (bad ? " class='mpd'" : "") + "><td><b class='" + (ci >= 0 ? "cat" + ci : "") + "' style='padding:2px 6px;border-radius:4px'>" + esc(a.code) + "</b></td><td>" + esc(a.desc) + "</td><td style='text-align:center'>" + (a.sort || 1) + "</td><td style='text-align:center'>" + (a.hrs == null ? "" : a.hrs) + "</td>" + (S.hasCur ? "<td>" + esc(a.mtype || "") + "</td>" : "") + (S.hasStag ? "<td>" + (a.stag ? "<b class='sylgold'>🎓 " + esc(a.stag) + "</b>" : "") + "</td>" : "") + "</tr>"; };
-  $("actFlTable").innerHTML = "<tr><th>Code</th><th>Description</th><th style='width:70px'>Sorties</th><th style='width:80px'>Flight Hrs</th>" + (S.hasCur ? "<th style='width:100px'>Mission Type</th>" : "") + (S.hasStag ? "<th style='width:110px' title='Set on the Master Planner Flight Codes. The cell picker lists only the syllabus items that match it'>Syllabus tag</th>" : "") + "</tr>" + (fl.length ? fl.map(flRow).join("") : "<tr><td colspan=5 class='muted'>No flight codes yet.</td></tr>");
+    return "<tr" + (bad ? " class='mpd'" : "") + "><td><b class='" + (ci >= 0 ? "cat" + ci : "") + "' style='padding:2px 6px;border-radius:4px'>" + esc(a.code) + "</b></td><td>" + esc(a.desc) + "</td>" + (S.hasCur ? "<td>" + esc(a.mtype || "") + "</td>" : "") + (S.hasStag ? "<td>" + (a.stag ? "<b class='sylgold'>🎓 " + esc(a.stag) + "</b>" : "") + "</td>" : "") + "</tr>"; };
+  $("actFlTable").innerHTML = "<tr><th>Code</th><th>Description</th>" + (S.hasCur ? "<th style='width:100px'>Mission Type</th>" : "") + (S.hasStag ? "<th style='width:110px' title='Set on the Master Planner Flight Codes. The cell picker lists only the syllabus items that match it'>Syllabus tag</th>" : "") + "</tr>" + (fl.length ? fl.map(flRow).join("") : "<tr><td colspan=4 class='muted'>No flight codes yet.</td></tr>");
   // ground programme: the rest, editable, plus a few empty rows to add to
   const ground = S.acts.map((a, i) => i).filter(i => S.acts[i].code ? !isFlAct(S, S.acts[i]) : false), empty = S.acts.map((a, i) => i).filter(i => !S.acts[i].code && !S.acts[i].desc).slice(0, 3);
   const rows = ground.concat(empty), cats = S.cats.filter((c, i) => c && i !== CAT_FLIGHT);
@@ -5253,7 +5283,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z124 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z129 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

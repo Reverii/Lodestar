@@ -14,8 +14,8 @@ const bytesTo = async (page, o, layout) => { const b64 = await page.evaluate(([o
   const f = path.join(os.tmpdir(), "mp_export_" + Date.now() + "_" + Math.floor(Math.random() * 1e6) + ".xlsx"); fs.writeFileSync(f, Buffer.from(b64, "base64")); return f; };
 const py = (code, f) => JSON.parse(execFileSync("python3", ["-I", "-c", code, f]).toString());
 // what the screen counts: flights with a code on a day that has no no-flying status
-const screen = page => page.evaluate(() => { const P = masterBook().S, hrs = c => { const x = P.codes.find(k => same(k.code, c)); return x ? x.hrs : 0; };
-  const live = P.fl.filter(f => f.mi === 9 && f.code && !P.mp[f.mi].status[f.d]); return { n: live.length, h: live.reduce((a, f) => a + hrs(f.code), 0), codes: [...new Set(live.map(f => f.code))], off: P.mp[9].status.map((s, d) => s ? [d + 1, s] : null).filter(Boolean) }; });
+const screen = page => page.evaluate(() => { const P = masterBook().S, hrs = f => mpFlHrs(P, f).h;
+  const live = P.fl.filter(f => f.mi === 9 && f.code && !P.mp[f.mi].status[f.d]); return { n: live.length, h: live.reduce((a, f) => a + hrs(f), 0), codes: [...new Set(live.map(f => f.code))], off: P.mp[9].status.map((s, d) => s ? [d + 1, s] : null).filter(Boolean) }; });
 
 test("totals_match_the_screen", async ({ page }) => {
   const s = await screen(page), d = await data(page, OCT);

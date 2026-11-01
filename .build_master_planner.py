@@ -57,30 +57,29 @@ def header(ws, row, heads, colors=None):
 
 # ---- Flight Codes (crew per code) and the day status reasons
 banner(codes, "FLIGHT CODES", "The flights programme: every flight code the squadron uses. Departments copy this list into their Activities sheet in the planner dashboard. Crew = the departments that fly this code (blank = every department). Mission Type is used by the currency rules.", 7)
-header(codes, 5, ["Code", "Description", "Sorties", "Flight Hrs", "Crew", "Mission Type"], {5: "7E22CE", 6: "5B21B6"})
-CATALOG = [("FLT-1.5", "Routine Sortie (1.5h)", 1, 1.5, ""), ("FLT-2.0", "Standard Sortie (2.0h)", 1, 2.0, ""), ("FLT-3.0", "Extended Mission (3.0h)", 1, 3.0, ""),
-           ("NVG-2.0", "Night Flying Sortie (2.0h)", 1, 2.0, ""), ("2xFLT-1.5", "Two routine sorties in one shift", 2, 3.0, ""), ("2xFLT-2.0", "Two standard sorties in one shift", 2, 4.0, ""),
-           ("MSN-3.0", "Mission sortie: Pilot, TACCO, SUP 2 (3.0h)", 1, 3.0, "P T S2"), ("PLT-TRG", "Pilot training sortie (1.5h)", 1, 1.5, "P"),
-           ("EIS", "EIS training sortie (2.0h)", 1, 2.0, "S2"), ("MAS TRG", "MAS tactical training (3.0h)", 1, 3.0, "S2")]
-SYLTAG = {"EIS": "EIS", "MAS TRG": "MAS Tact"}   # Flight Codes H: the cell picker lists only syllabus items whose Track or Description contains it
-MTYPE = {"FLT-1.5": "GEN", "FLT-2.0": "GEN", "FLT-3.0": "GEN", "NVG-2.0": "NIGHT", "2xFLT-1.5": "GEN", "2xFLT-2.0": "GEN", "MSN-3.0": "MSN", "PLT-TRG": "TRG", "EIS": "TRG", "MAS TRG": "TRG"}
+header(codes, 5, ["Code", "Description", "Crew", "Mission Type", "Syllabus tag"], {3: "7E22CE", 4: "5B21B6", 5: "B45309"})
+CATALOG = [("FLT-1.5", "Routine Sortie (1.5h)", ""), ("FLT-2.0", "Standard Sortie (2.0h)", ""), ("FLT-3.0", "Extended Mission (3.0h)", ""),
+           ("NVG-2.0", "Night Flying Sortie (2.0h)", ""), ("MSN-3.0", "Mission sortie: Pilot, TACCO, SUP 2 (3.0h)", "P T S2"), ("PLT-TRG", "Pilot training sortie (1.5h)", "P"),
+           ("EIS", "EIS training sortie (2.0h)", "S2"), ("MAS TRG", "MAS tactical training (3.0h)", "S2")]
+SYLTAG = {"EIS": "EIS", "MAS TRG": "MAS Tact"}   # Flight Codes E (Syllabus tag): the cell picker lists only syllabus items whose Track or Description contains it
+MTYPE = {"FLT-1.5": "GEN", "FLT-2.0": "GEN", "FLT-3.0": "GEN", "NVG-2.0": "NIGHT", "MSN-3.0": "MSN", "PLT-TRG": "TRG", "EIS": "TRG", "MAS TRG": "TRG"}
 DAY_STATUS = ["No Flying", "Stand-down", "Maintenance", "Public Holiday"]
 import realdata
 REAL = realdata.ON   # real squadron data from LODESTAR_Data_Input.xlsx
 if REAL:
-    CATALOG = [(c["code"], c["desc"], c["sorties"], c["hrs"], c["crew"]) for c in realdata.FLIGHT_CODES]
+    CATALOG = [(c["code"], c["desc"], c["crew"]) for c in realdata.FLIGHT_CODES]
     MTYPE = {c["code"]: c["mtype"] or None for c in realdata.FLIGHT_CODES}
     SYLTAG = {c["code"]: c["tag"] or None for c in realdata.FLIGHT_CODES}
     DAY_STATUS = realdata.DAY_STATUS[:12] or DAY_STATUS
 for i in range(NC):
     r = 6 + i
-    for c in range(1, 7):
+    for c in range(1, 5):
         codes.cell(r, c).border = BOX; codes.cell(r, c).font = f(color="1D4ED8"); codes.cell(r, c).fill = fill("FFFBEB")
     if i < len(CATALOG):
         for j, v in enumerate(CATALOG[i]): codes.cell(r, 1 + j, v)
-        codes.cell(r, 6, MTYPE.get(CATALOG[i][0])); codes.cell(r, 8, SYLTAG.get(CATALOG[i][0]))
-    cell = codes.cell(r, 8); cell.border = BOX; cell.font = f(color="92400E"); cell.fill = fill("FEF3C7")
-for col, w in zip("ABCDEFG", [14, 40, 10, 11, 12, 14, 26]): codes.column_dimensions[col].width = w
+        codes.cell(r, 4, MTYPE.get(CATALOG[i][0])); codes.cell(r, 5, SYLTAG.get(CATALOG[i][0]))
+    cell = codes.cell(r, 5); cell.border = BOX; cell.font = f(color="92400E"); cell.fill = fill("FEF3C7")
+for col, w in zip("ABCDEFG", [14, 40, 12, 14, 15, 3, 26]): codes.column_dimensions[col].width = w
 c = codes.cell(5, 7, "Day status (no flying)"); c.font = f(True, "FFFFFF"); c.fill = fill("B91C1C"); c.alignment = CENTER
 for i in range(12):
     cell = codes.cell(6 + i, 7, DAY_STATUS[i] if i < len(DAY_STATUS) else None); cell.fill = fill("FEF2F2"); cell.font = f(color="B91C1C"); cell.border = BOX
@@ -91,12 +90,11 @@ c = codes.cell(5, 9, "Ground programme"); c.font = f(True, "FFFFFF"); c.fill = f
 for i in range(20):
     cell = codes.cell(6 + i, 9, GROUND_LIST[i] if i < len(GROUND_LIST) else None); cell.fill = fill("F0FDF4"); cell.font = f(color="166534"); cell.border = BOX
 codes.cell(26, 9, "The ground programme list (any text is allowed too).").font = f(False, SLATE500, 9, True)
-codes.column_dimensions["H"].width = 15; codes.column_dimensions["I"].width = 24
-c = codes.cell(5, 8, "Syllabus tag"); c.font = f(True, "FFFFFF"); c.fill = fill("B45309"); c.alignment = CENTER
-codes.cell(4, 8, "e.g. EIS, MAS Tact").font = f(False, SLATE500, 8, True)
+codes.column_dimensions["H"].width = 3; codes.column_dimensions["I"].width = 24
+codes.cell(4, 5, "e.g. EIS, MAS Tact").font = f(False, SLATE500, 8, True)
 name("GrList", "OFFSET('Flight Codes'!$I$6,0,0,MAX(1,COUNTA('Flight Codes'!$I$6:$I$25)),1)")
 dv = DataValidation(allow_blank=True, showInputMessage=True, promptTitle="Crew", prompt="Departments that fly this code: P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2. Blank = every department.")
-dv.add(f"E6:E{5 + NC}"); codes.add_data_validation(dv)
+dv.add(f"C6:C{5 + NC}"); codes.add_data_validation(dv)
 codes.freeze_panes = "A6"
 name("FlCodes", f"OFFSET('Flight Codes'!$A$6,0,0,MAX(1,COUNTA('Flight Codes'!$A$6:$A${5 + NC})),1)")
 name("CodeTable", f"'Flight Codes'!$A$6:$E${5 + NC}")
@@ -105,29 +103,36 @@ name("DayStatusList", "OFFSET('Flight Codes'!$G$6,0,0,MAX(1,COUNTA('Flight Codes
 # ---- Flights: the list
 banner(fl, "FLIGHTS", "The master list: one flight per row, any number per shift. Add flights in the empty rows (or with + Add flight in the planner dashboard). Crew blank = the code's crew.", 8)
 fl["A3"] = "Sort or filter as you like. To remove a flight, clear its row. Grey columns fill in by themselves."; fl["A3"].font = f(False, SLATE500, 9, True)
-header(fl, 5, ["Date", "Shift", "Flight code", "Time", "Crew (only if different)", "Comment", "Sorties", "Crew used", "Key", "Order", "Counts", "Hrs"], {5: "7E22CE", 7: SLATE500, 8: SLATE500, 9: SLATE400, 10: SLATE400, 11: SLATE400, 12: SLATE400})
+header(fl, 5, ["Date", "Shift", "Flight code", "Time", "Crew (only if different)", "Comment", "Sorties", "Crew used", "Key", "Order", "Counts", "Hrs", "Start min", "End min", "Sorties used", "Time text"], {5: "7E22CE", 7: "7E22CE", 8: SLATE500, 9: SLATE400, 10: SLATE400, 11: SLATE400, 12: SLATE500, 13: SLATE400, 14: SLATE400, 15: SLATE400, 16: SLATE400})
 import seedplan
-rows = [f[:4] + (f[4], f[5]) for f in seedplan.FLIGHTS]   # (date, shift, code, time, comment, crew)
+rows = [f[:4] + (f[4], f[5], f[6]) for f in seedplan.FLIGHTS]   # (date, shift, code, time, comment, crew, sorties)
 for i in range(NF):
     r = 6 + i
-    for c in range(1, 13):
+    for c in range(1, 17):
         cell = fl.cell(r, c); cell.border = BOX
-        cell.fill = fill(SLATE100) if c >= 7 else fill("FFFBEB"); cell.font = f(c == 3, SLATE500 if c >= 7 else "1D4ED8", 10)
+        cell.fill = fill(SLATE100) if c >= 8 else fill("FFFBEB"); cell.font = f(c == 3, SLATE500 if c >= 8 else "1D4ED8", 10)
     fl.cell(r, 1).number_format = "ddd dd mmm yyyy"; fl.cell(r, 4).number_format = "@"; fl.cell(r, 2).alignment = CENTER; fl.cell(r, 3).alignment = CENTER
-    fl.cell(r, 7, f'=IF(C{r}="","",IFERROR(VLOOKUP(C{r},CodeTable,3,0),1))').alignment = CENTER
-    fl.cell(r, 8, f'=IF(C{r}="","",IF(E{r}<>"",E{r},IF(IFERROR(VLOOKUP(C{r},CodeTable,5,0)&"","")="","All",VLOOKUP(C{r},CodeTable,5,0)&"")))').alignment = CENTER
+    fl.cell(r, 7).alignment = CENTER   # Sorties: typed (blank = 1); a running change is one flight with 2 or 3 sorties
+    fl.cell(r, 8, f'=IF(C{r}="","",IF(E{r}<>"",E{r},IF(IFERROR(VLOOKUP(C{r},CodeTable,3,0)&"","")="","All",VLOOKUP(C{r},CodeTable,3,0)&"")))').alignment = CENTER
     # flights in a shift are numbered by time (blank time last), then by row: key = date|shift|n
     fl.cell(r, 10, f'=IF(C{r}="","",IF(D{r}="","zz","t"&D{r}))').font = f(False, SLATE400, 8)
     # Counts: 1 for a flight on a flying day (0 on a no-flying day); Hrs: its planned flying hours from the Flight Codes sheet
     fl.cell(r, 11, f'=IF(OR(A{r}="",C{r}=""),"",IF(IFERROR(INDEX(DayStat,A{r}-DATE(PlanYear,1,1)+1)&"","")<>"",0,1))').font = f(False, SLATE400, 8)
-    fl.cell(r, 12, f'=IF(K{r}="","",K{r}*IFERROR(VLOOKUP(C{r},CodeTable,4,0),0))').font = f(False, SLATE400, 8)
+    # Hrs: planned hours from the Time column ("0830-1030"; an end earlier than the start means the next day; 0 or over 12 hours counts 0); helpers M..P (hidden)
+    fl.cell(r, 16, f'=IF(D{r}="","",SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(UPPER(D{r}),"H",""),":","")," ",""))')
+    fl.cell(r, 13, f'=IFERROR(INT(VALUE(LEFT(P{r},FIND("-",P{r})-1))/100)*60+MOD(VALUE(LEFT(P{r},FIND("-",P{r})-1)),100),"")')
+    fl.cell(r, 14, f'=IFERROR(INT(VALUE(MID(P{r},FIND("-",P{r})+1,9))/100)*60+MOD(VALUE(MID(P{r},FIND("-",P{r})+1,9)),100),"")')
+    fl.cell(r, 15, f'=IF(C{r}="","",IF(G{r}="",1,G{r}))')
+    fl.cell(r, 12, f'=IF(K{r}="","",K{r}*IF(OR(M{r}="",N{r}=""),0,IF(OR(MOD(N{r}-M{r},1440)=0,MOD(N{r}-M{r},1440)>720),0,MOD(N{r}-M{r},1440)/60)))').font = f(False, SLATE400, 8)
     fl.cell(r, 9, f'=IF(OR(A{r}="",C{r}=""),"",A{r}&"|"&B{r}&"|"&(COUNTIFS(FlDate,A{r},FlShift,B{r},FlCode,"<>",FlOrder,"<"&J{r})+COUNTIFS(A$6:A{r},A{r},B$6:B{r},B{r},C$6:C{r},"<>",J$6:J{r},J{r})))').font = f(False, SLATE400, 8)
     if i < len(rows):
-        dte, sh, cd, tm, cm, cw = rows[i]
+        dte, sh, cd, tm, cm, cw, so = rows[i]
         fl.cell(r, 1, dte); fl.cell(r, 2, sh); fl.cell(r, 3, cd); fl.cell(r, 4, tm)
         if cw: fl.cell(r, 5, cw)
         if cm: fl.cell(r, 6, cm)
-for col, w in zip("ABCDEFGHIJKL", [17, 9, 13, 13, 20, 30, 9, 11, 14, 10, 8, 8]): fl.column_dimensions[col].width = w
+        if so and so > 1: fl.cell(r, 7, so)
+for col, w in zip("ABCDEFGHIJKLMNOP", [17, 9, 13, 13, 20, 30, 9, 11, 14, 10, 8, 8, 9, 9, 9, 12]): fl.column_dimensions[col].width = w
+for col in "MNOP": fl.column_dimensions[col].hidden = True
 fl.freeze_panes = "A6"; fl.auto_filter.ref = f"A5:L{5 + NF}"
 dv = DataValidation(type="list", formula1='"AM,PM,NIGHT"', allow_blank=True); dv.add(f"B6:B{5 + NF}"); fl.add_data_validation(dv)
 dv = DataValidation(type="list", formula1="FlCodes", allow_blank=True, showErrorMessage=True, errorStyle="warning", errorTitle="Unknown flight code", error="That code isn't on the Flight Codes sheet. Keep it anyway?")
@@ -136,8 +141,10 @@ dv = DataValidation(type="date", operator="between", formula1="DATE(PlanYear,1,1
 dv.add(f"A6:A{5 + NF}"); fl.add_data_validation(dv)
 dv = DataValidation(allow_blank=True, showInputMessage=True, promptTitle="Crew", prompt="Only when this flight differs from its code: P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2 (e.g. P S2).")
 dv.add(f"E6:E{5 + NF}"); fl.add_data_validation(dv)
+dv = DataValidation(type="whole", operator="between", formula1="1", formula2="9", allow_blank=True, showErrorMessage=True, errorTitle="Sorties", error="A whole number from 1 to 9 (blank = 1). A running change is one flight with 2 or 3 sorties.")
+dv.add(f"G6:G{5 + NF}"); fl.add_data_validation(dv)
 name("FlDate", f"Flights!$A$6:$A${5 + NF}"); name("FlShift", f"Flights!$B$6:$B${5 + NF}"); name("FlCode", f"Flights!$C$6:$C${5 + NF}")
-name("FlTime", f"Flights!$D$6:$D${5 + NF}"); name("FlKey", f"Flights!$I$6:$I${5 + NF}"); name("FlOrder", f"Flights!$J$6:$J${5 + NF}"); name("FlSorties", f"Flights!$G$6:$G${5 + NF}"); name("FlCount", f"Flights!$K$6:$K${5 + NF}"); name("FlHrs", f"Flights!$L$6:$L${5 + NF}")
+name("FlTime", f"Flights!$D$6:$D${5 + NF}"); name("FlKey", f"Flights!$I$6:$I${5 + NF}"); name("FlOrder", f"Flights!$J$6:$J${5 + NF}"); name("FlSorties", f"Flights!$O$6:$O${5 + NF}"); name("FlCount", f"Flights!$K$6:$K${5 + NF}"); name("FlHrs", f"Flights!$L$6:$L${5 + NF}")
 fl.sheet_properties.tabColor = "1D4ED8"
 
 # ---- Day Status: one row per date
@@ -315,6 +322,6 @@ for k, t in enumerate(tips):
 dash.column_dimensions["A"].width = 14; dash.column_dimensions["B"].width = 16; dash.column_dimensions["C"].width = 10; dash.column_dimensions["D"].width = 13; dash.column_dimensions["E"].width = 3
 wb.active = wb.sheetnames.index("Oct")
 # layout stamp: the dashboard compares it with the layout it was written for (bump it when cell positions change)
-dash["Z2"] = "LODESTAR master layout 2"; dash.column_dimensions["Z"].hidden = True
+dash["Z2"] = "LODESTAR master layout 3"; dash.column_dimensions["Z"].hidden = True
 wb.save(OUT)
 print("saved", OUT)

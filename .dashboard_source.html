@@ -859,6 +859,11 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
 .lcard h3 .new{background:#2563eb;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px;font-weight:800;margin-left:4px}.chg{padding:2px 14px 4px}.chg>div{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--s200);font-size:12.5px;line-height:1.25}.chg>div:last-child{border-bottom:0}
 .chg .ic{width:24px;height:24px;border-radius:5px;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;font-size:12px}.chg small{display:block;color:var(--s500);font-size:11px}
 #lodeMonth .sum{display:grid;grid-template-columns:repeat(3,1fr)}#lodeMonth .sum>div{padding:7px 12px;border-right:1px solid var(--s200);border-bottom:1px solid var(--s200)}#lodeMonth .sum>div:nth-child(3n){border-right:0}#lodeMonth .sum b{font-size:19px;display:block;line-height:1.1}#lodeMonth .sum span{font-size:9.5px;font-weight:800;color:var(--s500);letter-spacing:.5px}#lodeMonth .sum small{display:block;color:var(--s500);font-size:11px}
+#lodeCal{margin-top:10px}.calnav{float:right;display:flex;gap:6px;align-items:center;text-transform:none;letter-spacing:0}.calnav b{font-size:13px;color:var(--s900);min-width:120px;text-align:center}.calnav .btn{padding:1px 10px}
+.calg{display:grid;grid-template-columns:repeat(7,1fr)}.calg .hd{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--s500);padding:4px 8px;background:var(--s50);border-bottom:1px solid var(--s200)}
+.cd{min-height:68px;border-right:1px solid var(--s200);border-bottom:1px solid var(--s200);padding:3px 6px;cursor:pointer;min-width:0}.cd:nth-child(7n){border-right:0}.cd>b{font-size:11px;color:var(--s700)}.cd.out{background:var(--s50);cursor:default}.cd.out>b{color:var(--s400)}.cd.wk{background:var(--s100)}
+.cd.sel{box-shadow:inset 0 0 0 2px #2563eb}.cd.tdy>b{background:#2563eb;color:#fff;border-radius:9px;padding:0 6px}.cd .pls{display:flex;flex-direction:column;gap:2px;margin-top:2px;align-items:flex-start}.cd .off{color:var(--s400);font-size:11px}
+.pl[data-iso]{cursor:pointer}#lodeCal .pl{display:inline-block;border-radius:5px;padding:0 7px;font-weight:800;font-size:11px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}#lodeCal .pl small{font-weight:600;opacity:.8;margin-left:4px}
 #lodeToPlanner{float:right;color:var(--blue);text-transform:none;letter-spacing:0;font-size:12px;font-weight:600;cursor:pointer}.lodecol{display:flex;flex-direction:column;gap:10px}
 </style>
 </head>
@@ -1038,7 +1043,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z117</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z118</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4622,6 +4627,14 @@ function cardCrew(mi, d, s, code) {   // seat columns -> list of crew planned on
     const dp = String(c.dept).toLowerCase(), k = dp === "pilot" ? (c.tag === "AC" ? 0 : 1) : CARD_DEPT[dp]; if (k != null) cols[k].push(c); });
   return cols;
 }
+// the "Crew on this flight" block of the card (Planner and My Lodestar): seat columns, the person (dept + roster row) highlighted
+function cardSeatsHtml(mi, d, s, code, dept, me) {
+  const cols = cardCrew(mi, d, s, code), rows = Math.max(1, ...cols.map(x => x.length));
+  let h = "<div class='clab'>Crew on this flight</div><div class='cseats'><div class='csh'>" + CARD_SEATS.map(x => "<span>" + x + "</span>").join("") + "</div>";
+  for (let r = 0; r < rows; r++) h += "<div class='csn'>" + cols.map(L => { const x = L[r]; if (!x) return "<span class='cnone'>" + (r === 0 ? "-" : "") + "</span>";
+    return "<span class='" + opsCatCls(x) + (x.dept === dept && x.i === me ? " you" : "") + "'>" + esc(opsName(x)) + (x.tag === "PAX" ? "<i class='cpax'>PAX</i>" : "") + "</span>"; }).join("") + "</div>";
+  return h + "</div>";
+}
 let cardKey = null;
 function openCard(k) {
   const el = cellEl(k), c = $("cellCard"); if (!el) return false;
@@ -4646,11 +4659,7 @@ function openCard(k) {
   if (canNote) h += "<div class='clab' style='color:#7e22ce'>Comment for this cell</div><input id='ccIn' data-orig='" + esc(note) + "' value='" + esc(note) + "' placeholder='e.g. Instructor for OWL (Enter saves, Esc cancels)'>";
   else if (note) h += "<div class='clab' style='color:#7e22ce'>Comment</div><div class='cdet'>" + esc(note) + "</div>";
   if (flight) {
-    const cols = cardCrew(cur.m, p.d, s, v), rows = Math.max(1, ...cols.map(x => x.length));
-    h += "<div class='clab'>Crew on this flight</div><div class='cseats'><div class='csh'>" + CARD_SEATS.map(x => "<span>" + x + "</span>").join("") + "</div>";
-    for (let r = 0; r < rows; r++) h += "<div class='csn'>" + cols.map(L => { const x = L[r]; if (!x) return "<span class='cnone'>" + (r === 0 ? "-" : "") + "</span>";
-      return "<span class='" + opsCatCls(x) + (x.dept === S.dept && x.i === me ? " you" : "") + "'>" + esc(opsName(x)) + (x.tag === "PAX" ? "<i class='cpax'>PAX</i>" : "") + "</span>"; }).join("") + "</div>";
-    h += "</div>"; }
+    h += cardSeatsHtml(cur.m, p.d, s, v, S.dept, me); }
   cardKey = k; c.innerHTML = h + "<div class='cleg'>Esc or click away to close</div>"; c.style.display = "block";
   cardPlace(el, c); return true;
 }
@@ -4934,7 +4943,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z117 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z118 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5464,7 +5473,7 @@ const lodeFmt = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
 const LODE_OUT = { plan: "Planned", flown: "Flown", cxl: "Cancelled", open: "Not closed" };
 // Is this Ops Room seat or crew entry the person? Crew entries carry the roster row (i); the row is exact even for callsign NIL or none. Seats typed in the Ops Room carry only an id.
 const lodeIsMe = (who, c) => !!c && same(c.dept, who.dept) && (c.i != null ? c.i === who.i : !!lodeId(who.p) && !/^nil$/i.test(c.id) && same(c.id, lodeId(who.p)));
-function lodeDay(who, iso) {
+function lodeDay(who, iso, light) {   // light: items only (no Ops Room rows, no next duty): used for the month grid
   const out = { iso, known: false, items: [], ops: [], duty: "", nextDuty: "", missing: [] };
   const st0 = books[who.bi].S, { y, mi, d } = ymd(iso, st0.year);
   if (y !== st0.year || (mi === NX_MI && !st0.nx)) return out;
@@ -5494,7 +5503,7 @@ function lodeDay(who, iso) {
     const key = x => x.time && lodeMins(x.time) != null ? lodeMins(x.time) : x.s < 0 ? -1 : [0, 720, 1080][x.s];
     out.items = items.map((x, n) => [x, n]).sort((p, q) => key(p[0]) - key(q[0]) || p[1] - q[1]).map(z => z[0]);
     out.duty = [...new Set(out.items.filter(x => x.kind === "duty").map(x => x.code))].join(", ");
-    const D = opsDay(iso);
+    const D = light ? null : opsDay(iso);
     if (D && D.rows) D.rows.forEach(r => {
       const sit = r.seats.map((p, k) => p ? [OPS_SEATS[k][0], p] : null).filter(Boolean);
       Object.values(r.auto || {}).flat().forEach(p => sit.push(["Additional crew", p]));
@@ -5503,12 +5512,12 @@ function lodeDay(who, iso) {
       out.ops.push({ code: r.x.code, desc: r.x.desc || "", status: LODE_OUT[opsOutcome(r, iso)], tail: o.tail || "", stb: o.stb || "", s: r.x.s, sortie: r.x.code + (r.x.ac > 1 ? " (aircraft " + (r.a + 1) + "/" + r.x.ac + ")" : ""),
         brief: o.brf || "", etd: r.etd || "", eta: r.eta || "", area: o.ao || "", seats: sit.map(([role, p]) => ({ role, id: p.id, me: lodeIsMe(who, p) })), fromPlan: false });
     });
-    out.items.filter(x => x.kind === "flight" && !out.ops.some(r => r.s === x.s)).forEach(x => {   // no Ops Room row: show the flight as planned
+    if (!light) out.items.filter(x => x.kind === "flight" && !out.ops.some(r => r.s === x.s)).forEach(x => {   // no Ops Room row: show the flight as planned
       const [etd, eta] = opsTimes(x.time, 0);
       out.ops.push({ code: x.code, desc: x.text, status: x.cancelled ? "Cancelled" : "Planned", tail: "", stb: "", s: x.s, sortie: x.code, brief: "", etd, eta, area: "", seats: [], fromPlan: true });
     });
     out.ops.sort((p, q) => p.s - q.s);
-    for (let k = 1; k <= 60 && !out.nextDuty; k++) {
+    for (let k = 1; !light && k <= 60 && !out.nextDuty; k++) {
       const n = lodeAddDays(iso, k), q = ymd(n, st.year); if (q.y !== st.year || (q.mi === NX_MI && !st.nx)) break;
       const hit = [0, 1, 2].map(s => st.m[q.mi].grid[gridRow(who.i, s)][q.d]).find(v => { const a = v && A.get(v.toUpperCase()); return a && a.ci === CAT_SQD; });
       if (hit) out.nextDuty = hit + " " + lodeFmt(n);
@@ -5644,24 +5653,64 @@ function lodeTodayHtml(who, D, isToday, iso) {
   const miss = D.missing.length ? "<div class='lodemiss'>Not open: " + esc(D.missing.join(", ")) + ". Those parts are left out.</div>" : "";
   return head + "<div class='today'><div class='tl'>" + left + "</div><div class='tr'>" + rows.join("") + "</div></div>" + miss;
 }
+// One pill for the week table and the month grid. data-iso / data-ix say which item a click opens (lodeDay's items list for that day).
+function lodePill(x, iso, ix, compact) {
+  const tm = x.time ? "<small>" + esc(x.time.split("-")[0]) + "</small>" : "", at = " data-iso='" + iso + "' data-ix='" + ix + "'";
+  if (x.kind === "flight") return "<span class='pl " + (x.cancelled ? "cx" : "fl") + "'" + at + ">" + esc(x.code) + tm + (x.cancelled ? " <i>CXL</i>" : "") + "</span>" + (x.syl && !x.cancelled ? "<span class='pl sy'" + at + ">🎓 " + esc(x.syl) + "</span>" : "");
+  if (x.kind === "ground") return "<span class='pl gn'" + at + ">" + esc(x.text) + (x.time ? "<small>" + esc(x.time.split("-")[0]) + "</small>" : "") + "</span>";
+  return "<span class='pl " + ({ standby: "sb", duty: "dt", away: "lv" }[x.kind] || "gn") + "'" + at + ">" + esc(x.code) + tm + "</span>" + (x.s < 0 && !compact ? "<span class='lodemuted'> " + (x.kind === "duty" ? "whole day" : esc(x.text)) + "</span>" : "");
+}
 function lodeWeekHtml(who, iso) {
-  const pill = x => {
-    const tm = x.time ? "<small>" + esc(x.time.split("-")[0]) + "</small>" : "";
-    if (x.kind === "flight") return "<span class='pl " + (x.cancelled ? "cx" : "fl") + "'>" + esc(x.code) + tm + (x.cancelled ? " <i>CXL</i>" : "") + "</span>" + (x.syl && !x.cancelled ? "<span class='pl sy'>🎓 " + esc(x.syl) + "</span>" : "");
-    if (x.kind === "ground") return "<span class='pl gn'>" + esc(x.text) + (x.time ? "<small>" + esc(x.time.split("-")[0]) + "</small>" : "") + "</span>";
-    return "<span class='pl " + ({ standby: "sb", duty: "dt", away: "lv" }[x.kind] || "gn") + "'>" + esc(x.code) + tm + "</span>" + (x.s < 0 ? "<span class='lodemuted'> " + (x.kind === "duty" ? "whole day" : esc(x.text)) + "</span>" : "");
-  };
   let h = "<table id='lodeWeek'><tr><th>NEXT 7 DAYS</th><th>AM</th><th>PM</th><th>NIGHT</th></tr>";
   lodeWeek(who, iso).forEach(D => {
     const [wd, dd, mo] = lodeFmt(D.iso).split(" "), wk = [0, 6].includes(new Date(D.iso + "T00:00:00").getDay());
     const lab = "<td class='dy'><b>" + wd + " " + dd + "</b><small>" + mo + "</small></td>";
     if (!D.known) { h += "<tr class='d off'>" + lab + "<td colspan='3'>Not in this file yet</td></tr>"; return; }
-    const col = k => D.items.filter(x => k === 0 ? x.s <= 0 : x.s === k).map(pill).join("");
+    const col = k => D.items.map((x, ix) => [x, ix]).filter(([x]) => k === 0 ? x.s <= 0 : x.s === k).map(([x, ix]) => lodePill(x, D.iso, ix)).join("");
     h += "<tr class='d" + (!D.items.length && wk ? " off" : "") + "'>" + lab + "<td>" + (!D.items.length && wk ? "Off" : col(0)) + "</td><td>" + col(1) + "</td><td>" + col(2) + "</td></tr>";
   });
   return h + "</table>";
 }
+// My month: a Monday to Sunday grid of one calendar month. Clicking a flight or item opens its card; clicking the day moves the Today card to it.
+const lodeMonKey = iso => (cur.lodeMon || iso).slice(0, 7);
+function lodeMonthCalHtml(who, iso, today) {
+  const ym = lodeMonKey(iso), y = +ym.slice(0, 4), m = +ym.slice(5, 7), first = ym + "-01", dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const lead = (new Date(first + "T00:00:00").getDay() + 6) % 7, nWeeks = Math.ceil((lead + dim) / 7);
+  let cells = "";
+  for (let n = 0; n < nWeeks * 7; n++) {
+    const day = n - lead + 1, inM = day >= 1 && day <= dim, d = lodeAddDays(first, day - 1), wk = n % 7 > 4;
+    const cls = "cd" + (!inM ? " out" : "") + (wk ? " wk" : "") + (d === today ? " tdy" : "") + (d === iso ? " sel" : "");
+    if (!inM) { cells += "<div class='" + cls + "'><b>" + new Date(d + "T00:00:00").getDate() + "</b></div>"; continue; }
+    const D = lodeDay(who, d, true);
+    cells += "<div class='" + cls + "' data-day='" + d + "'><b>" + day + "</b><div class='pls'>" + (!D.known ? "" : D.items.length ? D.items.map((x, ix) => lodePill(x, d, ix, true)).join("") : wk ? "<span class='off'>Off</span>" : "") + "</div></div>";
+  }
+  const label = new Date(first + "T00:00:00").toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+  return "<div class='lcard' id='lodeCal'><h3>My month <small>click a flight for its details, a day to see it above</small><span class='calnav'><button class='btn' id='lodeMonPrev'>‹</button><b>" + esc(label) + "</b><button class='btn' id='lodeMonNext'>›</button><button class='btn' id='lodeMonToday'>Today</button></span></h3>" +
+    "<div class='calg'>" + "MON TUE WED THU FRI SAT SUN".split(" ").map(x => "<div class='hd'>" + x + "</div>").join("") + cells + "</div></div>";
+}
+// The card for one item of My month or Next 7 days: the Planner's flight card, read-only (no comment box), for the person being looked at.
+function lodeCardOpen(who, iso, ix, el) {
+  const c = $("cellCard"), D = lodeDay(who, iso, true), x = D.items[ix]; if (!x) return false;
+  const fl = x.kind === "flight";
+  const h = withBook(who.bi, () => {
+    const st = S, q = ymd(iso, st.year), M = st.m[q.mi], A = st.acts.find(a => x.code && same(a.code, x.code));
+    const what = x.code || x.text, sh = x.s < 0 ? "Whole day" : SHIFTS[x.s], det = [];
+    if (fl) {
+      const ml = [0, 1].map(j => x.s * 2 + j).filter(j => sameCode(M.master[j][q.d], x.code)).map(j => (M.mtime[j][q.d] || "no time yet") + (M.mnote[j][q.d] ? " (" + M.mnote[j][q.d] + ")" : ""));
+      det.push(ml.length ? "Planned: " + ml.join("; ") : "Not on the Master programme for this shift");
+      if (x.cancelled) det.push("Cancelled: " + x.cancelled);
+      if (x.syl) det.push("Syllabus: " + x.syl);
+    } else if (x.time) det.push("Time: " + x.time);
+    let out = "<h4>" + esc(what) + " <span>· " + esc(q.d + 1 + " " + monLab(q.mi, st.year) + " · " + sh) + "</span></h4>" + (A && A.desc ? "<div class='csub'>" + esc(A.desc) + "</div>" : x.text && x.text !== what ? "<div class='csub'>" + esc(x.text) + "</div>" : "") +
+      (det.length ? "<div class='cdet'>" + esc(det.join("\n")) + "</div>" : "");
+    if (x.note) out += "<div class='clab' style='color:#7e22ce'>Comment</div><div class='cdet'>" + esc(x.note) + "</div>";
+    if (fl) out += cardSeatsHtml(q.mi, q.d, x.s, x.code, st.dept, who.i);
+    return out;
+  });
+  cardKey = null; c.innerHTML = h + "<div class='cleg'>Esc or click away to close</div>"; c.style.display = "block"; cardPlace(el, c); return true;
+}
 function renderLode() {
+  closeCard();
   const el = $("lodeBody"); if (!el) return;
   if (!mePeople().length) { el.innerHTML = "<div class='muted' style='padding:20px'>Open a department planner to see your page.</div>"; return; }
   const R = lodeResolve(); let h = "";
@@ -5675,7 +5724,7 @@ function renderLode() {
       (R.src === "viewing" ? "<div id='lodeBanner' class='lodebanner'>Viewing " + esc(lodeId(w.p)) + ", not you. <button class='btn' id='lodeBack'>Back to me</button></div>" : "") +
       "<div class='lodecards'>" + lodeCardsHtml(c) + "</div>" +
       "<div class='lodegrid'><div class='lodecol'><div class='lcard'>" + lodeTodayHtml(w, D, iso === today, iso) + lodeWeekHtml(w, iso) + "</div></div>" +
-      "<div class='lodecol'><div id='lodeChanged'>" + lodeChangedHtml(w, R.src === "viewing", iso) + "</div><div id='lodeMonth'>" + lodeMonthHtml(w, iso) + "</div></div></div>";
+      "<div class='lodecol'><div id='lodeChanged'>" + lodeChangedHtml(w, R.src === "viewing", iso) + "</div><div id='lodeMonth'>" + lodeMonthHtml(w, iso) + "</div></div></div>" + lodeMonthCalHtml(w, iso, today);
   }
   el.innerHTML = h;
 }
@@ -5685,7 +5734,11 @@ $("lodeBody").addEventListener("click", e => {
   else if (t.closest("#lodeNotMe")) { spRemember("lode_me", { none: 1 }); cur.lodeAs = null; cur.lodeMenu = false; renderLode(); }
   else if (t.closest("#lodeBack")) lodeViewAs(null);
   else if (t.closest("#lodeToPlanner")) { cur.m = +t.closest("#lodeToPlanner").dataset.mi; renderControls(); document.querySelector("nav.tabs button[data-v='plan']").click(); renderPlanner(); }
-  else if (t.closest("#lodePrev") || t.closest("#lodeNext")) { cur.lodeIso = lodeAddDays(cur.lodeIso || opsToday(), t.closest("#lodePrev") ? -1 : 1); renderLode(); }
+  else if (t.closest("#lodePrev") || t.closest("#lodeNext")) { cur.lodeIso = lodeAddDays(cur.lodeIso || opsToday(), t.closest("#lodePrev") ? -1 : 1); cur.lodeMon = null; renderLode(); }
+  else if (t.closest("#lodeMonPrev") || t.closest("#lodeMonNext")) { const f = lodeMonKey(cur.lodeIso || opsToday()) + "-01"; cur.lodeMon = lodeAddDays(f, t.closest("#lodeMonPrev") ? -1 : 32).slice(0, 7) + "-01"; renderLode(); }
+  else if (t.closest("#lodeMonToday")) { cur.lodeIso = opsToday(); cur.lodeMon = null; renderLode(); }
+  else if (t.closest(".pl[data-iso]")) { const W = lodeResolve().who, pl = t.closest(".pl[data-iso]"); if (W) lodeCardOpen(W, pl.dataset.iso, +pl.dataset.ix, pl); }
+  else if (t.closest(".cd[data-day]")) { cur.lodeIso = t.closest(".cd[data-day]").dataset.day; cur.lodeMon = null; renderLode(); window.scrollTo(0, 0); }
   else if (t.closest("#lodeList [data-who]")) { const w = byKey(t.closest("[data-who]").dataset.who); if (w) lodeViewAs(w); }
 });
 $("lodeBody").addEventListener("change", e => { if (e.target.id !== "lodeSel" || !e.target.value) return; const [d, ...r] = e.target.value.split("|"), w = lodeFind(d, r.join("|")); if (w) lodeSetWho(w); });
@@ -5772,7 +5825,7 @@ const HELP = {
     "<p>The stages, items and chances are on your own planner file's <b>Syllabus Settings</b>, <b>Syllabus Stages</b> and <b>Syllabus Items</b> sheets (edit them in Excel). Only your department's crew are listed.</p>"],
   log: ["Changelog", "<p>Every change saved from this dashboard to your own department's file, the Master Planner and the Ops Room, newest first: when, who, which file, what changed in words, and the value before and after. On SharePoint the name is the person signed in to SharePoint, so it follows their access rights: someone without edit rights on a file cannot save it, so cannot appear in its log.</p><p>Each Excel file keeps its own log on a <b>Change Log</b> sheet (added automatically the first time something is saved). This tab shows only your own department, the Master Planner and the Ops Room (everything in Ops Room mode); filter by person, file, day or text. Hover a change to see the exact sheet and cell.</p>"],
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
-    "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
+    "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
@@ -5835,7 +5888,7 @@ $("popSearch").addEventListener("keydown", e => {
 }));
 function redrawHi() { const its = $("popList").querySelectorAll(".it"); its.forEach((x, i) => x.classList.toggle("hi", i === popHi)); if (its[popHi]) its[popHi].scrollIntoView({ block: "nearest" }); }
 $("popList").addEventListener("click", e => { const it = e.target.closest(".it"); if (!it) return; if (it.dataset.blk) { const k = popKey; closePop(); blkOpen(k); return; } pick(it.dataset.code, it.dataset.s); });
-document.addEventListener("mousedown", e => { if (!e.target.closest("#cellCard,td[data-k]")) closeCard(); });
+document.addEventListener("mousedown", e => { if (!e.target.closest("#cellCard,td[data-k],.pl[data-iso]")) closeCard(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeCard(); });
 document.addEventListener("mousedown", e => { if (popKey && !$("pop").contains(e.target) && !e.target.closest("td[data-k]")) closePop(); });
 document.addEventListener("keydown", e => {

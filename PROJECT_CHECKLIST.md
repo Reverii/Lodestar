@@ -209,3 +209,5 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Top bar (z121, 1 Nov, Brandon): Open my Excel and Add other departments hidden; the LODESTAR logo goes back to the department screen
 - [?] Ops Room (z122, 1 Nov, Brandon): the flight table is enlarged (up to 1.6x) to fill a tall window
 - [?] Change Log (z123, 1 Nov, Brandon): runs of cells in one save are one line, MASTER copies are not logged, repeat edits of a cell merge, rows older than 90 days are dropped (awaiting his look)
+- [ ] Admin mode (Brandon, 1 Nov: build towards the END of the dev stage, after the DEV code is stripped; not now). Plan: an `Admins` sheet in the Master Planner file lists the SharePoint sign-in names; an admin sees a "Maintenance" tab at the far right (nobody else does; no sheet = no admins). Holds Start new year and Change Log clear / 90-day setting (with confirms), creating helper sheets (Crew Matrix, Role Tags, Admins), a health check (version, layout stamps, last saves, Names to fix) and editing the shared files. Not security (SharePoint permissions are); a tidy-up. Open: who is on the list (suggest Brandon plus one backup)
+

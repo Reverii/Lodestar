@@ -45,6 +45,8 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 **Built on 1 Nov (all merged):** z113 right-click opens the Planner picker (left click only selects); z114 flight card on left click (details and crew from every department in seat columns) and locked MASTER rows; z115 the card shows only that cell's flight; z116 the cell comment moved from the picker to the card (non-flight cells show it, planners can type it there); z117 a left click on a MASTER cell shows its time and comment. Brandon confirmed z113 and z117 work on his side; z114 to z116 were tested along the way. Details in the z113 to z117 sections below.
 **Earlier, awaiting his SharePoint test:** z112 Ops Room ground programme filled by hand, z111 squadron events with ALL / blank-crew errors, z101 to z108 (other departments View only, AC / Pax tags, WD row and zoom, tabs, Master Planner export, Changelog filter).
 
+**Later (Brandon, 1 Nov): admin mode** at the end of the dev stage, after DEV is stripped. Design is in the last line of `PROJECT_CHECKLIST.md`. Do not start before he says so.
+
 **Next, in this order:**
 1. Brandon said "next fix" at the end of 1 Nov but had not named it: ask what he found. Otherwise wait for his SharePoint test results (list below) and fix what he finds. Open small ideas he has not picked: an on-screen "right-click" hint, long-press for touch screens, a menu key / Shift+F10 to open the picker, a right-click mini menu (copy, paste, clear, block of days, role, down-chit).
 2. When he agrees: replace the repo's own `.xlsx` files and the built-in sample with layout-3 files (rebuild fresh, no migration; dummy data only), then rebuild the dashboard.

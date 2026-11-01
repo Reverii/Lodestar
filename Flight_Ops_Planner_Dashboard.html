@@ -471,6 +471,21 @@ body.ro .edit input,body.ro .edit select{pointer-events:none;color:var(--s600)}
 #grPop select,#grPop input:not([type=checkbox]){padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900)}
 #grPop label.ck{flex-direction:row;align-items:center;gap:5px;text-transform:none;font-size:13px;color:var(--s700);flex:0 0 auto;min-width:0}
 #grPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+/* Flying Restriction: a slim red banner on the Ops Room, the add dialog, the Master Planner side panel and calendar tag */
+#opsFr{display:flex;flex-direction:column;gap:3px;margin:0 0 6px}#opsFr:empty{display:none}
+.frb{display:flex;align-items:center;gap:10px;background:#b91c1c;color:#fff;border:1px solid #fca5a5;border-radius:6px;padding:3px 10px;font-weight:600;font-size:14px;line-height:1.3}
+.frb .ft{font-weight:800;letter-spacing:.07em;font-size:12px;white-space:nowrap}.frb .fm{flex:1;min-width:0;overflow-wrap:anywhere}.frb .fd{font-size:11px;opacity:.9;white-space:nowrap}.frb .fx{white-space:nowrap}
+.frb button,.fri button{background:none;border:0;color:inherit;cursor:pointer;font-size:14px;padding:0 3px;opacity:.85}.frb button:hover,.fri button:hover{opacity:1}
+#opsFrBtn{background:#dc2626;color:#fff;border-color:#dc2626}
+#frPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
+#frPop .box{background:#fff;border-radius:12px;padding:22px 24px;max-width:560px;width:94%}
+#frPop h2{margin:0 0 4px;color:#b91c1c}#frPop .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+#frPop label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase;flex:1;min-width:130px}
+#frPop textarea,#frPop input{padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900);font-family:inherit}#frPop textarea{height:80px;resize:vertical}
+#frQ{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}#frQ b{border:1px solid var(--s300);border-radius:14px;padding:2px 12px;font-size:12.5px;cursor:pointer;background:var(--s100);color:var(--s900)}
+#frMsg{color:#b91c1c;font-weight:600;margin-top:8px;font-size:13px}#frPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+.mday.rs{background:#fee2e2!important;box-shadow:inset 0 0 0 1px #f87171}.frtag{display:block;background:#dc2626;color:#fff;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.04em;padding:0 4px;margin-top:2px}
+.fri{background:#fef2f2;border:1px solid #f87171;border-radius:8px;padding:7px 10px;margin-top:6px;color:#7f1d1d}.fri .fm{font-weight:600}.fri .fd{font-size:11px;color:#b91c1c}
 #grRef{border:1px solid var(--s300);border-radius:6px;max-height:250px;overflow:auto;margin-bottom:8px;font-size:13.5px;color:var(--s900)}#grRef .rt{background:var(--s100);padding:3px 10px;font-weight:700;font-size:11px;color:var(--s500);position:sticky;top:0;z-index:1}#grRef .rh{background:#1e293b;color:#fff;padding:2px 10px;font-weight:700;font-size:12px;margin-top:2px}#grRef .ri{display:grid;grid-template-columns:170px 1fr;gap:8px;padding:5px 10px;border-top:1px solid var(--s200);align-items:start}#grRef .ra{font-weight:700}#grRef .ra small{display:inline-block;margin-left:6px;padding:0 6px;border-radius:4px;background:var(--s200);color:var(--s700);font-size:10.5px}#grRef .rp{display:flex;flex-wrap:wrap;gap:4px 8px}#grRef .rp span{display:inline-flex;align-items:center;gap:5px}#grRef .rp b{font-weight:700}#grRef .rp em{font-style:normal;background:#ede9fe;color:#5b21b6;border-radius:4px;padding:0 6px;font-weight:600}#grQ{display:flex;gap:8px;margin-top:2px;align-items:center;flex-wrap:wrap}#grQ b{border:1px solid var(--s300);border-radius:6px;padding:3px 12px;font-size:13px;cursor:pointer;background:var(--s100);color:var(--s900)}#grQ .gtill{flex-direction:row;font-size:13px;align-items:center;gap:6px;flex:0 0 auto;min-width:0;text-transform:uppercase}#grQ input{width:auto;padding:0 2px}#grPop .gdep{margin-top:6px;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:center}#grPop .gdep b{flex:0 0 100%;font-size:11px;color:var(--s500)}#grPop #grWho{max-height:280px;overflow:auto;border:1px solid var(--s200);border-radius:6px;padding:6px 8px;margin-top:3px}
 #grMsg{color:#b91c1c;font-size:12.5px;min-height:16px;margin-top:6px}
 table.gtab td.ga .gbt{visibility:hidden;margin-left:6px;white-space:nowrap}table.gtab tr:hover .gbt{visibility:visible}.gbt button{border:1px solid var(--s300);background:#fff;border-radius:4px;font-size:11px;line-height:1;padding:2px 5px;cursor:pointer;color:var(--s600)}
@@ -963,9 +978,11 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
       <input type="date" id="opsDate">
       <span class="grow"></span>
       <span id="opsClock" title="The time now">--:--</span><button class="btn" id="opsTheme" title="Switch the Ops Room between a light and a dark screen">Light</button>
+      <button class="btn" id="opsFrBtn" title="Add a flying restriction. It shows as a red banner on the Ops Room for the dates you choose.">+ Restriction</button>
       <button class="btn" id="opsAddBtn" title="Add an ad hoc flight for this day. It isn't put on the Master Planner; departments see it on their programme." style="background:#7c3aed;color:#fff;border-color:#7c3aed">+ Ops Add</button>
       <span id="opsSize"><button class="btn" data-z="-1" title="Smaller">A−</button><button class="btn" data-z="1" title="Bigger">A+</button></span>
       <button class="btn primary" id="opsFull" title="Full screen for the projector: hides the menus. Esc to leave.">⛶ Projector</button></div>
+    <div id="opsFr"></div>
     <div id="opsStats"></div>
     <div class="muted" id="opsNote"></div>
     <div id="opsWrap"><div id="opsLeft"><div id="opsBoard"></div><div id="opsMain"></div></div><div id="opsSide"></div></div>
@@ -1050,7 +1067,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z123</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z124</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1068,6 +1085,14 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
   <div class="row" style="align-items:center" id="oaCrew"></div>
   <div class="row"><label>Comment (optional)<input id="oaNote" placeholder="e.g. Tasking from HQ"></label></div>
   <div class="btns"><button class="btn" id="oaCancel">Cancel</button><button class="btn primary" id="oaGo">Add flight</button></div>
+</div></div>
+<div id="frPop"><div class="box">
+  <h2 id="frTitle">⚠ Flying restriction</h2>
+  <div class="row"><label>What is the restriction? (shown on the Ops Room banner)<textarea id="frText" placeholder="e.g. No flying below 5,000 ft over the eastern training area"></textarea></label></div>
+  <div class="row"><label>From<input type="date" id="frFrom"></label><label>To (same day if left empty)<input type="date" id="frTo"></label></div>
+  <div id="frQ"><b data-n="0">Today only</b><b data-n="1">Until tomorrow</b><b data-n="6">Next 7 days</b></div>
+  <div id="frMsg"></div>
+  <div class="btns"><button class="btn" id="frCancel">Cancel</button><button class="btn primary" id="frGo">Save restriction</button></div>
 </div></div>
 <div id="grPop"><div class="box">
   <h2 id="grTitle">Ground programme row</h2>
@@ -1696,6 +1721,67 @@ function grrUnhide(iso, id) {
 function grrPeople(text) {
   return String(text || "").split(/\s*[\/,]\s*/).map(t => t.trim()).filter(Boolean).map(t => { for (const b of books) { if (!isDept(b)) continue; const p = b.S.roster.find(x => same(x.ini || x.id, t)); if (p) return { dept: b.S.dept, ini: p.ini || p.id, cls: opsCatCls(p) }; } return { dept: "", ini: t, cls: "" }; });
 }
+// ---------- Flying Restriction: the Flying Restrictions sheet of the Ops Room file (made by the dashboard on the first save)
+// A From, B To, C Remark, D Added by, E Saved; a restriction shows on every day from From to To (dates inclusive).
+const FR_SHEET = "Flying Restrictions", FR_ROW0 = 2, FR_N = 300, FR_HEAD = ["From", "To", "Remark", "Added by", "Saved"],
+  FR_COLS = '<col min="1" max="2" width="12" customWidth="1"/><col min="3" max="3" width="70" customWidth="1"/><col min="4" max="4" width="22" customWidth="1"/><col min="5" max="5" width="17" customWidth="1"/>';
+const frFor = iso => { const ob = opsBook(); return ob && ob.S.fr ? ob.S.fr.filter(e => e.from <= iso && iso <= e.to).sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : a.row - b.row) : []; };
+function frSave(f) {
+  const oi = opsIdx(); if (oi < 0 || !mayEdit(oi)) return false;
+  const text = String(f.text || "").trim(), from = f.from, to = f.to || f.from;
+  if (!text) { toast("Type the restriction.", 4000); return false; }
+  if (!from) { toast("Choose the From date.", 4000); return false; }
+  if (to < from) { toast("The To date is before the From date.", 4000); return false; }
+  let ok = true;
+  withBook(oi, () => {
+    sheetEnsure(WB, FR_SHEET, FR_HEAD, FR_COLS);
+    let e = f.row ? S.fr.find(x => x.row === f.row) : null;
+    if (!e) {
+      let row = FR_ROW0; while (S.frUsed.has(row) && row < FR_ROW0 + FR_N) row++;
+      if (row >= FR_ROW0 + FR_N) { toast("The Flying Restrictions sheet is full. Clear old rows in Excel to make room.", 5000); ok = false; return; }
+      e = { row }; S.fr.push(e); S.frUsed.add(row);
+    }
+    Object.assign(e, { from, to, text, by: SP.user ? SP.user.Title : "" });
+    const A = ymd(from, S.year), B = ymd(to, S.year);
+    put(FR_SHEET, "A" + e.row, dateSerial(A.y, A.mi, A.d)); put(FR_SHEET, "B" + e.row, dateSerial(B.y, B.mi, B.d)); put(FR_SHEET, "C" + e.row, text);
+    put(FR_SHEET, "D" + e.row, e.by); put(FR_SHEET, "E" + e.row, new Date().toISOString().slice(0, 16).replace("T", " "));
+  });
+  return ok;
+}
+function frClear(row) {
+  const oi = opsIdx(); if (oi < 0 || !mayEdit(oi)) return;
+  withBook(oi, () => { const e = S.fr.find(x => x.row === row); if (!e) return; "ABCDE".split("").forEach(L => put(FR_SHEET, L + e.row, "")); S.fr = S.fr.filter(x => x !== e); S.frUsed.delete(e.row); });
+}
+const frRange = e => e.from === e.to ? "this day only" : "until " + fmtDay(e.to);
+// the slim red banner(s) at the top of the Ops Room
+function frBannerHtml(iso, ed) {
+  return frFor(iso).map(e => "<div class='frb'><span class='ft'>⚠ FLYING RESTRICTION</span><span class='fm'>" + esc(e.text) + "</span><span class='fd'>" + esc(frRange(e)) + "</span>" +
+    (ed ? "<span class='fx'><button data-frr='" + e.row + "' data-fre='1' title='Change this restriction'>✎</button><button data-frr='" + e.row + "' data-frx='1' title='Remove this restriction'>✕</button></span>" : "") + "</div>").join("");
+}
+let FRD = null;   // the open dialog { row }
+function frOpen(iso, row) {
+  const ob = opsBook(); if (!ob || !opsEditable()) { alert("Adding a flying restriction needs the Ops Room file open for editing (Ops Room mode)."); return; }
+  const e = row ? ob.S.fr.find(x => x.row === row) : null; FRD = { row: e ? e.row : 0 };
+  $("frTitle").textContent = e ? "⚠ Change flying restriction" : "⚠ Flying restriction";
+  $("frText").value = e ? e.text : ""; $("frFrom").value = e ? e.from : iso; $("frTo").value = e ? (e.to === e.from ? "" : e.to) : "";
+  $("frMsg").textContent = ""; $("frPop").style.display = "flex"; $("frText").focus();
+}
+$("frQ").onclick = e => { const n = e.target.dataset && e.target.dataset.n; if (n == null) return; const f = $("frFrom").value; if (!f) return; $("frTo").value = +n ? opsAddDays(f, +n) : ""; };
+$("frCancel").onclick = () => { $("frPop").style.display = "none"; FRD = null; };
+$("frGo").onclick = () => {
+  const from = $("frFrom").value, to = $("frTo").value || from, text = $("frText").value.trim();
+  if (!text) { $("frMsg").textContent = "Type the restriction."; return; } if (!from) { $("frMsg").textContent = "Choose the From date."; return; } if (to < from) { $("frMsg").textContent = "The To date is before the From date."; return; }
+  if (!frSave({ row: FRD && FRD.row, from, to, text })) return;
+  $("frPop").style.display = "none"; FRD = null; frRefresh();
+};
+function frRefresh() { renderOps(); if ($("v-mp").classList.contains("on")) renderMp(); }
+$("opsFrBtn").onclick = () => frOpen(cur.opsDay || opsToday(), 0);
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-fradd],[data-frr]"); if (!t) return;
+  if (t.dataset.fradd != null) { frOpen(t.dataset.fradd, 0); return; }
+  const row = +t.dataset.frr; if (!opsEditable()) return;
+  if (t.dataset.fre) frOpen("", row); else if (t.dataset.frx && confirm("Remove this flying restriction?")) { frClear(row); frRefresh(); }
+});
 // the Master Planner: a list of flights (Flights sheet, rows 6..1005: A date, B shift, C code, D time, E crew, F comment), any number per shift,
 // plus a Day Status sheet (one row per date of the year from row 6, status in C). The month tabs are a view built by Excel formulas.
 const FL_ROW0 = 6, FL_N = 1000, GR_ROW0 = 6, GR_N = 500;
@@ -2283,6 +2369,7 @@ function buildXlsx() {
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
   if (bySheet[ROLE_SHEET]) sheetEnsure(WB, ROLE_SHEET, ["Date", "Shift", "Callsign", "Tag"], ROLE_COLS);
   if (bySheet[GRR_SHEET]) sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
+  if (bySheet[FR_SHEET]) sheetEnsure(WB, FR_SHEET, FR_HEAD, FR_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
@@ -2931,6 +3018,7 @@ function renderMp() {
       if (!dayOff) { wS += n; wH += L.reduce((a, f) => a + (f.code ? hrsOf(f.code) : 0), 0); }
       h += "<div class='mday" + (we ? " we" : "") + (d === todayD ? " today" : "") + (d === cur.mpDay ? " sel" : "") + (dayOff ? " nofly" : "") + "' data-day='" + d + "' title='" + (lock ? "Click to see this day" : "Click to plan this day") + "'><div class='dn'>" + (d + 1) + "<small>" + (n ? n + (n === 1 ? " sortie" : " sorties") : "") + "</small></div>";
       if (dayOff) h += "<div class='reason'>NO FLYING<br>" + esc(dayOff) + "</div>";
+      { const fr = frFor(isoOf(y, mi, d)); if (fr.length) h += "<div class='frtag' title='" + esc(fr.map(e => e.text).join(" | ")) + "'>RESTRICTION</div>"; }
       {
         const G = grDay(P, mi, d), items = (dayOff ? [] : L.map(f => ({ f }))).concat(G.map(g => ({ g }))), show = items.length > 4 ? 3 : 4;
         items.slice(0, show).forEach(({ f, g }) => {
@@ -2980,6 +3068,16 @@ function renderMp() {
       p += "</div></div>";
     }
     if (!lock) p += "<datalist id='grList'>" + P.grList.map(x => "<option value='" + esc(x) + "'>").join("") + "</datalist><button class='addb gaddb' data-gadd='" + sd + "'>+ Add squadron event</button>";
+  }
+  {
+    const iso = isoOf(y, mi, sd), FL = frFor(iso), fed = opsEditable();
+    p += "<div class='lbl' style='margin-top:16px;color:#b91c1c'>Flying restriction</div>";
+    if (!opsBook()) p += "<div class='empty' style='padding:6px 4px'>The Ops Room file is not open, so restrictions can't be shown.</div>";
+    else {
+      if (!FL.length) p += "<div class='empty' style='padding:6px 4px'>No flying restriction.</div>";
+      for (const e of FL) p += "<div class='fri'><div class='fm'>" + esc(e.text) + "</div><div class='fd'>" + esc(e.from === e.to ? fmtDay(e.from) : fmtDay(e.from) + " to " + fmtDay(e.to)) + (e.by ? " · added by " + esc(e.by) : "") + (fed ? " <button data-frr='" + e.row + "' data-fre='1' title='Change'>✎</button><button data-frr='" + e.row + "' data-frx='1' title='Remove'>✕</button>" : "") + "</div></div>";
+      p += fed ? "<button class='addb' data-fradd='" + iso + "'>+ Add flying restriction</button>" : "<div class='hint'>To add or change one, use the Ops Room (this file is open for viewing only).</div>";
+    }
   }
   if (lock) p += "<div class='hint'>🔒 View only. Only the Master Planner can change this.</div>";
   $("mpSide").innerHTML = p + "</div>";
@@ -3836,6 +3934,13 @@ function readOps(name) {
       if (dv != null || id) st.grrUsed.add(r);
       if (typeof dv !== "number" || !id || !/^(edit|hide|manual)$/.test(kind)) continue;
       st.grr.push({ row: r, iso: serialToISO(dv), id, kind, time: timeStr(c["D" + r]), act: str(c["E" + r]), note: str(c["F" + r]), who: str(c["G" + r]) }); } }
+  // Flying Restrictions sheet (made by the dashboard on the first save): header row 1, rows 2.. (A from, B to, C remark, D added by, E saved)
+  st.fr = []; st.frUsed = new Set();
+  if (WB.paths[FR_SHEET]) { const c = readCells(FR_SHEET);
+    for (let r = FR_ROW0; r < FR_ROW0 + FR_N; r++) { const a = c["A" + r], b = c["B" + r], text = str(c["C" + r]);
+      if (a != null || text) st.frUsed.add(r);
+      if (typeof a !== "number" || !text) continue; const from = serialToISO(a), to = typeof b === "number" && b >= a ? serialToISO(b) : from;
+      st.fr.push({ row: r, from, to, text, by: str(c["D" + r]) }); } }
   st.hasDb = !!WB.paths["Day Board"]; st.db = {};
   if (st.hasDb) { const g = readCells("Day Board"); for (const ref in g) { const m = /^([B-Q])(\d+)$/.exec(ref); if (m && +m[2] >= 6) st.db[ref] = str(g[ref]); } }
   return st;
@@ -4141,11 +4246,12 @@ function renderOps() {
   $("opsNote").innerHTML = !mb ? "<b style='color:#b91c1c'>Open the Master Planner to see the flights.</b> The Ops Room button on the start page opens every file at once." :
     (ed ? "" : opsIdx() < 0 ? "Read-only: open the dashboard with <b>Ops Room</b> on the start page to fill in the flights (saved in Ops_Room_2026.xlsx). " : "Read-only: the Ops Room file is open for viewing. ") +
     (missing.length ? "<span style='color:#b45309'>Not open, so their seats can't be filled: " + esc(missing.join(", ")) + ".</span>" : "");
-  if (!mb) { el.innerHTML = ""; $("opsBoard").innerHTML = ""; $("opsSide").innerHTML = ""; $("opsStats").innerHTML = ""; return; }
+  if (!mb) { el.innerHTML = ""; $("opsBoard").innerHTML = ""; $("opsSide").innerHTML = ""; $("opsStats").innerHTML = ""; $("opsFr").innerHTML = ""; return; }
   const D = opsDay(iso);
   renderOpsBoard(iso, ed);
   const noMc = D.rows.filter(r => !(r.o && r.o.mc)).length, nOpen = D.rows.filter(r => opsEdge(r, iso) === "open").length;
   $("opsTitle").textContent = opsFmt(iso, true);
+  $("opsFr").innerHTML = frBannerHtml(iso, ed);
   if (cur.opsF && !OPS_FILT[cur.opsF]) cur.opsF = "";
   // slim stat chips; a chip filters the flights to the ones it counts (click it again to show all)
   const chip = (f, lab, v, cls, tip) => "<span class='opsk" + (cls ? " " + cls : "") + (f && cur.opsF === f ? " sel" : "") + "' data-ofl='" + f + "' title='" + esc(tip || (f ? "Show only these flights" : "Show all flights")) + "'><b>" + v + "</b><small>" + lab + "</small></span>";
@@ -5147,7 +5253,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z123 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z124 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

@@ -1,7 +1,13 @@
-# LODESTAR handoff (updated 2026-11-01, after z123)
+# LODESTAR handoff (updated 2026-11-02, after z124)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
+
+## z124 (2 Nov, Brandon): Flying Restriction banner
+- **Ops Room:** a slim red banner (one line per restriction, stacked) above the stat chips, only on days from From to To. **+ Restriction** button next to + Ops Add opens a dialog (remark text, From, To, quick buttons Today only / Until tomorrow / Next 7 days); pencil and x on each banner (editors only; a view-only Ops Room shows the banner with no buttons). Brandon chose the top of the page, compact (mock-ups `previews/flying_restriction_mockup_*.png`, real `previews/flying_restriction_real.png`).
+- **Master Planner:** the day panel has a "Flying restriction" section (list, pencil, x, + Add) and calendar days inside a restriction get a red tint and a RESTRICTION tag. Adding or changing there works only when the Ops Room file is open **for editing** (dev mode / Ops Room mode). A normal Master Planner user opens the Ops Room file read-only, so they see the list and the note "use the Ops Room". Brandon said the Ops Room people cannot edit the Master Planner file, so the data lives in the Ops Room file. **Open:** if the Master Planner owners must add them, the Ops Room file needs edit rights for them, or the sheet moves to the Master Planner file.
+- **Saved:** new `Flying Restrictions` sheet in `Ops_Room.xlsx` made by the dashboard on the first save (A From, B To, C Remark, D Added by, E Saved; rows 2..301). No layout change, no stamp bump. Expired rows stay in the sheet (the banner just no longer shows them); year rollover does not clear them. Code: `frFor`, `frSave`, `frClear`, `frOpen`, `frBannerHtml`, `frRefresh`, `st.fr` parsed with the Ops Room file.
+- Upload the DEV dashboard only. Tests: new `node tests/flying_restriction.test.js` (11); `ops_room` 43, `changelog` 8, `master_calendar` 8; `my_lodestar` still has the same 3 failures as before z123.
 
 ## z123 (1 Nov, Brandon): Change Log is less spammy and stays small
 - Brandon found the Changelog too spammy and worried the Excel would grow. Decisions: group and skip; keep the last 90 days.

@@ -250,6 +250,8 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfh .rm{margin-left:auto;border:0;background:transparent;color:#dc2626;font-size:19px;font-weight:800;cursor:pointer;line-height:1}.fNT .rm{color:#fca5a5}
 .spfb{display:grid;grid-template-columns:1.2fr 1fr;gap:6px;padding:8px}
 .spfb .tags,.spfb .nt{grid-column:span 2}
+.spfb input.cbx{border:1px solid var(--s300);border-radius:6px;padding:6px 8px;font-size:14px;width:100%;min-width:0}.spfb input.cbx.set{background:#dcfce7;color:#166534;font-weight:800}
+#mpSide .ncp .tags{grid-column:auto}.ncp{grid-column:1/-1;border:1.5px solid #16a34a;background:#f0fdf4;border-radius:8px;padding:8px;display:grid;grid-template-columns:1fr;gap:4px}.ncp b{color:#166534;display:block}.ncp label{display:block}.ncp label{font-size:11px;font-weight:700;color:#475569;margin-top:4px}.ncp input{width:100%;border:1px solid var(--s300);border-radius:6px;padding:5px 8px;font-size:13px}.ncb{display:flex;gap:6px;margin-top:6px}.ncb button{border:0;border-radius:6px;padding:5px 12px;font-weight:800;cursor:pointer;background:#e2e8f0}.ncb .ok{background:#16a34a;color:#fff}.ncn{font-size:11px;color:#64748b}
 .spfb select.set,.spfb .v.set{background:#dcfce7;color:#166534;font-weight:800}
 .spfb input.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb input.sorb{width:100%}
@@ -1073,7 +1075,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z129</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z130</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3065,11 +3067,11 @@ function renderMp() {
       CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag t" + k + (cw.includes(k) && f.code ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length && f.code ? "<span class='all'>all crew</span>" : "") + "</div>";
     p += "<div class='spf" + (sOff ? " dim" : "") + "'><div class='spfh " + shCls[f.s] + "'>" + SHIFTS[f.s] + (f.time ? " · " + esc(f.time) : "") + (lock ? "" : "<button class='rm' " + key + " title='Remove this flight'>×</button>") + "</div><div class='spfb'>";
     if (lock) p += "<div class='v set'>" + esc(f.code) + "</div>" + (fk && fk.desc ? "<div class='v spdesc'>" + esc(fk.desc) + "</div>" : "") + facts + tags + (f.note ? "<div class='v nt'>" + esc(f.note) + "</div>" : "");
-    else p += "<select " + key + " data-f='code' class='" + (f.code ? "set" : "") + "'><option value=''>Flight code…</option>" + P.codes.map(k => "<option value='" + esc(k.code) + "'" + (same(k.code, f.code) ? " selected" : "") + ">" + esc(k.code + (k.crew ? "  (" + k.crew + ")" : "")) + "</option>").join("") +
-      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + (P.fcOld ? "" : "<input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>") + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
+    else p += "<input " + key + " data-f='code' class='cbx" + (f.code ? " set" : "") + "' list='fcList' value='" + esc(cur.mpNew && cur.mpNew.row === f.row ? cur.mpNew.code : f.code) + "' placeholder='Flight code…' title='Pick a code or type a new one' autocomplete='off'>" + (cur.mpNew && cur.mpNew.row === f.row ? ncPanel(P, cur.mpNew) : "") + "<input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + (P.fcOld ? "" : "<input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>") + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
     p += "</div></div>";
   }
-  if (!lock && !sOff) p += "<button class='addb' data-add='" + sd + "'>+ Add flight</button><div class='hint'>The time sets the shift: before 1200 AM, before 1800 PM, then NIGHT. Crew comes from the flight code (faded chips); click one to change it for this flight.</div>";
+  if (!lock) p += "<datalist id='fcList'>" + P.codes.map(k => "<option value='" + esc(k.code) + "'>" + esc(k.crew || "all crew") + "</option>").join("") + "</datalist><datalist id='mtList'>" + [...new Set(P.codes.map(k => k.mtype).filter(Boolean))].map(m => "<option value='" + esc(m) + "'>").join("") + "</datalist>";
+  if (!lock && !sOff) p += "<button class='addb' data-add='" + sd + "'>+ Add flight</button><div class='hint'>The time sets the shift: before 1200 AM, before 1800 PM, then NIGHT. Type a new flight code to create it. Crew comes from the flight code (faded chips); click one to change it for this flight.</div>";
   // ground programme for the office (also on no-flying days)
   if (P.hasGr) {
     const GL = grDay(P, mi, sd);
@@ -3306,11 +3308,36 @@ $("mpReq").addEventListener("click", e => {
 $("mpReq").addEventListener("change", e => {
   if (!e.target.dataset.rqrep || !mpEditable()) return; const q = reqAll().find(x => x.bi === +e.target.dataset.rqb && x.row === +e.target.dataset.rqr); if (q && q.ans && q.ans.st) { reqAnswer(q, q.ans.st, e.target.value.trim()); renderBooks(); }
 });
+// a flight code typed on the card: an existing code (case and spaces ignored) is used, a new one asks for its crew and Mission Type and is added to Flight Codes
+const codeKey = v => String(v || "").replace(/\s+/g, "").toUpperCase();
+function ncPanel(P, n) {
+  const key = "data-nrow='" + n.row + "'";
+  return "<div class='ncp'><b>New code " + esc(n.code) + "</b><label>Crew by default (blank = every department)</label><div class='tags'>" + CREW_TAGS.map(([k, nm]) => "<span class='tag t" + k + (n.crew.includes(k) ? " on" : "") + "' data-nct='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + "</div>" +
+    "<label>Mission Type</label><input " + key + " data-ncf='mtype' list='mtList' value='" + esc(n.mtype) + "' placeholder='e.g. OPS'><label>Description (optional)</label><input " + key + " data-ncf='desc' value='" + esc(n.desc) + "' placeholder='e.g. Surveillance exercise'>" +
+    "<div class='ncb'><button class='ok' data-ncok='" + n.row + "'>Add code</button><button data-nccancel='1'>Cancel</button></div><div class='ncn'>Saved on the Flight Codes sheet. Departments get it on their next copy from the Master Planner.</div></div>";
+}
 $("mpWrap").addEventListener("click", e => {
   const go = e.target.closest("[data-go]"), dayEl = e.target.closest(".mday[data-day]");
   if (go) { const dim = daysIn(books[mpIdx()].S.year, cur.mpM); cur.mpDay = go.dataset.go === "x" ? null : Math.max(0, Math.min(dim - 1, cur.mpDay + +go.dataset.go)); renderMp(); return; }
   if (dayEl && !e.target.closest("[data-add]")) { cur.mpDay = +dayEl.dataset.day; renderMp(); return; }
   if (!mpEditable()) return;
+  const nct = e.target.closest("[data-nct]"), ncok = e.target.closest("[data-ncok]"), ncx = e.target.closest("[data-nccancel]");
+  if (nct && cur.mpNew) { const k = nct.dataset.nct, c = cur.mpNew.crew; cur.mpNew.crew = c.includes(k) ? c.filter(x => x !== k) : c.concat(k); renderMp(); return; }
+  if (ncx) { cur.mpNew = null; renderMp(); return; }
+  if (ncok && cur.mpNew) {
+    const n = cur.mpNew, S = books[mpIdx()].S, pn = $("mpSide").querySelector(".ncp");
+    n.mtype = pn.querySelector("[data-ncf='mtype']").value.trim(); n.desc = pn.querySelector("[data-ncf='desc']").value.trim();
+    const slot = S.codeAll.find(k => !k.code);
+    if (!slot) { alert("The Flight Codes sheet is full (" + FC_N + " codes). Remove one on the Flight Codes page first."); return; }
+    const crew = CREW_TAGS.map(x => x[0]).filter(x => n.crew.includes(x)).join(" "), COL = S.fcOld ? { code: "A", desc: "B", crew: "E", mtype: "F" } : { code: "A", desc: "B", crew: "C", mtype: "D" };
+    withBook(mpIdx(), () => {
+      Object.assign(slot, { code: n.code, desc: n.desc, crew, mtype: n.mtype });
+      for (const f of ["code", "desc", "crew", "mtype"]) put("Flight Codes", COL[f] + slot.row, slot[f]);
+      mkCodes(S);
+      const f = flByRow(n.row); if (f) { f.code = n.code; put("Flights", FL_COLS.code + f.row, n.code); }
+    });
+    cur.mpNew = null; renderMp(); renderPlanner(); renderCodes(); renderActs(); return;
+  }
   const add = e.target.closest("[data-add]"), rm = e.target.closest("button.rm[data-row]"), tg = e.target.closest(".tag[data-t][data-row]"), mi = cur.mpM;
   const gadd = e.target.closest("[data-gadd]"), grm = e.target.closest("button.grm[data-grow]"), gtg = e.target.closest(".gtag[data-grow]");
   if (gadd || grm || gtg) {   // ground programme
@@ -3371,8 +3398,17 @@ $("mpWrap").addEventListener("change", e => {
     withBook(mpIdx(), () => { const g = S.gr.find(x => x.row === +el.dataset.grow); if (!g) return; g[gf] = v; put("Ground Programme", { time: "B", act: "C", note: "E" }[gf] + g.row, v); });
     renderMp(); return;
   }
+  if (el.dataset.ncf && cur.mpNew) { cur.mpNew[el.dataset.ncf] = el.value.trim(); return; }
   const k = el.dataset.f; if (!k || !mpEditable() || el.dataset.row == null) return;
   const v = el.value.trim();
+  if (el.dataset.ncf && cur.mpNew) { cur.mpNew[el.dataset.ncf] = v; return; }
+  if (k === "code") {
+    const S = books[mpIdx()].S, hit = S.codes.find(c => codeKey(c.code) === codeKey(v));
+    if (v && !hit) { cur.mpNew = { row: +el.dataset.row, code: v, crew: [], mtype: "", desc: "" }; renderMp(); return; }
+    cur.mpNew = null;
+    withBook(mpIdx(), () => { const f = flByRow(+el.dataset.row); if (f) { f.code = hit ? hit.code : ""; put("Flights", FL_COLS.code + f.row, f.code); } });
+    renderMp(); renderPlanner(); return;
+  }
   withBook(mpIdx(), () => { const f = flByRow(+el.dataset.row); if (!f) return; if (k === "sort") { const n = +v; f.sort = n >= 1 && n <= 9 ? Math.round(n) : 1; put("Flights", "G" + f.row, f.sort > 1 ? f.sort : ""); } else { f[k] = v; put("Flights", FL_COLS[k] + f.row, v); }
     if (k === "time") { const sh = timeShift(v); if (sh >= 0 && sh !== f.s) { f.s = sh; put("Flights", "B" + f.row, SHIFTS[sh]); } } });
   renderMp(); renderPlanner();
@@ -5281,7 +5317,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z129 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z130 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

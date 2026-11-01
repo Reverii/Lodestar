@@ -498,7 +498,7 @@ catalog = [("FLT-1.5", "Routine Sortie (1.5h)", "Flight", 1.5), ("FLT-2.0", "Sta
            ("MC", "Medical Leave", "Medical", 0), ("Medical Appt", "Medical Appointment", "Medical", 0),
            ("LL", "Local Leave", "Leave", 0), ("OL", "Oversea Leave", "Leave", 0), ("OIL", "OIL", "Off", 0)]
 if REAL:   # the Master Planner's flight codes (all of them), then this department's activities from the data input
-    catalog = [(c["code"], c["desc"], "Flight", c["hrs"]) + ((c["sorties"],) if c["sorties"] != 1 else ()) for c in realdata.FLIGHT_CODES] + \
+    catalog = [(c["code"], c["desc"], "Flight", 0) for c in realdata.FLIGHT_CODES] + \
               [(a["code"], a["desc"], a["cat"], 0) for a in realdata.acts_for(DEPT)]
 for i in range(NA):
     r = 6 + i

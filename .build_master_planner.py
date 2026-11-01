@@ -59,11 +59,10 @@ def header(ws, row, heads, colors=None):
 banner(codes, "FLIGHT CODES", "The flights programme: every flight code the squadron uses. Departments copy this list into their Activities sheet in the planner dashboard. Crew = the departments that fly this code (blank = every department). Mission Type is used by the currency rules.", 7)
 header(codes, 5, ["Code", "Description", "Crew", "Mission Type", "Syllabus tag"], {3: "7E22CE", 4: "5B21B6", 5: "B45309"})
 CATALOG = [("FLT-1.5", "Routine Sortie (1.5h)", ""), ("FLT-2.0", "Standard Sortie (2.0h)", ""), ("FLT-3.0", "Extended Mission (3.0h)", ""),
-           ("NVG-2.0", "Night Flying Sortie (2.0h)", ""), ("2xFLT-1.5", "Two routine sorties in one shift", ""), ("2xFLT-2.0", "Two standard sorties in one shift", ""),
-           ("MSN-3.0", "Mission sortie: Pilot, TACCO, SUP 2 (3.0h)", "P T S2"), ("PLT-TRG", "Pilot training sortie (1.5h)", "P"),
+           ("NVG-2.0", "Night Flying Sortie (2.0h)", ""), ("MSN-3.0", "Mission sortie: Pilot, TACCO, SUP 2 (3.0h)", "P T S2"), ("PLT-TRG", "Pilot training sortie (1.5h)", "P"),
            ("EIS", "EIS training sortie (2.0h)", "S2"), ("MAS TRG", "MAS tactical training (3.0h)", "S2")]
 SYLTAG = {"EIS": "EIS", "MAS TRG": "MAS Tact"}   # Flight Codes E (Syllabus tag): the cell picker lists only syllabus items whose Track or Description contains it
-MTYPE = {"FLT-1.5": "GEN", "FLT-2.0": "GEN", "FLT-3.0": "GEN", "NVG-2.0": "NIGHT", "2xFLT-1.5": "GEN", "2xFLT-2.0": "GEN", "MSN-3.0": "MSN", "PLT-TRG": "TRG", "EIS": "TRG", "MAS TRG": "TRG"}
+MTYPE = {"FLT-1.5": "GEN", "FLT-2.0": "GEN", "FLT-3.0": "GEN", "NVG-2.0": "NIGHT", "MSN-3.0": "MSN", "PLT-TRG": "TRG", "EIS": "TRG", "MAS TRG": "TRG"}
 DAY_STATUS = ["No Flying", "Stand-down", "Maintenance", "Public Holiday"]
 import realdata
 REAL = realdata.ON   # real squadron data from LODESTAR_Data_Input.xlsx
@@ -106,7 +105,7 @@ banner(fl, "FLIGHTS", "The master list: one flight per row, any number per shift
 fl["A3"] = "Sort or filter as you like. To remove a flight, clear its row. Grey columns fill in by themselves."; fl["A3"].font = f(False, SLATE500, 9, True)
 header(fl, 5, ["Date", "Shift", "Flight code", "Time", "Crew (only if different)", "Comment", "Sorties", "Crew used", "Key", "Order", "Counts", "Hrs", "Start min", "End min", "Sorties used", "Time text"], {5: "7E22CE", 7: "7E22CE", 8: SLATE500, 9: SLATE400, 10: SLATE400, 11: SLATE400, 12: SLATE500, 13: SLATE400, 14: SLATE400, 15: SLATE400, 16: SLATE400})
 import seedplan
-rows = [f[:4] + (f[4], f[5]) for f in seedplan.FLIGHTS]   # (date, shift, code, time, comment, crew)
+rows = [f[:4] + (f[4], f[5], f[6]) for f in seedplan.FLIGHTS]   # (date, shift, code, time, comment, crew, sorties)
 for i in range(NF):
     r = 6 + i
     for c in range(1, 17):
@@ -127,10 +126,11 @@ for i in range(NF):
     fl.cell(r, 12, f'=IF(K{r}="","",K{r}*IF(OR(M{r}="",N{r}=""),0,IF(OR(MOD(N{r}-M{r},1440)=0,MOD(N{r}-M{r},1440)>720),0,MOD(N{r}-M{r},1440)/60)))').font = f(False, SLATE400, 8)
     fl.cell(r, 9, f'=IF(OR(A{r}="",C{r}=""),"",A{r}&"|"&B{r}&"|"&(COUNTIFS(FlDate,A{r},FlShift,B{r},FlCode,"<>",FlOrder,"<"&J{r})+COUNTIFS(A$6:A{r},A{r},B$6:B{r},B{r},C$6:C{r},"<>",J$6:J{r},J{r})))').font = f(False, SLATE400, 8)
     if i < len(rows):
-        dte, sh, cd, tm, cm, cw = rows[i]
+        dte, sh, cd, tm, cm, cw, so = rows[i]
         fl.cell(r, 1, dte); fl.cell(r, 2, sh); fl.cell(r, 3, cd); fl.cell(r, 4, tm)
         if cw: fl.cell(r, 5, cw)
         if cm: fl.cell(r, 6, cm)
+        if so and so > 1: fl.cell(r, 7, so)
 for col, w in zip("ABCDEFGHIJKLMNOP", [17, 9, 13, 13, 20, 30, 9, 11, 14, 10, 8, 8, 9, 9, 9, 12]): fl.column_dimensions[col].width = w
 for col in "MNOP": fl.column_dimensions[col].hidden = True
 fl.freeze_panes = "A6"; fl.auto_filter.ref = f"A5:L{5 + NF}"

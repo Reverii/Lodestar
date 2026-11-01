@@ -26,4 +26,11 @@ check("flights_crew_lookup_col_3", "VLOOKUP(C6,CodeTable,3" in str(fl["H6"].valu
 check("flights_effective_sorties_col_O", "IF(G6=\"\",1,G6)" in str(fl["O6"].value), fl["O6"].value)
 check("sorties_name_points_at_O", "$O$" in mp.defined_names["FlSorties"].attr_text, mp.defined_names["FlSorties"].attr_text)
 check("stamp_is_master_layout_3", str(mp["Dashboard"]["Z2"].value).endswith("layout 3"), mp["Dashboard"]["Z2"].value)
+codes_all = [str(fc.cell(r, 1).value or "") for r in range(6, 46)]
+check("no_combined_2x_codes", not any(c.lower().startswith("2x") for c in codes_all), [c for c in codes_all if c.lower().startswith("2x")])
+import re
+rows = [r for r in range(6, 1006) if fl.cell(r, 3).value]
+check("demo_has_a_two_sortie_flight", any((fl.cell(r, 7).value or 0) == 2 for r in rows), "no G = 2 row")
+bad = [(r, fl.cell(r, 4).value) for r in rows if not re.fullmatch(r"\d{4}-\d{4}", str(fl.cell(r, 4).value or ""))]
+check("every_demo_flight_has_a_full_range", not bad, bad[:5])
 sys.exit(1 if fails else 0)

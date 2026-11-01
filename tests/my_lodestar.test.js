@@ -348,10 +348,10 @@ test("help_text_present", async ({ page }) => {
   const t = await page.innerText("#helpBody");
   assert.ok(/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));
 });
-test("version_is_z112", async ({ page }) => {
+test("version_is_z113", async ({ page }) => {
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z112 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-31 z112 "), "start screen version");
+  assert.ok(/ z113 /.test(r + " "), r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-11-01 z113 "), "start screen version");
 });
 
 // ---- Regression: the rest of the dashboard still works around My Lodestar
@@ -377,7 +377,7 @@ test("edit_undo_redo_save_roundtrip", async ({ page, errs }) => {
 });
 test("block_of_days_drops_planned_syllabus", async ({ page }) => {
   await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='plan']").click(); document.querySelector("#month").value = "9"; document.querySelector("#month").dispatchEvent(new Event("change")); });
-  await page.click("#plan td[data-k='" + await page.evaluate(() => "g:" + gridRow(5, 2) + ":26") + "']"); await page.click("#popList .it.blk");
+  await page.click("#plan td[data-k='" + await page.evaluate(() => "g:" + gridRow(5, 2) + ":26") + "']", { button: "right" }); await page.click("#popList .it.blk");
   await page.selectOption("#blkCode", "OIL"); await page.check("#blkOver"); await page.uncheck("#blkS0"); await page.uncheck("#blkS1"); await page.click("#blkGo"); await page.waitForTimeout(300);
   assert.deepStrictEqual(await page.evaluate(() => S.syl.filter(x => x.id === "OWL" && x.iso === "2026-10-27").length), 0);
 }, { fresh: true, today: "2026-10-26", title: "Sarah Lim" });

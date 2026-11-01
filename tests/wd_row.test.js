@@ -28,7 +28,7 @@ test("wd_row_renders_teal", async ({ page }) => {
 });
 test("wd_popup_lists_only_allowed", async ({ page }) => {
   await go(page);
-  const r = await page.evaluate(() => { cellEl("g:" + gridRow(0, 3) + ":13").dispatchEvent(new MouseEvent("click", { bubbles: true })); const A = actIndex();
+  const r = await page.evaluate(() => { cellEl("g:" + gridRow(0, 3) + ":13").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true })); const A = actIndex();
     const its = [...document.querySelectorAll("#popList .it")].map(e => e.dataset.code).filter(Boolean);
     return { n: its.length, bad: its.filter(c => !wdAllowed(A.get(c.toUpperCase()))), role: getComputedStyle($("popRole")).display }; });
   assert.ok(r.n > 0, "some allowed items"); assert.deepStrictEqual(r.bad, []); assert.strictEqual(r.role, "none");
@@ -36,7 +36,7 @@ test("wd_popup_lists_only_allowed", async ({ page }) => {
 test("wd_edit_saves_to_right_cell", async ({ page }) => {
   await go(page);
   const r = await page.evaluate(() => { const A = actIndex(), code = S.acts.find(a => a.code && wdAllowed(A.get(a.code.toUpperCase()))).code;
-    cellEl("g:" + gridRow(0, 3) + ":13").dispatchEvent(new MouseEvent("click", { bubbles: true })); [...document.querySelectorAll("#popList .it")].find(e => e.dataset.code === code).click();
+    cellEl("g:" + gridRow(0, 3) + ":13").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true })); [...document.querySelectorAll("#popList .it")].find(e => e.dataset.code === code).click();
     const ref = colL(DAY_COL0 + 13) + (g0() + gridRow(0, 3));
     return { hit: [...dirty.values()].some(e => e.sheet === monSheet(9) && e.ref === ref && e.val === code), grid: S.m[9].grid[gridRow(0, 3)][13], code }; });
   assert.ok(r.hit, "dirty cell on the WD row"); assert.strictEqual(r.grid, r.code);

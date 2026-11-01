@@ -8,17 +8,16 @@ const ED = { mine: "Ops_Room", fresh: true }, RO = { mine: "Flight_Ops_Planner_S
 const hrs = (page, time, code) => page.evaluate(([t, c]) => { const P = masterBook().S; return mpFlHrs(P, { code: c || "FLT-2.0", time: t }); }, [time, code]);
 
 test("range_gives_hours", async ({ page }) => {
-  assert.deepStrictEqual(await hrs(page, "0830-1030"), { h: 2, src: "range", bad: "" });
-  assert.deepStrictEqual(await hrs(page, "1000-1130"), { h: 1.5, src: "range", bad: "" });
-  assert.deepStrictEqual(await hrs(page, "1800H-2000H"), { h: 2, src: "range", bad: "" });
-  assert.deepStrictEqual(await hrs(page, "08:30 - 10:30"), { h: 2, src: "range", bad: "" });
+  assert.deepStrictEqual(await hrs(page, "0830-1030"), { h: 2, bad: "" });
+  assert.deepStrictEqual(await hrs(page, "1000-1130"), { h: 1.5, bad: "" });
+  assert.deepStrictEqual(await hrs(page, "1800H-2000H"), { h: 2, bad: "" });
+  assert.deepStrictEqual(await hrs(page, "08:30 - 10:30"), { h: 2, bad: "" });
 }, ED);
 test("midnight_crossing_adds_a_day", async ({ page }) => {
-  assert.deepStrictEqual(await hrs(page, "2200-0100"), { h: 3, src: "range", bad: "" }); assert.deepStrictEqual(await hrs(page, "2330-0030"), { h: 1, src: "range", bad: "" });
+  assert.deepStrictEqual(await hrs(page, "2200-0100"), { h: 3, bad: "" }); assert.deepStrictEqual(await hrs(page, "2330-0030"), { h: 1, bad: "" });
 }, ED);
-test("no_end_falls_back_to_the_code_hours_with_a_warning", async ({ page }) => {
-  const r = await hrs(page, "0830", "FLT-2.0"); assert.strictEqual(r.bad, "No end time"); assert.strictEqual(r.src, "code"); assert.strictEqual(r.h, 2);
-  assert.strictEqual((await hrs(page, "", "FLT-2.0")).bad, "No time");
+test("no_end_counts_zero_with_a_warning", async ({ page }) => {
+  const r = await hrs(page, "0830", "FLT-2.0"); assert.deepStrictEqual(r, { h: 0, bad: "No end time" }); assert.strictEqual((await hrs(page, "", "FLT-2.0")).bad, "No time");
 }, ED);
 test("zero_or_over_12_hours_is_check_time", async ({ page }) => {
   assert.strictEqual((await hrs(page, "0830-0830")).bad, "Check time"); assert.strictEqual((await hrs(page, "0830-0730")).bad, "Check time"); assert.strictEqual((await hrs(page, "0600-1800")).bad, ""); assert.strictEqual((await hrs(page, "0600-1801")).bad, "Check time");

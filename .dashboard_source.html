@@ -1072,7 +1072,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z125</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z126</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1981,8 +1981,12 @@ function readMaster(name) {   // (the Crew Matrix sheet is read at the end)
   const st = { kind: "master", year: null, dept: "Master Planner", roster: [], acts: [], cats: [], hols: [], m: [], sdo: {}, mp: [], codes: [], fl: [] };
   const dash = readCells("Dashboard"); st.year = num(dash.A5) || new Date().getFullYear();
   const fc = readCells("Flight Codes"); st.codeAll = [];
-  for (let i = 0; i < FC_N; i++) { const r = 6 + i; st.codeAll.push({ row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), sort: num(fc["C" + r]), hrs: num(fc["D" + r]), crew: str(fc["E" + r]), mtype: str(fc["F" + r]), stag: str(fc["H" + r]) }); }
-  st.hasStag = /syllabus/i.test(str(fc.H5));
+  // layout 3: A Code, B Description, C Crew, D Mission Type, E Syllabus tag. Older files: C Sorties, D Flight Hrs, E Crew, F Mission Type, H Syllabus tag
+  const oldFc = /sorties/i.test(str(fc.C5));
+  for (let i = 0; i < FC_N; i++) { const r = 6 + i;
+    st.codeAll.push(oldFc ? { row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), sort: num(fc["C" + r]), hrs: num(fc["D" + r]), crew: str(fc["E" + r]), mtype: str(fc["F" + r]), stag: str(fc["H" + r]) }
+      : { row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), crew: str(fc["C" + r]), mtype: str(fc["D" + r]), stag: str(fc["E" + r]) }); }
+  st.fcOld = oldFc; st.hasStag = /syllabus/i.test(str(oldFc ? fc.H5 : fc.E5));
   mkCodes(st);
   st.statuses = []; for (let i = 0; i < 12; i++) { const v = str(fc["G" + (6 + i)]); if (v) st.statuses.push(v); }
   if (!st.statuses.length) st.statuses = ["No Flying", "Stand-down", "Maintenance", "Public Holiday"];
@@ -1998,7 +2002,7 @@ function readMaster(name) {   // (the Crew Matrix sheet is read at the end)
     if (typeof a !== "number" || si < 0) { if (a != null || code) st.flBad = (st.flBad || 0) + 1; continue; }
     const { y, mi, d } = ymd(serialToISO(a), st.year);
     if (y !== st.year || (mi === NX_MI && !st.nx)) continue;
-    st.fl.push({ row: r, mi, d, s: si, code, time: timeStr(c["D" + r]), crew: str(c["E" + r]), note: str(c["F" + r]) });
+    st.fl.push({ row: r, mi, d, s: si, code, time: timeStr(c["D" + r]), crew: str(c["E" + r]), note: str(c["F" + r]), sort: (n => n >= 1 && n <= 9 ? Math.round(n) : 1)(num(c["G" + r])) });
   }
   // Ground Programme sheet: office / ground events, rows 6..505 (A date, B time, C activity, D crew, E comment)
   st.gr = []; st.grUsed = new Set(); st.hasGr = !!WB.paths["Ground Programme"];
@@ -2249,7 +2253,7 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-upch
 // ---------- layout check: each file kind has a layout number, stamped by the builder on its Dashboard sheet (Z2, "LODESTAR dept layout 1").
 // A higher stamp than this dashboard knows = the file is newer (saving could write to the wrong cells). Files without a stamp (or with a lower one)
 // are checked by the sheets and rows this dashboard uses; anything missing is listed as "older layout".
-const LAYOUT = { dept: 3, master: 2, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
+const LAYOUT = { dept: 3, master: 3, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
 const LAYOUT_NAME = { dept: "planner", master: "Master Planner", roster: "Duty Roster", ops: "Ops Room" };
 function layoutCheck(st) {
   const kind = st.kind || "dept", z = WB.paths["Dashboard"] ? str(readCells("Dashboard").Z2) : "", m = /(\w+)\s+layout\s+(\d+)/i.exec(z), miss = [];
@@ -3049,8 +3053,8 @@ function renderMp() {
   if (!SL.length) p += "<div class='empty'>" + (sOff ? "No flying this day." : "No flights planned yet.") + "</div>";
   for (const f of SL) {
     const own = !!f.crew, cw = crewTags(flCrew(P, f)), key = "data-row='" + f.row + "'", fk = P.codes.find(k => same(k.code, f.code)), H = mpFlHrs(P, f);
-    const facts = f.code ? "<div class='spfacts'>" + (H.src !== "none" ? "<span class='hr" + (H.src === "code" ? " cd" : "") + "' title='" + (H.src === "code" ? "From the flight code's Flight Hrs (no full time range typed)" : "From the time range") + "'>" + fmtH(H.h) + (H.src === "code" ? " (code)" : "") + "</span>" : "") + (H.bad ? "<span class='wn'>" + (H.bad === "No end time" ? "No end time" : H.bad === "No time" ? "No time" : "Check time") + "</span>" : "") +
-      (!lock && fk && fk.desc ? "<span>" + esc(fk.desc) + "</span>" : "") + (fk && fk.mtype ? "<span>" + esc(fk.mtype) + "</span>" : "") + (fk && fk.sort > 1 ? "<span>" + fk.sort + " sorties</span>" : "") + (H.src === "range" && f.time && timeEndsNext(f.time) ? "<span>ends next day</span>" : "") + "</div>" : "";
+    const facts = f.code ? "<div class='spfacts'>" + (H.h > 0 ? "<span class='hr' title='From the time range'>" + fmtH(H.h) + "</span>" : "") + (H.bad ? "<span class='wn'>" + (H.bad === "No end time" ? "No end time" : H.bad === "No time" ? "No time" : "Check time") + "</span>" : "") +
+      (!lock && fk && fk.desc ? "<span>" + esc(fk.desc) + "</span>" : "") + (fk && fk.mtype ? "<span>" + esc(fk.mtype) + "</span>" : "") + (fk && fk.sort > 1 ? "<span>" + fk.sort + " sorties</span>" : "") + (H.h > 0 && timeEndsNext(f.time) ? "<span>ends next day</span>" : "") + "</div>" : "";
     const tags = "<div class='tags" + (own ? "" : " def") + "' title='" + (own ? "Crew set for this flight" : "Crew from the flight code" + (cw.length ? "" : ": every department")) + "'>" +
       CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag t" + k + (cw.includes(k) && f.code ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length && f.code ? "<span class='all'>all crew</span>" : "") + "</div>";
     p += "<div class='spf" + (sOff ? " dim" : "") + "'><div class='spfh " + shCls[f.s] + "'>" + SHIFTS[f.s] + (f.time ? " · " + esc(f.time) : "") + (lock ? "" : "<button class='rm' " + key + " title='Remove this flight'>×</button>") + "</div><div class='spfb'>";
@@ -4080,16 +4084,16 @@ function opsTimes(t, hrs) {
   return [fmtHM(a), hrs ? fmtHM(a + Math.round(hrs * 60)) : ""];
 }
 // the time shown on a calendar chip: 0830H-1000H (the end is the start plus the flight code's hours, or the typed end), 0830H when only a start is known
-// planned hours of a Master Planner flight from its typed time range (an end earlier than the start means it ends the next day); falls back to the flight code's Flight Hrs
-// -> { h, src: "range" | "code" | "none", bad: "" | "No time" | "No end time" | "Check time" }; a range of 0 or over 12 hours is "Check time"
+// planned hours of a Master Planner flight from its typed time range (an end earlier than the start means the next day) -> { h, bad: "" | "No time" | "No end time" | "Check time" }
+// a range of 0 or over 12 hours is "Check time"; with no usable range the hours are 0 (there is no code Flight Hrs any more)
 function mpFlHrs(P, f) {
-  const k = P.codes.find(x => same(x.code, f.code)), ch = k && k.hrs ? k.hrs : 0, fb = bad => ({ h: ch, src: ch ? "code" : "none", bad });
   const t = String(f.time || "").replace(/(\d)\s*h\b/gi, "$1"), m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*$/i.exec(t);
-  if (!m) return fb(t.trim() ? "No end time" : "No time");
-  const a = hhmm(m[1].replace(":", "")), b = hhmm(m[2].replace(":", "")); if (a == null || b == null) return fb("Check time");
-  let n = b - a; if (n < 0) n += 1440; if (n === 0 || n > 720) return fb("Check time");
-  return { h: n / 60, src: "range", bad: "" };
+  if (!m) return { h: 0, bad: t.trim() ? "No end time" : "No time" };
+  const a = hhmm(m[1].replace(":", "")), b = hhmm(m[2].replace(":", "")); if (a == null || b == null) return { h: 0, bad: "Check time" };
+  let n = b - a; if (n < 0) n += 1440; if (n === 0 || n > 720) return { h: 0, bad: "Check time" };
+  return { h: n / 60, bad: "" };
 }
+const flSort = f => f && f.sort >= 1 ? Math.round(f.sort) : 1;   // sorties typed on the flight (a running change: 2 or 3); blank = 1
 const timeEndsNext = t => { const m = /(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})/i.exec(String(t).replace(/(\d)\s*h\b/gi, "$1")); return !!m && hhmm(m[2].replace(":", "")) < hhmm(m[1].replace(":", "")); };
 const fmtH = v => (Math.round(v * 10) / 10).toFixed(1) + " H";
 function mpRange(time, hrs) { const [a, b] = opsTimes(time, hrs); return a ? a + "H" + (b ? "-" + b + "H" : "") : ""; }
@@ -5271,7 +5275,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z125 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z126 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

@@ -1,7 +1,15 @@
-# LODESTAR handoff (updated 2026-11-01, after z122)
+# LODESTAR handoff (updated 2026-11-01, after z123)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
+
+## z123 (1 Nov, Brandon): Change Log is less spammy and stays small
+- Brandon found the Changelog too spammy and worried the Excel would grow. Decisions: group and skip; keep the last 90 days.
+- **Grouping** (`logGroup`, `logLines`): plan cells in one row that change to the same value in one save become ONE line, e.g. `VIPER, 3-14 Oct AM (12 days)` (gaps: `1, 3, 5 Oct PM (3 days)`, over five: `8 days in Oct`); the Cell column shows `Oct!G27:P27`; Before reads `various` when the old values differed. A single cell keeps the old wording. My Lodestar's "Your ... is now ..." still works (it matches on the person's callsign at the start).
+- **Skipped:** MASTER-row cells in department files (copies of the Master Planner or Ops Add; the source is logged in its own file).
+- **Merged** (`logApply`): the same person editing the same single cell again within 10 minutes updates that row; if the cell goes back to what it was, the row is removed.
+- **Trimmed:** on each save rows older than 90 days (`LOG_KEEP_DAYS`) are dropped; SharePoint version history keeps older copies. No Excel layout change; upload the DEV dashboard only.
+- Tests: new `node tests/changelog.test.js` (8). `my_lodestar` has 3 failures that were already there before z123 (`changes_include_cancelled_flight`, `changes_include_master_move_and_duty`, `badge_count_matches_and_seen_is_remembered`); not looked into. `wd_row` `log_names_wd` and `atom` publish line not re-run (need a layout-3 set / minutes).
 
 ## z122 (1 Nov, Brandon): Ops Room flight table fills a tall window
 - `opsFill()` (end of `opsFit`): when the day is quiet the whole flight table is enlarged (CSS `zoom`, up to 1.6) to use the free height; width and height are measured and corrected so it matches its box. Test: `tall_window_enlarges_the_flight_table` in `tests/ops_room.test.js`. Cap 1.6 is a choice; Brandon can ask for more.

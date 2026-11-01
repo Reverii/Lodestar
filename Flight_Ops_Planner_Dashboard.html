@@ -1050,7 +1050,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z122</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z123</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2318,7 +2318,7 @@ const unsaved = () => books.reduce((n, b) => n + b.dirty.size, 0);
 const LOG_SHEET = "Change Log", LOG_SKIP = new Set(["Currency", LOG_SHEET, ATOM_SHEET]), LOG_SHIFTS = ["AM", "PM", "NIGHT", "WD"], LOG_SLOTS = ["AM 1", "AM 2", "PM 1", "PM 2", "NIGHT 1", "NIGHT 2"];
 const LOG_HEAD = ["Time", "Name", "Email", "File", "Change", "Before", "After", "Cell"];
 const logWho = () => SP.user ? SP.user.Title : "Offline (" + (books[0] ? books[0].WB.name : "") + ")";
-const logTime = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()); };
+const logTime = (ms) => { const d = ms ? new Date(ms) : new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()); };
 function logVal(v, head) {
   if (v == null || v === "") return "";
   if (typeof v === "number" && v > 30000 && v < 80000 && (Number.isInteger(v) || /date|down|up|before|day|from|to/i.test(head || ""))) return fmtDay(serialToISO(v));
@@ -2328,10 +2328,11 @@ function logVal(v, head) {
 function logWhat(b, sheet, ref, val, old) {
   const st = b.S, col = colN(ref.match(/[A-Z]+/)[0]), row = +ref.match(/\d+/)[0], mi = sheet === MON_NX ? NX_MI : MONTHS.indexOf(sheet);
   if (!st.kind && mi >= 0 && col >= DAY_COL0 && col < DAY_COL0 + 31) {
-    const day = (col - DAY_COL0 + 1) + " " + MONTHS[mi % 12] + (mi === NX_MI ? " " + (st.year + 1) : ""), G0 = g0(st);
-    if (row >= G0) { const i = rowPerson(row - G0), p = st.roster[i]; return { what: (p ? p.id || p.name || "Row " + row : "Row " + row) + ", " + day + " " + LOG_SHIFTS[rowShift(row - G0)] }; }
-    if (row >= MASTER_ROW0 && row < MASTER_ROW0 + 18) { const j = Math.floor((row - MASTER_ROW0) / 3), k = (row - MASTER_ROW0) % 3; return { what: "MASTER " + LOG_SLOTS[j] + (k === 1 ? " time" : k === 2 ? " comment" : "") + ", " + day }; }
-    return { what: (st.gndRow && row === st.gndRow ? "Ground programme" : "Duty days") + ", " + day };
+    const dn = col - DAY_COL0 + 1, mon = MONTHS[mi % 12] + (mi === NX_MI ? " " + (st.year + 1) : ""), G0 = g0(st);
+    const D = (pre, post, head) => ({ what: pre + ", " + dn + " " + mon + (post ? " " + post : ""), pre, post, dn, mon, row, day: true });
+    if (row >= G0) { const i = rowPerson(row - G0), p = st.roster[i]; return D(p ? p.id || p.name || "Row " + row : "Row " + row, LOG_SHIFTS[rowShift(row - G0)]); }
+    if (row >= MASTER_ROW0 && row < MASTER_ROW0 + 18) return { skip: true };   // MASTER rows are copies of the Master Planner (or Ops Add); the source is logged in its own file
+    return D(st.gndRow && row === st.gndRow ? "Ground programme" : "Duty days", "");
   }
   const c = cellsAt(b, old, sheet), head = str(c[colL(col) + "5"]) || str(c[colL(col) + "4"]);
   if (sheet === "Syllabus Log") { const v = L => { const e = val.get(sheet + "!" + L + row); return e && e.val !== "" && e.val != null ? e.val : c[L + row]; };   // a cleared row is named by what it held
@@ -2339,19 +2340,36 @@ function logWhat(b, sheet, ref, val, old) {
   const id = []; for (const L of "ABC") { if (colL(col) === L) continue; const raw = val.get(sheet + "!" + L + row) ? val.get(sheet + "!" + L + row).val : c[L + row]; if (L === "A" && typeof raw === "number" && raw < 1000) continue; const x = logVal(raw, "date"); if (x) id.push(x); if (id.length === 2) break; }
   return { what: sheet + (id.length ? ", " + id.join(" · ") : " row " + row) + (head ? ", " + head : " " + colL(col)), head };
 }
-// the log lines for the cells about to be saved (before = the file as it is now)
+// the log lines for the cells about to be saved (before = the file as it is now).
+// Plan cells in one row that change the same way in one save (a Block of days, a paste) become ONE line: "VIPER, 3-14 Nov AM (12 days)".
+function logGroup(g, t, who, mail, dept) {
+  const E = g.items.sort((x, y) => x.w.dn - y.w.dn), n = E.length, w = E[0].w, days = E.map(x => x.w.dn);
+  let txt = w.dn + " " + w.mon;
+  if (n > 1) {
+    const run = days.every((d, i) => i === 0 || d === days[i - 1] + 1);
+    txt = run ? days[0] + "-" + days[n - 1] + " " + w.mon : n <= 5 ? days.join(", ") + " " + w.mon : n + " days in " + w.mon;
+  }
+  const what = w.pre + ", " + txt + (w.post ? " " + w.post : "") + (n > 1 && !/ days in /.test(txt) ? " (" + n + " days)" : "");
+  return [t, who, mail, dept, what, E.every(x => x.bv === E[0].bv) ? E[0].bv : "various", g.av, g.sheet + "!" + E[0].ref + (n > 1 ? ":" + E[n - 1].ref : "")];
+}
 function logLines(b, sent) {
-  const out = [], t = logTime(), who = logWho(), mail = SP.user ? SP.user.Email || "" : "", files = b.WB.files;
+  const out = [], t = logTime(), who = logWho(), mail = SP.user ? SP.user.Email || "" : "", files = b.WB.files, groups = new Map();
   for (const [k, e] of sent) {
     if (LOG_SKIP.has(e.sheet)) continue;
     if (e.sheet === "Syllabus Log" && !/^D\d/.test(e.ref)) continue;   // one line per attempt (its Result cell)
     const before = cellsAt(b, files, e.sheet)[e.ref];
     if (String(before ?? "") === String(e.val ?? "")) continue;
     const w = logWhat(b, e.sheet, e.ref, sent, files);
-    out.push([t, who, mail, b.S.dept, w.what, logVal(before, w.head), logVal(e.val, w.head), e.sheet + "!" + e.ref]);
+    if (w.skip) continue;
+    const bv = logVal(before, w.head), av = logVal(e.val, w.head);
+    if (w.day) {
+      const gk = e.sheet + "|" + w.row + "|" + av; let g = groups.get(gk);
+      if (!g) { g = { sheet: e.sheet, av, items: [] }; groups.set(gk, g); out.push(g); }
+      g.items.push({ w, ref: e.ref, bv });
+    } else out.push([t, who, mail, b.S.dept, w.what, bv, av, e.sheet + "!" + e.ref]);
   }
   if (b.S.atomPub && [...sent.values()].some(e => e.sheet === ATOM_SHEET)) out.push([t, who, mail, b.S.dept, "ATOM published: " + b.S.atomPub.name + ", as of " + b.S.atomPub.asOf, "", "", ATOM_SHEET]);   // one line, not one per cell
-  return out;
+  return out.map(x => Array.isArray(x) ? x : logGroup(x, t, who, mail, b.S.dept));
 }
 // add the Change Log sheet to a workbook that has none (files is changed in place)
 // adds an empty sheet (header row 1, frozen) to a workbook's files in memory; cols = the <cols> xml
@@ -2376,15 +2394,39 @@ function sheetEnsure(W, name, heads, cols) {
 }
 const LOG_COLS = '<col min="1" max="1" width="19" customWidth="1"/><col min="2" max="2" width="24" customWidth="1"/><col min="3" max="3" width="26" customWidth="1"/><col min="4" max="4" width="13" customWidth="1"/><col min="5" max="5" width="44" customWidth="1"/><col min="6" max="7" width="20" customWidth="1"/><col min="8" max="8" width="14" customWidth="1"/>';
 function logEnsure(W) { sheetEnsure(W, LOG_SHEET, LOG_HEAD, LOG_COLS); }
-// a copy of the workbook's files with the lines added at the bottom of the Change Log
+// a copy of the workbook's files with the lines added at the bottom of the Change Log.
+// Keeps the sheet small: rows older than LOG_KEEP_DAYS are dropped, and a single-cell edit that repeats the same person's edit of the same cell
+// within LOG_MERGE_MIN minutes updates that row (and removes it if the cell went back to what it was).
+const LOG_KEEP_DAYS = 90, LOG_MERGE_MIN = 10;
 function logApply(b, lines) {
   if (!lines.length) return null;
   const W = { files: Object.assign({}, b.WB.files), paths: b.WB.paths };
   logEnsure(W);
   const p = W.paths[LOG_SHEET]; let x = td.decode(W.files[p]);
-  let last = 1; for (const m of x.matchAll(/<row r="(\d+)"/g)) last = Math.max(last, +m[1]);
-  const rows = lines.map((L, k) => { const r = last + 1 + k; return '<row r="' + r + '">' + L.map((v, i) => cellXml(colL(i + 1) + r, "", v)).join("") + "</row>"; }).join("");
-  x = /<sheetData\s*\/>/.test(x) ? x.replace(/<sheetData\s*\/>/, "<sheetData>" + rows + "</sheetData>") : x.replace("</sheetData>", rows + "</sheetData>");
+  const cellOf = L => new Date(L.replace(" ", "T")).getTime();
+  const c = b.WB.paths[LOG_SHEET] ? cellsAt(b, b.WB.files, LOG_SHEET) : {}, old = [];
+  for (let r = 2, gap = 0; gap < 2; r++) { if (c["A" + r] == null && c["E" + r] == null) { gap++; continue; } gap = 0; old.push("ABCDEFGH".split("").map(L => { const v = c[L + r]; return v == null ? "" : typeof v === "number" ? v : String(v); })); }
+  const cutoff = logTime(Date.now() - LOG_KEEP_DAYS * 86400000);
+  let rows = old.filter(L => !L[0] || String(L[0]) >= cutoff), changed = rows.length !== old.length;
+  const add = [];
+  for (const L of lines) {
+    if (!/:/.test(L[7])) {
+      const t0 = cellOf(L[0]); let hit = -1;
+      for (let k = rows.length - 1, seen = 0; k >= 0 && seen < 300; k--, seen++) { const R = rows[k]; if (R[7] === L[7] && R[1] === L[1] && Math.abs(t0 - cellOf(String(R[0]))) <= LOG_MERGE_MIN * 60000) { hit = k; break; } }
+      if (hit >= 0) { const R = rows[hit]; changed = true; if (String(R[5]) === String(L[6])) rows.splice(hit, 1); else rows[hit] = [L[0], R[1], R[2], R[3], R[4], R[5], L[6], R[7]]; continue; }
+    }
+    add.push(L);
+  }
+  rows = rows.concat(add);
+  const row = (L, r) => '<row r="' + r + '">' + L.map((v, i) => cellXml(colL(i + 1) + r, "", v)).join("") + "</row>";
+  if (changed) {
+    const head = (x.match(/<row r="1"[\s\S]*?<\/row>/) || [""])[0], body = rows.map((L, k) => row(L, k + 2)).join("");
+    x = x.replace(/<sheetData\s*\/>|<sheetData>[\s\S]*<\/sheetData>/, "<sheetData>" + head + body + "</sheetData>");
+  } else {
+    let last = 1; for (const m of x.matchAll(/<row r="(\d+)"/g)) last = Math.max(last, +m[1]);
+    const body = add.map((L, k) => row(L, last + 1 + k)).join("");
+    x = /<sheetData\s*\/>/.test(x) ? x.replace(/<sheetData\s*\/>/, "<sheetData>" + body + "</sheetData>") : x.replace("</sheetData>", body + "</sheetData>");
+  }
   W.files[p] = te.encode(x);
   return W;
 }
@@ -5105,7 +5147,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z122 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z123 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

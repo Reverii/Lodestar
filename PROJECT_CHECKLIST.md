@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 1 Nov 2026 (z118). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 1 Nov 2026 (z119). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -51,7 +51,7 @@ Last updated: 1 Nov 2026 (z118). Tell Claude in this thread when something chang
 - [x] SANS / NSmen section listed at the bottom of every planner
 - [x] Personnel Info sheet (DOB, passport expiry, NOK, etc.), every department, not shown in dashboard by design
 - [ ] ⏸ ON HOLD (21 Oct): Qualifications per person (which mission types / codes they are cleared to fly), and a warning when someone is planned on a flight they aren't cleared for
-- [-] ~~Pairing rules: e.g. TRAINEE or CAT D must fly with an Instructor~~ Not required (21 Oct)
+- [-] ~~Pairing rules: e.g. TRAINEE or CAT D must fly with an Instructor~~ Not required (21 Oct); the crew matrix (z119, 1 Nov) is a separate request that Brandon asked for
 - [ ] ⏸ ON HOLD (21 Oct): Ground qualification expiries (medical, sea survival, CRM, aviation medicine, sim checks) with amber/red warnings like the passport check
 - [x] Down-chit / up-chit (built 21 Oct, z19, SUP 2): an MC on the plan down-chits the person from that day until an up-chit date on the new Medical Chits sheet. DOWN tag on the name, striped red days, a red box on any flight planned while down, warning in the cell picker and on Ops Room seats (DOWN), plus a DOWN-CHIT row in the Ops Room Movement card. Up-chit from the Planner (click DOWN or Up-chit… in the cell list) or the Ops Room (seat, or click a name in its Down-chit column); it warns rather than blocks. Ops Room Down-chit column (z22) lists everyone down-chitted (crew, dept, since; no reason shown, your call), and "+ Down-chit" down-chits someone without an MC (done, checked off by you 21 Oct)
 - [-] ~~Postings in and out: date a person joins/leaves so they only appear in the months they're in the unit~~ Not required (21 Oct)
@@ -203,5 +203,6 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [x] Flight card (z114, 1 Nov, Brandon): left click on a cell shows its details, the cell comment (typed there now, no longer in the picker) and, on a flight, the crew from every department in seat columns (AC, Pilot, LM, TACCO, SUP 1, SUP 2); a MASTER cell shows its time and comment (z114 to z117). Confirmed working (1 Nov)
 - [x] MASTER rows locked in the Planner (z114, 1 Nov, Brandon): fully locked, they fill only from the Master Planner copy button and Ops Add. Confirmed working (1 Nov)
 - [?] My Lodestar "My month" calendar (z118, 1 Nov, Brandon): whole month as a grid, click a flight for the flight card with crew, click a day to move Today; month arrows (awaiting his look)
+- [?] Crew matrix (z119, 1 Nov, Brandon): CAT needed per seat on MAS TRG / OPS / TACT, warns on the flight card, Planner and Ops Room; the matrix is a Crew Matrix sheet in the Master Planner file (edit in Excel), built-in default until then; warn only (awaiting his look; he types the Mission Type on the MAS flight codes)
 - [ ] Decide (GitHub Pro now on): make the repo private, and whether the Pages links (dashboard, briefing) stay public.
 

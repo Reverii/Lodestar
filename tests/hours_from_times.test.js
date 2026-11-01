@@ -72,6 +72,22 @@ test("activities_page_has_no_hours_or_sorties", async ({ page }) => {
   assert.ok(h.includes("Code") && h.includes("Description") && !h.some(x => /Sorties|Hrs/.test(x)), h.join());
 }, SUP2);
 
+// ---- final review fixes: older files keep working
+test("adding_a_flight_in_an_old_master_file_leaves_the_sorties_formula_alone", async ({ page }) => {
+  const r = await page.evaluate(() => { const P = masterBook().S; P.fcOld = true; devFull = true; OPS = true; document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = 9; cur.mpDay = 4; renderMp();
+    document.querySelector("#mpSide button[data-add]").click(); return [...books[mpIdx()].dirty.keys()].filter(k => /^Flights!G/.test(k)); });
+  assert.deepStrictEqual(r, []);
+}, ED);
+test("removing_a_flight_clears_its_sorties_in_the_new_layout", async ({ page }) => {
+  const r = await page.evaluate(() => { devFull = true; OPS = true; document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = 9; cur.mpDay = 0; renderMp();
+    const row = masterBook().S.fl.find(f => f.mi === 9 && f.d === 0 && f.sort === 2).row; document.querySelector("#mpSide button.rm[data-row='" + row + "']").click(); const e = books[mpIdx()].dirty.get("Flights!G" + row); return !!e && e.val === ""; });
+  assert.strictEqual(r, true);
+}, ED);
+test("copy_flight_codes_clears_hours_and_sorties_in_the_departments_activities", async ({ page }) => {
+  const r = await page.evaluate(() => { const a = S.acts.findIndex(x => x.code === "FLT-2.0"); S.acts[a].hrs = 2; S.acts[a].sort = 2; syncCodes(); return { d: dirty.get("Activities!D" + (ACT_ROW0 + a)), e: dirty.get("Activities!E" + (ACT_ROW0 + a)) }; });
+  assert.ok(r.d && r.d.val === "" && r.e && r.e.val === "", JSON.stringify(r));
+}, SUP2);
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0, S = null;
   for (const t of tests) {

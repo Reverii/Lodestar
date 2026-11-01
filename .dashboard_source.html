@@ -1073,7 +1073,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z128</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z129</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3066,7 +3066,7 @@ function renderMp() {
     p += "<div class='spf" + (sOff ? " dim" : "") + "'><div class='spfh " + shCls[f.s] + "'>" + SHIFTS[f.s] + (f.time ? " · " + esc(f.time) : "") + (lock ? "" : "<button class='rm' " + key + " title='Remove this flight'>×</button>") + "</div><div class='spfb'>";
     if (lock) p += "<div class='v set'>" + esc(f.code) + "</div>" + (fk && fk.desc ? "<div class='v spdesc'>" + esc(fk.desc) + "</div>" : "") + facts + tags + (f.note ? "<div class='v nt'>" + esc(f.note) + "</div>" : "");
     else p += "<select " + key + " data-f='code' class='" + (f.code ? "set" : "") + "'><option value=''>Flight code…</option>" + P.codes.map(k => "<option value='" + esc(k.code) + "'" + (same(k.code, f.code) ? " selected" : "") + ">" + esc(k.code + (k.crew ? "  (" + k.crew + ")" : "")) + "</option>").join("") +
-      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'><input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>" + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
+      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + (P.fcOld ? "" : "<input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>") + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
     p += "</div></div>";
   }
   if (!lock && !sOff) p += "<button class='addb' data-add='" + sd + "'>+ Add flight</button><div class='hint'>The time sets the shift: before 1200 AM, before 1800 PM, then NIGHT. Crew comes from the flight code (faded chips); click one to change it for this flight.</div>";
@@ -3343,11 +3343,11 @@ $("mpWrap").addEventListener("click", e => {
       const f = { row: r, mi, d, s, code: "", time: "", crew: "", note: "" };
       S.fl.push(f); S.fl.sort((a, b) => a.row - b.row);
       put("Flights", "A" + r, dateSerial(S.year, mi, d)); put("Flights", "B" + r, SHIFTS[s]);
-      for (const k in FL_COLS) put("Flights", FL_COLS[k] + r, "");
+      for (const k in FL_COLS) { if (k === "sort" && S.fcOld) continue; put("Flights", FL_COLS[k] + r, ""); }   // an older Master Planner keeps its Sorties formula in G
       focusRow = r; cur.mpDay = d;
     } else if (rm) {
       const r = +rm.dataset.row; S.fl = S.fl.filter(f => f.row !== r);
-      for (const L of ["A", "B", "C", "D", "E", "F"]) put("Flights", L + r, "");
+      for (const L of S.fcOld ? ["A", "B", "C", "D", "E", "F"] : ["A", "B", "C", "D", "E", "F", "G"]) put("Flights", L + r, "");
     } else {
       const f = flByRow(+tg.dataset.row); if (!f) return;
       const t = crewTags(flCrew(S, f)), k = tg.dataset.t;
@@ -3431,8 +3431,8 @@ function syncCodes() {
   for (let i = 0; i < NA; i++) {
     const a = out[i] || { code: "", desc: "", cat: "", hrs: null, sort: null, mtype: "" }, b = S.acts[i], r = ACT_ROW0 + i;
     const set = (f, L, v) => { if ((b[f] == null ? "" : b[f]) !== (v == null ? "" : v)) put("Activities", L + r, v == null ? "" : v); };
-    set("code", "A", a.code); set("desc", "B", a.desc); set("cat", "C", a.cat); if (S.hasCur) set("mtype", "F", a.mtype || ""); if (S.hasStag) set("stag", "K", a.stag || "");
-    S.acts[i] = { code: a.code, desc: a.desc || "", cat: a.cat || "", hrs: a.hrs == null ? null : a.hrs, sort: a.sort == null ? null : a.sort, mtype: a.mtype || "", stag: a.stag || "" };
+    set("code", "A", a.code); set("desc", "B", a.desc); set("cat", "C", a.cat); set("hrs", "D", null); set("sort", "E", null); if (S.hasCur) set("mtype", "F", a.mtype || ""); if (S.hasStag) set("stag", "K", a.stag || "");
+    S.acts[i] = { code: a.code, desc: a.desc || "", cat: a.cat || "", hrs: null, sort: null, mtype: a.mtype || "", stag: a.stag || "" };
   }
   toast("Copied the flight codes from the Master Planner" + (keep.length ? "; kept " + keep.map(a => a.code).join(", ") + " because the plans still use " + (keep.length === 1 ? "it" : "them") : "") + (drop.length ? "; removed " + drop.map(a => a.code).join(", ") : "") + ". Click Save to Excel to keep it.", 6000);
 }
@@ -5281,7 +5281,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z128 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z129 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

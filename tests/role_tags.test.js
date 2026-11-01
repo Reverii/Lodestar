@@ -40,7 +40,7 @@ test("saved_file_holds_the_tag", async ({ page }) => {
 });
 
 // open the planner on October, plant a flight on day 14 for crew row 0 of the open book, and click that cell
-const CLICK = `(() => { const code = ${PLANT}; cur.m = 9; renderPlanner(); const el = cellEl("g:0:13"); el.dispatchEvent(new MouseEvent("click", { bubbles: true })); return code; })()`;
+const CLICK = `(() => { const code = ${PLANT}; cur.m = 9; renderPlanner(); const el = cellEl("g:0:13"); el.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true })); return code; })()`;
 const visible = id => `(() => { const e = $("${id}"); return !!e && getComputedStyle(e).display !== "none"; })()`;
 test("popup_shows_role_row", async ({ page }) => {
   const r = await page.evaluate(([click, vis]) => { eval(click); return { shown: eval(vis), btns: [...$("popRole").querySelectorAll("button")].map(b => b.dataset.role) }; }, [CLICK, visible("popRole")]);
@@ -51,7 +51,7 @@ test("popup_offers_ac_in_the_pilot_file", async ({ page }) => {
   assert.deepStrictEqual(r, ["Pilot", "", "AC", "PAX"]);
 }, { mine: "Flight_Ops_Planner_Pilot" });
 test("popup_hidden_on_a_non_flight_cell", async ({ page }) => {
-  const r = await page.evaluate(([vis]) => { cur.m = 9; S.m[9].grid[0][13] = "LEAVE"; renderPlanner(); cellEl("g:0:13").dispatchEvent(new MouseEvent("click", { bubbles: true })); return eval(vis); }, [visible("popRole")]);
+  const r = await page.evaluate(([vis]) => { cur.m = 9; S.m[9].grid[0][13] = "LEAVE"; renderPlanner(); cellEl("g:0:13").dispatchEvent(new MouseEvent("contextmenu", { bubbles: true })); return eval(vis); }, [visible("popRole")]);
   assert.strictEqual(r, false);
 });
 test("click_sets_tag_and_chip", async ({ page }) => {

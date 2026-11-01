@@ -382,6 +382,15 @@ table.allday .free{color:var(--s400);font-size:11.5px}
 #spPick .allcard{border:2px dashed #cbd5e1;border-radius:12px;background:transparent;display:flex;align-items:center;justify-content:center;color:#2563eb;font:inherit;font-weight:700;font-size:14px;text-align:center;padding:10px;cursor:pointer;min-height:96px}#spPick .allcard:hover{border-color:var(--blue);background:#eff6ff}
 #spKey{display:flex;gap:14px;margin-right:auto;align-items:center;font-size:12px;color:var(--s500)}#spKey span{display:flex;align-items:center;gap:5px}
 #spPick a{color:var(--blue);font-size:13px;cursor:pointer}
+#cellCard{position:absolute;display:none;z-index:60;width:400px;background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 8px 24px rgba(15,23,42,.25);padding:10px 12px;font-size:12.5px}
+#cellCard h4{margin:0 0 2px;font-size:14px}#cellCard h4 span{font-weight:400;color:#64748b}#cellCard .csub{color:#64748b;font-size:11.5px;margin-bottom:6px}
+#cellCard .cdet{background:#f1f5f9;border-radius:6px;padding:5px 8px;margin-bottom:6px;white-space:pre-line}
+#cellCard .clab{font-size:10.5px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.4px;margin:6px 0 3px}
+#cellCard .cseats{border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}#cellCard .cseats>div{display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
+#cellCard .csh{background:#1e293b;color:#fff;font-size:10.5px;font-weight:700;padding:4px 0}#cellCard .csn{padding:5px 0 0;font-weight:800;font-size:13px}#cellCard .csn:last-child{padding-bottom:5px}
+#cellCard .you{background:#dbeafe;border-radius:4px}#cellCard .cnone{color:#94a3b8;font-weight:400}#cellCard .cpax{font-size:9px;font-weight:800;color:#166534;background:#dcfce7;border-radius:3px;padding:0 3px;margin-left:2px}
+#cellCard .cleg{margin-top:5px;color:#94a3b8;font-size:11px}
+td.mc{cursor:not-allowed}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--s900);color:#fff;padding:10px 16px;border-radius:8px;display:none;z-index:200;max-width:90%}
 .muted{color:var(--s500)}
 #bookbar{display:none;gap:3px;align-items:center;padding:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:11px}
@@ -993,6 +1002,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     </div>
   </section>
 </main>
+<div id="cellCard"></div>
 <div id="pop"><div id="popTime" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Flight time (any text, e.g. 0830-1030 or TBC)</label><input id="popTimeIn" placeholder="e.g. 0830-1030" style="width:100%;margin:4px 0 6px;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Comment</label><input id="popNoteIn" placeholder="e.g. Wx dependent" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"></div><div id="popCN" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:#7e22ce;text-transform:uppercase">Comment for this cell</label><input id="popCNIn" placeholder="e.g. Instructor for OWL" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px"></div><div id="popRole" style="display:none"></div><div id="popCur" style="display:none"></div><div id="popSyl" style="display:none"></div><input type="search" id="popSearch" placeholder="Type to search…"><div class="list" id="popList"></div></div>
 <div id="toast"></div>
 <div id="welcome">
@@ -1027,7 +1037,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z113</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z114</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3340,7 +3350,7 @@ function renderPlanner() {
   const mpanel = rs => { const cls = st.unc ? " bad" : st.short ? " meh" : ""; return "<td class='mpanel" + cls + "' colspan=" + NT + " rowspan=" + rs + ">Planned sorties: " + st.plannedTot + (rs > 3 ? "<br>" : " · ") + "No crew: " + st.unc + " shift(s)<br>Short of crew: " + st.short + " shift(s)</td>"; };
   if (cur.mfold) for (let s = 0; s < 3; s++) {
     h += "<tr class='master mfoldrow" + (s === 2 ? " blkend" : "") + "'>";
-    if (s === 0) h += "<td class='stk1 mlabel mtoggle' rowspan=3 title='Show the flight slots'>▸ MASTER</td><td class='stk2 mtitle mtoggle' rowspan=3 title='Show the flight slots'>Flight programme <span style='font-weight:400'>(folded, click to open)</span></td>";
+    if (s === 0) h += "<td class='stk1 mlabel mtoggle' rowspan=3 title='Show the flight slots'>▸ MASTER 🔒</td><td class='stk2 mtitle mtoggle' rowspan=3 title='Show the flight slots'>Flight programme <span style='font-weight:400'>(folded, click to open)</span></td>";
     h += "<td class='stk3 sh sh" + SHIFTS[s] + "'>" + SHIFTS[s] + "</td>";
     for (let d = 0; d < dim; d++) {
       const nofly = String(M.mnote[0][d] || "").toUpperCase().startsWith(NOFLY);
@@ -3357,7 +3367,7 @@ function renderPlanner() {
   else for (const r of mvis) {
     const s = r >> 1, k = r & 1, two = mvis.includes(s * 2 + 1);
     h += "<tr class='master" + (r === mvis[mvis.length - 1] ? " blkend" : "") + "'>";
-    if (r === 0) h += "<td class='stk1 mlabel mtoggle' rowspan=" + mvis.length + " title='Fold the flight slots'>▾ MASTER</td><td class='stk2 mtitle mtoggle' rowspan=" + mvis.length + " title='Fold the flight slots'>Flight programme<br><span style='font-weight:400'>" + (mvis.length > 4 ? "code, time, then comment<br>" : "") + "Click to fold</span></td>";
+    if (r === 0) h += "<td class='stk1 mlabel mtoggle' rowspan=" + mvis.length + " title='Fold the flight slots'>▾ MASTER 🔒</td><td class='stk2 mtitle mtoggle' rowspan=" + mvis.length + " title='Fold the flight slots'>Flight programme<br><span style='font-weight:400'>" + (mvis.length > 4 ? "code, time, then comment<br>" : "") + "Click to fold</span></td>";
     h += "<td class='stk3 sh sh" + SHIFTS[s] + "'>" + SHIFTS[s] + (two ? " " + (k + 1) : "") + "</td>";
     for (let d = 0; d < dim; d++) {
       const v = M.master[r][d], stt = v ? st.day[d].status[s] : null;
@@ -4602,7 +4612,35 @@ function plannedFlights(M, d, s) {
   if (more) more[2].split(",").forEach(x => { const [c, t] = moreSplit(x); add(c, t); });
   return out;
 }
+// ---- flight card: a left click on a flight cell shows its details and who is on the same flight in every department (read-only)
+const CARD_SEATS = ["AC", "Pilot", "LM", "TACCO", "SUP 1", "SUP 2"], CARD_DEPT = { loadmaster: 2, tacco: 3, "sup 1": 4, "sup 2": 5 };
+function closeCard() { const c = $("cellCard"); if (c) c.style.display = "none"; }
+const MASTER_LOCK_MSG = "MASTER rows come from the Master Planner. Use \"Copy from the Master Planner\".";
+function cardCrew(mi, d, s, code) {   // seat columns -> list of crew planned on this code and shift
+  const cols = CARD_SEATS.map(() => []);
+  opsCrewOn(S.year, mi, d)[s].filter(c => sameCode(c.code, code)).forEach(c => {
+    const dp = String(c.dept).toLowerCase(), k = dp === "pilot" ? (c.tag === "AC" ? 0 : 1) : CARD_DEPT[dp]; if (k != null) cols[k].push(c); });
+  return cols;
+}
+function openCard(k) {
+  const el = cellEl(k), c = $("cellCard"); if (!el) return false;
+  const p = keyParts(k); if (k.startsWith("m:") || isWdRow(p.r)) return false;
+  const A = actIndex(), v = S.m[cur.m].grid[p.r][p.d], a = v && A.get(String(v).toUpperCase()); if (!a || a.ci !== CAT_FLIGHT) return false;
+  const s = rowShift(p.r), me = rowPerson(p.r), cols = cardCrew(cur.m, p.d, s, v), rows = Math.max(1, ...cols.map(x => x.length));
+  const ac = S.acts.find(x => same(x.code, v)), tip = el.getAttribute("title") || "";
+  let h = "<h4>" + esc(v) + " <span>· " + esc(p.d + 1 + " " + monLab(cur.m, S.year) + " · " + SHIFTS[s]) + "</span></h4>" + (ac && ac.desc ? "<div class='csub'>" + esc(ac.desc) + "</div>" : "") +
+    (tip ? "<div class='cdet'>" + esc(tip) + "</div>" : "") + "<div class='clab'>Crew on this flight</div><div class='cseats'><div class='csh'>" + CARD_SEATS.map(x => "<span>" + x + "</span>").join("") + "</div>";
+  for (let r = 0; r < rows; r++) h += "<div class='csn'>" + cols.map(L => { const x = L[r]; if (!x) return "<span class='cnone'>" + (r === 0 ? "-" : "") + "</span>";
+    return "<span class='" + opsCatCls(x) + (x.dept === S.dept && x.i === me ? " you" : "") + "'>" + esc(opsName(x)) + (x.tag === "PAX" ? "<i class='cpax'>PAX</i>" : "") + "</span>"; }).join("") + "</div>";
+  c.innerHTML = h + "</div><div class='cleg'>Esc or click away to close</div>"; c.style.display = "block";
+  const b = el.getBoundingClientRect(), w = 400, ch = c.offsetHeight, z = parseFloat(document.body.style.zoom) || 1;
+  const vw = window.innerWidth / z, vh = window.innerHeight / z, bl = b.left / z, bt = b.top / z, bb = b.bottom / z, br = b.right / z;
+  let x = br + 4 + w <= vw ? br + 4 : Math.max(8, bl - w - 4), y = Math.min(Math.max(8, bt), Math.max(8, vh - ch - 8));
+  c.style.left = (x + window.scrollX / z) + "px"; c.style.top = (y + window.scrollY / z) + "px"; return true;
+}
 function openPop(k, initial) {
+  if (k.startsWith("m:")) { toast(MASTER_LOCK_MSG); return; }   // the MASTER rows are locked
+  closeCard();
   const el = cellEl(k); if (!el) return;
   if (popKey && popKey !== k) saveTime(popKey);
   popKey = k; const isMaster = k.startsWith("m:");
@@ -4872,7 +4910,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z113 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z114 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5758,8 +5796,8 @@ $("plan").addEventListener("click", e => { const m2 = e.target.closest(".m2add")
   const gc = e.target.closest("td[data-g]");
   if (gc) { if (!S.gndRow || (!mayEdit(cur.b))) return; const d = +gc.dataset.g, M = S.m[cur.m];
     const v = prompt("Ground programme for " + (d + 1) + " " + monLab(cur.m, S.year) + " (separate items with ;)", M.gnd[d] || ""); if (v == null) return;
-    M.gnd[d] = v.trim(); put(monSheet(cur.m), colL(DAY_COL0 + d) + S.gndRow, M.gnd[d]); renderPlanner(); return; } const t = e.target.closest("td[data-k]"); if (!t) return; if (popKey) closePop(); select(t.dataset.k); });   // left click only selects; the picker is on right click (or Enter / typing)
-$("plan").addEventListener("contextmenu", e => { const t = e.target.closest("td[data-k]"); if (!t) return; e.preventDefault(); select(t.dataset.k); if (!mayEdit(cur.b)) return; openPop(t.dataset.k); });
+    M.gnd[d] = v.trim(); put(monSheet(cur.m), colL(DAY_COL0 + d) + S.gndRow, M.gnd[d]); renderPlanner(); return; } const t = e.target.closest("td[data-k]"); if (!t) return; if (popKey) closePop(); closeCard(); select(t.dataset.k); if (t.dataset.k.startsWith("m:")) { toast(MASTER_LOCK_MSG); return; } openCard(t.dataset.k); });   // left click selects and shows the flight card; the picker is on right click (or Enter / typing)
+$("plan").addEventListener("contextmenu", e => { const t = e.target.closest("td[data-k]"); if (!t) return; e.preventDefault(); closeCard(); select(t.dataset.k); if (!mayEdit(cur.b)) return; openPop(t.dataset.k); });
 $("popSearch").addEventListener("input", drawPop);
 $("popSearch").addEventListener("keydown", e => {
   const n = +$("popList").dataset.n;
@@ -5773,11 +5811,15 @@ $("popSearch").addEventListener("keydown", e => {
 }));
 function redrawHi() { const its = $("popList").querySelectorAll(".it"); its.forEach((x, i) => x.classList.toggle("hi", i === popHi)); if (its[popHi]) its[popHi].scrollIntoView({ block: "nearest" }); }
 $("popList").addEventListener("click", e => { const it = e.target.closest(".it"); if (!it) return; if (it.dataset.blk) { const k = popKey; closePop(); blkOpen(k); return; } pick(it.dataset.code, it.dataset.s); });
+document.addEventListener("mousedown", e => { if (!e.target.closest("#cellCard,td[data-k]")) closeCard(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeCard(); });
 document.addEventListener("mousedown", e => { if (popKey && !$("pop").contains(e.target) && !e.target.closest("td[data-k]")) closePop(); });
 document.addEventListener("keydown", e => {
   if (!S || popKey || !cur.sel || !$("v-plan").classList.contains("on")) return;
   if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
-  const k = cur.sel, mv = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+  const k = cur.sel; if (k.startsWith("m:") && (e.key === "Delete" || e.key === "Backspace" || e.key === "Enter" || (e.key.length === 1 && !e.altKey && !((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c")))) { toast(MASTER_LOCK_MSG); e.preventDefault(); return; }
+  closeCard();
+  const mv = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
   if (mv) { select(move(k, mv[0], mv[1])); e.preventDefault(); }
   else if ((e.key === "Delete" || e.key === "Backspace" || e.key === "Enter" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") || (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && !((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c"))) && readOnly()) { e.preventDefault(); }
   else if (e.key === "Delete" || e.key === "Backspace") {

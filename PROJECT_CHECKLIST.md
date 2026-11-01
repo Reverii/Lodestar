@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 31 Oct 2026 (z111). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 1 Nov 2026 (z113). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -199,5 +199,6 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [x] Master Planner export reformatted (z106, z107, 31 Oct, Brandon): Calendar sheet only (List dropped), flight and hours columns inside each day, banner, month bands, weekend tint, one landscape page wide. Awaiting his look in desktop Excel
 - [x] Tabs (z108, 31 Oct, Brandon): Overview moved under Planning (renamed from Planner); Changes renamed Changelog, shows only own department, Master Planner and Ops Room (everything in Ops Room mode)
 - [x] Ops Room bottom cards the same height when the ground programme is empty (z105, 31 Oct)
+- [?] Planner cell picker on right-click (z113, 1 Nov, Brandon): left click only selects; right-click (or Enter / typing) opens the picker; help texts updated. Awaiting his test. Open: an on-screen hint, long-press for touch screens
 - [ ] Decide (GitHub Pro now on): make the repo private, and whether the Pages links (dashboard, briefing) stay public.
 

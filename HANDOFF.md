@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-01)
+# LODESTAR handoff (updated 2026-11-01, after z117)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -12,14 +12,14 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 ## z112 (31 Oct, Brandon): Ops Room ground programme is filled by hand
 Brandon was not happy with the z111 auto-merge. **Now the board shows only squadron events (Master Planner) and the Ops Room's own rows.** The planners' ground items (Meeting, Outstation, WD items) no longer appear by themselves. **+ Ops row** opens the dialog with a read-only "From the department plans" list grouped by department (`opsDeptRef`, with planner cell comments), then Time (quick buttons AM / PM / NIGHT / WD and a TILL date picker), Activity, Location (all typed) and the crew tick boxes (nothing pre-ticked). A manual row with time `TILL 25 OCT` shows every day from the day it was added to that date (hide / pencil on a later day saves a per-day hide / edit). `1500H` now parses as a clock time. Old z111 edits on department rows (`dept|` ids) are ignored. **My Lodestar** keeps reading the planners' cells (Brandon, 31 Oct: that is fine); Ops Room rows do not show there, by design. Tests: `ops_room` 42, `wd_row` 19, `my_lodestar` 60, `ground_rows` 13. The z111 notes below describe the old merge; `opsGround` no longer does it.
 
-## Next session: start here (handoff of 31 Oct 2026, after z111)
+## Next session: start here (handoff of 1 Nov 2026, after z117)
 
-**State:** everything is merged on `main` (repo Reverii/Lodestar, still public; GitHub Pro is on, deciding about making it private is an open item). Dashboard **z117** (dev build; z112 ground programme by hand, z113 right-click picker and z114 flight card + MASTER lock are awaiting his test). Pages publishes the dashboard at `/` and the briefing at `/briefing/` (the briefing has no ATOM screenshot; the workflow refuses to publish if `atom.webp` returns). Live SharePoint files hold dummy data.
-**z111 (merged to main, `e023072`): Ops Room ground programme rework.** Spec `docs/superpowers/specs/2026-10-31-ground-programme-rework-design.md`, plan `docs/superpowers/plans/2026-10-31-ground-programme-rework.md`, details in the z111 bullet below. In short: squadron events take crew `ALL` or tags and a blank crew is an error (red NO CREW in the Master Planner, red NO PERSONNEL in the Ops Room); the Ops Room ground table merges department items across departments and borrows time and location from a matching squadron event; the Ops Room can change, hide and add rows (`Ground Rows` sheet in the Ops Room file, no Excel layout change). Upload the DEV dashboard only. Tests: `ground_rows` 13, `ops_room` 48, `master_calendar` 8, `my_lodestar` 60 (all pass; `atom` not run, untouched).
-Built since the 30 Oct handoff, all merged: other departments open by themselves + View only (z101), AC and Pax tags (z102), WD fourth row with zoom and crew divider (z103), Ops Room ground programme table (z104), Ops Room bottom strip fix (z105), Master Planner export reformat (z106, z107), tab changes (z108). Notes for each below.
+**State:** everything through **z117** is merged on `main` (repo Reverii/Lodestar, still public; deciding about making it private is an open item). Dashboard **z117** (dev build). Pages publishes the dashboard at `/` and the briefing at `/briefing/`. Live SharePoint files hold dummy data.
+**Built on 1 Nov (all merged):** z113 right-click opens the Planner picker (left click only selects); z114 flight card on left click (details and crew from every department in seat columns) and locked MASTER rows; z115 the card shows only that cell's flight; z116 the cell comment moved from the picker to the card (non-flight cells show it, planners can type it there); z117 a left click on a MASTER cell shows its time and comment. Brandon confirmed z113 and z117 work on his side; z114 to z116 were tested along the way. Details in the z113 to z117 sections below.
+**Earlier, awaiting his SharePoint test:** z112 Ops Room ground programme filled by hand, z111 squadron events with ALL / blank-crew errors, z101 to z108 (other departments View only, AC / Pax tags, WD row and zoom, tabs, Master Planner export, Changelog filter).
 
 **Next, in this order:**
-1. Nothing is queued by Brandon. Wait for his SharePoint test results (list below, plus the ground programme rework: blank crews going red, the pencil, hide and + Ops row) and fix what he finds.
+1. Brandon said "next fix" at the end of 1 Nov but had not named it: ask what he found. Otherwise wait for his SharePoint test results (list below) and fix what he finds. Open small ideas he has not picked: an on-screen "right-click" hint, long-press for touch screens, a menu key / Shift+F10 to open the picker, a right-click mini menu (copy, paste, clear, block of days, role, down-chit).
 2. When he agrees: replace the repo's own `.xlsx` files and the built-in sample with layout-3 files (rebuild fresh, no migration; dummy data only), then rebuild the dashboard.
 3. The full PDF guide only when Brandon says so.
 
@@ -32,6 +32,8 @@ Built since the 30 Oct handoff, all merged: other departments open by themselves
 **Brandon's pending tests on the real SharePoint:** the ground programme rework (old squadron events with a blank crew now show red until filled; pencil, hide, hidden link, + Ops row; ALL tag), the department selector (does the "by <name>" line show, does the 15-second refresh work, is a week the right red-dot threshold), View only (permission check with a member's account, and the extra seconds to open four more files), AC and Pax tags, the WD row and zoom, the Ops Room on the projector, the Master Planner time ranges and the new export file in desktop Excel, the Changelog filter.
 
 **How to work with Brandon right now:** he is near his weekly usage cap, so keep sessions short: one feature per session, text answers, screenshots only when words will not do, no full ATOM test run unless ATOM code changes (`node tests/atom.test.js` takes minutes). He says "build it" after a mock-up, "go, native" for execution, and "merge to main and push" when he wants a merge. Never overwrite live `.xlsx` files.
+
+**Tests added 1 Nov:** `LODE_FILES=<layout-3 set> node tests/flight_card.test.js` (17). Build a layout-3 set with `python3 .lodestar_build.py excel <folder outside the repo>` (about two minutes; `wd_row` and `flight_card` need it). Working style this session: bounded changes got a short chat design, a mock-up for the card, then "build it"; merge only when he says "merge to main and push".
 
 **Starting prompt for a new session:** "Read `/home/user/Lodestar/CLAUDE.md`, then `HANDOFF.md` (the section 'Next session: start here') and `PROJECT_CHECKLIST.md`. Start a new branch from main."
 

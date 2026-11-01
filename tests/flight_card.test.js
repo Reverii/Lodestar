@@ -67,6 +67,14 @@ test("card_opens_in_view_only_file", async ({ page }) => {
   await page.click("#plan td[data-k='" + c.best.k + "']"); assert.ok(await cardOn(page));
 });
 
+test("card_details_are_this_cell_only", async ({ page }) => {
+  await go(page); const c = await findCells(page);
+  await page.click("#plan td[data-k='" + c.best.k + "']");
+  const txt = await page.evaluate(() => document.querySelector("#cellCard .cdet").textContent);
+  assert.ok(!/programme:|nobody on it yet|day with/i.test(txt), "no day-level lines: " + txt);
+  assert.ok(/^(Planned:|Not on the Master)/.test(txt), txt);
+});
+
 // ---- MASTER lock
 const masterVal = (page, k) => page.evaluate(k => { const p = keyParts(k); return [S.m[9].master[p.r][p.d], S.m[9].mtime[p.r][p.d], S.m[9].mnote[p.r][p.d]]; }, k);
 test("master_right_click_opens_no_picker", async ({ page }) => {

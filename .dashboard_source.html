@@ -1037,7 +1037,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z114</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z115</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3433,12 +3433,13 @@ function renderPlanner() {
         const sd = st.day[d].miss.length > 0;
         if (sd) tip = (tip ? tip + "\n" : "") + st.day[d].miss.join(" and ") + " day with nobody on it yet";
         const cn = S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d);
-        if (cn) tip = "Comment: " + cn + (tip ? "\n" + tip : "");
+        const det = [];   // the cell's own facts for the flight card (no day-level lines)
+        if (cn) { tip = "Comment: " + cn + (tip ? "\n" + tip : ""); det.push("Comment: " + cn); }
         const sy = SYC.get((gridRow(i, s)) + ":" + d);
-        if (sy) tip = "Syllabus: " + sy.code + " " + (sy.res === "Planned" ? "planned" : sy.res === "Pass" ? "passed" : sy.res === "Fail" ? "failed" : "logged") + (sy.by ? " (" + sy.by + ")" : "") + (tip ? "\n" + tip : "");
-        const cx = a && a.ci === CAT_FLIGHT ? cxlOf(S, p.id, mi, d, s) : null; if (cx) tip = "Cancelled in the Ops Room: " + cx + (tip ? "\n" + tip : "");
+        if (sy) { const sl = "Syllabus: " + sy.code + " " + (sy.res === "Planned" ? "planned" : sy.res === "Pass" ? "passed" : sy.res === "Fail" ? "failed" : "logged") + (sy.by ? " (" + sy.by + ")" : ""); tip = sl + (tip ? "\n" + tip : ""); det.push(sl); }
+        const cx = a && a.ci === CAT_FLIGHT ? cxlOf(S, p.id, mi, d, s) : null; if (cx) { tip = "Cancelled in the Ops Room: " + cx + (tip ? "\n" + tip : ""); det.unshift("Cancelled in the Ops Room: " + cx); }
         const rn = RS && a && a.ci === CAT_FLIGHT && !cx ? RS[i].run[dayOfYear(S.year, mi, d)] : 0, rest = rn >= REST_DAYS;
-        if (rest) tip = (tip ? tip + "\n" : "") + "Crew rest: day " + rn + " of flying in a row";
+        if (rest) { tip = (tip ? tip + "\n" : "") + "Crew rest: day " + rn + " of flying in a row"; det.push("Crew rest: day " + rn + " of flying in a row"); }
         const dn = CH && CH[i].down[ck0 + d] && dutyKey(v) !== MC_CODE, dnf = dn && a && a.ci === CAT_FLIGHT && !cx;
         if (dn) tip = (dnf ? "⚠ Down-chitted: not cleared to fly (MC since " + fmtDay(doyISO(S.year, CH[i].since[ck0 + d])) + "). Up-chit first." : "Down-chitted since " + fmtDay(doyISO(S.year, CH[i].since[ck0 + d]))) + (tip ? "\n" + tip : "");
         const vd = v ? String(v).trim().toUpperCase() : "", ol = (vd === "BDO" || vd === "SDO") && offList(S, vd, S.roster[i].id || S.roster[i].name, S.dept);
@@ -3460,7 +3461,7 @@ function renderPlanner() {
         if (am && am.alert) { W.push(["⚠ NOT CURRENT", "bad"]); l1cls += " atomw"; tip = am.alert.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent()) + (tip ? "\n" + tip : ""); }
         if (a && CN.has(i)) { const t = dateSerial(y, mi, d); CN.get(i).forEach(([n, k]) => { const R = S.rules[k], key = i + ":" + k; if (n === t && !cnDone.has(key) && ruleMatch(R, a, v)) { cnDone.add(key); W.push(["⚠ NOT CURRENT", "bad"]); tip = (tip ? tip + "\n" : "") + "Not current for " + R.name + " when this flight is planned (" + curIssues(CC, i).filter(x => x.startsWith(R.name)).join("; ") + ")"; } }); }
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) tip = (tip ? tip + "\n" : "") + "Currency: " + CL.get(i).get(d).map(w => w[2]).join("; ");
-        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (gridRow(i, s)) + ":" + d + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, gridRow(i, s), d) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
+        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (gridRow(i, s)) + ":" + d + "' data-cd='" + esc(det.join("\n")) + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, gridRow(i, s), d) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
       }
       if (s === 0) h += "<td class='tot' rowspan=" + RPB + ">" + (t.fl || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const ah = atomHours(cur.b, i, mi); if (ah) return "<td class='tot flown' rowspan=" + RPB + " title='" + esc("Clocked this month, from ATOM, as of " + ah.asOf) + "'>" + ah.h.toFixed(1) + "</td>"; const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=" + RPB + " title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=" + RPB + ">" + (t.gd || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.sdo || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.lv || "-") + "</td>";
       h += "</tr>";
@@ -4625,7 +4626,10 @@ function openCard(k) {
   const p = keyParts(k); if (k.startsWith("m:") || isWdRow(p.r)) return false;
   const A = actIndex(), v = S.m[cur.m].grid[p.r][p.d], a = v && A.get(String(v).toUpperCase()); if (!a || a.ci !== CAT_FLIGHT) return false;
   const s = rowShift(p.r), me = rowPerson(p.r), cols = cardCrew(cur.m, p.d, s, v), rows = Math.max(1, ...cols.map(x => x.length));
-  const ac = S.acts.find(x => same(x.code, v)), tip = el.getAttribute("title") || "";
+  const ac = S.acts.find(x => same(x.code, v)), M0 = S.m[cur.m];
+  // this flight's own MASTER line (time and comment), matched on code in the cell's shift: not the whole day's programme
+  const ml = [0, 1].map(j => s * 2 + j).filter(j => sameCode(M0.master[j][p.d], v)).map(j => (M0.mtime[j][p.d] || "no time yet") + (M0.mnote[j][p.d] ? " (" + M0.mnote[j][p.d] + ")" : ""));
+  const tip = [ml.length ? "Planned: " + ml.join("; ") : "Not on the Master programme for this shift"].concat((el.dataset.cd || "").split("\n").filter(Boolean)).join("\n");
   let h = "<h4>" + esc(v) + " <span>· " + esc(p.d + 1 + " " + monLab(cur.m, S.year) + " · " + SHIFTS[s]) + "</span></h4>" + (ac && ac.desc ? "<div class='csub'>" + esc(ac.desc) + "</div>" : "") +
     (tip ? "<div class='cdet'>" + esc(tip) + "</div>" : "") + "<div class='clab'>Crew on this flight</div><div class='cseats'><div class='csh'>" + CARD_SEATS.map(x => "<span>" + x + "</span>").join("") + "</div>";
   for (let r = 0; r < rows; r++) h += "<div class='csn'>" + cols.map(L => { const x = L[r]; if (!x) return "<span class='cnone'>" + (r === 0 ? "-" : "") + "</span>";
@@ -4908,7 +4912,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z114 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z115 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

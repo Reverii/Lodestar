@@ -1038,7 +1038,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z116</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-01 z117</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4625,7 +4625,13 @@ function cardCrew(mi, d, s, code) {   // seat columns -> list of crew planned on
 let cardKey = null;
 function openCard(k) {
   const el = cellEl(k), c = $("cellCard"); if (!el) return false;
-  const p = keyParts(k); if (k.startsWith("m:")) return false;
+  const p = keyParts(k);
+  if (k.startsWith("m:")) {   // a MASTER cell (locked): the flight's time and comment, read-only
+    const M = S.m[cur.m], code = String(M.master[p.r][p.d] || ""); if (!code) return false;
+    const ms = Math.floor(p.r / 2), t = M.mtime[p.r][p.d], n = M.mnote[p.r][p.d], ac = S.acts.find(x => same(x.code, code));
+    c.innerHTML = "<h4>" + esc(code) + " <span>· " + esc(p.d + 1 + " " + monLab(cur.m, S.year) + " · " + SHIFTS[ms]) + "</span></h4>" + (ac && ac.desc ? "<div class='csub'>" + esc(ac.desc) + "</div>" : "") +
+      "<div class='cdet'>" + esc("Time: " + (t || "not set") + (n ? "\nComment: " + n : "\nNo comment")) + "</div><div class='cleg'>Set by the Master Planner. Esc or click away to close</div>";
+    cardKey = k; c.style.display = "block"; cardPlace(el, c); return true; }
   const A = actIndex(), M0 = S.m[cur.m], v = String(M0.grid[p.r][p.d] || ""), a = v && A.get(v.toUpperCase()), wd = isWdRow(p.r);
   const note = (S.notes && S.notes.get(cur.m + ":" + p.r + ":" + p.d)) || "", canNote = !!S.hasNotes && mayEdit(cur.b), flight = !!a && a.ci === CAT_FLIGHT && !wd;
   if (!v && !note && !canNote) return false;   // nothing to show on an empty cell, unless the planner can add a comment
@@ -4646,10 +4652,13 @@ function openCard(k) {
       return "<span class='" + opsCatCls(x) + (x.dept === S.dept && x.i === me ? " you" : "") + "'>" + esc(opsName(x)) + (x.tag === "PAX" ? "<i class='cpax'>PAX</i>" : "") + "</span>"; }).join("") + "</div>";
     h += "</div>"; }
   cardKey = k; c.innerHTML = h + "<div class='cleg'>Esc or click away to close</div>"; c.style.display = "block";
+  cardPlace(el, c); return true;
+}
+function cardPlace(el, c) {   // beside the cell (right, else left), kept on screen; body zoom is already applied to the card
   const b = el.getBoundingClientRect(), w = 400, ch = c.offsetHeight, z = parseFloat(document.body.style.zoom) || 1;
   const vw = window.innerWidth / z, vh = window.innerHeight / z, bl = b.left / z, bt = b.top / z, br = b.right / z;
-  let x = br + 4 + w <= vw ? br + 4 : Math.max(8, bl - w - 4), y = Math.min(Math.max(8, bt), Math.max(8, vh - ch - 8));
-  c.style.left = (x + window.scrollX / z) + "px"; c.style.top = (y + window.scrollY / z) + "px"; return true;
+  const x = br + 4 + w <= vw ? br + 4 : Math.max(8, bl - w - 4), y = Math.min(Math.max(8, bt), Math.max(8, vh - ch - 8));
+  c.style.left = (x + window.scrollX / z) + "px"; c.style.top = (y + window.scrollY / z) + "px";
 }
 $("cellCard").addEventListener("change", e => { if (e.target.id !== "ccIn" || !cardKey) return; const k = cardKey, p = keyParts(k);
   if (setNote(cur.m, p.r, p.d, e.target.value)) { e.target.dataset.orig = e.target.value.trim(); renderPlanner(); renderOverview(); select(k); } });
@@ -4925,7 +4934,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z116 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-01 z117 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5811,7 +5820,7 @@ $("plan").addEventListener("click", e => { const m2 = e.target.closest(".m2add")
   const gc = e.target.closest("td[data-g]");
   if (gc) { if (!S.gndRow || (!mayEdit(cur.b))) return; const d = +gc.dataset.g, M = S.m[cur.m];
     const v = prompt("Ground programme for " + (d + 1) + " " + monLab(cur.m, S.year) + " (separate items with ;)", M.gnd[d] || ""); if (v == null) return;
-    M.gnd[d] = v.trim(); put(monSheet(cur.m), colL(DAY_COL0 + d) + S.gndRow, M.gnd[d]); renderPlanner(); return; } const t = e.target.closest("td[data-k]"); if (!t) return; if (popKey) closePop(); closeCard(); select(t.dataset.k); if (t.dataset.k.startsWith("m:")) { toast(MASTER_LOCK_MSG); return; } openCard(t.dataset.k); });   // left click selects and shows the flight card; the picker is on right click (or Enter / typing)
+    M.gnd[d] = v.trim(); put(monSheet(cur.m), colL(DAY_COL0 + d) + S.gndRow, M.gnd[d]); renderPlanner(); return; } const t = e.target.closest("td[data-k]"); if (!t) return; if (popKey) closePop(); closeCard(); select(t.dataset.k); openCard(t.dataset.k); });   // left click selects and shows the flight card; the picker is on right click (or Enter / typing)
 $("plan").addEventListener("contextmenu", e => { const t = e.target.closest("td[data-k]"); if (!t) return; e.preventDefault(); closeCard(); select(t.dataset.k); if (!mayEdit(cur.b)) return; openPop(t.dataset.k); });
 $("popSearch").addEventListener("input", drawPop);
 $("popSearch").addEventListener("keydown", e => {

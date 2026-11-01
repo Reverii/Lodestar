@@ -41,10 +41,19 @@ test("card_marks_the_clicked_person", async ({ page }) => {
   await page.click("#plan td[data-k='" + c.best.k + "']");
   assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#cellCard .you").length), 1);
 });
-test("master_cell_opens_no_card", async ({ page }) => {
-  await go(page); const c = await findCells(page); await page.evaluate(() => { if (cur.mfold) { cur.mfold = false; renderPlanner(); } });
+test("master_cell_card_shows_time_and_comment", async ({ page }) => {
+  await go(page); const c = await findCells(page); await page.evaluate(k => { cur.mfold = false; const p = keyParts(k), M = S.m[9]; M.mtime[p.r][p.d] = "0830-1030"; M.mnote[p.r][p.d] = "Formation lead VIPER"; renderPlanner(); }, c.mk);
   await page.click("#plan td[data-k='" + c.mk + "']");
-  assert.ok(!(await cardOn(page)), "no card on a MASTER cell");
+  assert.ok(await cardOn(page), "card on a MASTER cell");
+  const r = await page.evaluate(() => ({ t: document.getElementById("cellCard").textContent, box: !!document.getElementById("ccIn"), seats: document.querySelectorAll("#cellCard .cseats").length, toast: getComputedStyle(document.getElementById("toast")).display }));
+  assert.ok(r.t.includes("0830-1030") && r.t.includes("Formation lead VIPER"), r.t);
+  assert.deepStrictEqual([r.box, r.seats], [false, 0], "read-only: no comment box, no crew table");
+  assert.strictEqual(r.toast, "none", "a left click gives no lock message");
+});
+test("empty_master_cell_opens_no_card", async ({ page }) => {
+  await go(page); await page.evaluate(() => { cur.mfold = false; renderPlanner(); });
+  const k = await page.evaluate(() => { const M = S.m[9]; for (let d = 0; d < 31; d++) if (!M.master[0][d]) return "m:0:" + d; });
+  await page.click("#plan td[data-k='" + k + "']"); assert.ok(!(await cardOn(page)));
 });
 test("non_flight_cell_shows_comment_box_only", async ({ page }) => {
   await go(page); const c = await findCells(page);

@@ -28,6 +28,31 @@ test("flight_codes_parse_new_columns", async ({ page }) => {
 }, ED);
 test("layout_stamp_for_master_is_three", async ({ page }) => { assert.strictEqual(await page.evaluate(() => LAYOUT.master), 3); }, ED);
 
+// ---- Task 4: the Master Planner screens use the flight's hours and sorties
+const mpDay = (page, iso) => page.evaluate(iso => { const P = masterBook().S, { mi, d } = ymd(iso, P.year); document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = mi; cur.mpDay = d; renderMp(); return { mi, d }; }, iso);
+test("two_sortie_flight_counts_two_on_the_day_and_shows_on_the_card", async ({ page }) => {
+  await mpDay(page, "2026-10-01");   // demo: FLT-2.0 0830-1230 with Sorties 2, FLT-1.5 0900-1030, three PM flights
+  const r = await page.evaluate(() => { const P = masterBook().S, fs = P.fl.filter(f => f.mi === 9 && f.d === 0); return { so: fs.reduce((n, f) => n + flSort(f), 0), card: document.getElementById("mpSide").textContent, cell: document.querySelector("#mpCal .mday[data-day='0']").textContent }; });
+  assert.ok(/2 sorties/.test(r.card) && /4\.0 H/.test(r.card), r.card.slice(0, 400)); assert.ok(new RegExp(r.so + " sorties").test(r.cell), r.so + " / " + r.cell);
+}, ED);
+test("month_hours_card_is_the_sum_of_the_flight_ranges", async ({ page }) => {
+  await mpDay(page, "2026-10-01");
+  const r = await page.evaluate(() => { const P = masterBook().S, live = P.fl.filter(f => f.mi === 9 && f.code && !P.mp[9].status[f.d]); return { sum: live.reduce((n, f) => n + mpFlHrs(P, f).h, 0), kpi: document.getElementById("mpKpis").textContent }; });
+  assert.ok(r.kpi.includes((Math.round(r.sum * 10) / 10).toFixed(1)), r.sum + " vs " + r.kpi);
+}, ED);
+test("sorties_box_writes_the_flights_sheet", async ({ page }) => {
+  await mpDay(page, "2026-10-02");
+  await page.evaluate(() => { devFull = true; OPS = true; renderMp(); });
+  const row = await page.evaluate(() => { const P = masterBook().S, f = P.fl.find(f => f.mi === 9 && f.d === 1); return f.row; });
+  await page.fill("#mpSide input[data-row='" + row + "'][data-f='sort']", "3"); await page.dispatchEvent("#mpSide input[data-row='" + row + "'][data-f='sort']", "change");
+  const r = await page.evaluate(row => { const P = masterBook().S, f = P.fl.find(f => f.row === row), e = books[mpIdx()].dirty.get("Flights!G" + row); return { sort: f.sort, val: e && e.val }; }, row);
+  assert.deepStrictEqual(r, { sort: 3, val: 3 });
+}, ED);
+test("flight_codes_page_has_no_hours_or_sorties_columns", async ({ page }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='codes']").click(); renderCodes(); });
+  const h = await page.evaluate(() => [...document.querySelectorAll("#codeTable th")].map(x => x.textContent.trim())); assert.ok(!h.some(x => /Sorties|Hrs/.test(x)) && h.includes("Crew") && h.includes("Mission Type"), h.join());
+}, ED);
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0, S = null;
   for (const t of tests) {

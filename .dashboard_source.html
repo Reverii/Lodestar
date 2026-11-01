@@ -252,6 +252,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfb .tags,.spfb .nt{grid-column:span 2}
 .spfb select.set,.spfb .v.set{background:#dcfce7;color:#166534;font-weight:800}
 .spfb input.nt{font-style:italic;color:#92400e;background:#fffdf5}
+.spfb input.sorb{width:100%}
 .spfb .v{padding:6px 8px;border:1px solid var(--s200);border-radius:6px;font-size:14px}.spfb .v.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb .tags{display:flex;gap:4px;align-items:center}.spfb .tag{border:1px solid var(--s300);border-radius:4px;padding:2px 8px;font:800 12px Arial,sans-serif;color:var(--s500);cursor:pointer;background:#fff}
 .spfb .tag.on{color:#fff;border-color:transparent}.spfb .tag.tP.on{background:#1d4ed8}.spfb .tag.tL.on{background:#0f766e}.spfb .tag.tT.on{background:#b45309}.spfb .tag.tS1.on{background:#7e22ce}.spfb .tag.tS2.on{background:#be123c}
@@ -2974,12 +2975,11 @@ function renderMp() {
   const P = books[bi].S;
   if (P.legacy) { $("mpKpis").innerHTML = ""; $("mpInfo").innerHTML = "<span style='color:#b91c1c'><b>This Master Planner file is the old layout (6 fixed slots a day).</b> Replace it with the new Master_Planner_2026.xlsx, which keeps a list of flights so you can add as many as you need.</span>"; $("mpCal").innerHTML = ""; $("mpSide").innerHTML = ""; return; }
   const y = P.year, mi = cur.mpM, M = P.mp[mi], dim = daysIn(y, mi), off = (new Date(y, mi, 1).getDay() + 6) % 7;
-  const sortOf = c => { const x = P.codes.find(k => same(k.code, c)); return c ? (x ? x.sort : 1) : 0; };
-  const daySort = d => M.status[d] ? 0 : P.fl.reduce((n, f) => n + (f.mi === mi && f.d === d ? sortOf(f.code) : 0), 0);
+  const daySort = d => M.status[d] ? 0 : P.fl.reduce((n, f) => n + (f.mi === mi && f.d === d && f.code ? flSort(f) : 0), 0);
   let tot = 0, offDays = 0; for (let d = 0; d < dim; d++) { if (M.status[d]) offDays++; tot += daySort(d); }
   // stat cards: this month, with the year underneath (flights on no-flying days don't count)
-  const live = f => f.code && !P.mp[f.mi].status[f.d], hrsOf = c => { const x = P.codes.find(k => same(k.code, c)); return x ? x.hrs : 0; };
-  const stat = list => ({ fl: list.length, so: list.reduce((n, f) => n + sortOf(f.code), 0), hr: list.reduce((n, f) => n + hrsOf(f.code), 0), days: new Set(list.map(f => f.mi + ":" + f.d)).size });
+  const live = f => f.code && !P.mp[f.mi].status[f.d], hrsOf = f => mpFlHrs(P, f).h;
+  const stat = list => ({ fl: list.length, so: list.reduce((n, f) => n + flSort(f), 0), hr: list.reduce((n, f) => n + hrsOf(f), 0), days: new Set(list.map(f => f.mi + ":" + f.d)).size });
   const sm = stat(P.fl.filter(f => f.mi === mi && live(f))), sy = stat(P.fl.filter(f => f.mi < NX_MI && live(f)));   // the year: next January not counted
   let yOff = 0; P.mp.slice(0, 12).forEach(x => x.status.forEach(v => { if (v) yOff++; }));
   const hf = v => (Math.round(v * 10) / 10).toFixed(1);   // also used by the week column
@@ -3022,14 +3022,14 @@ function renderMp() {
     if (d < 0 || d >= dim) h += "<div class='mday out'></div>";
     else {
       const we = i % 7 > 4, dayOff = M.status[d], L = dayFl(d), n = daySort(d);
-      if (!dayOff) { wS += n; wH += L.reduce((a, f) => a + (f.code ? hrsOf(f.code) : 0), 0); }
+      if (!dayOff) { wS += n; wH += L.reduce((a, f) => a + (f.code ? hrsOf(f) : 0), 0); }
       h += "<div class='mday" + (we ? " we" : "") + (d === todayD ? " today" : "") + (d === cur.mpDay ? " sel" : "") + (dayOff ? " nofly" : "") + "' data-day='" + d + "' title='" + (lock ? "Click to see this day" : "Click to plan this day") + "'><div class='dn'>" + (d + 1) + "<small>" + (n ? n + (n === 1 ? " sortie" : " sorties") : "") + "</small></div>";
       if (dayOff) h += "<div class='reason'>NO FLYING<br>" + esc(dayOff) + "</div>";
       { const fr = frFor(isoOf(y, mi, d)); if (fr.length) h += "<div class='frtag' title='" + esc(fr.map(e => e.text).join(" | ")) + "'>RESTRICTION</div>"; }
       {
         const G = grDay(P, mi, d), items = (dayOff ? [] : L.map(f => ({ f }))).concat(G.map(g => ({ g }))), show = items.length > 4 ? 3 : 4;
         items.slice(0, show).forEach(({ f, g }) => {
-          if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(f.time, (P.codes.find(k => same(k.code, f.code)) || {}).hrs) || (f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
+          if (f) { const cw = crewTags(flCrew(P, f)); h += "<div class='chip " + shCls[f.s] + "' title='" + esc(SHIFTS[f.s] + " " + [f.time, f.code, cw.length ? "crew " + cw.join(" ") : "all crew", f.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(f.time, 0) || (f.time || "time?").slice(0, 4)) + "</span>" + esc(f.code || "(no code)") + (cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "") + "</div>"; }
           else { const cw = crewTags(g.crew); h += "<div class='chip fGND' title='" + esc("Squadron event · " + [g.time, g.act, crewIsAll(g.crew) ? "crew ALL" : cw.length ? "crew " + cw.join(" ") : "NO CREW", g.note].filter(Boolean).join(" · ")) + "'><span class='t'>" + esc(mpRange(g.time, 0) || (g.time || "").slice(0, 4) || "GND") + "</span>" + esc(g.act || "(ground)") + (crewIsAll(g.crew) ? "<span class='c'>ALL</span>" : cw.length ? "<span class='c'>" + cw.join(" ") + "</span>" : "<span class='c nocrew'>!</span>") + "</div>"; }
         });
         if (items.length > show) h += "<div class='more'>+" + (items.length - show) + " more</div>";
@@ -3054,13 +3054,13 @@ function renderMp() {
   for (const f of SL) {
     const own = !!f.crew, cw = crewTags(flCrew(P, f)), key = "data-row='" + f.row + "'", fk = P.codes.find(k => same(k.code, f.code)), H = mpFlHrs(P, f);
     const facts = f.code ? "<div class='spfacts'>" + (H.h > 0 ? "<span class='hr' title='From the time range'>" + fmtH(H.h) + "</span>" : "") + (H.bad ? "<span class='wn'>" + (H.bad === "No end time" ? "No end time" : H.bad === "No time" ? "No time" : "Check time") + "</span>" : "") +
-      (!lock && fk && fk.desc ? "<span>" + esc(fk.desc) + "</span>" : "") + (fk && fk.mtype ? "<span>" + esc(fk.mtype) + "</span>" : "") + (fk && fk.sort > 1 ? "<span>" + fk.sort + " sorties</span>" : "") + (H.h > 0 && timeEndsNext(f.time) ? "<span>ends next day</span>" : "") + "</div>" : "";
+      (!lock && fk && fk.desc ? "<span>" + esc(fk.desc) + "</span>" : "") + (fk && fk.mtype ? "<span>" + esc(fk.mtype) + "</span>" : "") + (flSort(f) > 1 ? "<span>" + flSort(f) + " sorties</span>" : "") + (H.h > 0 && timeEndsNext(f.time) ? "<span>ends next day</span>" : "") + "</div>" : "";
     const tags = "<div class='tags" + (own ? "" : " def") + "' title='" + (own ? "Crew set for this flight" : "Crew from the flight code" + (cw.length ? "" : ": every department")) + "'>" +
       CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag t" + k + (cw.includes(k) && f.code ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length && f.code ? "<span class='all'>all crew</span>" : "") + "</div>";
     p += "<div class='spf" + (sOff ? " dim" : "") + "'><div class='spfh " + shCls[f.s] + "'>" + SHIFTS[f.s] + (f.time ? " · " + esc(f.time) : "") + (lock ? "" : "<button class='rm' " + key + " title='Remove this flight'>×</button>") + "</div><div class='spfb'>";
     if (lock) p += "<div class='v set'>" + esc(f.code) + "</div>" + (fk && fk.desc ? "<div class='v spdesc'>" + esc(fk.desc) + "</div>" : "") + facts + tags + (f.note ? "<div class='v nt'>" + esc(f.note) + "</div>" : "");
     else p += "<select " + key + " data-f='code' class='" + (f.code ? "set" : "") + "'><option value=''>Flight code…</option>" + P.codes.map(k => "<option value='" + esc(k.code) + "'" + (same(k.code, f.code) ? " selected" : "") + ">" + esc(k.code + (k.crew ? "  (" + k.crew + ")" : "")) + "</option>").join("") +
-      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
+      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'><input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>" + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
     p += "</div></div>";
   }
   if (!lock && !sOff) p += "<button class='addb' data-add='" + sd + "'>+ Add flight</button><div class='hint'>The time sets the shift: before 1200 AM, before 1800 PM, then NIGHT. Crew comes from the flight code (faded chips); click one to change it for this flight.</div>";
@@ -3107,7 +3107,7 @@ function mpExportData(P, o) {   // o = { from, to (ISO days), omit: [flight code
   for (const f of P.fl) {
     if (!f.code || P.mp[f.mi].status[f.d] || omit.has(f.code.toUpperCase())) continue;   // a no-flying day has no flights (as on the screen)
     const iso = isoOf(P.year, f.mi, f.d); if (iso < o.from || iso > o.to) continue;
-    const k = P.codes.find(x => same(x.code, f.code)), hrs = k ? k.hrs : 0;
+    const k = P.codes.find(x => same(x.code, f.code)), hrs = mpFlHrs(P, f).h;
     rows.push({ iso, mi: f.mi, d: f.d, dow: MPX_DOW[(new Date(P.year, f.mi, f.d + 1).getDay() + 6) % 7], s: f.s, shift: SHIFTS[f.s], code: f.code, desc: k ? k.desc : "", time: f.time || "", hrs, row: f.row });
   }
   rows.sort((a, b) => a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : a.s - b.s || (flOrd(a) < flOrd(b) ? -1 : flOrd(a) > flOrd(b) ? 1 : a.row - b.row));
@@ -3284,7 +3284,7 @@ document.addEventListener("keydown", e => {
 });
 // the shift a flight time falls in, from its start time: before 1200 AM, before 1800 PM, then NIGHT (-1 when there's no time, e.g. TBC)
 const timeShift = t => { const m = String(t || "").match(/(\d{1,2}):?(\d{2})/); if (!m || +m[1] > 24 || +m[2] > 59) return -1; const x = +m[1] * 60 + +m[2]; return x < 720 ? 0 : x < 1080 ? 1 : 2; };
-const FL_COLS = { code: "C", time: "D", crew: "E", note: "F" };
+const FL_COLS = { code: "C", time: "D", crew: "E", note: "F", sort: "G" };
 const flByRow = r => S.fl.find(f => f.row === r);
 $("mpReq").addEventListener("click", e => {
   const rq = e.target.closest("[data-rqtog],[data-rqnew],[data-rqcancel],[data-rqsend],[data-rqa],[data-rqx]"); if (!rq) return;
@@ -3367,7 +3367,7 @@ $("mpWrap").addEventListener("change", e => {
   }
   const k = el.dataset.f; if (!k || !mpEditable() || el.dataset.row == null) return;
   const v = el.value.trim();
-  withBook(mpIdx(), () => { const f = flByRow(+el.dataset.row); if (!f) return; f[k] = v; put("Flights", FL_COLS[k] + f.row, v);
+  withBook(mpIdx(), () => { const f = flByRow(+el.dataset.row); if (!f) return; if (k === "sort") { const n = +v; f.sort = n >= 1 && n <= 9 ? Math.round(n) : 1; put("Flights", "G" + f.row, f.sort > 1 ? f.sort : ""); } else { f[k] = v; put("Flights", FL_COLS[k] + f.row, v); }
     if (k === "time") { const sh = timeShift(v); if (sh >= 0 && sh !== f.s) { f.s = sh; put("Flights", "B" + f.row, SHIFTS[sh]); } } });
   renderMp(); renderPlanner();
 });
@@ -3380,8 +3380,8 @@ function renderCodes() {
     " Crew: P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2 (blank = everyone). Mission Type is used by the currency rules.";
   const show = Math.min(FC_N, Math.max(lastFilled(C, k => k.code || k.desc) + (ed ? 4 : 1), ed ? 6 : 1));
   const inp = (i, f, extra) => "<input data-fc='" + i + "' data-f='" + f + "' value='" + esc(C[i][f] == null ? "" : C[i][f]) + "'" + (extra || "") + (ed ? "" : " disabled") + ">";
-  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:80px'>Sorties</th><th style='width:90px'>Flight Hrs</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only syllabus items whose Track or Description contains this (a comma list = any)'>Syllabus tag</th>" : "") + "</tr>";
-  for (let i = 0; i < show; i++) h += "<tr><td class='n'>" + (i + 1) + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "sort", " type='number' min='1' max='9' placeholder='1'") + "</td><td>" + inp(i, "hrs", " type='number' step='0.1' min='0' max='24'") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td>" + (P.hasStag ? "<td>" + inp(i, "stag", " placeholder='e.g. EIS'") + "</td>" : "") + "</tr>";
+  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only syllabus items whose Track or Description contains this (a comma list = any)'>Syllabus tag</th>" : "") + "</tr>";
+  for (let i = 0; i < show; i++) h += "<tr><td class='n'>" + (i + 1) + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td>" + (P.hasStag ? "<td>" + inp(i, "stag", " placeholder='e.g. EIS'") + "</td>" : "") + "</tr>";
   $("codeTable").innerHTML = h;
   const gap = C.findIndex(k => !k.code), last = lastFilled(C, k => k.code), seen = {}, dups = [];
   C.forEach(k => { if (!k.code) return; const u = k.code.toUpperCase(); if (seen[u]) dups.push(k.code); seen[u] = 1; });
@@ -3389,7 +3389,7 @@ function renderCodes() {
 }
 $("codeTable").addEventListener("change", e => {
   const el = e.target, i = +el.dataset.fc, f = el.dataset.f; if (isNaN(i) || !f || !mpEditable()) return;
-  const COL = { code: "A", desc: "B", sort: "C", hrs: "D", crew: "E", mtype: "F", stag: "H" };
+  const COL = S.fcOld ? { code: "A", desc: "B", sort: "C", hrs: "D", crew: "E", mtype: "F", stag: "H" } : { code: "A", desc: "B", crew: "C", mtype: "D", stag: "E" };
   withBook(mpIdx(), () => {
     const k = S.codeAll[i]; let v = el.value.trim();
     if (f === "sort" || f === "hrs") v = v === "" ? null : +v;

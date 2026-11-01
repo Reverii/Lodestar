@@ -11,20 +11,14 @@ test("chips_show_the_full_time_range", async ({ page }) => {
   await openMp(page, 9);
   const L = await chips(page);
   assert.ok(L.length > 20, "chips drawn: " + L.length);
-  // 8 Oct 0900 FLT-2.0 and 5 Oct 0830 FLT-2.0 on the demo plan: the end is the start plus the flight code's hours
-  const hrs = await page.evaluate(() => { const P = masterBook().S, k = P.codes.find(c => c.code === "FLT-2.0"); return k && k.hrs; });
-  assert.strictEqual(hrs, 2);
+  // the chip shows the typed range (the end is no longer worked out from the flight code's hours)
   assert.ok(L.some(c => c.t === "0830H-1030H" && /FLT-2\.0/.test(c.txt)), "0830H-1030H not found: " + L.slice(0, 6).map(c => c.t).join());
   assert.ok(L.some(c => c.t === "0830H-1000H" || c.t === "1000H-1130H"), "a 1.5 hour sortie shows its range: " + L.map(c => c.t).join());
   // every chip is either a range with H, a lone start with H, a ground label, or the no-time placeholder
   const bad = L.filter(c => !/^(\d{4}H(-\d{4}H)?|time\?|GND|TBC)$/.test(c.t)); assert.deepStrictEqual(bad.map(c => c.t), []);
 });
-test("a_flight_with_no_hours_shows_only_its_start", async ({ page }) => {
-  await openMp(page, 9);
-  const r = await page.evaluate(() => { const P = masterBook().S, k = P.codes.find(c => !(c.hrs > 0) && P.fl.some(f => f.mi === 9 && f.code === c.code && f.time)); if (!k) return null;
-    const f = P.fl.find(f => f.mi === 9 && f.code === k.code && f.time); return { code: k.code, time: f.time.slice(0, 4) }; });
-  if (!r) return;   // the demo plan has none: nothing to check
-  const L = await chips(page); assert.ok(L.some(c => c.t === r.time + "H" && c.txt.includes(r.code)), JSON.stringify(r));
+test("a_lone_start_shows_only_its_start", async ({ page }) => {
+  assert.strictEqual(await page.evaluate(() => mpRange("0900", 0)), "0900H"); assert.strictEqual(await page.evaluate(() => mpRange("0830-1030", 0)), "0830H-1030H");
 });
 
 // ---- squadron events: ALL tag, a blank crew is a mistake (never "everyone")

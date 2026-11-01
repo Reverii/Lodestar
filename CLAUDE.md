@@ -48,7 +48,7 @@ existing macro-heavy ops tool (Oracle).
 | File | What |
 |---|---|
 | `Flight_Ops_Planner_SUP2.xlsx` | SUP 2 planner, the master template (newest layout, Syllabus sheets, Jan (next year) tab) |
-| `Flight_Ops_Planner_{SUP1,TACCO,Loadmaster,Pilot}.xlsx` | other departments, older layout |
+| `Flight_Ops_Planner_{SUP1,TACCO,Loadmaster,Pilot}.xlsx` | other departments, same layout as SUP 2 (dept layout 4). Since 2 Nov the repo's eight xlsx are a fresh demo set, not Brandon's real-data files |
 | `Master_Planner.xlsx`, `Duty_Roster.xlsx`, `Ops_Room.xlsx` | shared files |
 | `Flight_Ops_Planner_Dashboard.html` | **the dev build Brandon uses** (~6 MB; embeds SUP 2 as template + the other files as samples) |
 | `release/Flight_Ops_Planner_Dashboard.html` | release build (dev code stripped). Not for Brandon yet |

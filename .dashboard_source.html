@@ -471,6 +471,11 @@ body.ro .edit input,body.ro .edit select{pointer-events:none;color:var(--s600)}
 #grPop select,#grPop input:not([type=checkbox]){padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900)}
 #grPop label.ck{flex-direction:row;align-items:center;gap:5px;text-transform:none;font-size:13px;color:var(--s700);flex:0 0 auto;min-width:0}
 #grPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+/* Master Planner flight card facts: planned hours, description, mission type */
+#mpSide .spsum{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}#mpSide .spsum span{background:#f1f5f9;border-radius:8px;padding:3px 10px;font-size:12.5px;color:#334155}#mpSide .spsum b{color:#0f172a}
+#mpSide .spfb>div.spdesc,#mpSide .spfb>div.spfacts{grid-column:1/-1}#mpSide .spfb div.v{border:0;background:none;box-shadow:none;padding:0;min-height:0}#mpSide .spfb div.v.set{font-size:17px;font-weight:800;color:#166534}#mpSide .spfb div.v.nt{font-style:italic;color:#64748b;font-size:12.5px;margin-top:4px}
+#mpSide .spdesc{color:#475569;font-size:12.5px;font-weight:400}#mpSide .spfacts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}#mpSide .spfacts span{background:#f1f5f9;border-radius:6px;padding:1px 8px;font-size:12px;color:#334155}
+#mpSide .spfacts .hr{background:#dcfce7;color:#166534;font-weight:800}#mpSide .spfacts .hr.cd{background:#f1f5f9;color:#475569;font-weight:700}#mpSide .spfacts .wn{background:#fee2e2;color:#991b1b;font-weight:700}
 /* Flying Restriction: a slim red banner on the Ops Room, the add dialog, the Master Planner side panel and calendar tag */
 #opsFr{display:flex;flex-direction:column;gap:3px;margin:0 0 6px}#opsFr:empty{display:none}
 .frb{display:flex;align-items:center;gap:10px;background:#b91c1c;color:#fff;border:1px solid #fca5a5;border-radius:6px;padding:3px 10px;font-weight:600;font-size:14px;line-height:1.3}
@@ -1067,7 +1072,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z124</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z125</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3039,16 +3044,19 @@ function renderMp() {
   let p = "<div class='sph'><button class='nav' data-go='-1' title='Previous day'>‹</button><h3>" + sdt.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) + "</h3><button class='nav' data-go='1' title='Next day'>›</button><button class='nav' data-go='x' title='Close'>✕</button></div><div class='spb'>";
   p += "<div class='lbl'>Day status</div>" + (lock ? "<div class='ro" + (sOff ? " off" : "") + "'>" + (sOff ? "No flying: " + esc(sOff) : "Flying day") + "</div>" :
     "<select class='mpst2" + (sOff ? " on" : "") + "' data-st='" + sd + "'><option value=''>Flying day</option>" + P.statuses.map(x => "<option" + (same(x, sOff) ? " selected" : "") + ">" + esc(x) + "</option>").join("") + (sOff && !P.statuses.some(x => same(x, sOff)) ? "<option selected>" + esc(sOff) + "</option>" : "") + "</select>");
+  if (SL.length && !sOff) { const tot = SL.reduce((n, f) => n + mpFlHrs(P, f).h, 0); p += "<div class='spsum'><span><b>" + SL.length + "</b> flight" + (SL.length === 1 ? "" : "s") + "</span><span><b>" + fmtH(tot) + "</b> planned</span></div>"; }
   if (sOff && SL.length) p += "<div class='warnl'>These flights don't count while the day is set to no flying.</div>";
   if (!SL.length) p += "<div class='empty'>" + (sOff ? "No flying this day." : "No flights planned yet.") + "</div>";
   for (const f of SL) {
-    const own = !!f.crew, cw = crewTags(flCrew(P, f)), key = "data-row='" + f.row + "'";
+    const own = !!f.crew, cw = crewTags(flCrew(P, f)), key = "data-row='" + f.row + "'", fk = P.codes.find(k => same(k.code, f.code)), H = mpFlHrs(P, f);
+    const facts = f.code ? "<div class='spfacts'>" + (H.src !== "none" ? "<span class='hr" + (H.src === "code" ? " cd" : "") + "' title='" + (H.src === "code" ? "From the flight code's Flight Hrs (no full time range typed)" : "From the time range") + "'>" + fmtH(H.h) + (H.src === "code" ? " (code)" : "") + "</span>" : "") + (H.bad ? "<span class='wn'>" + (H.bad === "No end time" ? "No end time" : H.bad === "No time" ? "No time" : "Check time") + "</span>" : "") +
+      (!lock && fk && fk.desc ? "<span>" + esc(fk.desc) + "</span>" : "") + (fk && fk.mtype ? "<span>" + esc(fk.mtype) + "</span>" : "") + (fk && fk.sort > 1 ? "<span>" + fk.sort + " sorties</span>" : "") + (H.src === "range" && f.time && timeEndsNext(f.time) ? "<span>ends next day</span>" : "") + "</div>" : "";
     const tags = "<div class='tags" + (own ? "" : " def") + "' title='" + (own ? "Crew set for this flight" : "Crew from the flight code" + (cw.length ? "" : ": every department")) + "'>" +
       CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag t" + k + (cw.includes(k) && f.code ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length && f.code ? "<span class='all'>all crew</span>" : "") + "</div>";
     p += "<div class='spf" + (sOff ? " dim" : "") + "'><div class='spfh " + shCls[f.s] + "'>" + SHIFTS[f.s] + (f.time ? " · " + esc(f.time) : "") + (lock ? "" : "<button class='rm' " + key + " title='Remove this flight'>×</button>") + "</div><div class='spfb'>";
-    if (lock) p += "<div class='v set'>" + esc(f.code) + "</div><div class='v'>" + esc(f.time) + "</div>" + tags + (f.note ? "<div class='v nt'>" + esc(f.note) + "</div>" : "");
+    if (lock) p += "<div class='v set'>" + esc(f.code) + "</div>" + (fk && fk.desc ? "<div class='v spdesc'>" + esc(fk.desc) + "</div>" : "") + facts + tags + (f.note ? "<div class='v nt'>" + esc(f.note) + "</div>" : "");
     else p += "<select " + key + " data-f='code' class='" + (f.code ? "set" : "") + "'><option value=''>Flight code…</option>" + P.codes.map(k => "<option value='" + esc(k.code) + "'" + (same(k.code, f.code) ? " selected" : "") + ">" + esc(k.code + (k.crew ? "  (" + k.crew + ")" : "")) + "</option>").join("") +
-      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
+      (f.code && !P.codes.some(k => same(k.code, f.code)) ? "<option selected>" + esc(f.code) + "</option>" : "") + "</select><input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
     p += "</div></div>";
   }
   if (!lock && !sOff) p += "<button class='addb' data-add='" + sd + "'>+ Add flight</button><div class='hint'>The time sets the shift: before 1200 AM, before 1800 PM, then NIGHT. Crew comes from the flight code (faded chips); click one to change it for this flight.</div>";
@@ -4072,6 +4080,18 @@ function opsTimes(t, hrs) {
   return [fmtHM(a), hrs ? fmtHM(a + Math.round(hrs * 60)) : ""];
 }
 // the time shown on a calendar chip: 0830H-1000H (the end is the start plus the flight code's hours, or the typed end), 0830H when only a start is known
+// planned hours of a Master Planner flight from its typed time range (an end earlier than the start means it ends the next day); falls back to the flight code's Flight Hrs
+// -> { h, src: "range" | "code" | "none", bad: "" | "No time" | "No end time" | "Check time" }; a range of 0 or over 12 hours is "Check time"
+function mpFlHrs(P, f) {
+  const k = P.codes.find(x => same(x.code, f.code)), ch = k && k.hrs ? k.hrs : 0, fb = bad => ({ h: ch, src: ch ? "code" : "none", bad });
+  const t = String(f.time || "").replace(/(\d)\s*h\b/gi, "$1"), m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*$/i.exec(t);
+  if (!m) return fb(t.trim() ? "No end time" : "No time");
+  const a = hhmm(m[1].replace(":", "")), b = hhmm(m[2].replace(":", "")); if (a == null || b == null) return fb("Check time");
+  let n = b - a; if (n < 0) n += 1440; if (n === 0 || n > 720) return fb("Check time");
+  return { h: n / 60, src: "range", bad: "" };
+}
+const timeEndsNext = t => { const m = /(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})/i.exec(String(t).replace(/(\d)\s*h\b/gi, "$1")); return !!m && hhmm(m[2].replace(":", "")) < hhmm(m[1].replace(":", "")); };
+const fmtH = v => (Math.round(v * 10) / 10).toFixed(1) + " H";
 function mpRange(time, hrs) { const [a, b] = opsTimes(time, hrs); return a ? a + "H" + (b ? "-" + b + "H" : "") : ""; }
 function opsDur(a, b) { const x = hhmm(a), y = hhmm(b); if (x == null || y == null) return null; let n = y - x; if (n < 0) n += 1440; return n / 60; }
 // one day: the Master Planner's flights, one row per aircraft, with crew picked from the department plans (same code first, then any flight that shift)
@@ -5251,7 +5271,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z124 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z125 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

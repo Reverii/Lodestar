@@ -1,7 +1,13 @@
-# LODESTAR handoff (updated 2026-11-02, after z124)
+# LODESTAR handoff (updated 2026-11-02, after z125)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
+
+## z125 (2 Nov, Brandon): Master Planner flight card shows planned hours
+- Day panel in the Master Planner: a summary under Day status (`5 flights · 9.0 H planned`) and, on each flight, the planned hours as a green chip (`2.0 H`, capital H), the code's description, mission type, `N sorties` when the code has more than one, and `ends next day`. The view-only card is plain text (no boxes that look editable); the time is shown once (header). Editable card keeps its inputs and adds the same chips under them.
+- **Hours come from the time range** (`mpFlHrs`): end earlier than start means the next day (2200-0100 = 3.0 H, Brandon: no flight lasts 24 h); 0 or over 12 hours = red "Check time"; no end time = falls back to the code's Flight Hrs, shown grey as `1.5 H (code)` with a red "No end time" chip. **Only the card and the day summary use this for now.** The calendar chips, week and month hours, KPIs, export and department planners still use the code's Flight Hrs, so numbers can differ until the planned streamlining.
+- **Planned next (Brandon, 2 Nov, not built; needs a short spec first):** remove Flight Hrs and Sorties from the Activities page and take hours from the Master Planner time range everywhere (every flight will have a full range); sorties = number of flights (so 2xFLT-... would be entered as two flights); this changes Excel totals in all five department files (layout stamp), to be done together with the layout-3 file replacement. Dashboard to show hours as `2.0 H`.
+- Tests: new `node tests/mp_card.test.js` (6). Others as before (`my_lodestar` has the same 3 old failures).
 
 ## z124 (2 Nov, Brandon): Flying Restriction banner
 - **Ops Room:** a slim red banner (one line per restriction, stacked) above the stat chips, only on days from From to To. **+ Restriction** button next to + Ops Add opens a dialog (remark text, From, To, quick buttons Today only / Until tomorrow / Next 7 days); pencil and x on each banner (editors only; a view-only Ops Room shows the banner with no buttons). Brandon chose the top of the page, compact (mock-ups `previews/flying_restriction_mockup_*.png`, real `previews/flying_restriction_real.png`).

@@ -144,6 +144,21 @@ test("remarks_and_ground_programme_swapped", async ({ page }) => {
   const o = await page.evaluate(() => [...document.querySelectorAll("#opsSide > .card, #opsSide > .stack")].map(c => c.classList.contains("rmk") ? "rmk" : c.classList.contains("gp") ? "gp" : c.classList.contains("olv") ? "olv" : "stack"));
   assert.deepStrictEqual(o, ["rmk", "olv", "stack", "gp"]);
 }, ED);
+test("standby_alert_plus_adds_a_line_and_font_is_readable", async ({ page }) => {
+  await goOps(page, DAY);
+  const has = await page.evaluate(() => !!document.querySelector("td.oalert .alAdd"));
+  assert.ok(has, "the + button is on the Alert status cell");
+  const fs = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector("td.oalert")).fontSize));
+  assert.ok(fs >= 14, "alert font " + fs);
+  await page.click("td.oalert .alAdd");
+  await page.keyboard.type("P1 0800H-1200H");
+  await page.keyboard.press("Control+Enter");
+  await page.click("td.oalert .alAdd");
+  await page.keyboard.type("P2 1200H-1600H");
+  await page.keyboard.press("Control+Enter");
+  const t = await page.evaluate(() => document.querySelector("td.oalert").innerText);
+  assert.ok(/P1 0800H-1200H/.test(t) && /P2 1200H-1600H/.test(t), t);
+}, ED);
 test("empty_day_still_renders", async ({ page }) => {
   await goOps(page, "2026-12-27");
   const t = await page.evaluate(() => document.getElementById("opsSide").innerText);

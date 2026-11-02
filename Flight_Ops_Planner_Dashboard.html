@@ -542,7 +542,7 @@ table.opsmon td{padding:4px 6px}table.opsmon td:first-child{width:130px}table.op
 #plan td.cxl{text-decoration:line-through;opacity:.5;background:repeating-linear-gradient(135deg,#fff 0 5px,#fee2e2 5px 7px)!important}
 table.opst tr.sbh .sbsets{float:right;display:inline-flex;gap:0;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.5)}table.opst tr.sbh .sbset{background:transparent;color:#dcfce7;border:0;font:inherit;font-size:12px;font-weight:800;padding:2px 10px;cursor:pointer}table.opst tr.sbh .sbset.on{background:#fff;color:#166534}table.opst tr.sbh .sbset:disabled{cursor:default}table.opst tr.sbh td{background:#166534;color:#fff;text-align:left;font-weight:900;font-size:15px;padding:5px 12px;border-top:6px solid #fff}table.opst tr.sbh small{margin-left:8px;font-weight:700;font-size:10.5px;color:#166534;opacity:.8}
 table.opst tr.sbgap td{height:10px;padding:0;background:var(--s100);border:0}
-table.opst tr.sb td{background:#f7fdf9;padding-top:6px;padding-bottom:6px;height:48px}table.opst td.sbc{border-left:6px solid #16a34a;font-size:13px}table.opst td.sbc b{font-size:20px;font-weight:800}table.opst tr.sb td.oalert{font-size:11.5px;color:var(--s700)}table.opst td.sbe{color:var(--s400)}
+table.opst tr.sb td{background:#f7fdf9;padding-top:6px;padding-bottom:6px;height:48px}table.opst td.sbc{border-left:6px solid #16a34a;font-size:13px}table.opst td.sbc b{font-size:20px;font-weight:800}table.opst tr.sb td.oalert{font-size:15px;font-weight:600;color:var(--s800,var(--s700));position:relative;padding-right:34px}table.opst td.oalert .alAdd{position:absolute;top:4px;right:5px;width:24px;height:24px;border-radius:12px;border:1px solid var(--blue);background:#fff;color:var(--blue);font:800 17px/20px inherit;padding:0;cursor:pointer}table.opst td.oalert .alAdd:hover{background:var(--blue);color:#fff}table.opst td.oalert textarea{font-size:15px}table.opst td.sbe{color:var(--s400)}
 table.opst tr.fstart td{border-top:2px solid var(--s400)}
 table.opst tr.band td{background:var(--s900);color:#fff;text-align:left;font-weight:800;font-size:14px;letter-spacing:.5px;padding:4px 10px;border-top:3px solid #fff}
 table.opst tr.band.s0 td{background:#0369a1}table.opst tr.band.s1 td{background:#b45309}table.opst tr.band.s2 td{background:#312e81}
@@ -784,7 +784,7 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) clamp(250px,var(--sidh,30vh),50%);gap:10px;align-items:stretch;min-height:360px}
 #opsLeft{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}
 #opsMain{flex:1;min-height:0;overflow:auto;border:0;border-radius:0;background:#fff}
-#opsSide{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,3fr);gap:10px;align-items:stretch;min-height:0}
+#opsSide{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,.85fr) minmax(0,.65fr) minmax(0,3fr);gap:10px;align-items:stretch;min-height:0}
 #opsSide .stack{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}#opsSide .stack>.card{margin:0;padding:9px 12px;overflow:auto;flex:1 1 auto}
 #opsSide>.card{margin:0;padding:9px 12px;min-width:0;overflow:auto}#opsSide>.card h2{font-size:13.5px;margin:0 0 6px;display:flex;align-items:center;gap:6px}
 #opsSide .ocnt{font-weight:600;color:var(--s500)}
@@ -1125,7 +1125,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z134</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z135</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4440,7 +4440,7 @@ function opsTable(D, rows, ed) {
     return "<tr class='sbh'><td colspan='" + NC + "'>Standby Duty<span class='sbsets' title='1 Set: one crew covers P1 and P2. 2 Set: separate P1 and P2 crews.'>" + btn(1) + btn(2) + "</span></td></tr>" + L.map((r, j) => {
       const ex = r.extra.length ? "<div class='ocn'>also: " + r.extra.map(c => esc(opsName(c)) + " (" + esc(c.dept) + ")").join(", ") + "</div>" : "";
       return "<tr class='sb' data-ok='" + esc(r.key) + "'><td class='ocs sbc'><b>" + esc(r.lab || r.x.code) + "</b>" + ex + "</td>" + opsTail(r, ed, true) + "<td class='osort'></td>" + OPS_SEATS.map((z, k) => opsCrewCell(r, k, ed)).join("") +
-        (j ? "" : opsTxt(Object.assign({}, r, { o: Object.assign({}, r.o, { alert: A.map(z => z.o && z.o.alert).filter(Boolean).join("\n") }) }), "alert", ed, "Alert status", "oalert").replace("<td ", "<td colspan='4' rowspan='" + L.length + "' ") + "<td class='osbx' colspan='3' rowspan='" + L.length + "'></td>") + opsTxt(r, "rem", ed, "", "orem") + "</tr>"; }).join(""); };
+        (j ? "" : opsTxt(Object.assign({}, r, { o: Object.assign({}, r.o, { alert: A.map(z => z.o && z.o.alert).filter(Boolean).join("\n") }) }), "alert", ed, "Alert status", "oalert").replace("<td ", "<td colspan='4' rowspan='" + L.length + "' ").replace(/<\/td>$/, (ed ? "<button class='alAdd' title='Add an alert time'>+</button>" : "") + "</td>") + "<td class='osbx' colspan='3' rowspan='" + L.length + "'></td>") + opsTxt(r, "rem", ed, "", "orem") + "</tr>"; }).join(""); };
   const band = s => { const F = D.flights.filter(z => z.s === s), nS = D.rows.filter(r => r.x.s === s).length; return "<tr class='band s" + s + "'><td colspan='" + NC + "'>" + SHIFTS[s] + "<small>" + (F.length ? F.length + " flight" + (F.length === 1 ? "" : "s") + " · " + nS + " sortie" + (nS === 1 ? "" : "s") : "No flights · standby only") + "</small></td></tr>"; };
   const closeTo = s => "";   // standby is a whole-day block, drawn once after the last shift
   rows.forEach(r => {
@@ -4663,9 +4663,11 @@ $("opsMain").addEventListener("click", e => {
   if (te && opsEditable() && !te.querySelector("input,textarea")) {
     const key = te.closest("tr").dataset.ok, D0 = opsDay(cur.opsDay), r = D0.rows.concat(D0.sb).find(z => z.key === key), f = te.dataset.ef;
     const tv = f === "alert" && r ? D0.sb.filter(z => z.x.s === r.x.s).map(z => z.o && z.o.alert).filter(Boolean).join("\n") : r && r.o && r.o[f] || "";   // standby alert: one cell for the shift
-    te.innerHTML = f === "rem" || f === "at" || f === "alert" ? "<textarea data-of='" + f + "' rows='3' placeholder='" + esc(te.dataset.ph) + "'>" + esc(tv) + "</textarea>"   // long remarks wrap
+    te.innerHTML = f === "rem" || f === "at" || f === "alert" ? "<textarea data-of='" + f + "' rows='3' placeholder='" + esc(f === "alert" ? "One alert time per line, e.g. P1 0800H-1200H" : te.dataset.ph) + "'>" + esc(tv) + "</textarea>"   // long remarks wrap
       : "<input data-of='" + f + "' value='" + esc(r && r.o && r.o[f] || "") + "' placeholder='" + esc(te.dataset.ph) + "'>";
-    const i = te.querySelector("input,textarea"); i.focus(); i.select(); return;
+    const i = te.querySelector("input,textarea"); i.focus();
+    if (f === "alert" && e.target.closest(".alAdd")) { i.value = tv + (tv && !/\n$/.test(tv) ? "\n" : ""); i.setSelectionRange(i.value.length, i.value.length); } else i.select();   // + : a new line at the end for the next alert time
+    return;
   }
   const td = e.target.closest("td[data-oc]"); if (!td || !opsEditable()) return; opsOpenPop(td.closest("tr").dataset.ok, +td.dataset.oc); e.stopPropagation(); });
 $("opsMain").addEventListener("change", e => {
@@ -5387,7 +5389,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z134 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z135 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

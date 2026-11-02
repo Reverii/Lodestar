@@ -1,10 +1,19 @@
-# LODESTAR handoff (updated 2026-11-02, after z128)
+# LODESTAR handoff (updated 2026-11-02, after z131)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
 ## Repo files replaced (2 Nov, Brandon said go)
 The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a fresh demo set at the new layouts (dept 4, master 3, roster 2, ops 2; sample crew, empty plans, demo flights Oct to Nov). They were built with `python3 .lodestar_build.py excel <folder outside the repo>` (no `--data`: `input/LODESTAR_Data_Input.xlsx` is not in the cloud clone) and the dashboard was rebuilt (z129). The real-data set still has to be built on Brandon's side with `--data` and uploaded to SharePoint with the dashboard (all nine files together; old and new versions must not be mixed).
+
+## z131 (2 Nov, Brandon): flight codes reach the departments by themselves
+Plan `docs/superpowers/plans/2026-11-02-flight-code-auto-sync.md`; background `docs/2026-11-02-flight-code-and-hours-sync.md` (options 2 and B). Dashboard only, no Excel layout change.
+- **A Master Planner code is a flight in every department** (`masterCodeSet`, used by `actIndex` and `isFlightCode`): a code on the Master Planner's Flight Codes list, or on a MASTER row of the file, counts as a flight and the cell picker offers it, even before it is in Activities (the `AWAY S` problem). A code Activities already holds keeps its own category.
+- **Sync on every save, add only** (`codeSyncPlan`, `autoSyncCodes`, `syncQuiet`, run just before the build in `saveOwn` and `autoSaveBook`): missing codes go into the first free Activities row (code, description, Flight category, Mission Type, syllabus tag); description / Mission Type / syllabus tag of codes already there are updated. Nothing is ever removed. A code dropped from the Master Planner list (retired, e.g. XBL) stays in Activities, so old cells keep counting; it is only offered in the picker where a MASTER row carries it. Ground-code name clash and a full Activities list are named in a toast and never block the save. Only an editable department file, only when the Master Planner is open for the same plan year.
+- **Gone:** the "Copy flight codes from the Master Planner" button, the "differs" notice and the Master Planning note about it. The Activities page now says the codes come from the Master Planner and lists "Waiting to add" codes (`pendingCodes`).
+- Not built (Brandon: not needed): an inactive flag; Excel hours (option A).
+- To test on SharePoint: add a code on the Master Planner, save, open a department and check the picker, then save the department and see the code in Activities. Upload the DEV dashboard only.
+- Tests: new `node tests/code_sync.test.js` (17). `my_lodestar` version check is z131 (same 3 old failures).
 
 ## z126 to z128 (2 Nov, Brandon): planned hours from the time range, sorties per flight (layout: dept 4, master 3)
 Spec `docs/superpowers/specs/2026-11-02-hours-from-times-design.md`, plan `docs/superpowers/plans/2026-11-02-hours-from-times.md` (all 8 tasks done, built inline).
@@ -66,9 +75,11 @@ The flight card's code box is now an input with a datalist (`#fcList`, crew show
 ## z112 (31 Oct, Brandon): Ops Room ground programme is filled by hand
 Brandon was not happy with the z111 auto-merge. **Now the board shows only squadron events (Master Planner) and the Ops Room's own rows.** The planners' ground items (Meeting, Outstation, WD items) no longer appear by themselves. **+ Ops row** opens the dialog with a read-only "From the department plans" list grouped by department (`opsDeptRef`, with planner cell comments), then Time (quick buttons AM / PM / NIGHT / WD and a TILL date picker), Activity, Location (all typed) and the crew tick boxes (nothing pre-ticked). A manual row with time `TILL 25 OCT` shows every day from the day it was added to that date (hide / pencil on a later day saves a per-day hide / edit). `1500H` now parses as a clock time. Old z111 edits on department rows (`dept|` ids) are ignored. **My Lodestar** keeps reading the planners' cells (Brandon, 31 Oct: that is fine); Ops Room rows do not show there, by design. Tests: `ops_room` 42, `wd_row` 19, `my_lodestar` 60, `ground_rows` 13. The z111 notes below describe the old merge; `opsGround` no longer does it.
 
-## Next session: start here (handoff of 2 Nov 2026, after z129)
+## Next session: start here (handoff of 2 Nov 2026, after z130)
 
-**State:** everything through **z129** is merged on `main` (repo Reverii/Lodestar). Dashboard **z130** (dev build; z130 is on its own branch until merged). The repo's eight `.xlsx` files are a fresh **demo** set at the new layouts (dept 4, master 3, roster 2, ops 2); Brandon's real-data set is built on his side with `--data`.
+**Flight codes missing from a department (2 Nov): solved in z131** (see the z131 section; waiting for his test on SharePoint).
+
+**State:** everything through **z129** is merged on `main` (repo Reverii/Lodestar). Dashboard **z130** (dev build, merged). The repo's eight `.xlsx` files are a fresh **demo** set at the new layouts (dept 4, master 3, roster 2, ops 2); Brandon's real-data set is built on his side with `--data`.
 **Built on 2 Nov (all merged):** z122 to z125 (Ops Room table zoom, Change Log grouping and 90-day trim, Flying Restriction banner, Master Planner flight card with planned hours) and z126 to z129 (planned hours from the Master Planner time range, Sorties typed per flight, Flight Hrs and Sorties off the Activities page, layout change, review fixes, fresh file set). Details in the z123 to z129 sections below.
 **SharePoint hosting (2 Nov):** the new SharePoint forces `.html` to download; Brandon found that renaming the dashboard to **`.aspx`** runs it. The code already accepts `.aspx` (`spInit`). Keep the file free of `<%` (SharePoint parses aspx for server tags). Offered, not built: a `--aspx` flag in `.lodestar_build.py dashboard` that also writes `Flight_Ops_Planner_Dashboard.aspx`.
 

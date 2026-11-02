@@ -1075,7 +1075,7 @@ body.opsdark #v-ops #opsClock,body.opsdark #v-ops h2{color:#e8eefc}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z130</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z131</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1664,7 +1664,18 @@ function setNote(mi, r, d, tx) {
 }
 // ---------- role tags (AC / Pax): a planner's tag on a crew flight cell, kept in the department file's own Role Tags sheet
 const ROLE_SHEET = "Role Tags", ROLE_ROW0 = 2, ROLE_N = 1500, ROLE_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="4" width="14" customWidth="1"/>';
-const isFlightCode = (st, code) => { const a = st.acts.find(x => x.code && same(x.code, code)); return !!a && !!st.cats[CAT_FLIGHT] && same(a.cat, st.cats[CAT_FLIGHT]); };
+// a code is a flight when Activities holds it in the Flight category, or (no Activities row at all) when the Master Planner lists it or a MASTER row of this file carries it
+const isFlightCode = (st, code) => { const a = st.acts.find(x => x.code && same(x.code, code)); if (a) return !!st.cats[CAT_FLIGHT] && same(a.cat, st.cats[CAT_FLIGHT]);
+  return !!st.cats[CAT_FLIGHT] && masterCodeSet(st).has(String(code || "").trim().toUpperCase()); };
+// flight codes the Master Planner knows for this file: its Flight Codes list (same plan year) and every code on this file's MASTER rows. Map UPPER CASE code -> code as written
+function masterCodeSet(st) {
+  const out = new Map(), add = c => { c = String(c || "").trim(); if (!c) return; const u = c.toUpperCase(); if (!out.has(u)) out.set(u, c); const x = u.match(/^\d+\s*X\s*(.+)$/); if (x && !out.has(x[1])) out.set(x[1], c.replace(/^\d+\s*x\s*/i, "")); };
+  const mb = masterBook(); if (mb && mb.S !== st && mb.S.year === st.year) mb.S.codes.forEach(k => add(k.code));
+  (st.m || []).forEach(M => { if (!M || !M.master) return;
+    for (let j = 0; j < 6; j++) { const row = M.master[j]; if (row) row.forEach(add); }
+    const note = M.mnote && M.mnote[1]; if (note) note.forEach(n => { const more = String(n || "").match(MORE_RE); if (more) more[2].split(",").forEach(x => add(moreSplit(x)[0])); }); });
+  return out;
+}
 // "AC" | "PAX" | "" for crew grid row r (person i = r/3, shift r%3) on day d of month mi; a tag on a cell that is no longer a flight does not count
 function roleOf(st, mi, r, d) {
   const k = mi + ":" + r + ":" + d, t = st.roleTags && st.roleTags.get(k); if (!t) return "";
@@ -2588,7 +2599,7 @@ async function autoSaveBook(b) {
   }
   const bi = books.indexOf(b); if (bi < 0) return;
   let built, sent;
-  withBook(bi, () => { if (S.hasCur && !S.kind) curQuiet(); sent = new Map(dirty); built = logBuild(b, sent); });
+  withBook(bi, () => { if (S.hasCur && !S.kind) curQuiet(); syncQuiet(); sent = new Map(dirty); built = logBuild(b, sent); });
   if (h.sp) {
     const folder = h.url.slice(0, h.url.lastIndexOf("/"));
     const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(folder) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: built.bytes, headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
@@ -2714,6 +2725,7 @@ async function saveOwn() {
   if (!WB) return;
   let built;
   if (S.hasCur && !S.kind && (mayEdit(cur.b))) curQuiet();
+  syncQuiet();
   const sent = new Map(dirty);
   try { built = logBuild(books[cur.b], sent); } catch (e) { alert("Could not build the Excel file: " + e.message); return; }
   const blob = new Blob([built.bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -2881,6 +2893,7 @@ function actIndex() {
     const ci = S.cats.findIndex(c => c && c.toLowerCase() === a.cat.toLowerCase());
     map.set(a.code.toUpperCase(), { ...a, ci, sorties: 1, hours: 0 });   // sorties and hours are not per code any more: a flight cell counts once; hours come from the MASTER row's time range (cellHrs)
   }
+  if (S.cats[CAT_FLIGHT]) masterCodeSet(S).forEach((c, u) => { if (!map.has(u)) map.set(u, { code: c, desc: "", cat: S.cats[CAT_FLIGHT], ci: CAT_FLIGHT, sorties: 1, hours: 0, virtual: true }); });   // on the Master Planner but not copied into Activities yet: still a flight
   return map;
 }
 const daysIn = (y, m) => new Date(y, m + 1, 0).getDate();
@@ -3417,8 +3430,8 @@ $("mpWrap").addEventListener("change", e => {
 function renderCodes() {
   const bi = mpIdx(); if (bi < 0) { $("codesNote").innerHTML = "The Master Planner isn't open. On SharePoint it opens with every department; otherwise add <b>Master_Planner</b> with <b>Add other departments</b>."; $("codeTable").innerHTML = ""; $("codesWarn").innerHTML = ""; return; }
   const P = books[bi].S, ed = mpEditable(), C = P.codeAll;
-  $("codesNote").innerHTML = (ed ? "<b>You keep the flights programme.</b> Every flight code the squadron uses lives here. Departments copy this list into their own Activities sheet (Activities tab, <b>Copy flight codes from the Master Planner</b>), so add, rename or retire codes here, then <b>Save to Excel</b>."
-    : "<b>🔒 Set by the Master Planner.</b> Your department's flight codes come from this list: on your Activities tab, <b>Copy flight codes from the Master Planner</b> brings in any changes.") +
+  $("codesNote").innerHTML = (ed ? "<b>You keep the flights programme.</b> Every flight code the squadron uses lives here. Each department gets new and changed codes by itself the next time it saves. A code you stop using stays in the departments, so their old plans keep counting it; just leave it out of new flights. Add or change codes here, then <b>Save to Excel</b>."
+    : "<b>🔒 Set by the Master Planner.</b> Your department's flight codes come from this list. New and changed codes are added to your Activities tab when you save.") +
     " Crew: P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2 (blank = everyone). Mission Type is used by the currency rules.";
   const show = Math.min(FC_N, Math.max(lastFilled(C, k => k.code || k.desc) + (ed ? 4 : 1), ed ? 6 : 1));
   const inp = (i, f, extra) => "<input data-fc='" + i + "' data-f='" + f + "' value='" + esc(C[i][f] == null ? "" : C[i][f]) + "'" + (extra || "") + (ed ? "" : " disabled") + ">";
@@ -3446,31 +3459,39 @@ $("codeTable").addEventListener("change", e => {
 // ---------- department Activities vs the Master Planner's flight codes
 const flCatName = st => st.cats[CAT_FLIGHT] || "Flight";
 const isFlAct = (st, a) => a.code && same(a.cat, flCatName(st));
-function codeDiffs(st, P) {
-  const out = { missing: [], changed: [], extra: [] }; if (!P || !P.codes) return out;
-  const mine = st.acts.filter(a => isFlAct(st, a));
-  for (const k of P.codes) { const a = mine.find(x => same(x.code, k.code));
-    if (!a) out.missing.push(k.code);
-    else if (a.desc !== k.desc || (st.hasCur && !same(a.mtype, k.mtype)) || (st.hasStag && P.hasStag && !same(a.stag, k.stag))) out.changed.push(k.code); }
-  for (const a of mine) if (!P.codes.some(k => same(k.code, a.code))) out.extra.push(a.code);
+// ---------- automatic flight-code sync (add only): what a save would write into this department's Activities
+// -> { add: [{code, desc, mtype, stag, row}], upd: [{i, f: {desc?, mtype?, stag?}}], skipped: [codes that are ground codes here], full: [codes with no free row] }
+function codeSyncPlan(st, bi) {
+  const out = { add: [], upd: [], skipped: [], full: [] }, mb = masterBook(); if (!mb || st.kind || !mayEdit(bi) || mb.S === st || mb.S.year !== st.year || !st.cats[CAT_FLIGHT]) return out;
+  const P = mb.S, free = []; st.acts.forEach((a, i) => { if (!a.code && !a.desc) free.push(i); });
+  for (const k of P.codes) { if (!k.code) continue;
+    const i = st.acts.findIndex(x => x.code && codeKey(x.code) === codeKey(k.code));
+    if (i < 0) { if (free.length) out.add.push({ i: free.shift(), code: k.code, desc: k.desc || "", mtype: k.mtype || "", stag: k.stag || "" }); else out.full.push(k.code); continue; }
+    const a = st.acts[i]; if (!isFlAct(st, a)) { out.skipped.push(k.code); continue; }
+    const f = {}; if ((a.desc || "") !== (k.desc || "")) f.desc = k.desc || ""; if (st.hasCur && !same(a.mtype, k.mtype)) f.mtype = k.mtype || ""; if (st.hasStag && P.hasStag && !same(a.stag, k.stag)) f.stag = k.stag || "";
+    if (Object.keys(f).length) out.upd.push({ i, f }); }
   return out;
 }
-const codeDiffN = d => d.missing.length + d.changed.length + d.extra.length;
-// rewrite the Activities list: the Master Planner's flight codes first, then flight codes it no longer has that are still used on the plans, then the ground programme
-function syncCodes() {
-  const P = masterBook().S, used = new Set(); S.m.forEach(M => { M.master.forEach(rw => rw.forEach(x => x && used.add(x.toUpperCase()))); M.grid.forEach(rw => rw.forEach(x => x && used.add(x.toUpperCase()))); });
-  const fc = flCatName(S), keep = [], drop = [];
-  const list = P.codes.map(k => ({ code: k.code, desc: k.desc, cat: fc, hrs: null, sort: null, mtype: k.mtype, stag: k.stag || "" }));
-  for (const a of S.acts) if (isFlAct(S, a) && !P.codes.some(k => same(k.code, a.code))) (used.has(a.code.toUpperCase()) ? keep : drop).push(a);
-  const out = list.concat(keep.map(a => Object.assign({}, a))).concat(S.acts.filter(a => a.code && !isFlAct(S, a)).map(a => Object.assign({}, a)));
-  if (out.length > NA) { alert("The activity list would need " + out.length + " rows but has room for " + NA + "."); return; }
-  for (let i = 0; i < NA; i++) {
-    const a = out[i] || { code: "", desc: "", cat: "", hrs: null, sort: null, mtype: "" }, b = S.acts[i], r = ACT_ROW0 + i;
-    const set = (f, L, v) => { if ((b[f] == null ? "" : b[f]) !== (v == null ? "" : v)) put("Activities", L + r, v == null ? "" : v); };
-    set("code", "A", a.code); set("desc", "B", a.desc); set("cat", "C", a.cat); set("hrs", "D", null); set("sort", "E", null); if (S.hasCur) set("mtype", "F", a.mtype || ""); if (S.hasStag) set("stag", "K", a.stag || "");
-    S.acts[i] = { code: a.code, desc: a.desc || "", cat: a.cat || "", hrs: null, sort: null, mtype: a.mtype || "", stag: a.stag || "" };
-  }
-  toast("Copied the flight codes from the Master Planner" + (keep.length ? "; kept " + keep.map(a => a.code).join(", ") + " because the plans still use " + (keep.length === 1 ? "it" : "them") : "") + (drop.length ? "; removed " + drop.map(a => a.code).join(", ") : "") + ". Click Save to Excel to keep it.", 6000);
+const pendingCodes = () => { const p = codeSyncPlan(S, cur.b); return p.add.map(x => x.code); };
+// writes the plan into the open department file; returns the plan
+function autoSyncCodes() {
+  const p = codeSyncPlan(S, cur.b), fc = flCatName(S);
+  p.add.forEach(x => { const r = ACT_ROW0 + x.i; put("Activities", "A" + r, x.code); put("Activities", "B" + r, x.desc); put("Activities", "C" + r, fc);
+    if (S.hasCur) put("Activities", "F" + r, x.mtype); if (S.hasStag) put("Activities", "K" + r, x.stag);
+    S.acts[x.i] = { code: x.code, desc: x.desc, cat: fc, hrs: null, sort: null, mtype: x.mtype, stag: x.stag }; });
+  p.upd.forEach(u => { const r = ACT_ROW0 + u.i, a = S.acts[u.i];
+    if ("desc" in u.f) { a.desc = u.f.desc; put("Activities", "B" + r, u.f.desc); } if ("mtype" in u.f) { a.mtype = u.f.mtype; put("Activities", "F" + r, u.f.mtype); } if ("stag" in u.f) { a.stag = u.f.stag; put("Activities", "K" + r, u.f.stag); } });
+  return p;
+}
+// run just before a department file is built for saving; not an undo step
+function syncQuiet() {
+  const k = undoPend; undoPend = true; let p;
+  try { p = autoSyncCodes(); } catch (e) { console.warn(e); return; } finally { undoPend = k; }
+  const msg = [p.add.length ? "Added flight codes from the Master Planner: " + p.add.map(x => x.code).join(", ") + "." : "",
+    p.full.length ? "Could not add " + p.full.join(", ") + ": the Activities list is full." : "",
+    p.skipped.length ? "Left alone " + p.skipped.join(", ") + ": already a ground code here." : ""].filter(Boolean).join(" ");
+  if (msg) toast(msg, 6000);
+  if (p.add.length || p.upd.length) { renderActs(); }
 }
 function renderCur() {
   renderAtom();
@@ -3568,7 +3589,6 @@ function renderPlanner() {
     mdiff.length ? "<b style='color:#b45309'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and squadron events differ" : "flights differ") + " from the Master Planner in " + mdiff.length + " slot" + (mdiff.length === 1 ? "" : "s") + " this year (" + mset.size + " this month, outlined amber).</b> " +
       (canEdit ? "<button class='btn primary' id='mpSync' style='margin-left:6px;padding:5px 10px'>Copy " + (S.gndRow ? "flights and squadron events" : "flights") + " from the Master Planner</button>" : "<span class='muted'>Only " + esc(S.dept) + " can copy them into its file.</span>") :
     "<b style='color:#15803d'>" + esc(S.dept) + "'s " + (S.gndRow ? "flights and squadron events match" : "flights match") + " the Master Planner.</b>";
-  if (mb && mb.S.year === S.year) { const cn = codeDiffN(codeDiffs(S, mb.S)); if (cn) $("mpNote").innerHTML += " <span style='color:#b45309'>Flight codes differ from the Master Planner (" + cn + "); see the Activities tab.</span>"; }
   const A = actIndex(), mi = cur.m, st = monthStats(mi, A), y = S.year, dim = st.dim, M = S.m[mi];
   const FLN = opsFlown(), NT = FLN ? 6 : 5;   // Flown Hrs (every department): actual hours from the Ops Room's ATD / ATA
   const hol = new Set(S.hols.map(h => h.d));
@@ -4836,13 +4856,11 @@ function renderRoster() {
 function renderActs() {
   if (S.kind) { rosterNote("actTable"); $("actWarn").innerHTML = ""; $("catList").innerHTML = ""; $("holList").innerHTML = ""; return; }
   // flights programme: read-only here, it comes from the Master Planner
-  const mb = masterBook(), P = mb && mb.S, fl = S.acts.filter(a => isFlAct(S, a)), d = P ? codeDiffs(S, P) : null, n = d ? codeDiffN(d) : 0, canEd = mayEdit(cur.b);
-  $("actSync").innerHTML = !P ? "Flight codes are kept on the Master Planner (Master Planner ▾ Flight Codes). Open it with <b>Add other departments</b> to check this list against it." :
-    !n ? "<b style='color:#15803d'>✓ Matches the Master Planner's flight codes.</b>" :
-    "<b style='color:#b45309'>Differs from the Master Planner:</b> " + [d.missing.length ? "new " + d.missing.join(", ") : "", d.changed.length ? "changed " + d.changed.join(", ") : "", d.extra.length ? "not on the Master Planner " + d.extra.join(", ") : ""].filter(Boolean).map(esc).join(" · ") +
-    (canEd ? " <button class='btn primary' id='codeSync' style='margin-left:6px;padding:4px 10px'>Copy flight codes from the Master Planner</button>" : "");
-  const flRow = a => { const ci = S.cats.findIndex(c => c && c === a.cat), k = P && P.codes.find(x => same(x.code, a.code)); const bad = P && (!k || d.changed.includes(a.code));
-    return "<tr" + (bad ? " class='mpd'" : "") + "><td><b class='" + (ci >= 0 ? "cat" + ci : "") + "' style='padding:2px 6px;border-radius:4px'>" + esc(a.code) + "</b></td><td>" + esc(a.desc) + "</td>" + (S.hasCur ? "<td>" + esc(a.mtype || "") + "</td>" : "") + (S.hasStag ? "<td>" + (a.stag ? "<b class='sylgold'>🎓 " + esc(a.stag) + "</b>" : "") + "</td>" : "") + "</tr>"; };
+  const mb = masterBook(), P = mb && mb.S, fl = S.acts.filter(a => isFlAct(S, a)), wait = P ? pendingCodes() : [];
+  $("actSync").innerHTML = !P ? "Flight codes come from the Master Planner and are added here when you save. Open the Master Planner (Add other departments) to see them." :
+    "<b>Flight codes come from the Master Planner</b> and are added here when you save." + (wait.length ? " <b style='color:#b45309'>Waiting to add: " + wait.map(esc).join(", ") + "</b>" : "");
+  const flRow = a => { const ci = S.cats.findIndex(c => c && c === a.cat);
+    return "<tr><td><b class='" + (ci >= 0 ? "cat" + ci : "") + "' style='padding:2px 6px;border-radius:4px'>" + esc(a.code) + "</b></td><td>" + esc(a.desc) + "</td>" + (S.hasCur ? "<td>" + esc(a.mtype || "") + "</td>" : "") + (S.hasStag ? "<td>" + (a.stag ? "<b class='sylgold'>🎓 " + esc(a.stag) + "</b>" : "") + "</td>" : "") + "</tr>"; };
   $("actFlTable").innerHTML = "<tr><th>Code</th><th>Description</th>" + (S.hasCur ? "<th style='width:100px'>Mission Type</th>" : "") + (S.hasStag ? "<th style='width:110px' title='Set on the Master Planner Flight Codes. The cell picker lists only the syllabus items that match it'>Syllabus tag</th>" : "") + "</tr>" + (fl.length ? fl.map(flRow).join("") : "<tr><td colspan=4 class='muted'>No flight codes yet.</td></tr>");
   // ground programme: the rest, editable, plus a few empty rows to add to
   const ground = S.acts.map((a, i) => i).filter(i => S.acts[i].code ? !isFlAct(S, S.acts[i]) : false), empty = S.acts.map((a, i) => i).filter(i => !S.acts[i].code && !S.acts[i].desc).slice(0, 3);
@@ -5063,9 +5081,10 @@ function openPop(k, initial) {
     const cs = rowShift(p0.r), base = p0.r - cs, cv = String(M0.grid[p0.r][p0.d] || "").toUpperCase();
     popPlan = { s: cs, nofly: String(M0.mnote[0][p0.d] || "").toUpperCase().startsWith(NOFLY) };
     popItems = [];
+    const A_virt = [...A.values()].filter(a => a.virtual).map(a => ({ code: a.code, desc: a.desc, cat: a.cat }));   // Master Planner codes with no Activities row yet
     for (let s = 0; s < 3; s++) {
       const map = plannedFlights(M0, p0.d, s), there = String(M0.grid[base + s][p0.d] || "");
-      S.acts.forEach(a => { if (!a.code || !isFl(a)) return; const c = a.code.toUpperCase();
+      S.acts.concat(A_virt).forEach(a => { if (!a.code || !isFl(a)) return; const c = a.code.toUpperCase();
         if (map.has(c)) popItems.push(Object.assign({}, a, { s, pt: map.get(c), grp: SHIFTS[s] + " flights", there: s !== cs && there && !same(there, a.code) ? there : "" }));
         else if (s === cs && c === cv) popItems.push(Object.assign({}, a, { s, off: true, grp: SHIFTS[s] + " flights" })); });
     }
@@ -5317,7 +5336,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z130 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z131 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6205,7 +6224,7 @@ const HELP = {
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#15803d", "CAT B") + " green, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#c026d3", "TRAINEE") + " magenta.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is set by the Master Planner (use <b>Copy flight codes from the Master Planner</b>); <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
+    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is filled in from the Master Planner when you save; <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li></li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +
@@ -6374,7 +6393,6 @@ $("bookbar").addEventListener("click", e => {
 $("ovDept").addEventListener("click", e => { const a = e.target.closest("a[data-b]"); if (!a) return; e.preventDefault(); useBook(+a.dataset.b); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); });
 $("btnAdd").onclick = () => { if (SP.on) { spShowPicker(true); return; } $("fileInputMore").value = ""; $("fileInputMore").click(); };
 $("fileInputMore").onchange = e => loadOthers([...e.target.files]);
-$("actSync").addEventListener("click", e => { if (e.target.id !== "codeSync" || readOnly()) return; syncCodes(); renderActs(); renderControls(); renderPlanner(); renderOverview(); renderCur(); });
 $("actTable").addEventListener("change", e => {
   if (readOnly()) { renderActs(); return; }
   const el = e.target, i = +el.dataset.a, f = el.dataset.f; if (isNaN(i)) return;

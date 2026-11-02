@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 2 Nov 2026 (z130). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 2 Nov 2026 (z131). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -215,3 +215,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Streamline (Brandon, 2 Nov; built z126 to z128, awaiting his look and the file replacement): drop Flight Hrs and Sorties from the Activities page, hours from the Master Planner time range everywhere, sorties = number of flights; changes the Excel totals in all five department files, do it with the layout-3 file replacement
 - [x] Repo files replaced with the fresh layout set (2 Nov, Brandon: dept 4, master 3; demo data). To do on his side: build the real-data set with `--data` and upload all eight files plus the DEV dashboard to SharePoint together
 - [?] Flight code typed on the Master Planner card (z130, 2 Nov, Brandon): the code box is type-or-pick; an existing code (case and spaces ignored) is used, a new one asks for default crew, Mission Type and description and is added to the Flight Codes sheet. One `MAS` code replaces MAS3 / MAS4 / MAS6 since hours come from the time range (awaiting his look). Mock-up `previews/flight_code_combo_mockup.png`; the near-duplicate prompt was dropped (spaces and case match silently)
+- [?] Flight codes reach the departments by themselves (z131, 2 Nov, Brandon's `AWAY S`): a Master Planner code counts as a flight everywhere, every save adds missing codes to Activities (add only, retired codes stay), the Copy button is gone (awaiting his test on SharePoint). Plan `docs/superpowers/plans/2026-11-02-flight-code-auto-sync.md`

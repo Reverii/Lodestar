@@ -364,6 +364,11 @@ test("projector_refits_when_the_window_height_changes_late", async ({ page }) =>
   const r = await page.evaluate(() => { const w = document.getElementById("opsWrap").getBoundingClientRect(), s = document.getElementById("opsSide").getBoundingClientRect(); return { bottom: w.bottom, side: s.height, ih: innerHeight }; });
   assert.ok(r.bottom > 900 && r.bottom <= r.ih, "page uses the new height: " + JSON.stringify(r)); assert.ok(r.side >= 200, "bottom cards not cut: " + r.side);
 }, ED);
+test("projector_bottom_cards_keep_their_row", async ({ page }) => {   // z143: the hidden drag bar left the grid and the cards slid into its 10 px row
+  await page.setViewportSize({ width: 2000, height: 600 }); await goOps(page, "2026-10-20"); await page.click("#opsFull"); await page.waitForTimeout(800);
+  const r = await page.evaluate(() => ({ side: document.getElementById("opsSide").getBoundingClientRect().height, z: opsZEff, wb: document.getElementById("opsWrap").getBoundingClientRect().bottom, sb: document.getElementById("opsSide").getBoundingClientRect().bottom }));
+  assert.ok(r.side >= 240 * r.z - 2, "bottom cards not squeezed: " + JSON.stringify(r)); assert.ok(Math.abs(r.wb - r.sb) < 3, "cards reach the bottom of the page: " + JSON.stringify(r));
+}, ED);
 test("area_add_hidden_when_projector_clicked", async ({ page }) => {
   await goOps(page, DAY); await page.click("#opsAreaAdd");
   await page.click("#opsFull");

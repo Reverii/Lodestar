@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z142)
+# LODESTAR handoff (updated 2026-11-02, after z143)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z143 (Brandon): Projector bottom cards cut off (real cause of z142)
+In Projector mode the drag bar (`.obar`) is `display:none`, so it left the `#opsWrap` grid and the bottom cards slid up into the 10 px bar row (cards 8 px high, empty space below). Fix: `#opsLeft{grid-row:1}` and `#opsSide{grid-row:3}`. z142's refit stays (harmless). Test `projector_bottom_cards_keep_their_row`. Dashboard only; upload the DEV dashboard.
 
 ## z142 (3 Nov, Brandon): Projector (full screen) cut the bottom cards
 Entering full screen fitted the page with the old window height (the browser resizes a moment later), so the bottom cards were cut and the lower part of the screen stayed empty. Now `opsRefitSoon()` re-runs `opsGrowStrip` + `opsFit` at 0, 120, 400, 900 and 1800 ms after the Projector click and on every `fullscreenchange` (in and out), and the window `resize` handler fits again 150 ms after the last resize. Dashboard only. Test `projector_refits_when_the_window_height_changes_late` (a stubbed late height; real full screen can't be driven headless, so Brandon to confirm on the projector); `ops_room` 50/50.

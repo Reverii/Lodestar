@@ -789,6 +789,7 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 .obar::before{content:"";width:46px;height:4px;border-radius:3px;background:var(--s300);transition:background .15s}
 .obar:hover::before,.obar.drag::before{background:var(--blue)}
 body.opsfs .obar{display:none}
+#opsLeft{grid-row:1}#opsSide{grid-row:3}   /* fixed rows: with the bar hidden (projector) the cards used to slide up into the 10 px bar row */
 #opsLeft{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}
 #opsMain{flex:1;min-height:0;overflow:auto;border:0;border-radius:0;background:#fff}
 #opsSide{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,.85fr) minmax(0,.65fr) minmax(0,3fr);gap:10px;align-items:stretch;min-height:0}
@@ -1109,7 +1110,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z142</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z143</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -5412,7 +5413,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z142 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z143 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

@@ -204,10 +204,10 @@ test("standby_rows_flight_size", async ({ page }) => {
   assert.ok(g.sh >= 0.85 * g.fh, "standby row " + g.sh + " vs flight row " + g.fh);
   assert.ok(g.lab >= g.flab && g.w >= 700, JSON.stringify(g));
 }, ED);
-test("ocu_is_pink", async ({ page }) => {
+test("ocu_is_violet", async ({ page }) => {
   await goOps(page, DAY); await ALL_CAT(page, "TRAINEE", "Active");
   const d = await page.evaluate(() => [...document.querySelectorAll("#opsMain tr.f td.oc b")].map(b => b.className + "|" + getComputedStyle(b).color));
-  assert.ok(d.length && d.every(x => x.startsWith("catT|") && RGB(x.split("|")[1]) === "rgb(236,72,153)"), d.join());
+  assert.ok(d.length && d.every(x => x.startsWith("catT|") && RGB(x.split("|")[1]) === "rgb(124,58,237)"), d.join());
 }, ED);
 test("key_line", async ({ page }) => {
   await goOps(page, DAY);

@@ -1,10 +1,13 @@
-# LODESTAR handoff (updated 2026-11-02, after z135)
+# LODESTAR handoff (updated 2026-11-02, after z136)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
 ## Repo files replaced (2 Nov, Brandon said go)
 The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a fresh demo set at the new layouts (dept 4, master 3, roster 2, ops 2; sample crew, empty plans, demo flights Oct to Nov). They were built with `python3 .lodestar_build.py excel <folder outside the repo>` (no `--data`: `input/LODESTAR_Data_Input.xlsx` is not in the cloud clone) and the dashboard was rebuilt (z129). The real-data set still has to be built on Brandon's side with `--data` and uploaded to SharePoint with the dashboard (all nine files together; old and new versions must not be mixed).
+
+## z136 (2 Nov, Brandon): OCU colour
+OCU (Trainee) names are now violet (#7c3aed; light violet #a78bfa in the dark Ops Room, was pink/magenta) so they are not confused with CAT D red. Planner, Ops Room, key line and help text. Dashboard only. Test renamed `ocu_is_violet`; `ops_room` 45/47 (same two dark-mode failures).
 
 ## z135 (2 Nov, Brandon): Remarks wider, standby Alert status
 Bottom cards: Remarks 1.7fr (was 1.1), Leave and MC .85fr, Down-chit .65fr, Ground programme 3fr. Standby "Alert status" cell: font 15 px (was 11.5), a round **+** button (editors) that opens the cell with a new empty line at the end for the next alert time (still one free-text cell per shift, one line per time). Dashboard only. Test `standby_alert_plus_adds_a_line_and_font_is_readable`; `ops_room` 45/47 (same two dark-mode failures as before).

@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z141)
+# LODESTAR handoff (updated 2026-11-02, after z142)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z142 (3 Nov, Brandon): Projector (full screen) cut the bottom cards
+Entering full screen fitted the page with the old window height (the browser resizes a moment later), so the bottom cards were cut and the lower part of the screen stayed empty. Now `opsRefitSoon()` re-runs `opsGrowStrip` + `opsFit` at 0, 120, 400, 900 and 1800 ms after the Projector click and on every `fullscreenchange` (in and out), and the window `resize` handler fits again 150 ms after the last resize. Dashboard only. Test `projector_refits_when_the_window_height_changes_late` (a stubbed late height; real full screen can't be driven headless, so Brandon to confirm on the projector); `ops_room` 50/50.
 
 ## z141 (2 Nov, Brandon): drag bars on the Ops Room
 Two bars (small grey grips): one under the duty strip (SXO / OPS O / SDO / BDO, Safety ... Codes), one above the bottom cards. Drag to give that part more or less height; **its text scales to fit** (`opsBarsApply`: zoom on `#opsBoard` up to 1.8, on `#opsSide` up to 1.4, backs off if a card would be cut off); the flight table keeps the rest. **Double-click a bar = automatic again.** Remembered on this computer (`opsBars` in localStorage, as fractions of the window height). With a bar set the page-shrink safety net is off (the table scrolls instead). Hidden in Projector mode. The date bar and the stat chips are not part of the top bar (the day buttons keep their size). Dashboard only. Tests: `bottom_bar_...`, `top_bar_...` in `ops_room` (49/49). Screenshot `previews/ops_bars_real.png`.

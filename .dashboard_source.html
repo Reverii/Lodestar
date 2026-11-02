@@ -1109,7 +1109,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z141</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z142</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4871,15 +4871,18 @@ function opsFill() {
     for (let i = 0; i < 3; i++) { const r = tb.getBoundingClientRect(); if (Math.abs(r.height - mr.height) < 2) break; tb.style.height = parseFloat(tb.style.height) * mr.height / Math.max(1, r.height) + "px"; }
   }
 }
-window.addEventListener("resize", () => opsFit());
+let opsRsT = 0; window.addEventListener("resize", () => { opsFit(); clearTimeout(opsRsT); opsRsT = setTimeout(() => { opsGrowStrip(); opsFit(); }, 150); });
 function opsApplyZ() { opsFit(); document.querySelectorAll("#opsSize button").forEach(b => b.disabled = +b.dataset.z < 0 ? opsZi === 0 : opsZi === OPS_ZS.length - 1); $("opsSize").title = "Size " + Math.round(opsZ() * 100) + "%"; }
 $("opsSize").addEventListener("click", e => { const b = e.target.closest("button[data-z]"); if (!b) return; opsZi = Math.max(0, Math.min(OPS_ZS.length - 1, opsZi + +b.dataset.z)); try { localStorage.setItem("opsZoom2", opsZi); } catch (x) {} $("opsPop").style.display = "none"; cur.opsPop = null; opsApplyZ(); });
 $("opsFull").onclick = () => {
   const on = !document.body.classList.contains("opsfs");
-  document.body.classList.toggle("opsfs", on); $("opsFull").textContent = on ? "✕ Leave projector" : "⛶ Projector"; renderOps(); setTimeout(opsFit, 50);
+  document.body.classList.toggle("opsfs", on); $("opsFull").textContent = on ? "✕ Leave projector" : "⛶ Projector"; renderOps(); opsRefitSoon();
   try { if (on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
 };
-document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("opsfs")) { document.body.classList.remove("opsfs"); $("opsFull").textContent = "⛶ Projector"; setTimeout(opsFit, 50); } });
+document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && document.body.classList.contains("opsfs")) { document.body.classList.remove("opsfs"); $("opsFull").textContent = "⛶ Projector"; }
+  opsRefitSoon(); });
+// the browser changes the window size a moment after full screen starts or ends: fit again as it settles (the first fit used the old height and cut the bottom cards)
+function opsRefitSoon() { [0, 120, 400, 900, 1800].forEach(t => setTimeout(() => { if (document.getElementById("v-ops").classList.contains("on")) { opsGrowStrip(); opsFit(); } }, t)); }
 opsApplyZ();
 // the clock in the bar, (the light / dark switch was removed in z140; the page works without storage)
 function opsTick() { const e = $("opsClock"); if (!e) return; const m = opsNowMin(); e.textContent = m == null ? "--:--" : fmtHM(m).replace(/^(\d\d)(\d\d)$/, "$1:$2"); }
@@ -5407,7 +5410,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z141 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z142 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

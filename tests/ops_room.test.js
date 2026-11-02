@@ -357,6 +357,13 @@ test("top_bar_resizes_and_scales_the_duty_strip", async ({ page }) => {   // z14
   assert.ok(b.h > a.h + 50, "taller: " + a.h + " -> " + b.h); assert.ok(b.z > a.z + 0.1, "scaled: " + a.z + " -> " + b.z); assert.ok(b.bh <= b.h + 3, "fits its box: " + JSON.stringify(b));
   await page.dblclick("#opsBarT"); const c = await m(); assert.ok(Math.abs(c.z - 1) < 0.001, JSON.stringify(c));
 }, ED);
+test("projector_refits_when_the_window_height_changes_late", async ({ page }) => {   // z142: full screen changes the height a moment after the click
+  await page.setViewportSize({ width: 1280, height: 720 }); await goOps(page, DAY); await page.click("#opsFull");
+  await page.evaluate(() => { const h = innerHeight; Object.defineProperty(window, "innerHeight", { configurable: true, get: () => 1000 }); document.dispatchEvent(new Event("fullscreenchange")); });
+  await page.waitForTimeout(600);
+  const r = await page.evaluate(() => { const w = document.getElementById("opsWrap").getBoundingClientRect(), s = document.getElementById("opsSide").getBoundingClientRect(); return { bottom: w.bottom, side: s.height, ih: innerHeight }; });
+  assert.ok(r.bottom > 900 && r.bottom <= r.ih, "page uses the new height: " + JSON.stringify(r)); assert.ok(r.side >= 200, "bottom cards not cut: " + r.side);
+}, ED);
 test("area_add_hidden_when_projector_clicked", async ({ page }) => {
   await goOps(page, DAY); await page.click("#opsAreaAdd");
   await page.click("#opsFull");

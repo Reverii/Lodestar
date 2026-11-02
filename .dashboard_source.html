@@ -27,7 +27,7 @@
 .chip.l1chip{background:#ffedd5;color:#c2410c;box-shadow:inset -4px 0 0 #ea580c}.chip.l1chip.capt{background:#fff;box-shadow:inset -4px 0 0 #ea580c,inset 0 0 0 1.5px #fdba74}
 .atomw{position:relative}.atomw::after{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 8px 8px 0;border-color:transparent #dc2626 transparent transparent}
 .atomfix{max-height:260px;overflow:auto}.atomfix h3,.atomfix h4{margin:4px 0}.atomfixhd{display:flex;align-items:center;gap:10px}.atomfix ul{margin:2px 0 6px;padding-left:18px;columns:2}.atomfix a{color:var(--blue);cursor:pointer;margin-left:6px;font-size:11.5px}
-.acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#3b8ef0}.acat.C{background:#d99a06}.acat.D{background:#dc2626}
+.acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#3b8ef0}.acat.C{background:#d99a06}.acat.D{background:#b91c1c}
 .atomleg{display:flex;gap:16px;color:var(--s500);font-size:11.5px;align-items:center}.atomleg i{display:inline-block;width:22px;height:11px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid var(--s200)}.atomleg .lapx{background:#fee2e2}.atomleg .duex{background:#fef3c7}.atomleg .okx{background:#fff}.atomleg .nrx{background:repeating-linear-gradient(135deg,#fff 0 3px,#e2e8f0 3px 6px)}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
@@ -279,7 +279,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .mpf button.rm{font-size:17px}
 .mpfl button.add{font-size:13px;padding:5px 7px}
 .mpfl .none{font-size:13px}
-.catA{color:#000!important}.catB{color:#3b8ef0!important}.catC{color:#d4a800!important}.catD{color:#dc2626!important}.catT{color:#7c3aed!important}
+.catA{color:#000!important}.catB{color:#3b8ef0!important}.catC{color:#d4a800!important}.catD{color:#b91c1c!important}.catT{color:#d946a8!important}
 td.who b.catA,td.who b.catB,td.who b.catC,td.who b.catD,td.who b.catT,input.catA,input.catB,input.catC,input.catD,input.catT{font-weight:800}
 tr.sansSep td{background:#7e22ce!important;color:#fff;font-weight:800;font-size:11px;letter-spacing:.06em;padding:3px 10px!important;text-align:left}
 tr.sans td.stk1,tr.sans td.stk2,table.edit tr.sans td{background:#f3e8ff}
@@ -599,7 +599,7 @@ body.opsfs main,body.opsfs .view{padding-top:6px}
 .opsh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .opsh .grow{flex:1}
 .opst{font-size:15px}.opsc{font-family:Consolas,monospace;font-size:14px;color:var(--blue)}
-.sansbox{background:#16a34a!important;color:#fff!important;border-radius:5px;padding:0 6px;font-style:normal}#v-ops .catT{color:#7c3aed!important}
+.sansbox{background:#16a34a!important;color:#fff!important;border-radius:5px;padding:0 6px;font-style:normal}#v-ops .catT{color:#d946a8!important}
 #opsKey{margin-left:auto;display:inline-flex;gap:8px;align-items:center;font-size:12px;color:var(--s500);font-weight:700}#opsKey b{font-weight:800}
 .opssh{display:inline-block;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;background:#f0f9ff;color:#075985}
 .opssh.s1{background:#fffbeb;color:#92400e}.opssh.s2{background:#1e1b4b;color:#c7d2fe}.opssh.s3{background:#ccfbf1;color:#115e59}
@@ -1062,7 +1062,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <section class="view" id="v-cmx"><div id="cmxWrap"></div></section>
   <section class="view" id="v-syl"><div id="sylWrap"></div></section>
   <section class="view" id="v-roster">
-    <div class="note">Add crew in the next empty row: regular crew at the top, SANS and NSmen in the purple section (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D red, TRAINEE magenta. To remove someone, set Status to Inactive. Don't clear a person's row to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
+    <div class="note">Add crew in the next empty row: regular crew at the top, SANS and NSmen in the purple section (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE pink. To remove someone, set Status to Inactive. Don't clear a person's row to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
     <div class="card"><table class="edit" id="rosterTable"></table></div>
   </section>
   <section class="view" id="v-acts">
@@ -1120,7 +1120,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z148</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z149</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1892,7 +1892,7 @@ function readSylLog(st) {
   }
 }
 const SYL_RANK = c => ({ TRAINEE: 0, "CAT D": 1, "CAT C": 2, "CAT B": 3, "CAT A": 4 })[String(c || "").toUpperCase().trim()] ?? -1;
-const SYL_CATC = g => ({ "CAT D": ["#7f1d1d", "#ef4444"], "CAT C": ["#713f12", "#eab308"], "CAT B": ["#1e3a8a", "#93c5fd"], "CAT A": ["#020617", "#e2e8f0"] })[String(g).toUpperCase()] || (/instructor/i.test(g) ? ["#1e3a8a", "#60a5fa"] : ["#14532d", "#22c55e"]);
+const SYL_CATC = g => ({ "CAT D": ["#7f1d1d", "#b91c1c"], "CAT C": ["#713f12", "#eab308"], "CAT B": ["#1e3a8a", "#93c5fd"], "CAT A": ["#020617", "#e2e8f0"] })[String(g).toUpperCase()] || (/instructor/i.test(g) ? ["#1e3a8a", "#60a5fa"] : ["#14532d", "#22c55e"]);
 const sylHeld = (p, stg) => /instructor/i.test(stg.gives) ? /instructor/i.test(p.role) : SYL_RANK(p.cat) >= SYL_RANK(stg.gives) && SYL_RANK(stg.gives) >= 0;
 // one person's whole path: per stage its items with state, and the stage they are working on
 function sylPath(Y, st, p) {
@@ -1918,7 +1918,7 @@ function sylCtx() {
   const b = isDept(books[cur.b]) ? books[cur.b] : books.find(isDept);
   return { Y: b && b.S.sylDef, b, st: b && b.S, ed: !!b && (mayEdit(books.indexOf(b))) && b.S.hasSyl };
 }
-const sylAv = p => /instructor/i.test(p.role) ? ["INS", "#2563eb"] : ({ "CAT A": ["A", "#0f172a"], "CAT B": ["B", "#3b8ef0"], "CAT C": ["C", "#ca8a04"], "CAT D": ["D", "#dc2626"], TRAINEE: ["T", "#7c3aed"] })[String(p.cat).toUpperCase()] || ["?", "#64748b"];
+const sylAv = p => /instructor/i.test(p.role) ? ["INS", "#2563eb"] : ({ "CAT A": ["A", "#0f172a"], "CAT B": ["B", "#3b8ef0"], "CAT C": ["C", "#ca8a04"], "CAT D": ["D", "#b91c1c"], TRAINEE: ["T", "#d946a8"] })[String(p.cat).toUpperCase()] || ["?", "#64748b"];
 function renderSyl() {
   if (!$("v-syl").classList.contains("on")) return;
   const { Y, b, st, ed } = sylCtx();
@@ -5503,7 +5503,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z148 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z149 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6411,7 +6411,7 @@ const HELP = {
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
-    "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#dc2626", "CAT D") + " red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
+    "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
     "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is filled in from the Master Planner when you save; <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],

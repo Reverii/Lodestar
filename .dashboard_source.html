@@ -784,7 +784,7 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) clamp(160px,var(--sidh,22vh),40%);gap:10px;align-items:stretch;min-height:360px}
 #opsLeft{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}
 #opsMain{flex:1;min-height:0;overflow:auto;border:0;border-radius:0;background:#fff}
-#opsSide{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,1.1fr);gap:10px;align-items:stretch;min-height:0}
+#opsSide{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,3fr);gap:10px;align-items:stretch;min-height:0}
 #opsSide .stack{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}#opsSide .stack>.card{margin:0;padding:9px 12px;overflow:auto;flex:1 1 auto}
 #opsSide>.card{margin:0;padding:9px 12px;min-width:0;overflow:auto}#opsSide>.card h2{font-size:13.5px;margin:0 0 6px;display:flex;align-items:center;gap:6px}
 #opsSide .ocnt{font-weight:600;color:var(--s500)}
@@ -1125,7 +1125,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z132</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z133</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4400,7 +4400,7 @@ function renderOps() {
   // the right-hand column: area and codes, movement, down-chits, ground programme, then the day's remarks filling the rest
   const G = opsGround(D), MV = opsMovement(D), ged = opsEditable(); OPS_G = G;
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
-  const mv = "<div class='card olv'><h2>Leave and MC</h2>" + MV.map(m => "<div class='dep'><b class='dn'>" + esc(m.dept) + "</b><span class='dw'>" + (m.who || "<span class='muted'>–</span>") + "</span></div>").join("") + "</div>";
+  const mv = "<div class='card olv'><h2>Leave and MC</h2>" + (MV.map(m => m.who).filter(Boolean).join("") ? "<div class='dep'><span class='dw'>" + MV.map(m => m.who).filter(Boolean).join("") + "</span></div>" : "<div class='muted'>Nobody on leave or MC.</div>") + "</div>";
   // the ground programme as a table sorted by opsGround: Time | Activity | Location (the note) | Personnel
   const GSH = ["AM", "PM", "NIGHT", "WD"];
   let gprev = -1;
@@ -4411,7 +4411,7 @@ function renderOps() {
   const ob = opsIdx() >= 0 ? books[opsIdx()].S : null, rref = ob && ob.hasDb && ob.year === D.y ? "P" + (6 + dayOfYear(D.y, D.mi, D.d)) : null, rv = rref ? ob.db[rref] || "" : "";
   const rem = "<div class='card rmk'><h2>Remarks</h2>" + (rref && ed ? "<textarea id='opsDayRem' data-ref='" + rref + "' placeholder='Notes for the day: weather, NOTAMs, changes, reminders'>" + esc(rv) + "</textarea>"
     : rv ? "<div class='opsrem'>" + esc(rv) + "</div>" : "<div class='muted'>" + (rref ? "No remarks for this day." : "Open the Ops Room file to keep remarks.") + "</div>") + "</div>";
-  $("opsSide").innerHTML = gr + mv + "<div class='stack'>" + opsDownCard(D) + opsAreaCard(D, ed) + "</div>" + rem;
+  $("opsSide").innerHTML = rem + mv + "<div class='stack'>" + opsDownCard(D) + opsAreaCard(D, ed) + "</div>" + gr;
   opsGrowStrip();
   opsFit();
   if (cur.opsPop) opsOpenPop(cur.opsPop.key, cur.opsPop.k, true);
@@ -4485,8 +4485,7 @@ function opsHrs(r, oc) {
 // the crew-tag groups, ALL RELEVANT PERSONNEL when ALL was chosen, and a red NO PERSONNEL when nobody is on it (an input mistake)
 function opsWho(r) {
   if (r.all) return "ALL RELEVANT PERSONNEL";
-  const runs = []; r.people.slice(0, 4).forEach(p => { const l = runs[runs.length - 1]; if (l && l.dept === p.dept) l.n.push(p); else runs.push({ dept: p.dept, n: [p] }); });
-  let h = r.depts.map(d => deptChip(d)).join(" ") + runs.map(x => deptChip(x.dept) + " " + x.n.map(p => "<b class='" + p.cls + "'>" + esc(p.ini) + "</b>").join(" / ")).join(" ");
+  let h = r.people.slice(0, 4).map(p => "<b class='" + p.cls + "'>" + esc(p.ini) + "</b>").join(" / ");
   if (r.people.length > 4) h += " <span class='gmore' title='" + esc(r.people.map(p => p.ini).join(", ")) + "'>+" + (r.people.length - 4) + "</span>";
   if (r.label) h += (h ? " " : "") + "<span class='glab'>" + esc(r.label) + "</span>";
   return h.trim() || "<span class='nocrew'>NO PERSONNEL</span>";
@@ -4562,9 +4561,9 @@ function opsDownCard(D) {
   const rows = [], can = OPS || opsEditable();
   books.forEach((b, bi) => { if (!isDept(b) || b.S.year !== D.y) return; const C = computeChit(b.S), k = dayOfYear(D.y, D.mi, D.d);
     b.S.roster.forEach((p, i) => { if (!C[i] || !C[i].down[k]) return; const sk = C[i].since[k];
-      rows.push("<tr><td><span class='dcn " + opsCatCls(p) + "'" + (can || bi === 0 ? " data-upchit='" + bi + "|" + i + "|" + D.iso + "' title='" + esc((p.id || "") + " " + p.name + "\nClick to up-chit") + "'" : " title='" + esc((p.id || "") + " " + p.name) + "'") + ">" + esc(p.ini || p.id || p.name) + "</span></td><td>" + deptChip(b.S.dept) + "</td><td>" + esc(fmtDay(doyISO(D.y, sk))) + "</td></tr>"); }); });
+      rows.push("<tr><td><span class='dcn " + opsCatCls(p) + "'" + (can || bi === 0 ? " data-upchit='" + bi + "|" + i + "|" + D.iso + "' title='" + esc((p.id || "") + " " + p.name + "\nClick to up-chit") + "'" : " title='" + esc((p.id || "") + " " + p.name) + "'") + ">" + esc(p.ini || p.id || p.name) + "</span></td><td>" + esc(fmtDay(doyISO(D.y, sk))) + "</td></tr>"); }); });
   return "<div class='card opsdc'><h2>Down-chit" + (rows.length ? " <span class='muted' style='font-weight:600'>(" + rows.length + ")</span>" : "") + (opsEditable() && !document.body.classList.contains("opsfs") ? "<button class='btn' id='opsAreaAdd' title='Type the area of the day (Oscar, Echo, Nov)'>+ Area</button>" : "") + (can ? "<button class='btn' id='opsDownAdd'>+ Down-chit</button>" : "") + "</h2>" +
-    (rows.length ? "<table><tr><th>Crew</th><th>Dept</th><th>Since</th></tr>" + rows.join("") + "</table><div class='muted' style='font-size:11px;margin-top:6px'>Not cleared to fly." + (can ? " Click a name to up-chit." : "") + "</div>" : "<div class='muted'>Nobody down-chitted.</div>") + "</div>";
+    (rows.length ? "<table><tr><th>Crew</th><th>Since</th></tr>" + rows.join("") + "</table><div class='muted' style='font-size:11px;margin-top:6px'>Not cleared to fly." + (can ? " Click a name to up-chit." : "") + "</div>" : "<div class='muted'>Nobody down-chitted.</div>") + "</div>";
 }
 function opsMovement(D) {
   const order = [...new Set(OPS_SEATS.map(z => z[1]))], by = new Map(order.map(d => [d, []])), rank = [CAT_LEAVE, CAT_OFF, CAT_MED];
@@ -5386,7 +5385,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z132 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z133 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

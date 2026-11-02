@@ -1,10 +1,13 @@
-# LODESTAR handoff (updated 2026-11-02, after z132)
+# LODESTAR handoff (updated 2026-11-02, after z133)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
 ## Repo files replaced (2 Nov, Brandon said go)
 The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a fresh demo set at the new layouts (dept 4, master 3, roster 2, ops 2; sample crew, empty plans, demo flights Oct to Nov). They were built with `python3 .lodestar_build.py excel <folder outside the repo>` (no `--data`: `input/LODESTAR_Data_Input.xlsx` is not in the cloud clone) and the dashboard was rebuilt (z129). The real-data set still has to be built on Brandon's side with `--data` and uploaded to SharePoint with the dashboard (all nine files together; old and new versions must not be mixed).
+
+## z133 (2 Nov, Brandon): Ops Room cards
+Remarks and Ground programme swapped (Remarks is now the first card, Ground programme the last and widest). Department tags removed from Ground programme (names only), Leave and MC (one list, no department labels) and the Down-chit list (no Dept column). Dashboard only. `ops_room` 44/46: the two failures (`theme_toggle_dark_and_back`, `dark_down_chit_name_readable`) were already failing before this change.
 
 ## z132 (2 Nov, Brandon): motion pass
 Brandon edited the built dashboard himself (CSS and a small script only: view fade-in, menu and popover transitions, button press, toast, planner cell selection, a column crosshair on the planner grid, a pulse on currency warnings, a flash when an Ops Room status changes; all respect reduced-motion). The two added blocks were ported into `.dashboard_source.html` (marked "Motion pass" / "Motion:") so the build keeps them; the rebuilt file was byte-identical to his upload before the version bump to z132. No Excel change; upload the DEV dashboard only. Not tested beyond `code_sync`, `wd_row`, `flight_card`.

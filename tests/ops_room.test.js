@@ -133,12 +133,16 @@ test("ground_strip_grows_and_scrolls", async ({ page }) => {
     return { side: s.getBoundingClientRect().height, wrap: w.getBoundingClientRect().height, scrolls: sc.scrollHeight > sc.clientHeight + 1, page: document.documentElement.scrollHeight > innerHeight + 1 }; });
   assert.ok(r.side > 170 && r.side <= 0.41 * r.wrap, JSON.stringify(r)); assert.ok(r.scrolls, "past the cap the table scrolls"); assert.ok(!r.page, "the page itself does not scroll");
 }, ED);
-test("leave_and_mc_by_department", async ({ page }) => {
+test("leave_and_mc_has_no_department_labels", async ({ page }) => {
   const r = await PLAN_SET(page, "Pilot", "leave", DAY, [0], 0);
-  const rows = await page.evaluate(() => [...document.querySelectorAll("#opsSide .olv .dep")].map(d => ({ dept: d.querySelector("b").textContent.trim(), text: d.textContent })));
-  assert.deepStrictEqual(rows.map(x => x.dept), ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"]);
-  assert.ok(rows[0].text.includes(r.who) && rows[0].text.includes(r.code), rows[0].text);
-  assert.ok(rows.slice(1).some(x => /–/.test(x.text)), "a department with nobody shows a dash");
+  const t = await page.evaluate(() => ({ text: document.querySelector("#opsSide .olv").textContent, dn: document.querySelectorAll("#opsSide .olv .dn").length, chips: document.querySelectorAll("#opsSide .opsdc .dept, #opsSide .gtab .dept").length }));
+  assert.ok(t.text.includes(r.who) && t.text.includes(r.code), t.text);
+  assert.strictEqual(t.dn, 0, "no department label"); assert.strictEqual(t.chips, 0, "no department chips in down-chit or ground programme");
+}, ED);
+test("remarks_and_ground_programme_swapped", async ({ page }) => {
+  await goOps(page, DAY);
+  const o = await page.evaluate(() => [...document.querySelectorAll("#opsSide > .card, #opsSide > .stack")].map(c => c.classList.contains("rmk") ? "rmk" : c.classList.contains("gp") ? "gp" : c.classList.contains("olv") ? "olv" : "stack"));
+  assert.deepStrictEqual(o, ["rmk", "olv", "stack", "gp"]);
 }, ED);
 test("empty_day_still_renders", async ({ page }) => {
   await goOps(page, "2026-12-27");

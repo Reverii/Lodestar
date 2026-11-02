@@ -340,6 +340,23 @@ test("many_flights_shrink_only_the_flight_table", async ({ page }) => {   // z13
   assert.ok(Math.abs(b.top - a.top) < 2, "top bar " + a.top + " -> " + b.top);
   assert.ok(b.tz < a.tz && b.tz >= 0.6, "table zoom " + a.tz + " -> " + b.tz); assert.ok(b.over < 3, "no scroll: " + b.over);
 }, ED);
+const dragBar = async (page, id, dy) => { const b = await page.evaluate(id => { const r = document.getElementById(id).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, id);
+  await page.mouse.move(b.x, b.y); await page.mouse.down(); await page.mouse.move(b.x, b.y + dy / 2); await page.mouse.move(b.x, b.y + dy); await page.mouse.up(); };
+test("bottom_bar_resizes_and_scales_the_cards", async ({ page }) => {   // z141
+  await page.setViewportSize({ width: 1600, height: 1000 }); await goOps(page, DAY);
+  const m = () => page.evaluate(() => ({ side: document.getElementById("opsSide").getBoundingClientRect().height, z: +document.getElementById("opsSide").style.zoom || 1, over: document.getElementById("opsSide").scrollHeight - document.getElementById("opsSide").clientHeight, bars: localStorage.getItem("opsBars") }));
+  const a = await m(); await dragBar(page, "opsBarB", -150); const b = await m();
+  assert.ok(b.side > a.side + 100, "taller: " + a.side + " -> " + b.side); assert.ok(b.z > a.z + 0.05, "text scaled up: " + a.z + " -> " + b.z); assert.ok(b.over < 4, "nothing cut off: " + b.over); assert.ok(/"b"/.test(b.bars), "remembered");
+  await dragBar(page, "opsBarB", 260); const c = await m(); assert.ok(c.side < b.side - 100 && c.z < b.z, JSON.stringify([b, c]));
+  await page.dblclick("#opsBarB"); const d = await m(); assert.ok(Math.abs(d.z - 1) < 0.001 && !/"b"/.test(d.bars || ""), "automatic again: " + JSON.stringify(d));
+}, ED);
+test("top_bar_resizes_and_scales_the_duty_strip", async ({ page }) => {   // z141
+  await page.setViewportSize({ width: 1600, height: 1000 }); await goOps(page, DAY);
+  const m = () => page.evaluate(() => ({ h: document.getElementById("opsBoardBox").getBoundingClientRect().height, z: +document.getElementById("opsBoard").style.zoom || 1, bh: document.getElementById("opsBoard").getBoundingClientRect().height }));
+  const a = await m(); await dragBar(page, "opsBarT", 90); const b = await m();
+  assert.ok(b.h > a.h + 50, "taller: " + a.h + " -> " + b.h); assert.ok(b.z > a.z + 0.1, "scaled: " + a.z + " -> " + b.z); assert.ok(b.bh <= b.h + 3, "fits its box: " + JSON.stringify(b));
+  await page.dblclick("#opsBarT"); const c = await m(); assert.ok(Math.abs(c.z - 1) < 0.001, JSON.stringify(c));
+}, ED);
 test("area_add_hidden_when_projector_clicked", async ({ page }) => {
   await goOps(page, DAY); await page.click("#opsAreaAdd");
   await page.click("#opsFull");

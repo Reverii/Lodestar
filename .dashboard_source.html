@@ -781,7 +781,14 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsStats .opsk.warn{border-color:#fbbf24;background:#fffbeb;color:#b45309}#opsStats .opsk.bad{border-color:#fca5a5;background:#fef2f2;color:#dc2626}
 #opsStats .opsk.sel{box-shadow:0 0 0 2px #3b82f6;border-color:#3b82f6}#opsStats .opsk.nofly{cursor:default;padding:4px 11px}
 #opsNote{font-size:12px;margin:0 0 6px}#opsNote:empty{display:none}
-#opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) clamp(250px,var(--sidh,30vh),50%);gap:10px;align-items:stretch;min-height:360px}
+#opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 10px clamp(250px,var(--sidh,30vh),50%);gap:0;align-items:stretch;min-height:360px}
+#opsWrap.barB{grid-template-rows:minmax(0,1fr) 10px var(--sidh)}
+/* drag bars (z141): the top duty strip and the bottom cards are resized by hand and their text scales to fit */
+#opsBoardBox{flex:none;overflow:hidden}
+.obar{flex:none;height:10px;display:flex;align-items:center;justify-content:center;cursor:ns-resize;touch-action:none;user-select:none}
+.obar::before{content:"";width:46px;height:4px;border-radius:3px;background:var(--s300);transition:background .15s}
+.obar:hover::before,.obar.drag::before{background:var(--blue)}
+body.opsfs .obar{display:none}
 #opsLeft{display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}
 #opsMain{flex:1;min-height:0;overflow:auto;border:0;border-radius:0;background:#fff}
 #opsSide{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,.85fr) minmax(0,.65fr) minmax(0,3fr);gap:10px;align-items:stretch;min-height:0}
@@ -1020,7 +1027,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <div id="opsFr"></div>
     <div id="opsStats"></div>
     <div class="muted" id="opsNote"></div>
-    <div id="opsWrap"><div id="opsLeft"><div id="opsBoard"></div><div id="opsMain"></div></div><div id="opsSide"></div></div>
+    <div id="opsWrap"><div id="opsLeft"><div id="opsBoardBox"><div id="opsBoard"></div></div><div class="obar" id="opsBarT" title="Drag up or down to resize the top. Its text scales to fit. Double-click: automatic."></div><div id="opsMain"></div></div><div class="obar" id="opsBarB" title="Drag up or down to resize the bottom cards. Their text scales to fit. Double-click: automatic."></div><div id="opsSide"></div></div>
   </div></section>
   <div id="opsPop"></div>
   <section class="view" id="v-ov">
@@ -1102,7 +1109,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z140</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z141</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4794,6 +4801,43 @@ setInterval(() => {
   const top = sc.scrollTop; sc.scrollTop = top + (sc._dir || 1);
   if (sc.scrollTop === top) { sc._dir = -(sc._dir || 1); sc._hold = 60; }
 }, 50);
+// the bars (z141): fractions of the window height, remembered on this computer; unset = automatic
+let opsBars = (() => { try { const v = JSON.parse(localStorage.getItem("opsBars") || "null"); return v && typeof v === "object" ? v : {}; } catch (e) { return {}; } })();
+const opsBarsSave = () => { try { localStorage.setItem("opsBars", JSON.stringify(opsBars)); } catch (e) {} };
+// the natural height of the bottom cards at the current zoom (every card at its own height)
+function opsSideNeed(side) {
+  side.style.alignItems = "start"; const t = side.querySelector(".gtab");
+  const n = Math.max(0, ...[...side.children].map(c => c.offsetHeight), t ? t.offsetHeight + 50 : 0); side.style.alignItems = ""; return n;
+}
+function opsBarsApply() {
+  const bd = $("opsBoard"), box = $("opsBoardBox"), side = $("opsSide"), w = $("opsWrap"); if (!bd || !box || !side || !w) return;
+  const z = opsZEff || 1;
+  bd.style.zoom = ""; box.style.height = ""; side.style.zoom = ""; w.classList.remove("barB");
+  if (opsBars.t) {   // top: the duty strip gets the chosen height and its content zooms to fill it
+    const hT = opsBars.t * innerHeight / z; box.style.height = hT + "px";
+    const nat = bd.offsetHeight; let k = Math.max(0.5, Math.min(1.8, hT / Math.max(1, nat)));
+    for (let i = 0; i < 3; i++) { bd.style.zoom = k; const got = bd.getBoundingClientRect().height / z; if (Math.abs(got - hT) < 2) break; k = Math.max(0.5, Math.min(1.8, k * hT / Math.max(1, got))); }
+    if (bd.getBoundingClientRect().height / z > hT + 2) bd.style.zoom = k * hT / (bd.getBoundingClientRect().height / z);
+  }
+  if (opsBars.b) {   // bottom: the cards row gets the chosen height and its content zooms to fill it
+    const hB = opsBars.b * innerHeight / z; w.classList.add("barB"); w.style.setProperty("--sidh", hB + "px");
+    const wide = () => [...side.children].some(c => c.scrollWidth > c.clientWidth + 1);   // a card whose text no longer fits across
+    side.style.zoom = 1; let k = Math.max(0.5, Math.min(1.4, hB / Math.max(1, opsSideNeed(side))));
+    for (let i = 0; i < 8; i++) { side.style.zoom = k; const need = opsSideNeed(side) * k; if (need > hB + 1 || wide()) k = Math.max(0.5, k * 0.94); else break; }
+  }
+}
+(() => {
+  let drag = null;
+  const down = e => { const b = e.target.closest(".obar"); if (!b) return; drag = b; b.classList.add("drag"); b.setPointerCapture && b.setPointerCapture(e.pointerId); e.preventDefault(); };
+  const move = e => { if (!drag) return;
+    const H = innerHeight;
+    if (drag.id === "opsBarT") { const y = e.clientY - $("opsBoardBox").getBoundingClientRect().top; opsBars.t = Math.max(0.06, Math.min(0.4, y / H)); }
+    else { const y = $("opsWrap").getBoundingClientRect().bottom - e.clientY - 10; opsBars.b = Math.max(0.1, Math.min(0.5, y / H)); }
+    opsFit(); };
+  const up = () => { if (!drag) return; drag.classList.remove("drag"); drag = null; opsBarsSave(); };
+  document.addEventListener("pointerdown", down); document.addEventListener("pointermove", move); document.addEventListener("pointerup", up);
+  document.addEventListener("dblclick", e => { const b = e.target.closest(".obar"); if (!b) return; delete opsBars[b.id === "opsBarT" ? "t" : "b"]; opsBarsSave(); opsGrowStrip(); opsFit(); });
+})();
 function opsFit() {
   const sc = $("opsScale"), m = $("opsMain"); if (!sc || !m || !document.getElementById("v-ops").classList.contains("on")) return;
   const bar = sc.querySelector(".opsbar"), w = $("opsWrap");
@@ -4810,8 +4854,8 @@ function opsFit() {
   place(opsZ());
   const over = m.scrollWidth / Math.max(1, m.clientWidth);
   if (over > 1.001) place(Math.max(0.5, opsZ() / over));
-  opsFill();   // the height is the flight table's business: the top and the bottom cards keep their size ...
-  for (let i = 0; i < 14 && opsZEff > 0.5 && m.scrollHeight > m.clientHeight + 2; i++) { place(Math.max(0.5, opsZEff * 0.95)); opsFill(); }   // ... until the table is at its smallest readable size; only then the whole page shrinks too
+  opsBarsApply(); opsFill();   // the height is the flight table's business: the top and the bottom cards keep their size ...
+  for (let i = 0; i < 14 && !opsBars.t && !opsBars.b && opsZEff > 0.5 && m.scrollHeight > m.clientHeight + 2; i++) { place(Math.max(0.5, opsZEff * 0.95)); opsFill(); }   // ... until the table is at its smallest readable size; only then the whole page shrinks too
 }
 // a quiet day leaves the flight list short and the rest of its box empty: the whole flight table is enlarged to use that room (up to 1.6 times); the "No more flights" strip takes what is left
 function opsFill() {
@@ -5363,7 +5407,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z140 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z141 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

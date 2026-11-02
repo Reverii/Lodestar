@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z140)
+# LODESTAR handoff (updated 2026-11-02, after z141)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z141 (2 Nov, Brandon): drag bars on the Ops Room
+Two bars (small grey grips): one under the duty strip (SXO / OPS O / SDO / BDO, Safety ... Codes), one above the bottom cards. Drag to give that part more or less height; **its text scales to fit** (`opsBarsApply`: zoom on `#opsBoard` up to 1.8, on `#opsSide` up to 1.4, backs off if a card would be cut off); the flight table keeps the rest. **Double-click a bar = automatic again.** Remembered on this computer (`opsBars` in localStorage, as fractions of the window height). With a bar set the page-shrink safety net is off (the table scrolls instead). Hidden in Projector mode. The date bar and the stat chips are not part of the top bar (the day buttons keep their size). Dashboard only. Tests: `bottom_bar_...`, `top_bar_...` in `ops_room` (49/49). Screenshot `previews/ops_bars_real.png`.
 
 ## z140 (2 Nov, Brandon): dark mode removed
 The Ops Room Light / Dark button and all `body.opsdark` styles are gone (the Ops Room is always light). Old saved `opsTheme` values in the browser are simply ignored. Dashboard only. The 7 dark / theme tests were removed; `ops_room` 47/47 (the two old dark-mode failures went with them). Do not bring it back unless he asks.

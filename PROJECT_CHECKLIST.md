@@ -220,3 +220,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Ops Room list chosen by the planner (z138, 2 Nov, Brandon): Activities page column "Show in Ops Room list" decides which activities appear under From the department plans; without the column the category rule (Admin, Sim, Oversea Duty) applies (awaiting his test)
 - [?] Ops Room scaling (z139, 2 Nov, Brandon): top and bottom cards keep their size, only the flight table scales with the number of flights (awaiting his look)
 - [x] Ops Room dark mode removed (z140, 2 Nov, Brandon: not needed)
+- [?] Ops Room drag bars (z141, 2 Nov, Brandon): bars under the duty strip and above the bottom cards, drag to resize with the text scaling to fit, double-click for automatic, remembered on this computer (awaiting his look)

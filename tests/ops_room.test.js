@@ -131,7 +131,7 @@ test("ground_strip_grows_and_scrolls", async ({ page }) => {
   await goOps(page, DAY);
   const r = await page.evaluate(() => { const w = document.getElementById("opsWrap"), s = document.getElementById("opsSide"), sc = document.querySelector("#opsSide .gsc"), f = document.getElementById("opsMain").getBoundingClientRect();
     return { side: s.getBoundingClientRect().height, wrap: w.getBoundingClientRect().height, scrolls: sc.scrollHeight > sc.clientHeight + 1, page: document.documentElement.scrollHeight > innerHeight + 1 }; });
-  assert.ok(r.side > 170 && r.side <= 0.41 * r.wrap, JSON.stringify(r)); assert.ok(r.scrolls, "past the cap the table scrolls"); assert.ok(!r.page, "the page itself does not scroll");
+  assert.ok(r.side > 170 && r.side <= 0.51 * r.wrap, JSON.stringify(r)); assert.ok(r.scrolls, "past the cap the table scrolls"); assert.ok(!r.page, "the page itself does not scroll");
 }, ED);
 test("leave_and_mc_has_no_department_labels", async ({ page }) => {
   const r = await PLAN_SET(page, "Pilot", "leave", DAY, [0], 0);

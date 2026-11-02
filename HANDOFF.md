@@ -1,10 +1,13 @@
-# LODESTAR handoff (updated 2026-11-02, after z133)
+# LODESTAR handoff (updated 2026-11-02, after z134)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
 ## Repo files replaced (2 Nov, Brandon said go)
 The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a fresh demo set at the new layouts (dept 4, master 3, roster 2, ops 2; sample crew, empty plans, demo flights Oct to Nov). They were built with `python3 .lodestar_build.py excel <folder outside the repo>` (no `--data`: `input/LODESTAR_Data_Input.xlsx` is not in the cloud clone) and the dashboard was rebuilt (z129). The real-data set still has to be built on Brandon's side with `--data` and uploaded to SharePoint with the dashboard (all nine files together; old and new versions must not be mixed).
+
+## z134 (2 Nov, Brandon): Ops Room bottom cards taller
+The strip now starts at 250 px (was 160) and may take up to 50% of the page (was 40%); the flight table still gets its room first. Dashboard only. Test cap in `ground_strip_grows_and_scrolls` raised to 51%.
 
 ## z133 (2 Nov, Brandon): Ops Room cards
 Remarks and Ground programme swapped (Remarks is now the first card, Ground programme the last and widest). Department tags removed from Ground programme (names only), Leave and MC (one list, no department labels) and the Down-chit list (no Dept column). Dashboard only. `ops_room` 44/46: the two failures (`theme_toggle_dark_and_back`, `dark_down_chit_name_readable`) were already failing before this change.

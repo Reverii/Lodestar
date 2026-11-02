@@ -6,7 +6,8 @@ const tests = [];
 const test = (name, fn, opts) => tests.push({ name, fn, opts });
 const RO = { mine: "Flight_Ops_Planner_SUP2" };   // a department view (Ops Room file read-only)
 const ED = { mine: "Ops_Room" };                    // the Ops Room view (everything editable)
-const DAY = "2026-10-14";                           // a demo day with flights
+const DAY = "2026-10-14";
+const CTX = async (page, card, label) => { await page.click("#opsSide " + card, { button: "right", position: { x: 12, y: 12 } }); await page.click("#opsCtx button:has-text('" + label + "')"); };   // z145: the + buttons became a right-click menu                           // a demo day with flights
 const goOps = (page, iso) => page.evaluate(iso => { cur.opsDay = iso; document.querySelector("nav.tabs button[data-v='ops']").click(); renderOps(); }, iso);
 
 test("chips_no_seats_or_downchit", async ({ page }) => {
@@ -58,8 +59,8 @@ test("area_hidden_when_empty", async ({ page }) => {
 }, ED);
 test("area_add_button", async ({ page }) => {
   await goOps(page, DAY); await AREA_SET(page, {});
-  assert.ok(await page.evaluate(() => !!document.getElementById("opsAreaAdd")), "button in the Ops Room view");
-  await page.click("#opsAreaAdd");
+  assert.ok(await page.evaluate(() => !document.getElementById("opsAreaAdd") && !document.getElementById("opsDownAdd")), "the + buttons are gone");
+  await CTX(page, ".opsdc", "+ Area");
   assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsSide .opsac .v.oe").length), 3);
   await page.evaluate(iso => opsGo(iso), "2026-10-15");
   assert.strictEqual(await page.evaluate(() => document.querySelector("#opsSide .opsac")), null, "closed on a new day");
@@ -276,7 +277,7 @@ test("editing_paths_still_work", async ({ page }) => {
   // + Ops Add and + Down-chit open their dialogs
   await page.click("#opsAddBtn"); assert.ok(await page.evaluate(() => getComputedStyle(document.getElementById("oaPop")).display === "flex"), "Ops Add dialog");
   await page.evaluate(() => { document.getElementById("oaPop").style.display = "none"; });
-  await page.click("#opsDownAdd"); assert.strictEqual(await page.evaluate(() => document.getElementById("chitTitle").textContent), "Down-chit");
+  await CTX(page, ".opsdc", "+ Down-chit"); assert.strictEqual(await page.evaluate(() => document.getElementById("chitTitle").textContent), "Down-chit");
 }, ED);
 
 // contrast ratio of an element's text colour against its (own or nearest painted) background, run in the page
@@ -314,7 +315,7 @@ test("editing_paths_still_work", async ({ page }) => {
   // + Ops Add and + Down-chit open their dialogs
   await page.click("#opsAddBtn"); assert.ok(await page.evaluate(() => getComputedStyle(document.getElementById("oaPop")).display === "flex"), "Ops Add dialog");
   await page.evaluate(() => { document.getElementById("oaPop").style.display = "none"; });
-  await page.click("#opsDownAdd"); assert.strictEqual(await page.evaluate(() => document.getElementById("chitTitle").textContent), "Down-chit");
+  await CTX(page, ".opsdc", "+ Down-chit"); assert.strictEqual(await page.evaluate(() => document.getElementById("chitTitle").textContent), "Down-chit");
 }, ED);
 
 // contrast ratio of an element's text colour against its (own or nearest painted) background, run in the page
@@ -369,8 +370,30 @@ test("projector_bottom_cards_keep_their_row", async ({ page }) => {   // z143: t
   const r = await page.evaluate(() => ({ side: document.getElementById("opsSide").getBoundingClientRect().height, z: opsZEff, wb: document.getElementById("opsWrap").getBoundingClientRect().bottom, sb: document.getElementById("opsSide").getBoundingClientRect().bottom }));
   assert.ok(r.side >= 240 * r.z - 2, "bottom cards not squeezed: " + JSON.stringify(r)); assert.ok(Math.abs(r.wb - r.sb) < 3, "cards reach the bottom of the page: " + JSON.stringify(r));
 }, ED);
+test("right_click_menus_on_the_two_cards", async ({ page }) => {   // z145
+  await goOps(page, DAY);
+  await page.click("#opsSide .olv", { button: "right", position: { x: 12, y: 12 } });
+  const l = await page.evaluate(() => [...document.querySelectorAll("#opsCtx button")].map(b => b.textContent)); assert.deepStrictEqual(l, ["+ Leave", "+ MC"]);
+  await page.keyboard.press("Escape"); assert.ok(await page.evaluate(() => !document.getElementById("opsCtx")), "Esc closes the menu");
+  await page.click("#opsSide .opsdc", { button: "right", position: { x: 12, y: 12 } });
+  const d = await page.evaluate(() => [...document.querySelectorAll("#opsCtx button")].map(b => b.textContent)); assert.ok(d[0] === "+ Down-chit", d.join());
+}, ED);
+test("right_click_leave_and_mc_fill_the_plan", async ({ page }) => {   // z145 (Ops Room mode: every open department file is editable)
+  await page.evaluate(() => { OPS = true; }); await goOps(page, DAY);
+  for (const [kind, label] of [["leave", "+ Leave"], ["mc", "+ MC"]]) {
+    await CTX(page, ".olv", label);
+    const t = await page.evaluate(() => ({ h: document.querySelector("#blkPop h2").textContent, who: document.getElementById("blkWho").value, code: document.getElementById("blkCode").value, from: document.getElementById("blkFrom").value, show: getComputedStyle(document.getElementById("blkPop")).display }));
+    assert.strictEqual(t.show, "flex"); assert.strictEqual(t.h, kind === "mc" ? "MC" : "Leave"); assert.strictEqual(t.from, DAY); assert.ok(t.code, JSON.stringify(t));
+    if (kind === "mc") assert.strictEqual(t.code, "MC");
+    await page.evaluate(() => { document.getElementById("blkOver").checked = true; document.getElementById("blkOver").dispatchEvent(new Event("change")); });
+    await page.click("#blkGo"); await page.waitForTimeout(200);
+    const r = await page.evaluate(([w, c, iso]) => { const [bi, i] = w.split(":").map(Number); return withBook(bi, () => { const D = opsDay(iso); return [0, 1, 2].map(s => S.m[D.mi].grid[gridRow(i, s)][D.d]); }); }, [t.who, t.code, DAY]);
+    assert.deepStrictEqual(r, [t.code, t.code, t.code], kind + " on all three shifts");
+    await page.evaluate(([w, iso]) => { const [bi, i] = w.split(":").map(Number); withBook(bi, () => { const D = opsDay(iso); [0, 1, 2].forEach(s => { S.m[D.mi].grid[gridRow(i, s)][D.d] = ""; }); }); }, [t.who, DAY]);
+  }
+}, ED);
 test("area_add_hidden_when_projector_clicked", async ({ page }) => {
-  await goOps(page, DAY); await page.click("#opsAreaAdd");
+  await goOps(page, DAY); await CTX(page, ".opsdc", "+ Area");
   await page.click("#opsFull");
   assert.ok(await page.evaluate(() => !document.getElementById("opsAreaAdd") || getComputedStyle(document.getElementById("opsAreaAdd")).display === "none"), "button hidden");
   assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsSide .opsac .v.oe").length), 0, "no empty area lines on the projector");

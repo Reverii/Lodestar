@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z144)
+# LODESTAR handoff (updated 2026-11-02, after z145)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z145 (2 Nov, Brandon): right-click menus on the Ops Room Leave and MC / Down-chit cards
+The **+ Area** and **+ Down-chit** buttons on the Down-chit card are gone. **Right-click the Down-chit card** gives **+ Down-chit** (same dialog as before) and **+ Area** (kept here so the Area line can still be typed; Brandon only said to remove the buttons, tell him). **Right-click the Leave and MC card** gives **+ Leave** and **+ MC**: the Block of days dialog (`blkPop`) opened from the Ops Room (`opsBlkOpen`, `opsBlkCodes`, `blkRun` wraps the dialog code in `withBook` of the chosen person's file): Who lists every department file that is open for editing (Ops Room mode, `OPS`), Activity is the leave / off codes of that file or `MC`, From / To default to the day on screen, shifts, skip weekends / holidays, Replace. Writes the plan cells of that department file (saved with it; the change log names the person). Menus only for editors and not in Projector mode; small "Right-click to add." hint under each card. Dashboard only; upload the DEV dashboard. Tests: `ops_room` 53/53 (two new, three updated to use the menu), `my_lodestar` same 3 old failures. Real screenshots `previews/ops_ctx_menu_real.png`, `previews/ops_mc_dialog_real.png`. Not done: undo of an Ops Room Leave / MC fill is not offered in the toast.
 
 ## z144 (2 Nov, Brandon): Merge runs in the Planner
 The same non-flight activity on following days (e.g. Detachment 13 to 17) reads as one block; if AM, PM and NIGHT all match it is one block across the three rows. **Display only**: every cell stays in the table with its own value (`td.mg`, one `.mlab` label spans the block, sized by `mergeSize`/ResizeObserver), so click, right-click, keys, copy, Find, flight card and saving still work per day. Not merged: flights, empty cells, and cells with a comment, syllabus tag, warning, down-chit, ATOM mark or cancelled state. Button **Merge runs: On/Off** next to Find (remembered, `mergeRuns` in localStorage; default on). Dashboard only, no Excel change; upload the DEV dashboard. Code: `mergeRuns`, `mergeSize`. Test `node tests/merge_runs.test.js` (6). `my_lodestar` version check updated to z144 (three older failures remain). Mock-up `previews/merge_cells_mockup.png`, real `previews/merge_runs_real.png`. Awaiting his look; open: WD row also merges, the today column line still crosses a block.

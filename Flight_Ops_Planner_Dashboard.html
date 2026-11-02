@@ -787,6 +787,9 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsStats .opsk.warn{border-color:#fbbf24;background:#fffbeb;color:#b45309}#opsStats .opsk.bad{border-color:#fca5a5;background:#fef2f2;color:#dc2626}
 #opsStats .opsk.sel{box-shadow:0 0 0 2px #3b82f6;border-color:#3b82f6}#opsStats .opsk.nofly{cursor:default;padding:4px 11px}
 #opsNote{font-size:12px;margin:0 0 6px}#opsNote:empty{display:none}
+#opsCtx{position:fixed;z-index:400;background:#fff;border:1px solid var(--s200);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.22);padding:4px;min-width:150px}
+#opsCtx button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 12px;border-radius:6px;font:600 13px inherit;color:var(--s800);cursor:pointer}#opsCtx button:hover{background:#eff6ff;color:var(--blue)}
+.ctxhint{font-size:10.5px;margin-top:6px;opacity:.75}
 #opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 10px clamp(250px,var(--sidh,30vh),50%);gap:0;align-items:stretch;min-height:360px}
 #opsWrap.barB{grid-template-rows:minmax(0,1fr) 10px var(--sidh)}
 /* drag bars (z141): the top duty strip and the bottom cards are resized by hand and their text scales to fit */
@@ -1116,7 +1119,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z144</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z145</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1177,7 +1180,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
 <div id="helpPop"><div class="box"><h2><span id="helpTitle">Help</span><button class="btn" id="helpX">Close</button></h2><div id="helpBody"></div><div class="muted" style="font-size:11px;margin-top:10px">LODESTAR · built by MARTELL</div></div></div>
 <div id="blkPop"><div class="box">
   <h2>Block of days</h2>
-  <div class="muted" style="font-size:12px">Put one activity on a run of days, e.g. a course, attachment, detachment or overseas exercise.</div>
+  <div class="muted" style="font-size:12px" id="blkSub">Put one activity on a run of days, e.g. a course, attachment, detachment or overseas exercise.</div>
   <div class="row"><label style="flex:2">Who<select id="blkWho"></select></label><label style="flex:2">Activity<select id="blkCode"></select></label></div>
   <div class="row"><label>From<input type="date" id="blkFrom"></label><label>To<input type="date" id="blkTo"></label></div>
   <div class="row" style="align-items:center"><span style="font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase">Shifts</span>
@@ -4436,7 +4439,7 @@ function renderOps() {
   // the right-hand column: area and codes, movement, down-chits, ground programme, then the day's remarks filling the rest
   const G = opsGround(D), MV = opsMovement(D), ged = opsEditable(); OPS_G = G;
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
-  const mv = "<div class='card olv'><h2>Leave and MC</h2>" + (MV.map(m => m.who).filter(Boolean).join("") ? "<div class='dep'><span class='dw'>" + MV.map(m => m.who).filter(Boolean).join("") + "</span></div>" : "<div class='muted'>Nobody on leave or MC.</div>") + "</div>";
+  const mv = "<div class='card olv'><h2>Leave and MC</h2>" + (MV.map(m => m.who).filter(Boolean).join("") ? "<div class='dep'><span class='dw'>" + MV.map(m => m.who).filter(Boolean).join("") + "</span></div>" : "<div class='muted'>Nobody on leave or MC.</div>") + (opsEditable() && !document.body.classList.contains("opsfs") ? "<div class='muted ctxhint'>Right-click to add.</div>" : "") + "</div>";
   // the ground programme as a table sorted by opsGround: Time | Activity | Location (the note) | Personnel
   const GSH = ["AM", "PM", "NIGHT", "WD"];
   let gprev = -1;
@@ -4598,8 +4601,8 @@ function opsDownCard(D) {
   books.forEach((b, bi) => { if (!isDept(b) || b.S.year !== D.y) return; const C = computeChit(b.S), k = dayOfYear(D.y, D.mi, D.d);
     b.S.roster.forEach((p, i) => { if (!C[i] || !C[i].down[k]) return; const sk = C[i].since[k];
       rows.push("<tr><td><span class='dcn " + opsCatCls(p) + "'" + (can || bi === 0 ? " data-upchit='" + bi + "|" + i + "|" + D.iso + "' title='" + esc((p.id || "") + " " + p.name + "\nClick to up-chit") + "'" : " title='" + esc((p.id || "") + " " + p.name) + "'") + ">" + esc(p.ini || p.id || p.name) + "</span></td><td>" + esc(fmtDay(doyISO(D.y, sk))) + "</td></tr>"); }); });
-  return "<div class='card opsdc'><h2>Down-chit" + (rows.length ? " <span class='muted' style='font-weight:600'>(" + rows.length + ")</span>" : "") + (opsEditable() && !document.body.classList.contains("opsfs") ? "<button class='btn' id='opsAreaAdd' title='Type the area of the day (Oscar, Echo, Nov)'>+ Area</button>" : "") + (can ? "<button class='btn' id='opsDownAdd'>+ Down-chit</button>" : "") + "</h2>" +
-    (rows.length ? "<table><tr><th>Crew</th><th>Since</th></tr>" + rows.join("") + "</table><div class='muted' style='font-size:11px;margin-top:6px'>Not cleared to fly." + (can ? " Click a name to up-chit." : "") + "</div>" : "<div class='muted'>Nobody down-chitted.</div>") + "</div>";
+  return "<div class='card opsdc'><h2>Down-chit" + (rows.length ? " <span class='muted' style='font-weight:600'>(" + rows.length + ")</span>" : "") + "</h2>" +
+    (rows.length ? "<table><tr><th>Crew</th><th>Since</th></tr>" + rows.join("") + "</table><div class='muted' style='font-size:11px;margin-top:6px'>Not cleared to fly." + (can ? " Click a name to up-chit." : "") + "</div>" : "<div class='muted'>Nobody down-chitted.</div>") + (can && !document.body.classList.contains("opsfs") ? "<div class='muted ctxhint'>Right-click to add.</div>" : "") + "</div>";
 }
 function opsMovement(D) {
   const order = [...new Set(OPS_SEATS.map(z => z[1]))], by = new Map(order.map(d => [d, []])), rank = [CAT_LEAVE, CAT_OFF, CAT_MED];
@@ -4830,7 +4833,26 @@ $("opsSide").addEventListener("change", e => {
   const t = e.target; if (t.id !== "opsDayRem" || !opsEditable()) return;
   const oi = opsIdx(), v = t.value.trim(); books[oi].S.db[t.dataset.ref] = v; withBook(oi, () => put("Day Board", t.dataset.ref, v)); renderBooks();
 });
-$("opsSide").addEventListener("click", e => { if (e.target.id === "opsNext") { cur.opsDay = opsAddDays(cur.opsDay, 1); renderOps(); } if (e.target.id === "opsDownAdd") downOpen(opsDay(cur.opsDay).iso); if (e.target.id === "opsAreaAdd") { cur.opsAreaOpen = true; renderOps(); } });
+$("opsSide").addEventListener("click", e => { if (e.target.id === "opsNext") { cur.opsDay = opsAddDays(cur.opsDay, 1); renderOps(); } });
+// right-click menu on the Leave and MC card and the Down-chit card (z145): replaces the + buttons
+let opsCtxEl = null;
+function opsCtxClose() { if (opsCtxEl) { opsCtxEl.remove(); opsCtxEl = null; } }
+function opsCtxOpen(x, y, items) {
+  opsCtxClose(); const m = document.createElement("div"); m.className = "opsctx"; m.id = "opsCtx";
+  m.innerHTML = items.map((it, k) => "<button type='button' data-k='" + k + "'>" + esc(it[0]) + "</button>").join("");
+  m.style.left = Math.min(x, innerWidth - 170) + "px"; m.style.top = Math.min(y, innerHeight - 40 * items.length - 10) + "px";
+  m.addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if (!b) return; const f = items[+b.dataset.k][1]; opsCtxClose(); f(); });
+  document.body.appendChild(m); opsCtxEl = m;
+}
+$("opsSide").addEventListener("contextmenu", e => {
+  const card = e.target.closest(".olv, .opsdc"); if (!card || !(OPS || opsEditable()) || document.body.classList.contains("opsfs")) return;
+  e.preventDefault(); const iso = opsDay(cur.opsDay).iso;
+  if (card.classList.contains("olv")) opsCtxOpen(e.clientX, e.clientY, [["+ Leave", () => opsBlkOpen("leave", iso)], ["+ MC", () => opsBlkOpen("mc", iso)]]);
+  else opsCtxOpen(e.clientX, e.clientY, [["+ Down-chit", () => downOpen(iso)]].concat(opsEditable() ? [["+ Area", () => { cur.opsAreaOpen = true; renderOps(); }]] : []));
+});
+document.addEventListener("click", e => { if (opsCtxEl && !opsCtxEl.contains(e.target)) opsCtxClose(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") opsCtxClose(); });
+window.addEventListener("blur", opsCtxClose);
 // projector: a size the room can read (remembered on this computer), and full screen without the menus
 const OPS_ZS = [0.7, 0.85, 1, 1.15, 1.3, 1.5, 1.75, 2];   // the default is 100%, one step below the old first-time 130% (the saved size has its own key, so an old six-step value is never read)
 let opsZi = (() => { try { const v = +localStorage.getItem("opsZoom2"); return v >= 0 && v < OPS_ZS.length && localStorage.getItem("opsZoom2") != null ? v : 2; } catch (e) { return 2; } })();
@@ -5460,7 +5482,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z144 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z145 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5893,11 +5915,30 @@ async function rollGo() {
 $("rollBtn").onclick = rollOpen; $("rollCancel").onclick = () => { $("rollPop").style.display = "none"; }; $("rollGo").onclick = rollGo;
 // ---------- Block of days: one activity on a run of days (course, attachment, detachment, overseas exercise), across months of the plan year
 let blk = null;
+// from the Ops Room (z145): + Leave / + MC on the right-click menu. Same dialog; the person can be from any open department file and the activity is a leave (or off) code, or MC.
+function opsBlkCodes() {
+  const bi = +$("blkWho").value.split(":")[0];
+  withBook(bi, () => {
+    const A = actIndex(), codes = S.acts.filter(a => a.code && (blk.kind === "mc" ? same(a.code, MC_CODE) : [CAT_LEAVE, CAT_OFF].includes((A.get(a.code.toUpperCase()) || {}).ci)));
+    $("blkCode").innerHTML = codes.map((a, k) => "<option" + (k === 0 ? " selected" : "") + " value='" + esc(a.code) + "'>" + esc(a.code + (a.desc ? " · " + a.desc : "")) + "</option>").join("") || "<option value=''>(no " + (blk.kind === "mc" ? "MC" : "leave") + " code in this file)</option>";
+    ["blkFrom", "blkTo"].forEach(id => { $(id).min = S.year + "-01-01"; $(id).max = S.nx ? (S.year + 1) + "-01-31" : S.year + "-12-31"; });
+  });
+}
+function opsBlkOpen(kind, iso) {
+  const L = []; books.forEach((b, bi) => { if (isDept(b) && inYr(iso, b.S.year) && mayEdit(bi)) b.S.roster.forEach((p, i) => { if (p.name || p.id) L.push({ bi, i, p, dept: b.S.dept }); }); });
+  if (!L.length) { toast("No department planner is open for editing."); return; }
+  blk = { ops: true, kind }; let g = null;
+  $("blkWho").innerHTML = L.map(x => (x.dept !== g ? (g !== null ? "</optgroup>" : "") + "<optgroup label='" + esc(g = x.dept) + "'>" : "") + "<option value='" + x.bi + ":" + x.i + "'>" + esc((x.p.id ? x.p.id + " · " : "") + x.p.name) + "</option>").join("") + "</optgroup>";
+  $("blkPop").querySelector("h2").textContent = kind === "mc" ? "MC" : "Leave"; $("blkSub").textContent = "Put " + (kind === "mc" ? "an MC" : "leave") + " on the person's plan, for one day or a run of days. It is saved in their department file.";
+  $("blkFrom").value = iso; $("blkTo").value = iso; [0, 1, 2].forEach(s => $("blkS" + s).checked = true); $("blkWe").checked = false; $("blkHol").checked = false; $("blkOver").checked = false;
+  $("blkNote").value = ""; $("blkNoteRow").style.display = "none"; opsBlkCodes(); blkPreview(); $("blkPop").style.display = "flex"; $("blkWho").focus();
+}
+$("blkWho").addEventListener("change", () => { if (blk && blk.ops) { opsBlkCodes(); blkPreview(); } });
 function blkOpen(k) {
   const p = keyParts(k), i = rowPerson(p.r), A = actIndex();
   const codes = S.acts.filter(a => a.code && (A.get(a.code.toUpperCase()) || {}).ci !== CAT_FLIGHT);
   const cv = String(S.m[cur.m].grid[p.r][p.d] || ""), def = codes.find(a => same(a.code, cv)) || codes.find(a => /^(outstation|detachment|course)$/i.test(a.code)) || codes[0];
-  blk = { i };
+  blk = { i }; $("blkPop").querySelector("h2").textContent = "Block of days"; $("blkSub").textContent = "Put one activity on a run of days, e.g. a course, attachment, detachment or overseas exercise.";
   $("blkWho").innerHTML = S.roster.map((x, j) => x.name || x.id ? "<option value='" + j + "'" + (j === i ? " selected" : "") + ">" + esc((x.id ? x.id + " · " : "") + x.name) + "</option>" : "").join("");
   let g = null; $("blkCode").innerHTML = codes.map(a => (a.cat !== g ? (g !== null ? "</optgroup>" : "") + "<optgroup label='" + esc((g = a.cat) || "Other") + "'>" : "") + "<option" + (a === def ? " selected" : "") + " value='" + esc(a.code) + "'>" + esc(a.code + (a.desc ? " · " + a.desc : "")) + "</option>").join("") + "</optgroup>";
   const iso = isoOf(S.year, cur.m, p.d); $("blkFrom").value = iso; $("blkTo").value = iso;
@@ -5907,8 +5948,9 @@ function blkOpen(k) {
   blkPreview(); $("blkPop").style.display = "flex"; $("blkTo").focus();
 }
 // the cells the block would fill: [{mi, d, r, old}], with the days skipped and the cells kept
+const blkRun = fn => blk && blk.ops ? withBook(+$("blkWho").value.split(":")[0], fn) : fn();   // from the Ops Room the person may be in any open department file
 function blkCells() {
-  const i = +$("blkWho").value, f = $("blkFrom").value, t = $("blkTo").value, code = $("blkCode").value, out = { cells: [], keep: [], days: 0, err: "" };
+  const i = +String($("blkWho").value).split(":").pop(), f = $("blkFrom").value, t = $("blkTo").value, code = $("blkCode").value, out = { cells: [], keep: [], days: 0, err: "" };
   if (!f || !t) { out.err = "Pick the first and last day."; return out; }
   if (t < f) { out.err = "The last day is before the first day."; return out; }
   const okD = v => +v.slice(0, 4) === S.year || (S.nx && inYr(v, S.year));
@@ -5926,7 +5968,8 @@ function blkCells() {
   }
   return out;
 }
-function blkPreview() {
+function blkPreview() { blkRun(blkPreview0); }
+function blkPreview0() {
   const x = blkCells(), code = $("blkCode").value, f = $("blkFrom").value, t = $("blkTo").value;
   const fmt = v => new Date(v + "T00:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
   let h;
@@ -5939,7 +5982,8 @@ function blkPreview() {
 ["blkWho", "blkCode", "blkFrom", "blkTo", "blkS0", "blkS1", "blkS2", "blkWe", "blkHol", "blkOver"].forEach(id => { $(id).addEventListener("change", blkPreview); $(id).addEventListener("input", blkPreview); });
 $("blkCancel").onclick = () => { $("blkPop").style.display = "none"; };
 $("blkPop").addEventListener("keydown", e => { if (e.key === "Escape") $("blkPop").style.display = "none"; });
-$("blkGo").onclick = () => {
+$("blkGo").onclick = () => { if (blk && blk.ops && !mayEdit(+$("blkWho").value.split(":")[0])) { toast("That department's file is open read-only."); return; } blkRun(blkGo0); };
+function blkGo0() {
   const x = blkCells(), code = $("blkCode").value; if (x.err || !x.cells.length) return;
   for (const c of x.cells) { S.m[c.mi].grid[c.r][c.d] = code; put(monSheet(c.mi), colL(DAY_COL0 + c.d) + (g0() + c.r), code);
     if (c.old && S.hasSyl && !S.kind) {   // a replaced flight no longer carries its Planned syllabus entry (Pass / Fail results stay)
@@ -5948,10 +5992,11 @@ $("blkGo").onclick = () => {
   const nt = $("blkNote").value.trim(); if (nt && S.hasNotes) { const c0 = x.cells[0]; setNote(c0.mi, c0.r, c0.d, nt); }
   $("blkPop").style.display = "none";
   const months = [...new Set(x.cells.map(c => c.mi))];
+  if (blk && blk.ops) { toast(code + " put on " + x.cells.length + " cell" + (x.cells.length === 1 ? "" : "s") + " in " + S.dept + "'s plan." + saveHint(), 4000); setTimeout(renderAll, 0); return; }
   if (!months.includes(cur.m)) cur.m = months[0];
   renderControls(); renderPlanner(); renderOverview();
   toast(code + " put on " + x.cells.length + " cell" + (x.cells.length === 1 ? "" : "s") + (months.length > 1 ? " across " + months.map(m => MONTHS[m % 12] + (m === NX_MI ? " " + (S.year + 1) : "")).join(", ") : "") + ". Undo with Ctrl+Z.", 4000);
-};
+}
 
 // ---------- My schedule: one person's month across the open department files (flights with times, duties, ground programme, leave, comments)
 function mePeople() { const out = []; books.forEach((b, bi) => { if (!isDept(b)) return; b.S.roster.forEach((p, i) => { if (p.name || p.id) out.push({ bi, i, p, dept: b.S.dept }); }); }); return out; }

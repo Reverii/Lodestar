@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z143)
+# LODESTAR handoff (updated 2026-11-02, after z144)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z144 (2 Nov, Brandon): Merge runs in the Planner
+The same non-flight activity on following days (e.g. Detachment 13 to 17) reads as one block; if AM, PM and NIGHT all match it is one block across the three rows. **Display only**: every cell stays in the table with its own value (`td.mg`, one `.mlab` label spans the block, sized by `mergeSize`/ResizeObserver), so click, right-click, keys, copy, Find, flight card and saving still work per day. Not merged: flights, empty cells, and cells with a comment, syllabus tag, warning, down-chit, ATOM mark or cancelled state. Button **Merge runs: On/Off** next to Find (remembered, `mergeRuns` in localStorage; default on). Dashboard only, no Excel change; upload the DEV dashboard. Code: `mergeRuns`, `mergeSize`. Test `node tests/merge_runs.test.js` (6). `my_lodestar` version check updated to z144 (three older failures remain). Mock-up `previews/merge_cells_mockup.png`, real `previews/merge_runs_real.png`. Awaiting his look; open: WD row also merges, the today column line still crosses a block.
 
 ## z143 (Brandon): Projector bottom cards cut off (real cause of z142)
 In Projector mode the drag bar (`.obar`) is `display:none`, so it left the `#opsWrap` grid and the bottom cards slid up into the 10 px bar row (cards 8 px high, empty space below). Fix: `#opsLeft{grid-row:1}` and `#opsSide{grid-row:3}`. z142's refit stays (harmless). Test `projector_bottom_cards_keep_their_row`. Dashboard only; upload the DEV dashboard.

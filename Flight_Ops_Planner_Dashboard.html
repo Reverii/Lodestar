@@ -425,6 +425,12 @@ header.top .hsep{width:1px;align-self:stretch;margin:4px 2px;background:rgba(255
 #robanner{display:none;background:#fef3c7;color:#78350f;border-bottom:1px solid #fde68a;padding:7px 16px;font-size:12.5px;font-weight:600}
 body.ro #robanner{display:block}
 #plan th.tdy{background:#2563eb!important;color:#fff!important}
+#plan td.mg{position:relative;overflow:visible!important;color:transparent!important;text-shadow:none}
+#plan td.mg:not(.mgr){border-right-color:transparent!important}#plan td.mg:not(.mgb){border-bottom-color:transparent!important}
+#plan td.mg.mgl{box-shadow:inset 4px 0 0 rgba(22,101,52,.65)}
+#plan td.mg.mgf{z-index:1}
+#plan .mlab{position:absolute;left:0;top:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;font-weight:800;text-align:center;line-height:1.15;white-space:nowrap;overflow:hidden}
+#plan .mlab small{font-weight:500;font-size:10.5px;opacity:.85}
 #plan td.tdy{border-left:2px solid #2563eb!important;border-right:2px solid #2563eb!important}
 #plan td.hit{outline:3px solid #f59e0b;outline-offset:-3px}#plan td.hit.cur{outline-color:#dc2626}
 #plan td.hitw{box-shadow:inset 5px 0 0 #f59e0b}
@@ -971,7 +977,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
       <label>Month<select id="month"></select></label>
       <label>Filter crew<input type="search" id="search" placeholder="Name, callsign or role"></label>
       <div id="crewShow" style="display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;font-weight:700;color:var(--s500);letter-spacing:.3px">SHOW</span><span style="display:flex;align-items:center;gap:8px"><span id="crewChips"><button data-st="active">Active</button><button data-st="sans">SANS</button><button data-st="nsmen">NSMEN</button><button data-st="inactive">Inactive</button></span><span id="crewCount" class="muted"></span></span></div>
-      <label>Find in this month<input type="search" id="find" placeholder="Code, callsign or comment" style="width:180px" title="Outlines matching cells. Enter jumps to the next one."></label><span id="findInfo"></span>
+      <label>Find in this month<input type="search" id="find" placeholder="Code, callsign or comment" style="width:180px" title="Outlines matching cells. Enter jumps to the next one."></label><span id="findInfo"></span><button class="btn" id="mergeTog" title="Show the same activity on following days (and on AM, PM and NIGHT) as one block. Display only: every day keeps its own value.">⊞ Merge runs: On</button>
       <button class="btn" id="btnToday" style="margin-bottom:2px;padding:6px 12px;font-size:13px" title="Go to today's month and column">Today</button>
       <div style="flex:1"></div>
       <div class="legend" id="legend"></div>
@@ -1110,7 +1116,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z143</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z144</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3781,8 +3787,49 @@ function renderPlanner() {
   $("plan").innerHTML = h + "</tbody>";
   if (tD >= 0) document.querySelectorAll("#plan td[data-k$=':" + tD + "'], #plan td[data-g='" + tD + "']").forEach(td => td.classList.add("tdy"));
   markFind();
+  mergeRuns();
   if (cur.sel) { const el = cellEl(cur.sel); if (el) el.classList.add("sel"); }
 }
+
+// Merge runs (z144): the same non-flight activity on following days (and on AM, PM and NIGHT) reads as one block. Display only: every cell stays in the table with its own value, so click, keys, copy, find and saving work on single days.
+const mergeOn = () => { try { return localStorage.getItem("mergeRuns") !== "0"; } catch (e) { return true; } };
+function mergeRuns() {
+  const tg = $("mergeTog"); if (tg) tg.textContent = "⊞ Merge runs: " + (mergeOn() ? "On" : "Off");
+  if (S.kind || !mergeOn()) return;
+  const A = actIndex(), byRow = new Map(), plan = $("plan");
+  plan.querySelectorAll("td[data-k^='g:']").forEach(td => { const [, r, d] = td.dataset.k.split(":"); if (!byRow.has(+r)) byRow.set(+r, []); byRow.get(+r)[+d] = td; });
+  const plain = td => { if (!td || td.childElementCount || td.className.match(/\b(hasnote|hassyl|offlist|rest|cxl|dnf|dnd|l1end|atomw|sel)\b/)) return ""; const v = td.textContent.trim().toUpperCase(), a = v && A.get(v); return a && a.ci !== CAT_FLIGHT ? v : ""; };
+  const runsOf = tds => { const out = []; for (let d = 0; d < tds.length; d++) { const v = plain(tds[d]); if (!v) continue; let e = d; while (e + 1 < tds.length && plain(tds[e + 1]) === v) e++; out.push({ d0: d, d1: e, v }); d = e; } return out; };
+  const blocks = [], used = new Set();
+  const rows = [...byRow.keys()].sort((a, b) => a - b), per = new Map();
+  rows.forEach(r => { const i = rowPerson(r); if (!per.has(i)) per.set(i, []); per.get(i).push(r); });
+  per.forEach(rs => {
+    const R = new Map(rs.map(r => [r, runsOf(byRow.get(r))])), sh = rs.filter(r => rowShift(r) < 3);
+    if (sh.length === 3) R.get(sh[0]).forEach(a => { const b = R.get(sh[1]).find(x => x.d0 === a.d0 && x.d1 === a.d1 && x.v === a.v), c = R.get(sh[2]).find(x => x.d0 === a.d0 && x.d1 === a.d1 && x.v === a.v); if (b && c) { blocks.push({ r0: sh[0], r1: sh[2], rows: sh, d0: a.d0, d1: a.d1 }); [a, b, c].forEach(x => x.done = true); } });
+    rs.forEach(r => R.get(r).forEach(x => { if (!x.done && x.d1 > x.d0) blocks.push({ r0: r, r1: r, rows: [r], d0: x.d0, d1: x.d1 }); }));
+  });
+  const mon = MONTHS[cur.m].slice(0, 3);
+  const made = [];
+  blocks.forEach(b => {
+    const first = byRow.get(b.r0)[b.d0], txt = first.textContent.trim(), cs = getComputedStyle(first), col = cs.color, bg = cs.backgroundColor;
+    b.rows.forEach(r => { for (let d = b.d0; d <= b.d1; d++) { const td = byRow.get(r)[d]; td.classList.add("mg"); td.style.backgroundColor = bg; td.classList.toggle("mgl", d === b.d0); td.classList.toggle("mgr", d === b.d1); td.classList.toggle("mgb", r === b.r1); } });
+    first.classList.add("mgf"); made.push({ b, first, txt, col });
+  });
+  made.forEach(({ b, first, txt, col }) => {   // sizes are measured once every cell of the block is marked
+    const last = byRow.get(b.r1)[b.d1], lab = document.createElement("div"); lab.className = "mlab"; lab.setAttribute("aria-hidden", "true"); lab.style.color = col;
+    lab.dataset.lk = last.dataset.k;
+    const n = b.d1 - b.d0 + 1; lab.innerHTML = esc(txt) + (n > 1 ? "<small>" + (b.d0 + 1) + " – " + (b.d1 + 1) + " " + mon + " · " + n + " days</small>" : "");
+    first.appendChild(lab);
+  });
+  mergeSize();
+}
+// the label spans its block: measured whenever the table changes size (it is 0 x 0 while the Planner tab is hidden; a zoom change resizes it too)
+function mergeSize() {
+  document.querySelectorAll("#plan .mlab").forEach(lab => { const first = lab.parentNode, last = cellEl(lab.dataset.lk); if (!last || !last.offsetWidth) return;
+    lab.style.width = last.offsetLeft + last.offsetWidth - first.offsetLeft + "px"; lab.style.height = last.offsetTop + last.offsetHeight - first.offsetTop + "px"; });
+}
+if (window.ResizeObserver) new ResizeObserver(mergeSize).observe($("plan"));
+$("mergeTog").addEventListener("click", () => { try { localStorage.setItem("mergeRuns", mergeOn() ? "0" : "1"); } catch (e) {} renderPlanner(); });
 // Find: outline every cell in the month whose code, time or comment contains the text, and the names / callsigns that contain it
 function markFind() {
   const q = $("find").value.trim().toUpperCase(); cur.hits = [];
@@ -5413,7 +5460,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z143 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z144 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

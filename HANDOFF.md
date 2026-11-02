@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z136)
+# LODESTAR handoff (updated 2026-11-02, after z137)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z137 (2 Nov, Brandon): more activities in the Ops Room "From the department plans" list
+`opsDeptRef` now takes Sim (SIM, SIMCEN) and Oversea Duty (Detachment) cells as well as Admin (Meeting, Outstation) on the shift rows. Dashboard only; upload the DEV dashboard only. `ops_room` 45/47 (same two dark-mode failures). **Offered, not built (awaiting his go):** a "Show in Ops Room list" Yes/No column on the Activities page (hidden column D or E, builder change + layout stamp bump) so the planner sets what triggers, with the category rule as fallback.
 
 ## z136 (2 Nov, Brandon): OCU colour
 OCU (Trainee) names are now violet (#7c3aed; light violet #a78bfa in the dark Ops Room, was pink/magenta) so they are not confused with CAT D red. Planner, Ops Room, key line and help text. Dashboard only. Test renamed `ocu_is_violet`; `ops_room` 45/47 (same two dark-mode failures).

@@ -1125,7 +1125,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z137</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z138</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1243,6 +1243,7 @@ const g0 = (st = S) => st.g0 || 26;
 const ROWS_PER = 4, SHIFT_ROWS = 3, ROW_LABELS = ["AM", "PM", "NIGHT", "WD"];
 const rp = st => { const b = st || S; return (b && b.rp) || ROWS_PER; };
 const gridRow = (i, s, st) => i * rp(st) + s, rowPerson = (r, st) => Math.floor(r / rp(st)), rowShift = (r, st) => r % rp(st), isWdRow = (r, st) => rp(st) > 3 && rowShift(r, st) === 3;
+const opsListOn = a => S.hasOps ? /^y/i.test(a.ops || "") : (a.ci === CAT_ADMIN || a.ci === CAT_SIM || a.ci === CAT_OS);   // does this activity go in the Ops Room list of the planners' ground items
 const wdAllowed = a => !!a && (a.ci === CAT_GD || a.ci === CAT_ADMIN);   // the WD row takes ground and admin items only
 // master slot j (= shift*2 + slot) has its code on row 6+3j, its time on the row below and its comment below that
 const DASH_CREW_ROW0 = 12, DAILY_ROW0 = 11; // first crew row on the Dashboard crew table and the Daily View
@@ -1624,7 +1625,8 @@ function loadWorkbook(buf, name, handle, other) {
   st.duty = { SDO: st.sdo };
   if (WB.paths["BDO Plan"]) { const bp = readCells("BDO Plan"); st.duty.BDO = {}; for (const ref in bp) if (typeof bp[ref] === "string" && /^[A-W](\d+)$/.test(ref) && +ref.slice(1) >= 9) st.duty.BDO[ref] = str(bp[ref]); }
   const ac = readCells("Activities");
-  for (let i = 0; i < NA; i++) { const r = ACT_ROW0 + i; st.acts.push({ code: str(ac["A" + r]), desc: str(ac["B" + r]), cat: str(ac["C" + r]), hrs: num(ac["D" + r]), sort: num(ac["E" + r]), mtype: str(ac["F" + r]), stag: str(ac["K" + r]) }); }
+  for (let i = 0; i < NA; i++) { const r = ACT_ROW0 + i; st.acts.push({ code: str(ac["A" + r]), desc: str(ac["B" + r]), cat: str(ac["C" + r]), hrs: num(ac["D" + r]), sort: num(ac["E" + r]), mtype: str(ac["F" + r]), stag: str(ac["K" + r]), ops: str(ac["E" + r]) }); }
+  st.hasOps = /ops room list/i.test(str(ac.E5));   // Activities E: Yes = shown in the Ops Room "From the department plans" list (no column = the old category rule)
   st.hasStag = /syllabus/i.test(str(ac.K5));   // Activities K: the syllabus tag per flight code (copied from the Master Planner)
   // 6 categories in older files (a note follows after one blank row), up to 9 since the activities list of 2026-10-21
   for (let i = 0; i < MAX_CATS; i++) { const v = str(ac["G" + (6 + i)]); if (!v) break; st.cats.push(v); }
@@ -4502,7 +4504,7 @@ function opsDeptRef(D) {
       if (S.gndRow && M.gnd) { const own = String(M.gnd[D.d] || "").trim(), fromMp = P && P.hasGr ? deptGround(P, D.mi, D.d, S.dept) : ""; if (own && !same(own, fromMp) && !(D.gr || []).some(g => own.toUpperCase().includes(String(g.act).toUpperCase()))) items.set("g|" + own.toUpperCase(), { act: own, sh: "", until: "", people: [] }); }
       S.roster.forEach((p, i) => { for (let s = 0; s < rp(); s++) {
         const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
-        if (!a || !(isWdRow(gridRow(i, s)) ? wdAllowed(a) : (a.ci === CAT_ADMIN || a.ci === CAT_SIM || a.ci === CAT_OS))) continue;   // Admin (Meeting, Outstation), Sim (SIM, SIMCEN), Oversea Duty (Detachment)
+        if (!a || !(S.hasOps ? opsListOn(a) : isWdRow(gridRow(i, s)) ? wdAllowed(a) : opsListOn(a))) continue;   // Activities column "Show in Ops Room list"; without it: Admin, Sim, Oversea Duty
         let e = D.d, em = D.mi;
         for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
           const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
@@ -4918,12 +4920,13 @@ function renderActs() {
   // ground programme: the rest, editable, plus a few empty rows to add to
   const ground = S.acts.map((a, i) => i).filter(i => S.acts[i].code ? !isFlAct(S, S.acts[i]) : false), empty = S.acts.map((a, i) => i).filter(i => !S.acts[i].code && !S.acts[i].desc).slice(0, 3);
   const rows = ground.concat(empty), cats = S.cats.filter((c, i) => c && i !== CAT_FLIGHT);
-  let h = "<tr><th>Code</th><th>Description</th><th>Category</th></tr>";
+  let h = "<tr><th>Code</th><th>Description</th><th>Category</th><th style='width:150px' title='Yes = this activity is listed under From the department plans when the Ops Room adds a ground row'>Show in Ops Room list</th></tr>";
   for (const i of rows) {
     const a = S.acts[i], ci = S.cats.findIndex(c => c && c === a.cat);
     h += "<tr><td><input class='" + (ci >= 0 ? "cat" + ci : "") + "' style='font-weight:700' data-a='" + i + "' data-f='code' value='" + esc(a.code) + "'></td>" +
       "<td><input data-a='" + i + "' data-f='desc' value='" + esc(a.desc) + "'></td>" +
-      "<td><select data-a='" + i + "' data-f='cat'><option></option>" + cats.map(c => "<option" + (c === a.cat ? " selected" : "") + ">" + esc(c) + "</option>").join("") + "</select></td></tr>";
+      "<td><select data-a='" + i + "' data-f='cat'><option></option>" + cats.map(c => "<option" + (c === a.cat ? " selected" : "") + ">" + esc(c) + "</option>").join("") + "</select></td>" +
+      "<td><select data-a='" + i + "' data-f='ops'><option></option><option" + ((S.hasOps ? /^y/i.test(a.ops || "") : ci === CAT_ADMIN || ci === CAT_SIM || ci === CAT_OS) ? " selected" : "") + ">Yes</option><option" + (/^n/i.test(a.ops || "") ? " selected" : "") + ">No</option></select></td></tr>";
   }
   $("actTable").innerHTML = h;
   const firstGap = S.acts.findIndex(a => !a.code), lastCode = lastFilled(S.acts, a => a.code);
@@ -5389,7 +5392,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z137 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z138 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6450,7 +6453,13 @@ $("actTable").addEventListener("change", e => {
   if (readOnly()) { renderActs(); return; }
   const el = e.target, i = +el.dataset.a, f = el.dataset.f; if (isNaN(i)) return;
   const a = S.acts[i], r = ACT_ROW0 + i;
-  if (f === "hrs" || f === "sort") { const v = el.value === "" ? null : +el.value; a[f] = v; put("Activities", (f === "hrs" ? "D" : "E") + r, v == null ? "" : v); }
+  if (f === "ops") {
+    if (!S.hasOps) {   // first use: make the column, and keep what the category rule listed until now
+      put("Activities", "E5", "Ops Room list"); S.hasOps = true;
+      S.acts.forEach((x, k) => { const ci = S.cats.findIndex(c => c && c === x.cat); if (x.code && k !== i && (ci === CAT_ADMIN || ci === CAT_SIM || ci === CAT_OS)) { x.ops = "Yes"; put("Activities", "E" + (ACT_ROW0 + k), "Yes"); } });
+    }
+    a.ops = el.value; put("Activities", "E" + r, el.value);
+  } else if (f === "hrs" || f === "sort") { const v = el.value === "" ? null : +el.value; a[f] = v; put("Activities", (f === "hrs" ? "D" : "E") + r, v == null ? "" : v); }
   else {
     const v = el.value.trim(), old = a[f];
     if (f === "code" && old && v && old !== v) {

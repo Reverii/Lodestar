@@ -479,7 +479,7 @@ if True:
 
 # ---------------------------------------------------------------- Activities
 banner(acts, "ACTIVITY DROPDOWN CATALOG", "Flights programme first (category Flight: copied from the Master Planner's Flight Codes in the dashboard), then the ground programme (everything else). Keep codes in one block with no gaps.", 10)
-header(acts, 5, 1, ["Code", "Description", "Category", "(unused)", "(unused)"])   # D and E: Flight Hrs and Sorties used to be here; hours now come from the Master Planner time range, sorties are typed per flight there
+header(acts, 5, 1, ["Code", "Description", "Category", "(unused)", "Ops Room list"])   # D and E: Flight Hrs and Sorties used to be here; hours now come from the Master Planner time range, sorties are typed per flight there
 # flights programme first (the Master Planner's Flight Codes, copied in by the dashboard), then the ground programme
 catalog = [("FLT-1.5", "Routine Sortie (1.5h)", "Flight"), ("FLT-2.0", "Standard Sortie (2.0h)", "Flight"),
            ("FLT-3.0", "Extended Mission (3.0h)", "Flight"), ("NVG-2.0", "Night Flying Sortie (2.0h)", "Flight"),
@@ -508,6 +508,8 @@ for i in range(NA):
     if i < len(catalog):
         for j, v in enumerate(catalog[i]):
             acts.cell(r, 1 + j, v)
+        if len(catalog[i]) > 2 and catalog[i][2] in ("Admin", "Sim", "Oversea Duty"):
+            acts.cell(r, 5, "Yes")   # E: shown in the Ops Room "From the department plans" list (the dashboard's Activities page changes it)
 header(acts, 5, 7, ["Category"])
 for i, (cat, bg, fg, it) in enumerate(CATS):
     c = acts.cell(6 + i, 7, cat); c.fill = fill(bg); c.font = f(True, fg, italic=it); c.border = BOX

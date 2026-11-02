@@ -6,6 +6,9 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 ## Repo files replaced (2 Nov, Brandon said go)
 The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a fresh demo set at the new layouts (dept 4, master 3, roster 2, ops 2; sample crew, empty plans, demo flights Oct to Nov). They were built with `python3 .lodestar_build.py excel <folder outside the repo>` (no `--data`: `input/LODESTAR_Data_Input.xlsx` is not in the cloud clone) and the dashboard was rebuilt (z129). The real-data set still has to be built on Brandon's side with `--data` and uploaded to SharePoint with the dashboard (all nine files together; old and new versions must not be mixed).
 
+## CAT hours tracking: dropped (2 Nov, Brandon)
+Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
 ## z136 (2 Nov, Brandon): OCU colour
 OCU (Trainee) names are now violet (#7c3aed; light violet #a78bfa in the dark Ops Room, was pink/magenta) so they are not confused with CAT D red. Planner, Ops Room, key line and help text. Dashboard only. Test renamed `ocu_is_violet`; `ops_room` 45/47 (same two dark-mode failures).
 

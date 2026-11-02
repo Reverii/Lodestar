@@ -788,7 +788,7 @@ nav.tabs .tmenu button.on{background:#dbeafe;color:#1e3a8a;border-bottom:0}
 #opsStats .opsk.sel{box-shadow:0 0 0 2px #3b82f6;border-color:#3b82f6}#opsStats .opsk.nofly{cursor:default;padding:4px 11px}
 #opsNote{font-size:12px;margin:0 0 6px}#opsNote:empty{display:none}
 #opsCtx{position:fixed;z-index:400;background:#fff;border:1px solid var(--s200);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.22);padding:4px;min-width:150px}
-#opsCtx button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 12px;border-radius:6px;font:600 13px inherit;color:var(--s800);cursor:pointer}#opsCtx button:hover{background:#eff6ff;color:var(--blue)}
+#opsCtx button{display:block;width:100%;text-align:left;white-space:nowrap;border:0;background:none;padding:8px 12px;border-radius:6px;font:600 13px inherit;color:var(--s800);cursor:pointer}#opsCtx button:hover{background:#eff6ff;color:var(--blue)}
 .ctxhint{font-size:10.5px;margin-top:6px;opacity:.75}
 #opsWrap{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) 10px clamp(250px,var(--sidh,30vh),50%);gap:0;align-items:stretch;min-height:360px}
 #opsWrap.barB{grid-template-rows:minmax(0,1fr) 10px var(--sidh)}
@@ -1119,7 +1119,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z145</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z146</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4439,7 +4439,7 @@ function renderOps() {
   // the right-hand column: area and codes, movement, down-chits, ground programme, then the day's remarks filling the rest
   const G = opsGround(D), MV = opsMovement(D), ged = opsEditable(); OPS_G = G;
   const cnt = n => n ? " <span class='ocnt'>" + n + "</span>" : "";
-  const mv = "<div class='card olv'><h2>Leave and MC</h2>" + (MV.map(m => m.who).filter(Boolean).join("") ? "<div class='dep'><span class='dw'>" + MV.map(m => m.who).filter(Boolean).join("") + "</span></div>" : "<div class='muted'>Nobody on leave or MC.</div>") + (opsEditable() && !document.body.classList.contains("opsfs") ? "<div class='muted ctxhint'>Right-click to add.</div>" : "") + "</div>";
+  const mv = "<div class='card olv'><h2>Leave and MC</h2>" + (MV.map(m => m.who).filter(Boolean).join("") ? "<div class='dep'><span class='dw'>" + MV.map(m => m.who).filter(Boolean).join("") + "</span></div>" : "<div class='muted'>Nobody on leave or MC.</div>") + (opsEditable() && !document.body.classList.contains("opsfs") ? "<div class='muted ctxhint'>Right-click to add" + (MV.some(m => m.who) ? ", or on a name to remove" : "") + ".</div>" : "") + "</div>";
   // the ground programme as a table sorted by opsGround: Time | Activity | Location (the note) | Personnel
   const GSH = ["AM", "PM", "NIGHT", "WD"];
   let gprev = -1;
@@ -4615,7 +4615,7 @@ function opsMovement(D) {
         for (let s = 0; s < SHIFT_ROWS; s++) { const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][D.d]; if (!v) continue; const a = A.get(String(v).toUpperCase());
           if (!a || !(a.ci === CAT_LEAVE || a.ci === CAT_OFF || a.ci === CAT_MED)) continue;
           const k = a.code.toUpperCase(); if (!mine.has(k)) mine.set(k, { a, sh: [] }); mine.get(k).sh.push(s); }
-        mine.forEach(m => by.get(dep).push({ r: rank.indexOf(m.a.ci), code: m.a.code, html: "<span class='olp' title='" + esc(m.a.desc || m.a.code) + "'><b class='" + opsCatCls(p) + "'>" + esc(p.ini || p.id) + "</b><small>" + esc(m.a.code) + "</small>" +
+        mine.forEach(m => by.get(dep).push({ r: rank.indexOf(m.a.ci), code: m.a.code, html: "<span class='olp' data-lv='" + bi + "|" + i + "|" + esc(m.a.code) + "' title='" + esc((m.a.desc || m.a.code) + (opsEditable() || OPS ? "\nRight-click to remove" : "")) + "'><b class='" + opsCatCls(p) + "'>" + esc(p.ini || p.id) + "</b><small>" + esc(m.a.code) + "</small>" +
           (m.sh.length < 3 ? "<small>" + m.sh.map(s => SHIFTS[s]).join("/") + "</small>" : "") + "</span>" })); });
     });
   });
@@ -4844,10 +4844,31 @@ function opsCtxOpen(x, y, items) {
   m.addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if (!b) return; const f = items[+b.dataset.k][1]; opsCtxClose(); f(); });
   document.body.appendChild(m); opsCtxEl = m;
 }
+// remove leave / MC / off from a person's plan (z146): this day, or the whole run of days that carries the same code (across months)
+function opsLeaveRun(bi, i, code, iso) {
+  return withBook(bi, () => {
+    const days = []; for (let mi = 0; mi < NMON; mi++) { if (!S.m[mi]) continue; for (let d = 0; d < daysIn(S.year, mi); d++) days.push({ mi, d }); }
+    const has = x => [0, 1, 2].some(s => same(S.m[x.mi].grid[gridRow(i, s)][x.d], code)), D = opsDay(iso), at = days.findIndex(x => x.mi === D.mi && x.d === D.d);
+    if (at < 0) return null; let a = at, b = at; while (a > 0 && has(days[a - 1])) a--; while (b < days.length - 1 && has(days[b + 1])) b++;
+    return { days: days.slice(a, b + 1), one: [days[at]], first: days[a], last: days[b], n: b - a + 1 };
+  });
+}
+function opsLeaveRemove(bi, i, code, days) {
+  if (!mayEdit(bi)) { toast("That department's file is open read-only."); return; }
+  let n = 0, who = "";
+  withBook(bi, () => { who = S.roster[i].ini || S.roster[i].id || S.roster[i].name; days.forEach(x => [0, 1, 2].forEach(sh => { const r = gridRow(i, sh); if (same(S.m[x.mi].grid[r][x.d], code)) { S.m[x.mi].grid[r][x.d] = ""; put(monSheet(x.mi), colL(DAY_COL0 + x.d) + (g0() + r), ""); n++; } })); });
+  toast(code + " removed from " + who + "'s plan (" + n + " cell" + (n === 1 ? "" : "s") + ")." + saveHint(), 4000); renderAll();
+}
 $("opsSide").addEventListener("contextmenu", e => {
   const card = e.target.closest(".olv, .opsdc"); if (!card || !(OPS || opsEditable()) || document.body.classList.contains("opsfs")) return;
   e.preventDefault(); const iso = opsDay(cur.opsDay).iso;
-  if (card.classList.contains("olv")) opsCtxOpen(e.clientX, e.clientY, [["+ Leave", () => opsBlkOpen("leave", iso)], ["+ MC", () => opsBlkOpen("mc", iso)]]);
+  if (card.classList.contains("olv")) {
+    const items = [], olp = e.target.closest(".olp");
+    if (olp && olp.dataset.lv) { const [bi, i, code] = olp.dataset.lv.split("|"), run = opsLeaveRun(+bi, +i, code, iso), nm = olp.querySelector("b").textContent, f = x => x.d + 1 + " " + MONTHS[x.mi % 12].slice(0, 3);
+      items.push(["Remove " + nm + " " + code + " (this day)", () => opsLeaveRemove(+bi, +i, code, run ? run.one : [])]);
+      if (run && run.n > 1) items.push(["Remove the whole run: " + f(run.first) + " to " + f(run.last) + " (" + run.n + " days)", () => opsLeaveRemove(+bi, +i, code, run.days)]); }
+    opsCtxOpen(e.clientX, e.clientY, items.concat([["+ Leave", () => opsBlkOpen("leave", iso)], ["+ MC", () => opsBlkOpen("mc", iso)]]));
+  }
   else opsCtxOpen(e.clientX, e.clientY, [["+ Down-chit", () => downOpen(iso)]].concat(opsEditable() ? [["+ Area", () => { cur.opsAreaOpen = true; renderOps(); }]] : []));
 });
 document.addEventListener("click", e => { if (opsCtxEl && !opsCtxEl.contains(e.target)) opsCtxClose(); });
@@ -5482,7 +5503,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z145 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z146 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

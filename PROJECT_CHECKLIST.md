@@ -224,3 +224,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Projector full screen cut the bottom cards (z142, 3 Nov, Brandon): the page now fits again as the window settles (awaiting his look)
 - [?] Merge runs in the Planner (z144, 2 Nov, Brandon): identical ground / leave cells on following days (and AM, PM, NIGHT) show as one block, display only, button Merge runs On / Off next to Find (awaiting his look)
 - [?] Ops Room right-click menus (z145, 2 Nov, Brandon): + Area and + Down-chit buttons removed; right-click the Down-chit card for + Down-chit (and + Area), right-click the Leave and MC card for + Leave and + MC (fills the person's plan, any open department file) (awaiting his look)
+- [?] Remove Leave from the Ops Room (z146, 2 Nov, Brandon): right-click a name on the Leave and MC card, remove this day or the whole run (awaiting his look)

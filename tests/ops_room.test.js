@@ -392,6 +392,19 @@ test("right_click_leave_and_mc_fill_the_plan", async ({ page }) => {   // z145 (
     await page.evaluate(([w, iso]) => { const [bi, i] = w.split(":").map(Number); withBook(bi, () => { const D = opsDay(iso); [0, 1, 2].forEach(s => { S.m[D.mi].grid[gridRow(i, s)][D.d] = ""; }); }); }, [t.who, DAY]);
   }
 }, ED);
+test("right_click_name_removes_leave", async ({ page }) => {   // z146
+  await page.evaluate(() => { OPS = true; }); await goOps(page, DAY);
+  const set = () => page.evaluate(iso => { const bi = books.findIndex(b => isDept(b) && b.S.dept === "Pilot"); return withBook(bi, () => { const D = opsDay(iso), i = S.roster.findIndex(p => p.name || p.id), c = S.acts.find(a => (actIndex().get(a.code.toUpperCase()) || {}).ci === CAT_LEAVE).code;
+    [-1, 0, 1].forEach(o => [0, 1, 2].forEach(s => { S.m[D.mi].grid[gridRow(i, s)][D.d + o] = c; })); renderAll(); cur.opsDay = iso; renderOps(); return { bi, i, c }; }); }, DAY);
+  const cnt = ({ bi, i, c }) => page.evaluate(([bi, i, c, iso]) => withBook(bi, () => { const D = opsDay(iso); return [-1, 0, 1].map(o => [0, 1, 2].filter(s => S.m[D.mi].grid[gridRow(i, s)][D.d + o] === c).length); }), [bi, i, c, DAY]);
+  const w = await set(); assert.deepStrictEqual(await cnt(w), [3, 3, 3]);
+  await page.click("#opsSide .olp", { button: "right" });
+  const items = await page.evaluate(() => [...document.querySelectorAll("#opsCtx button")].map(b => b.textContent));
+  assert.ok(/this day/.test(items[0]) && /whole run.*3 days/.test(items[1]) && items.includes("+ Leave"), items.join(" | "));
+  await page.click("#opsCtx button:has-text('this day')"); assert.deepStrictEqual(await cnt(w), [3, 0, 3], "only this day is cleared");
+  const w2 = await set(); await page.click("#opsSide .olp", { button: "right" }); await page.click("#opsCtx button:has-text('whole run')");
+  assert.deepStrictEqual(await cnt(w2), [0, 0, 0], "the whole run is cleared");
+}, ED);
 test("area_add_hidden_when_projector_clicked", async ({ page }) => {
   await goOps(page, DAY); await CTX(page, ".opsdc", "+ Area");
   await page.click("#opsFull");

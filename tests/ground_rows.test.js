@@ -43,7 +43,7 @@ test("manual_row_requires_fields", async ({ page }) => {
 test("manual_row_with_names", async ({ page }) => {
   const who = await page.evaluate(() => { const p = books.find(b => isDept(b) && same(b.S.dept, "Pilot")).S.roster.find(p => p.name || p.id); return p.ini || p.id; });
   await SAVE(page, "m2", "manual", { time: "1000", act: "Brief", note: "", who });
-  const r = await ROW(page, "Brief"); assert.ok(r.who.includes(who) && r.who.includes("Pilot"), r.who);
+  const r = await ROW(page, "Brief"); assert.ok(r.who.includes(who), r.who);   // names only since z133 (no department tags)
 }, ED);
 test("orphan_shows_as_manual", async ({ page }) => {
   await SQ_ADD(page, { act: "Safety Brief", time: "0730-0800", note: "Room A", crew: "S1" });

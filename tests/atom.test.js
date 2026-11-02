@@ -300,10 +300,10 @@ test("help_mentions_atom", async ({ page }) => {
   for (const w of ["ATOM", "Initials", "Names to fix", "Publish to everyone", "expires", "clocked hours"]) assert.ok(t.includes(w), w);
   assert.ok(!t.includes("What each flight needs"));
 });
-test("version_is_z104", async ({ page }) => {
+test("version_is_stamped", async ({ page }) => {   // any current zNN: the number moves with every build
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });
-  assert.ok(/ z104 /.test(r + " "), r);
-  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version 2026-10-31 z104 "));
+  const m = /Dashboard version (\d{4}-\d\d-\d\d z\d+) /.exec(r + " "); assert.ok(m, r);
+  assert.ok((await page.evaluate(() => document.documentElement.outerHTML)).includes("Dashboard version " + m[1] + " "), "start screen version");
 });
 
 // ---- Final review fixes

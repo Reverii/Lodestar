@@ -83,9 +83,9 @@ test("removing_a_flight_clears_its_sorties_in_the_new_layout", async ({ page }) 
     const row = masterBook().S.fl.find(f => f.mi === 9 && f.d === 0 && f.sort === 2).row; document.querySelector("#mpSide button.rm[data-row='" + row + "']").click(); const e = books[mpIdx()].dirty.get("Flights!G" + row); return !!e && e.val === ""; });
   assert.strictEqual(r, true);
 }, ED);
-test("copy_flight_codes_clears_hours_and_sorties_in_the_departments_activities", async ({ page }) => {
-  const r = await page.evaluate(() => { const a = S.acts.findIndex(x => x.code === "FLT-2.0"); S.acts[a].hrs = 2; S.acts[a].sort = 2; syncCodes(); return { d: dirty.get("Activities!D" + (ACT_ROW0 + a)), e: dirty.get("Activities!E" + (ACT_ROW0 + a)) }; });
-  assert.ok(r.d && r.d.val === "" && r.e && r.e.val === "", JSON.stringify(r));
+test("code_sync_leaves_hours_and_sorties_columns_alone", async ({ page }) => {   // z131: the sync only adds codes and updates description / mission type / syllabus tag
+  const r = await page.evaluate(() => { const a = S.acts.findIndex(x => x.code === "FLT-2.0"); autoSyncCodes(); return { d: dirty.get("Activities!D" + (ACT_ROW0 + a)), e: dirty.get("Activities!E" + (ACT_ROW0 + a)) }; });
+  assert.ok(!r.d && !r.e, JSON.stringify(r));
 }, SUP2);
 
 (async () => {

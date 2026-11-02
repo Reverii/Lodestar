@@ -75,7 +75,8 @@ test("ops_whole_day_rows", async ({ page }) => {   // z112: the planners' WD ite
   const rows = await page.evaluate(() => [...document.querySelectorAll(".card.gp .gtab tbody tr")].map(r => r.cells[1].textContent.trim()));
   for (const c of codes) assert.ok(!rows.some(x => x.replace(/✎×$/, "") === c), c + " must not be on the board: " + JSON.stringify(rows));
   await page.click("#grAddBtn"); const h = await page.evaluate(() => document.getElementById("grRef").textContent);
-  for (const c of codes) assert.ok(h.includes(c) && h.includes("WD"), c + " in the reference list: " + h);
+  const on = await page.evaluate(codes => { const bi = books.findIndex(b => b.S.dept === "Pilot"); return withBook(bi, () => { const A = actIndex(); return codes.map(c => opsListOn(A.get(c.toUpperCase()))); }); }, codes);   // z138: only activities set to show in the Ops Room list
+  codes.forEach((c, k) => { if (on[k]) assert.ok(h.includes(c) && h.includes("WD"), c + " in the reference list: " + h); else assert.ok(!h.includes(c), c + " is not set to show, so not in the list: " + h); });
 }, OPS);
 test("ops_no_whole_day_rows_when_empty", async ({ page }) => {
   await goOps(page);

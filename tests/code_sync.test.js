@@ -45,6 +45,66 @@ test("ground_code_with_same_name_stays_ground", async ({ page }) => {
   assert.strictEqual(r.ci, r.gc); assert.notStrictEqual(r.ci, r.fl);
 }, FRESH);
 
+// ---- Task 2: add-only sync on save
+const syncOf = page => page.evaluate(() => { const before = dirty.size; const t = (syncQuiet(), $("toast").textContent); return { t, grew: dirty.size - before, keys: [...dirty.keys()].filter(k => k.startsWith("Activities!")) }; });
+test("save_adds_missing_code_to_activities", async ({ page }) => {
+  const c = await pick(page), k = await page.evaluate(code => { const P = masterBook().S, m = P.codes.find(x => x.code.toUpperCase() === code.toUpperCase()); return { desc: m.desc, mtype: m.mtype || "" }; }, c.code);
+  await dropAct(page, c.code);
+  const r = await syncOf(page);
+  const a = await page.evaluate(code => S.acts.find(x => x.code && x.code.toUpperCase() === code.toUpperCase()), c.code);
+  assert.ok(a, "code is back in Activities"); assert.strictEqual(a.desc, k.desc); assert.strictEqual(a.mtype, k.mtype);
+  assert.ok(r.keys.length >= 3, "A, B, C written: " + r.keys.join(",")); assert.ok(r.t.includes(c.code), r.t);
+}, FRESH);
+test("case_and_spaces_do_not_duplicate", async ({ page }) => {
+  const c = await pick(page);
+  await page.evaluate(code => { const a = S.acts.find(x => x.code && x.code.toUpperCase() === code.toUpperCase()); a.code = code.toLowerCase().replace(/\s+/g, ""); }, c.code);
+  const r = await syncOf(page);
+  const n = await page.evaluate(code => S.acts.filter(x => x.code && codeKey(x.code) === codeKey(code)).length, c.code);
+  assert.strictEqual(n, 1); assert.ok(!r.keys.some(k => /^Activities!A/.test(k)), "no new code row: " + r.keys.join(","));
+}, FRESH);
+test("changed_description_is_updated_not_the_code", async ({ page }) => {
+  const c = await pick(page);
+  await page.evaluate(code => { masterBook().S.codes.find(x => x.code.toUpperCase() === code.toUpperCase()).desc = "Brand new words"; }, c.code);
+  const r = await syncOf(page);
+  const row = await page.evaluate(code => ACT_ROW0 + S.acts.findIndex(x => x.code && x.code.toUpperCase() === code.toUpperCase()), c.code);
+  assert.deepStrictEqual(r.keys, ["Activities!B" + row]);
+}, FRESH);
+test("retired_code_stays", async ({ page }) => {
+  const c = await pick(page);
+  await page.evaluate(code => { const P = masterBook().S; P.codes = P.codes.filter(k => k.code.toUpperCase() !== code.toUpperCase()); }, c.code);
+  const r = await syncOf(page);
+  assert.ok(await page.evaluate(code => S.acts.some(x => x.code && x.code.toUpperCase() === code.toUpperCase()) && isFlightCode(S, code), c.code), "still in Activities and a flight");
+  assert.strictEqual(r.keys.length, 0, "nothing written: " + r.keys.join(","));
+}, FRESH);
+test("ground_name_clash_left_alone", async ({ page }) => {
+  await page.evaluate(() => { const gc = S.cats.findIndex((c, i) => c && i !== CAT_FLIGHT), slot = S.acts.find(a => !a.code); slot.code = "ZZG"; slot.cat = S.cats[gc]; slot.desc = "Ground";
+    masterBook().S.codes.push({ code: "ZZG", desc: "x", crew: "", mtype: "" }); });
+  const r = await syncOf(page);
+  assert.strictEqual(await page.evaluate(() => S.acts.filter(a => a.code === "ZZG").length), 1); assert.ok(r.t.includes("ZZG"), r.t);
+}, FRESH);
+test("full_activities_does_not_block_save", async ({ page }) => {
+  await page.evaluate(() => { S.acts.forEach((a, i) => { if (!a.code) { a.code = "FILL" + i; a.cat = S.cats[CAT_FLIGHT]; } }); masterBook().S.codes.push({ code: "ZZFULL", desc: "x", crew: "", mtype: "" }); window.alert = () => { throw new Error("alert"); }; });
+  const r = await syncOf(page);
+  assert.ok(r.t.includes("ZZFULL") && /full/i.test(r.t), r.t);
+}, FRESH);
+test("view_only_and_other_departments_do_not_sync", async ({ page }) => {
+  const c = await pick(page); await dropAct(page, c.code);
+  const r1 = await page.evaluate(() => { books[0].noEdit = true; const n = dirty.size; syncQuiet(); const x = dirty.size - n; books[0].noEdit = false; return x; });
+  assert.strictEqual(r1, 0, "view only");
+  const r2 = await page.evaluate(() => { const bi = books.findIndex(b => b.S.kind === "master"); useBook(bi); const n = dirty.size; syncQuiet(); const x = dirty.size - n; useBook(0); return x; });
+  assert.strictEqual(r2, 0, "not a department file");
+}, FRESH);
+test("master_other_year_does_not_sync", async ({ page }) => {
+  const c = await pick(page); await dropAct(page, c.code);
+  const n = await page.evaluate(() => { masterBook().S.year += 1; const n0 = dirty.size; syncQuiet(); return dirty.size - n0; });
+  assert.strictEqual(n, 0);
+}, FRESH);
+test("save_path_runs_the_sync", async ({ page }) => {
+  const c = await pick(page); await dropAct(page, c.code);
+  const got = await page.evaluate(async code => { await saveOwn(); const i = S.acts.findIndex(x => x.code && x.code.toUpperCase() === code.toUpperCase()); return { i, v: cellsAt(books[0], WB.files, "Activities")["A" + (ACT_ROW0 + i)] }; }, c.code);
+  assert.ok(got.i >= 0); assert.strictEqual(String(got.v).toUpperCase(), c.code.toUpperCase());
+}, FRESH);
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0, S = null;
   for (const t of tests) {

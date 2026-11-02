@@ -2599,7 +2599,7 @@ async function autoSaveBook(b) {
   }
   const bi = books.indexOf(b); if (bi < 0) return;
   let built, sent;
-  withBook(bi, () => { if (S.hasCur && !S.kind) curQuiet(); sent = new Map(dirty); built = logBuild(b, sent); });
+  withBook(bi, () => { if (S.hasCur && !S.kind) curQuiet(); syncQuiet(); sent = new Map(dirty); built = logBuild(b, sent); });
   if (h.sp) {
     const folder = h.url.slice(0, h.url.lastIndexOf("/"));
     const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(folder) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: built.bytes, headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
@@ -2725,6 +2725,7 @@ async function saveOwn() {
   if (!WB) return;
   let built;
   if (S.hasCur && !S.kind && (mayEdit(cur.b))) curQuiet();
+  syncQuiet();
   const sent = new Map(dirty);
   try { built = logBuild(books[cur.b], sent); } catch (e) { alert("Could not build the Excel file: " + e.message); return; }
   const blob = new Blob([built.bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -3483,6 +3484,40 @@ function syncCodes() {
     S.acts[i] = { code: a.code, desc: a.desc || "", cat: a.cat || "", hrs: null, sort: null, mtype: a.mtype || "", stag: a.stag || "" };
   }
   toast("Copied the flight codes from the Master Planner" + (keep.length ? "; kept " + keep.map(a => a.code).join(", ") + " because the plans still use " + (keep.length === 1 ? "it" : "them") : "") + (drop.length ? "; removed " + drop.map(a => a.code).join(", ") : "") + ". Click Save to Excel to keep it.", 6000);
+}
+// ---------- automatic flight-code sync (add only): what a save would write into this department's Activities
+// -> { add: [{code, desc, mtype, stag, row}], upd: [{i, f: {desc?, mtype?, stag?}}], skipped: [codes that are ground codes here], full: [codes with no free row] }
+function codeSyncPlan(st, bi) {
+  const out = { add: [], upd: [], skipped: [], full: [] }, mb = masterBook(); if (!mb || st.kind || !mayEdit(bi) || mb.S === st || mb.S.year !== st.year || !st.cats[CAT_FLIGHT]) return out;
+  const P = mb.S, free = []; st.acts.forEach((a, i) => { if (!a.code && !a.desc) free.push(i); });
+  for (const k of P.codes) { if (!k.code) continue;
+    const i = st.acts.findIndex(x => x.code && codeKey(x.code) === codeKey(k.code));
+    if (i < 0) { if (free.length) out.add.push({ i: free.shift(), code: k.code, desc: k.desc || "", mtype: k.mtype || "", stag: k.stag || "" }); else out.full.push(k.code); continue; }
+    const a = st.acts[i]; if (!isFlAct(st, a)) { out.skipped.push(k.code); continue; }
+    const f = {}; if ((a.desc || "") !== (k.desc || "")) f.desc = k.desc || ""; if (st.hasCur && !same(a.mtype, k.mtype)) f.mtype = k.mtype || ""; if (st.hasStag && P.hasStag && !same(a.stag, k.stag)) f.stag = k.stag || "";
+    if (Object.keys(f).length) out.upd.push({ i, f }); }
+  return out;
+}
+const pendingCodes = () => { const p = codeSyncPlan(S, cur.b); return p.add.map(x => x.code); };
+// writes the plan into the open department file; returns the plan
+function autoSyncCodes() {
+  const p = codeSyncPlan(S, cur.b), fc = flCatName(S);
+  p.add.forEach(x => { const r = ACT_ROW0 + x.i; put("Activities", "A" + r, x.code); put("Activities", "B" + r, x.desc); put("Activities", "C" + r, fc);
+    if (S.hasCur) put("Activities", "F" + r, x.mtype); if (S.hasStag) put("Activities", "K" + r, x.stag);
+    S.acts[x.i] = { code: x.code, desc: x.desc, cat: fc, hrs: null, sort: null, mtype: x.mtype, stag: x.stag }; });
+  p.upd.forEach(u => { const r = ACT_ROW0 + u.i, a = S.acts[u.i];
+    if ("desc" in u.f) { a.desc = u.f.desc; put("Activities", "B" + r, u.f.desc); } if ("mtype" in u.f) { a.mtype = u.f.mtype; put("Activities", "F" + r, u.f.mtype); } if ("stag" in u.f) { a.stag = u.f.stag; put("Activities", "K" + r, u.f.stag); } });
+  return p;
+}
+// run just before a department file is built for saving; not an undo step
+function syncQuiet() {
+  const k = undoPend; undoPend = true; let p;
+  try { p = autoSyncCodes(); } catch (e) { console.warn(e); return; } finally { undoPend = k; }
+  const msg = [p.add.length ? "Added flight codes from the Master Planner: " + p.add.map(x => x.code).join(", ") + "." : "",
+    p.full.length ? "Could not add " + p.full.join(", ") + ": the Activities list is full." : "",
+    p.skipped.length ? "Left alone " + p.skipped.join(", ") + ": already a ground code here." : ""].filter(Boolean).join(" ");
+  if (msg) toast(msg, 6000);
+  if (p.add.length || p.upd.length) { renderActs(); }
 }
 function renderCur() {
   renderAtom();

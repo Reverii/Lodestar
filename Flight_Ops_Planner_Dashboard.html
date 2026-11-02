@@ -1666,7 +1666,18 @@ function setNote(mi, r, d, tx) {
 }
 // ---------- role tags (AC / Pax): a planner's tag on a crew flight cell, kept in the department file's own Role Tags sheet
 const ROLE_SHEET = "Role Tags", ROLE_ROW0 = 2, ROLE_N = 1500, ROLE_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="4" width="14" customWidth="1"/>';
-const isFlightCode = (st, code) => { const a = st.acts.find(x => x.code && same(x.code, code)); return !!a && !!st.cats[CAT_FLIGHT] && same(a.cat, st.cats[CAT_FLIGHT]); };
+// a code is a flight when Activities holds it in the Flight category, or (no Activities row at all) when the Master Planner lists it or a MASTER row of this file carries it
+const isFlightCode = (st, code) => { const a = st.acts.find(x => x.code && same(x.code, code)); if (a) return !!st.cats[CAT_FLIGHT] && same(a.cat, st.cats[CAT_FLIGHT]);
+  return !!st.cats[CAT_FLIGHT] && masterCodeSet(st).has(String(code || "").trim().toUpperCase()); };
+// flight codes the Master Planner knows for this file: its Flight Codes list (same plan year) and every code on this file's MASTER rows. Map UPPER CASE code -> code as written
+function masterCodeSet(st) {
+  const out = new Map(), add = c => { c = String(c || "").trim(); if (!c) return; const u = c.toUpperCase(); if (!out.has(u)) out.set(u, c); const x = u.match(/^\d+\s*X\s*(.+)$/); if (x && !out.has(x[1])) out.set(x[1], c.replace(/^\d+\s*x\s*/i, "")); };
+  const mb = masterBook(); if (mb && mb.S !== st && mb.S.year === st.year) mb.S.codes.forEach(k => add(k.code));
+  (st.m || []).forEach(M => { if (!M || !M.master) return;
+    for (let j = 0; j < 6; j++) { const row = M.master[j]; if (row) row.forEach(add); }
+    const note = M.mnote && M.mnote[1]; if (note) note.forEach(n => { const more = String(n || "").match(MORE_RE); if (more) more[2].split(",").forEach(x => add(moreSplit(x)[0])); }); });
+  return out;
+}
 // "AC" | "PAX" | "" for crew grid row r (person i = r/3, shift r%3) on day d of month mi; a tag on a cell that is no longer a flight does not count
 function roleOf(st, mi, r, d) {
   const k = mi + ":" + r + ":" + d, t = st.roleTags && st.roleTags.get(k); if (!t) return "";
@@ -2883,6 +2894,7 @@ function actIndex() {
     const ci = S.cats.findIndex(c => c && c.toLowerCase() === a.cat.toLowerCase());
     map.set(a.code.toUpperCase(), { ...a, ci, sorties: 1, hours: 0 });   // sorties and hours are not per code any more: a flight cell counts once; hours come from the MASTER row's time range (cellHrs)
   }
+  if (S.cats[CAT_FLIGHT]) masterCodeSet(S).forEach((c, u) => { if (!map.has(u)) map.set(u, { code: c, desc: "", cat: S.cats[CAT_FLIGHT], ci: CAT_FLIGHT, sorties: 1, hours: 0, virtual: true }); });   // on the Master Planner but not copied into Activities yet: still a flight
   return map;
 }
 const daysIn = (y, m) => new Date(y, m + 1, 0).getDate();
@@ -5065,9 +5077,10 @@ function openPop(k, initial) {
     const cs = rowShift(p0.r), base = p0.r - cs, cv = String(M0.grid[p0.r][p0.d] || "").toUpperCase();
     popPlan = { s: cs, nofly: String(M0.mnote[0][p0.d] || "").toUpperCase().startsWith(NOFLY) };
     popItems = [];
+    const A_virt = [...A.values()].filter(a => a.virtual).map(a => ({ code: a.code, desc: a.desc, cat: a.cat }));   // Master Planner codes with no Activities row yet
     for (let s = 0; s < 3; s++) {
       const map = plannedFlights(M0, p0.d, s), there = String(M0.grid[base + s][p0.d] || "");
-      S.acts.forEach(a => { if (!a.code || !isFl(a)) return; const c = a.code.toUpperCase();
+      S.acts.concat(A_virt).forEach(a => { if (!a.code || !isFl(a)) return; const c = a.code.toUpperCase();
         if (map.has(c)) popItems.push(Object.assign({}, a, { s, pt: map.get(c), grp: SHIFTS[s] + " flights", there: s !== cs && there && !same(there, a.code) ? there : "" }));
         else if (s === cs && c === cv) popItems.push(Object.assign({}, a, { s, off: true, grp: SHIFTS[s] + " flights" })); });
     }

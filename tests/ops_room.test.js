@@ -405,6 +405,17 @@ test("right_click_name_removes_leave", async ({ page }) => {   // z146
   const w2 = await set(); await page.click("#opsSide .olp", { button: "right" }); await page.click("#opsCtx button:has-text('whole run')");
   assert.deepStrictEqual(await cnt(w2), [0, 0, 0], "the whole run is cleared");
 }, ED);
+test("duty_strip_cells_take_several_lines", async ({ page }) => {   // z147: SXO / OPS O / SDO / BDO, Safety ... Codes accept Enter for a new line
+  await goOps(page, DAY);
+  for (const sel of ["#opsBoard .odg .dc.oe >> nth=2", "#opsBoard .odi.codes .dv"]) {
+    await page.click(sel); assert.strictEqual(await page.evaluate(() => document.activeElement.tagName), "TEXTAREA", sel + " opens a text box that takes lines");
+    await page.keyboard.type("AAA"); await page.keyboard.press("Enter"); await page.keyboard.type("BBB"); await page.click("#opsStats", { position: { x: 5, y: 5 } });
+  }
+  const r = await page.evaluate(() => { const st = books[opsIdx()].S; return Object.values(st.db).filter(v => /AAA\nBBB/.test(v)).length; }); assert.strictEqual(r, 2, "both cells saved with two lines");
+  const h = await page.evaluate(() => [...document.querySelectorAll("#opsBoard .odg .dc, #opsBoard .odi.codes .dv")].filter(e => /AAA/.test(e.textContent)).map(e => e.getBoundingClientRect().height > 0 && getComputedStyle(e).whiteSpace));
+  assert.deepStrictEqual(h.length, 2); assert.ok(h.every(w => /pre/.test(w)), h.join());
+  await page.click("#opsBoard .odi.dob .dv"); assert.strictEqual(await page.evaluate(() => document.activeElement.tagName), "INPUT", "DOB stays one line");
+}, ED);
 test("area_add_hidden_when_projector_clicked", async ({ page }) => {
   await goOps(page, DAY); await CTX(page, ".opsdc", "+ Area");
   await page.click("#opsFull");

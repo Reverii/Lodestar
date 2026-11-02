@@ -830,7 +830,8 @@ table.gtab td.gl{color:#6d28d9;font-style:italic}table.gtab td.gw b{font-weight:
 .odg .dh{grid-row:1;font-weight:900;font-size:10px;letter-spacing:.5px;color:#be123c;white-space:nowrap}
 .odg .tg{grid-column:1;font-size:8.5px;font-weight:800;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#fff}
 .odg .tg.s0{background:#0369a1}.odg .tg.s1{background:#b45309}.odg .tg.s2{background:#312e81}
-.odg .dc{display:flex;align-items:center;justify-content:center;background:#fff1f2;border:1px solid #fecdd3;border-radius:4px;font-weight:800;font-size:13px;color:var(--s900);overflow:hidden;white-space:nowrap;min-width:0}
+.odg .dc{display:flex;align-items:center;justify-content:center;background:#fff1f2;border:1px solid #fecdd3;border-radius:4px;font-weight:800;font-size:13px;color:var(--s900);overflow:hidden;white-space:pre-line;text-align:center;line-height:1.15;min-width:0}
+.odg .dc textarea,.odi .dv textarea{width:100%;box-sizing:border-box;font:inherit;font-size:12px;border:1px solid var(--blue);border-radius:4px;padding:2px;resize:none;text-align:center}.odi .dv textarea{text-align:left}
 .odg .dc.emp{background:#fff;border:1.5px dashed var(--s300);color:var(--s400);font-weight:600}.odg .dc .oph{color:var(--s500);font-weight:600;font-size:11px}.odg .dc input{text-align:center;padding:0 2px}
 .odsep{width:1px;background:var(--s300);margin:2px 1px;flex:none}
 .odi{flex:1 1 0;min-width:0;background:#fff;border:1px solid var(--s200);border-left:4px solid var(--s500);border-radius:7px;padding:3px 8px 4px;display:flex;flex-direction:column}
@@ -1119,7 +1120,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z146</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z147</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4178,7 +4179,8 @@ function opsAreaCard(D, ed) {
 function opsDbClick(e) {
   const td = e.target.closest("[data-db]"); if (!td || !opsEditable() || td.querySelector("input,textarea")) return;
   const st = books[opsIdx()].S, ref = td.dataset.db;
-  td.innerHTML = td.classList.contains("dbml") ? "<textarea data-dbi='" + ref + "' data-ml='1' rows='4'>" + esc(st.db[ref] || td.dataset.auto || "") + "</textarea>"   // Intel: several lines
+  const ml = td.classList.contains("dbml") || td.classList.contains("dc") || (td.classList.contains("dv") && !td.classList.contains("tm"));   // several lines: Intel, the duty strip (SXO, OPS O, SDO, BDO), Safety, Prefect, Security, Codes; DOB (a time) and Area stay one line
+  td.innerHTML = ml ? "<textarea data-dbi='" + ref + "' data-ml='1' rows='" + (td.classList.contains("dbml") ? 4 : 3) + "'>" + esc(st.db[ref] || td.dataset.auto || "") + "</textarea>"
     : "<input data-dbi='" + ref + "' value='" + esc(st.db[ref] || "") + "' placeholder='" + esc(td.dataset.ph) + "'>";
   const i = td.querySelector("input,textarea"); i.focus(); i.select();
 }
@@ -5503,7 +5505,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z146 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z147 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z146)
+# LODESTAR handoff (updated 2026-11-02, after z147)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z147 (2 Nov, Brandon): several lines in the duty strip
+The Ops Room duty strip cells (SXO, OPS O, SDO, BDO) and Safety, Prefect, Security and Codes now open a text box that takes several lines (Enter = new line; Ctrl+Enter or clicking away saves), like Intel did. The saved text keeps the line breaks (`white-space:pre-line` on `.dc`, `pre-wrap` on `.dv`). DOB (a time) and the Area lines stay one line. Dashboard only; the Excel cell just holds the text with line breaks. Code: `opsDbClick`. Test `duty_strip_cells_take_several_lines`; `ops_room` 55/55. Very tall entries are cut by the box height (the cell does not grow).
 
 ## z146 (2 Nov, Brandon): remove Leave from the Ops Room
 **Right-click a name on the Leave and MC card** (`.olp`, carries `data-lv="bi|i|code"`): **Remove <name> <code> (this day)** and, when the code runs on more days, **Remove the whole run: 13 Oct to 17 Oct (5 days)** (`opsLeaveRun` finds the run across months; `opsLeaveRemove` clears only the cells that carry that code, in AM / PM / NIGHT, in the person's department file, saved with it). Works for Leave, Off and MC. The menu also keeps + Leave / + MC. Needs the department file open for editing (Ops Room mode). **Removing an MC does not up-chit**: a down-chit made from it stays until it is up-chitted (Down-chit card). Dashboard only. Test `right_click_name_removes_leave`; `ops_room` 54/54.

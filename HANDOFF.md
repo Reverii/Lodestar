@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z138)
+# LODESTAR handoff (updated 2026-11-02, after z139)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z139 (2 Nov, Brandon): Ops Room top and bottom keep their size, only the flight table scales
+Before, a busy day shrank the whole page (header, chips, duty strip, bottom cards). Now `opsFit` keeps the page at the chosen size (shrunk for width only) and `opsFill` scales the **flight table alone** inside its box: a quiet day enlarges it (up to 1.6), a busy day shrinks it down to 0.6. Only if the table is already at 0.6 and still does not fit does the whole page shrink a little too (the small-screen safety net, as before; at 1280x720 a very busy day still does this). The bottom strip no longer gives room back to the flight table (it follows its own cards, 250 px up to 50%). Dashboard only. Tests: new `many_flights_shrink_only_the_flight_table`; `busy_day_fits_height_1920` and `long_lists_do_not_shrink_the_table` rewritten for the new rule; `ops_room` 46/48 (same two dark-mode failures). Needs Brandon's look on the real screen.
 
 ## z138 (2 Nov, Brandon): the planner chooses what goes in the Ops Room "From the department plans" list
 Activities page (ground table) has a new **Show in Ops Room list** Yes / blank column; `opsDeptRef` lists an activity only when it says Yes (WD row too). Stored in Activities column **E** (was hidden "(unused)"; header `Ops Room list`; no cell moved, **no layout stamp bump**). `opsListOn`, `S.hasOps`. **A file without the column** keeps the old rule (Admin, Sim, Oversea Duty: Meeting, Outstation, SIM, SIMCEN, Detachment; z137), so the repo's current xlsx files work unchanged. **First choice on the page** creates the header and writes Yes for every activity the old rule listed, so nothing disappears. New builds (`.build_planner.py`) carry the header and the Yes defaults. Column E stays hidden in Excel; the dashboard page is the place to set it. Upload the DEV dashboard only (new xlsx optional). Test `node tests/ops_list_column.test.js` (3); `ops_room` 45/47 (same two dark-mode failures). Mock-up `previews/ops_list_trigger_mockup.png` (the page uses a Yes / No dropdown, not the toggle).

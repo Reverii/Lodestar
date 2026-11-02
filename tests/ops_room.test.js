@@ -271,7 +271,7 @@ test("quiet_day_not_stretched", async ({ page }) => {
 }, Object.assign({}, ED, { viewport: { width: 1920, height: 1080 } }));
 test("busy_day_fits_height_1920", async ({ page }) => {
   const f = await FIT(page, true);
-  assert.ok(f.z < f.chosen && f.z >= 0.5, JSON.stringify(f)); assert.ok(f.mainOver <= 2 && f.docOver <= 1, JSON.stringify(f));
+  assert.ok(f.z <= f.chosen && f.z >= 0.5, JSON.stringify(f)); assert.ok(f.mainOver <= 2 && f.docOver <= 1, JSON.stringify(f));   // z139: the flight table shrinks by itself first, so the page may stay at the chosen size
 }, Object.assign({}, ED, { viewport: { width: 1920, height: 1080 } }));
 test("busy_day_fits_height_1280", async ({ page }) => {
   const f = await FIT(page, true);
@@ -328,7 +328,20 @@ test("long_lists_do_not_shrink_the_table", async ({ page }) => {
   await page.evaluate(() => { const og = opsGround; window.opsGround = D => og(D).concat(Array.from({ length: 40 }, (_, i) => ({ sh: i % 3, k: "3", when: "", until: "", act: "Item " + i, desc: "", who: "X", note: "" }))); renderOps(); });
   await page.waitForTimeout(200);
   const g = await page.evaluate(() => ({ z: opsZEff, side: document.getElementById("opsSide").getBoundingClientRect().height, h: innerHeight }));
-  assert.ok(Math.abs(g.z - z0) < 0.001, "zoom " + z0 + " -> " + g.z); assert.ok(g.side <= 0.45 * g.h + 1, "bottom row " + g.side);
+  assert.ok(g.z >= 0.5 && g.z <= z0 + 0.001, "zoom " + z0 + " -> " + g.z); assert.ok(g.side <= 0.51 * g.h + 1, "bottom row " + g.side);   // z139: a long list may grow the strip (to half the page); the flight table gives way, never below 50% of the page size
+}, ED);
+test("many_flights_shrink_only_the_flight_table", async ({ page }) => {   // z139: the top and the bottom cards keep their size, only the flight table scales (until it is at its smallest readable size)
+  await page.setViewportSize({ width: 1920, height: 1080 }); await goOps(page, DAY);
+  const m = () => page.evaluate(() => { opsFit(); const tb = document.querySelector("table.opst"), m = $("opsMain"), r = id => document.getElementById(id).getBoundingClientRect().height;
+    return { z: opsZEff, top: document.querySelector("#opsScale .opsbar").getBoundingClientRect().height, side: r("opsSide"), tz: +tb.style.zoom || 1, over: m.scrollHeight - m.clientHeight, flights: tb.querySelectorAll("tr.f").length }; });
+  const a = await m();
+  await page.evaluate(() => { const D = opsDay(cur.opsDay), S2 = books[opsIdx()].S; for (let i = 0; i < 4; i++) S2.oa.push({ row: 900 + i, y: D.y, mi: D.mi, d: D.d, s: i % 3, code: "FLT-1.5", time: "0900-1030", crew: "", note: "", oa: true }); renderOps(); });
+  const b = await m();
+  assert.ok(b.flights > a.flights + 2, "more flights: " + a.flights + " -> " + b.flights);
+  assert.ok(Math.abs(b.z - a.z) < 0.001, "page zoom " + a.z + " -> " + b.z);
+  assert.ok(Math.abs(b.side - a.side) < 2, "bottom cards " + a.side + " -> " + b.side);
+  assert.ok(Math.abs(b.top - a.top) < 2, "top bar " + a.top + " -> " + b.top);
+  assert.ok(b.tz < a.tz && b.tz >= 0.6, "table zoom " + a.tz + " -> " + b.tz); assert.ok(b.over < 3, "no scroll: " + b.over);
 }, ED);
 test("area_add_hidden_when_projector_clicked", async ({ page }) => {
   await goOps(page, DAY); await page.click("#opsAreaAdd");

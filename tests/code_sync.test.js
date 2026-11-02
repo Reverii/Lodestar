@@ -105,6 +105,28 @@ test("save_path_runs_the_sync", async ({ page }) => {
   assert.ok(got.i >= 0); assert.strictEqual(String(got.v).toUpperCase(), c.code.toUpperCase());
 }, FRESH);
 
+// ---- Task 3: the Copy button and the "differs" notices are gone
+test("activities_page_has_no_copy_button", async ({ page }) => {
+  const r = await page.evaluate(() => { renderActs(); return { btn: !!document.querySelector("#codeSync"), t: $("actSync").textContent }; });
+  assert.ok(!r.btn, "no #codeSync"); assert.ok(/come from the Master Planner/.test(r.t), r.t);
+}, FRESH);
+test("waiting_list_names_codes_that_will_be_added", async ({ page }) => {
+  const c = await pick(page); await dropAct(page, c.code);
+  const t1 = await page.evaluate(() => { renderActs(); return $("actSync").textContent; });
+  assert.ok(t1.includes(c.code), t1);
+  const t2 = await page.evaluate(() => { syncQuiet(); renderActs(); return $("actSync").textContent; });
+  assert.ok(!/Waiting to add/.test(t2), t2);
+}, FRESH);
+test("no_differs_note_on_the_master_planning_page", async ({ page }) => {
+  const c = await pick(page); await dropAct(page, c.code);
+  const h = await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='mp']").click(); renderMp(); return $("mpNote").innerHTML; });
+  assert.ok(!/Flight codes differ/.test(h), h);
+}, FRESH);
+test("no_dangling_references", async ({ page }) => {
+  const r = await page.evaluate(() => [typeof codeDiffs, typeof codeDiffN, typeof syncCodes]);
+  assert.deepStrictEqual(r, ["undefined", "undefined", "undefined"]);
+}, FRESH);
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0, S = null;
   for (const t of tests) {

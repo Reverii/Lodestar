@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z139)
+# LODESTAR handoff (updated 2026-11-02, after z140)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z140 (2 Nov, Brandon): dark mode removed
+The Ops Room Light / Dark button and all `body.opsdark` styles are gone (the Ops Room is always light). Old saved `opsTheme` values in the browser are simply ignored. Dashboard only. The 7 dark / theme tests were removed; `ops_room` 47/47 (the two old dark-mode failures went with them). Do not bring it back unless he asks.
 
 ## z139 (2 Nov, Brandon): Ops Room top and bottom keep their size, only the flight table scales
 Before, a busy day shrank the whole page (header, chips, duty strip, bottom cards). Now `opsFit` keeps the page at the chosen size (shrunk for width only) and `opsFill` scales the **flight table alone** inside its box: a quiet day enlarges it (up to 1.6), a busy day shrinks it down to 0.6. Only if the table is already at 0.6 and still does not fit does the whole page shrink a little too (the small-screen safety net, as before; at 1280x720 a very busy day still does this). The bottom strip no longer gives room back to the flight table (it follows its own cards, 250 px up to 50%). Dashboard only. Tests: new `many_flights_shrink_only_the_flight_table`; `busy_day_fits_height_1920` and `long_lists_do_not_shrink_the_table` rewritten for the new rule; `ops_room` 46/48 (same two dark-mode failures). Needs Brandon's look on the real screen.

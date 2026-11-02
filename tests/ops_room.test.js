@@ -223,34 +223,15 @@ test("clock_shows_time", async ({ page }) => {
   await page.evaluate(() => { window.OPS_NOW = "07:05"; opsTick(); });
   assert.strictEqual(await page.evaluate(() => document.getElementById("opsClock").textContent.trim()), "07:05");
 }, ED);
-test("theme_toggle_dark_and_back", async ({ page }) => {
-  await goOps(page, DAY);
-  const light = await BGSUM(page, "#opsMain tr.f td.oc"); assert.ok(light > 700, "light cells are light: " + light);
-  const plan0 = await page.evaluate(() => getComputedStyle(document.querySelector("#v-plan")).backgroundColor);
-  await page.click("#opsTheme");
-  assert.ok(await page.evaluate(() => document.body.classList.contains("opsdark")));
-  for (const sel of ["#opsMain tr.f td.oc", "#opsLeft", "#opsSide .card", "#opsStats .opsk"]) assert.ok(await BGSUM(page, sel) < 250, sel + " is dark: " + await BGSUM(page, sel));
-  assert.strictEqual(await page.evaluate(() => getComputedStyle(document.querySelector("#v-plan")).backgroundColor), plan0, "other pages stay as they were");
-  await page.click("#opsTheme");
-  assert.ok(await BGSUM(page, "#opsMain tr.f td.oc") > 700);
+test("default_size_100", async ({ page }) => {
+  const g = await page.evaluate(() => ({ z: OPS_ZS[opsZi], saved: localStorage.getItem("opsZoom2"), steps: OPS_ZS.join() }));
+  assert.strictEqual(g.z, 1, g.steps); assert.strictEqual(g.saved, null);
 }, ED);
-test("theme_persists", async ({ page }) => {
-  await goOps(page, DAY); await page.click("#opsTheme");
-  assert.strictEqual(await page.evaluate(() => localStorage.getItem("opsTheme")), "dark");
-  await page.evaluate(() => { document.body.classList.remove("opsdark"); opsThemeInit(); });
-  assert.ok(await page.evaluate(() => document.body.classList.contains("opsdark")));
+test("size_buttons_remembered", async ({ page }) => {
+  await goOps(page, DAY); await page.click("#opsSize button[data-z='1']");
+  const g = await page.evaluate(() => ({ z: OPS_ZS[opsZi], saved: localStorage.getItem("opsZoom2") }));
+  assert.strictEqual(g.z, 1.15); assert.strictEqual(g.saved, "3");
 }, ED);
-test("theme_storage_throws", async ({ page }) => {
-  await goOps(page, DAY);
-  const r = await page.evaluate(() => { Storage.prototype.getItem = () => { throw new Error("blocked"); }; Storage.prototype.setItem = () => { throw new Error("blocked"); };
-    try { opsThemeInit(); document.getElementById("opsTheme").click(); return document.body.classList.contains("opsdark"); } catch (e) { return "threw " + e.message; } });
-  assert.strictEqual(r, true, "still switches to dark for this visit");
-}, ED);
-test("dark_inputs_readable", async ({ page }) => {
-  await goOps(page, DAY); await page.click("#opsTheme");
-  assert.ok(await BGSUM(page, "#opsDayRem") < 250, "remarks box is dark");
-}, ED);
-
 // a day with many flights: the day's rows repeated (same keys, only the layout matters)
 const BUSY = page => page.evaluate(() => { const od = opsDay; window.opsDay = iso => { const D = od(iso); if (D && D.rows) D.rows = [].concat(D.rows, D.rows, D.rows, D.rows, D.rows); return D; }; });
 const FIT = async (page, busy) => { await goOps(page, DAY); if (busy) await BUSY(page); await page.click("#opsFull"); await page.evaluate(() => renderOps()); await page.waitForTimeout(300);
@@ -303,24 +284,40 @@ const CONTRAST = (page, sel) => page.evaluate(sel => { const P = c => c.match(/[
   const el = document.querySelector(sel); let bgEl = el, bg = P(getComputedStyle(bgEl).backgroundColor); while ((bg.length > 3 && bg[3] === 0) && bgEl.parentElement) { bgEl = bgEl.parentElement; bg = P(getComputedStyle(bgEl).backgroundColor); }
   const fg = P(getComputedStyle(el).color), a = L(fg) + 0.05, b = L(bg) + 0.05; return Math.max(a, b) / Math.min(a, b); }, sel);
 
-test("dark_today_button_readable", async ({ page }) => {
-  await goOps(page, DAY); await page.click("#opsTheme");
-  await page.evaluate(() => { opsGo(opsToday()); });
-  const c = await CONTRAST(page, "#opsQuick button.on");
-  assert.ok(c >= 3, "Today button contrast " + c);
+test("quiet_day_not_stretched", async ({ page }) => {
+  const f = await FIT(page, false);
+  assert.strictEqual(f.z, f.chosen, JSON.stringify(f)); assert.ok(f.mainOver <= 2, JSON.stringify(f));
+}, Object.assign({}, ED, { viewport: { width: 1920, height: 1080 } }));
+test("busy_day_fits_height_1920", async ({ page }) => {
+  const f = await FIT(page, true);
+  assert.ok(f.z <= f.chosen && f.z >= 0.5, JSON.stringify(f)); assert.ok(f.mainOver <= 2 && f.docOver <= 1, JSON.stringify(f));   // z139: the flight table shrinks by itself first, so the page may stay at the chosen size
+}, Object.assign({}, ED, { viewport: { width: 1920, height: 1080 } }));
+test("busy_day_fits_height_1280", async ({ page }) => {
+  const f = await FIT(page, true);
+  assert.ok(f.z < f.chosen && f.z >= 0.5, JSON.stringify(f)); assert.ok(f.mainOver <= 2 && f.docOver <= 1, JSON.stringify(f));
+}, Object.assign({}, ED, { viewport: { width: 1280, height: 720 } }));
+
+test("editing_paths_still_work", async ({ page }) => {
+  await goOps(page, DAY);
+  // a seat cell opens the seat picker
+  await page.click("#opsMain tr.f td[data-oc]");
+  assert.ok(await page.evaluate(() => getComputedStyle(document.getElementById("opsPop")).display === "block"), "seat picker opens");
+  await page.evaluate(() => { document.getElementById("opsPop").style.display = "none"; cur.opsPop = null; });
+  // the remarks box saves into the Day Board cell
+  await page.fill("#opsDayRem", "Fuel bowser out 1300"); await page.press("#opsDayRem", "Tab");
+  assert.ok(await page.evaluate(() => { const r = document.getElementById("opsDayRem"); return Object.values(books[opsIdx()].S.db).includes("Fuel bowser out 1300"); }), "remark stored");
+  // 1 Set / 2 Set
+  await goOps(page, DAY); await page.click(".sbset[data-sbset='1']");
+  assert.strictEqual(await page.evaluate(() => opsSbSets(opsDay(cur.opsDay))), 1);
+  await page.click(".sbset[data-sbset='2']");
+  assert.strictEqual(await page.evaluate(() => opsSbSets(opsDay(cur.opsDay))), 2);
+  // + Ops Add and + Down-chit open their dialogs
+  await page.click("#opsAddBtn"); assert.ok(await page.evaluate(() => getComputedStyle(document.getElementById("oaPop")).display === "flex"), "Ops Add dialog");
+  await page.evaluate(() => { document.getElementById("oaPop").style.display = "none"; });
+  await page.click("#opsDownAdd"); assert.strictEqual(await page.evaluate(() => document.getElementById("chitTitle").textContent), "Down-chit");
 }, ED);
-test("dark_due_seat_stays_red", async ({ page }) => {
-  await page.evaluate(() => { window.OPS_TODAY = "2026-10-14"; window.OPS_NOW = "07:30"; });
-  await goOps(page, DAY); await page.click("#opsTheme"); await page.evaluate(() => renderOps());
-  const c = await page.evaluate(() => { const e = document.querySelector(".seatp.urg"); return e ? getComputedStyle(e).borderTopColor : null; });
-  assert.ok(c, "a due seat exists"); const [r, g] = c.match(/\d+/g).map(Number); assert.ok(r > 180 && g < 150, "due seat border " + c);
-}, ED);
-test("dark_down_chit_name_readable", async ({ page }) => {
-  await goOps(page, DAY); await page.click("#opsTheme");
-  await page.evaluate(() => { document.querySelector("#opsMain tr.f td.oc:not(.miss):not(.na)").classList.add("odown"); });
-  const c = await CONTRAST(page, "#opsMain tr.f td.oc.odown b");
-  assert.ok(c >= 3, "down-chit name contrast " + c);
-}, ED);
+
+// contrast ratio of an element's text colour against its (own or nearest painted) background, run in the page
 test("long_lists_do_not_shrink_the_table", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await goOps(page, DAY); await page.click("#opsFull"); await page.evaluate(() => renderOps()); await page.waitForTimeout(200);

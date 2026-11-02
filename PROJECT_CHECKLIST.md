@@ -219,3 +219,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [-] ~~CAT hours tracking under Syllabus Tracking (Brandon, 2 Nov: D to C 100 hrs, C to B 200, B to A 300, hours from ATOM)~~ Dropped (2 Nov, Brandon): the ATOM export has no total flying hours (only Current Month, Last 3 Months Avg, Cumulative Monthly Avg for WY), ATOM is a separate system, so it is not built. Not to be suggested again unless the export gains a total column.
 - [?] Ops Room list chosen by the planner (z138, 2 Nov, Brandon): Activities page column "Show in Ops Room list" decides which activities appear under From the department plans; without the column the category rule (Admin, Sim, Oversea Duty) applies (awaiting his test)
 - [?] Ops Room scaling (z139, 2 Nov, Brandon): top and bottom cards keep their size, only the flight table scales with the number of flights (awaiting his look)
+- [x] Ops Room dark mode removed (z140, 2 Nov, Brandon: not needed)

@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-03, after z151)
+# LODESTAR handoff (updated 2026-11-03, after z152)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,12 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z152 (3 Nov, Brandon: "fix those four small things"): wording and one tag
+The New code panel now says each department gets the code by itself the next time it saves (z131 behaviour); the Master Planning help (?) describes the one-sheet Calendar export (no List sheet); the Flight Codes help no longer mentions sorties and hours per code; on the department screen the "You opened this last" tag sits on the card's top edge (like the Ops Room card) so it no longer covers a long name such as Master Planner. Dashboard only; upload the DEV dashboard. Tests: dept_select 24/24, flight_code_combo 4/4, master_calendar 8/8, mp_export 11/11. Guide screenshots retaken.
+
+## PDF guide: Master Planner part drafted (3 Nov, Brandon: "draft me the Master planner version")
+`guide/LODESTAR_Guide_Master_Planner_DRAFT.pdf` (15 pages, A4, marked DRAFT) from `guide/Master_Planner_Guide.html`; demo-data screenshots in `guide/img/` (`node guide/make_shots.js`, then `node guide/make_pdf.js`; the dashboard must be built). Sections: quick start, what it does, opening, calendar, planning a day (times / hours, running changes, crew tags), new flight code, no-flying days, squadron events, flying restrictions, requests, Flight Codes, Crew Matrix, Export, saving / undo / who sees what, questions. Guide parts decided: Getting started, Planners, Master Planner, Duty Planner, Ops Room; My Lodestar left out. The four small things seen while drafting were fixed in z152.
 
 ## z151 (3 Nov, Brandon: "build it, add the check too"): ATOM mission currencies + past flights check
 **Mission currencies.** Decided: read the ATOM Mission Currencies group; **MAI/MCAS is not used**; **Airlift only for Pilot and ACS** (Brandon); SGH likewise (ATOM has it only on those two sheets). So Pilot / Loadmaster: Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; TACCO / SUP 1 / SUP 2: EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL. **Show plus expiry-day mark**, not the v1 flight check. "-" = grey dash, not a problem. Expired = normal, quiet (grey "exp 3 Sep", not counted). ATOM dates are used as they are (no projection from planned flights: a cancelled flight would fake a renewal).
@@ -157,7 +163,7 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 1. Fix what he finds in that test.
 2. Deferred minors from the z126 to z129 review (only if he hits them): missing-time warning only in the Master Planner day panel; Ops Room PLAN hours ignore the 12-hour rule; Excel and the dashboard disagree on odd time formats (en dash, "to"); `cellHrs` matches the code exactly; Sorties outside 1 to 9 typed in Excel reads as 1; some stale wording (Flight Codes help text, Excel "Flying Hrs (dashboard)" cards show 0.0). The "short of crew" warning ignores Sorties typed on a flight (department planned sorties = filled MASTER slots); confirm with him if it matters.
 3. Admin mode towards the end of the dev stage (design in `PROJECT_CHECKLIST.md`).
-4. The full PDF guide only when Brandon says so.
+4. The full PDF guide only when Brandon says so. Four parts since 3 Nov: Planners, Master Planner, Duty Planner, Ops Room (plus a short Getting started); My Lodestar left out for now.
 
 **Known small gaps (older, only fix if he hits them):** two squadron events with the same activity and shift share one Ops Room edit id; moving a squadron event's time into another shift orphans an Ops Room edit on it. Editing a department-item row's location replaces its cell-comment notes. Three `my_lodestar` tests (`changes_include_cancelled_flight`, `changes_include_master_move_and_duty`, `badge_count_matches_and_seen_is_remembered`) have failed since before 2 Nov; not looked into.
 

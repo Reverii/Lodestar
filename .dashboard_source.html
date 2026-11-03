@@ -1120,7 +1120,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-02 z149</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-03 z150</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2405,11 +2405,16 @@ function updateSave() {
   b.title = stop ? stop.S.dept + ": " + stop.autoStop : autoMsg ? autoMsg : autoAny() ? "Changes save on their own a few seconds after you make them. Click to save now." : "";
   autoKick();
 }
+// text Excel can read: hidden control characters (Word's Shift+Enter line break, pasted junk) make the whole sheet unreadable
+// and Excel then says the file has a problem, so line-break-like ones become a new line and the rest are dropped (z150)
+const xmlSafe = s => String(s).replace(/\r\n?|[\u000B\u000C\u0085\u2028\u2029]/g, "\n")
+  .replace(/[\u0000-\u0008\u000E-\u001F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "").slice(0, 32767);
 function cellXml(ref, attrs, val) {
   attrs = attrs.replace(/\s+t="[^"]*"/, "");
+  if (typeof val === "number" && !isFinite(val)) val = "";   // NaN / Infinity would break the file
   if (val === "" || val == null) return '<c r="' + ref + '"' + attrs + "/>";
   if (typeof val === "number") return '<c r="' + ref + '"' + attrs + "><v>" + val + "</v></c>";
-  return '<c r="' + ref + '"' + attrs + ' t="inlineStr"><is><t xml:space="preserve">' + esc(val) + "</t></is></c>";
+  return '<c r="' + ref + '"' + attrs + ' t="inlineStr"><is><t xml:space="preserve">' + esc(xmlSafe(val)) + "</t></is></c>";
 }
 function setCell(xml, ref, val) {
   const re = new RegExp('<c r="' + ref + '"((?:\\s+[\\w:]+="[^"]*")*)\\s*(?:/>|>[\\s\\S]*?</c>)');
@@ -2465,6 +2470,14 @@ function buildXlsx() {
   if (/<calcPr\b/.test(w)) { if (!/fullCalcOnLoad=/.test(w)) w = w.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"'); else w = w.replace(/fullCalcOnLoad="[^"]*"/, 'fullCalcOnLoad="1"'); }
   else w = w.replace(/(<extLst>|<\/workbook>)/, '<calcPr fullCalcOnLoad="1"/>$1');
   files["xl/workbook.xml"] = te.encode(w);
+  // a file last saved by desktop Excel carries a list of its formula cells (calcChain); once a cell in it is overwritten Excel
+  // reports a problem, so drop the list: Excel rebuilds it on its own (z150)
+  if (files["xl/calcChain.xml"]) {
+    delete files["xl/calcChain.xml"];
+    const rp = "xl/_rels/workbook.xml.rels", cp = "[Content_Types].xml";
+    files[rp] = te.encode(td.decode(files[rp]).replace(/<Relationship\b[^>]*calcChain[^>]*\/>/g, ""));
+    files[cp] = te.encode(td.decode(files[cp]).replace(/<Override\b[^>]*calcChain[^>]*\/>/g, ""));
+  }
   return { files, bytes: fflate.zipSync(files, { level: 6 }) };
 }
 const unsaved = () => books.reduce((n, b) => n + b.dirty.size, 0);
@@ -5503,7 +5516,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-02 z149 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-03 z150 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

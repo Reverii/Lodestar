@@ -157,7 +157,7 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 1. Fix what he finds in that test.
 2. Deferred minors from the z126 to z129 review (only if he hits them): missing-time warning only in the Master Planner day panel; Ops Room PLAN hours ignore the 12-hour rule; Excel and the dashboard disagree on odd time formats (en dash, "to"); `cellHrs` matches the code exactly; Sorties outside 1 to 9 typed in Excel reads as 1; some stale wording (Flight Codes help text, Excel "Flying Hrs (dashboard)" cards show 0.0). The "short of crew" warning ignores Sorties typed on a flight (department planned sorties = filled MASTER slots); confirm with him if it matters.
 3. Admin mode towards the end of the dev stage (design in `PROJECT_CHECKLIST.md`).
-4. The full PDF guide only when Brandon says so.
+4. The full PDF guide only when Brandon says so. Four parts since 3 Nov: Planners, Master Planner, Duty Planner, Ops Room (plus a short Getting started); My Lodestar left out for now.
 
 **Known small gaps (older, only fix if he hits them):** two squadron events with the same activity and shift share one Ops Room edit id; moving a squadron event's time into another shift orphans an Ops Room edit on it. Editing a department-item row's location replaces its cell-comment notes. Three `my_lodestar` tests (`changes_include_cancelled_flight`, `changes_include_master_move_and_duty`, `badge_count_matches_and_seen_is_remembered`) have failed since before 2 Nov; not looked into.
 

@@ -15,9 +15,9 @@ if "--variant" in a: variant = a[a.index("--variant") + 1]
 
 # group -> columns
 PILOT_COLS = [("Flight Currencies", ["Day Capt", "Day Curr", "IRT", "Instructor Check", "Night Capt", "Night Curr"]), ("SIM Currencies", ["SIM"]),
-              ("LSS Currencies", ["ACE", "APT", "SVT"]), ("Mission Currencies", ["MAS", "SAL"]),
+              ("LSS Currencies", ["ACE", "APT", "SVT"]), ("Mission Currencies", ["Airlift", "EIS", "MAI/MCAS", "MAS", "SAL", "SGH"]),
               ("SIM Package (Oct 25 - Oct 26)", ["SIM Package"]), ("Flying Hours Clocked", ["Current Month"]), ("SATR Details", ["Level", "Remarks"])]
-OTHER_COLS = [("Flight Currencies", ["Day Curr", "Night Curr"]), ("SIM Currencies", ["SIM"]), ("LSS Currencies", ["ACE", "APT"]), ("Mission Currencies", ["MAS", "SAL"]),
+OTHER_COLS = [("Flight Currencies", ["Day Curr", "Night Curr"]), ("SIM Currencies", ["SIM"]), ("LSS Currencies", ["ACE", "APT"]), ("Mission Currencies", ["Airlift", "EIS", "MAI/MCAS", "MAS", "SAL"]),
               ("SIM Package (Oct 25 - Oct 26)", ["SIM Package"]), ("Flying Hours Clocked", ["Current Month"]), ("SATR Details", ["Level", "Remarks"])]
 if variant == "moved":   # an added column first in a group, a reordered group
     PILOT_COLS = [("Flight Currencies", ["NVG Curr"] + PILOT_COLS[0][1][::-1]), PILOT_COLS[3], PILOT_COLS[1], PILOT_COLS[2]] + PILOT_COLS[4:]
@@ -27,13 +27,13 @@ XL = dt.datetime(2027, 1, 22)   # stored as a real Excel date
 OK, DUE, LAP = "22 Jan 27", "05 Nov 26", "16 Oct 26"
 # per person: {column: value}; anything missing = '-' (not held). Day of reference in the tests: 2026-10-26.
 PEOPLE = {
-    "PILOT": [("Active", "A NGO", "A", {"Day Capt": LAP, "Day Curr": "16 Nov 26", "IRT": "-", "Instructor Check": "N/A", "Night Capt": LAP, "Night Curr": "27 Oct 26", "SIM": OK, "ACE": " ", "APT": "soon", "SVT": XL, "MAS": "30 Jun 31", "SAL": "-", "NVG Curr": OK}),
+    "PILOT": [("Active", "A NGO", "A", {"Day Capt": LAP, "Day Curr": "16 Nov 26", "IRT": "-", "Instructor Check": "N/A", "Night Capt": LAP, "Night Curr": "27 Oct 26", "SIM": OK, "ACE": " ", "APT": "soon", "SVT": XL, "MAS": "30 Jun 31", "SAL": "-", "NVG Curr": OK, "Airlift": "28 Oct 26", "EIS": "03 Sep 26", "MAI/MCAS": OK, "SGH": "30 Oct 26"}),
               ("Active", "HO KM", "B", {"Day Capt": OK, "Day Curr": OK, "IRT": OK, "Instructor Check": OK, "Night Capt": OK, "Night Curr": OK, "SIM": OK, "ACE": OK, "APT": OK, "SVT": OK, "MAS": OK, "SAL": OK, "NVG Curr": OK}),
               ("Active", "S LIM JH", "A", {"Day Capt": DUE, "Day Curr": DUE, "Night Curr": "25 Oct 26", "SIM": OK, "MAS": "N/A"}),
               ("Active", "SAMY", "C", {"Day Curr": OK, "Night Curr": OK, "SIM": OK}),
               ("NSmen", "TEO WK", "A", {"Day Curr": "N/A", "Night Curr": "01 Oct 26", "Day Capt": XL, "IRT": "soon", "Night Capt": " "})],
     "ACS": [("Active", "L CHEW", "A", {"Day Curr": OK, "Night Curr": LAP, "SIM": OK, "MAS": DUE}), ("Active", "M SOH", "B", {"Day Curr": OK, "Night Curr": OK, "SIM": OK})],
-    "TACCO": [("Active", "T LEE", "A", {"Day Curr": OK, "Night Curr": OK, "SIM": LAP, "APT": DUE}), ("Active", "R KOH", "C", {"Day Curr": OK, "Night Curr": OK, "SIM": OK})],
+    "TACCO": [("Active", "T LEE", "A", {"Day Curr": OK, "Night Curr": OK, "SIM": LAP, "APT": DUE, "Airlift": "29 Oct 26", "EIS": "03 Nov 26"}), ("Active", "R KOH", "C", {"Day Curr": OK, "Night Curr": OK, "SIM": OK})],
     "SUP1": [("Active", "P YEO", "A", {"Day Curr": OK, "Night Curr": OK, "SIM": OK}), ("Active", "Q ONG", "B", {"Day Curr": LAP, "Night Curr": OK, "SIM": OK})],
     "SUP2": [("Active", "V TAN", "A", {"Day Curr": OK, "Night Curr": "27 Oct 26", "SIM": OK, "MAS": LAP}), ("Active", "H LIM", "B", {"Day Curr": OK, "Night Curr": OK, "SIM": OK}),
              ("Staff/Assigned", "O NG", "C", {"Day Curr": DUE, "Night Curr": OK, "SIM": OK})],

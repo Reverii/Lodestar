@@ -38,8 +38,15 @@ test("parse_reads_only_the_five", async ({ page }) => {
   const f = await F0(page);
   assert.deepStrictEqual(f.groups.map(g => g.group), ["Flight Currencies"]);
   const text = JSON.stringify(f);
-  for (const bad of ["Instructor Check", "SIM Package", "ACE", "APT", "SVT", "MAS", "SAL", "\"SIM\"", "Level", "Remarks", "FAKE personal remark"]) assert.ok(!text.includes(bad), bad);
+  for (const bad of ["Instructor Check", "SIM Package", "ACE", "APT", "SVT", "MAI/MCAS", "\"SIM\"", "Level", "Remarks", "FAKE personal remark"]) assert.ok(!text.includes(bad), bad);   // z151: the mission currencies are read too (in r.mis), MAI/MCAS is not
   for (const d in f.sheets) for (const r of f.sheets[d]) assert.ok(Object.keys(r.cells).every(k => ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr"].includes(k)), d + ":" + Object.keys(r.cells));
+}, { atom: [FULL()], others: false, fresh: true });
+test("parse_reads_mission_currencies", async ({ page }) => {   // z151: Mission group in r.mis; no MAI/MCAS; Airlift only for Pilot and Loadmaster
+  const f = await F0(page), a = f.sheets.Pilot.find(r => r.name === "A NGO").mis, t = f.sheets.TACCO.find(r => r.name === "T LEE").mis;
+  assert.deepStrictEqual(Object.keys(a), ["Airlift", "EIS", "MAS", "SAL", "SGH"]);
+  assert.strictEqual(a.Airlift.iso, "2026-10-28"); assert.strictEqual(a.SAL.k, "none");
+  assert.deepStrictEqual(Object.keys(t), ["EIS", "MAS", "SAL"]);
+  assert.ok(Object.keys(f.sheets.Loadmaster[0].mis).includes("Airlift"));
 }, { atom: [FULL()], others: false, fresh: true });
 test("parse_value_kinds", async ({ page }) => {
   const rows = (await F0(page)).sheets.Pilot, a = rows.find(r => r.name === "A NGO").cells, t = rows.find(r => r.name === "TEO WK").cells;
@@ -173,13 +180,13 @@ test("grid_rows_sorted_worst_first", async ({ page }) => {
 test("grid_has_five_columns_and_hours", async ({ page }) => {
   await setIni(page, "Pilot", 0, "A NGO"); await setIni(page, "SUP 2", 0, "V TAN"); await openCur(page);
   const heads = dept => page.evaluate(d => { spRemember("atom_dept", d); renderAtom(); return [...document.querySelectorAll("#atomGrid thead tr:last-child th")].map(x => x.textContent.replace(/\s+/g, " ").trim()); }, dept);
-  assert.deepStrictEqual(await heads("Pilot"), ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Hours (month)"]);
-  assert.deepStrictEqual(await heads("SUP 2"), ["Day Curr", "Night Curr", "Hours (month)"]);
+  assert.deepStrictEqual(await heads("Pilot"), ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Airlift", "EIS", "MAS", "SAL", "SGH", "Hours (month)"]);   // z151: then the mission currencies
+  assert.deepStrictEqual(await heads("SUP 2"), ["Day Curr", "Night Curr", "EIS", "MAS", "SAL", "Hours (month)"]);
 });
 test("grid_columns_follow_file", async ({ page }) => {
   await setIni(page, "Pilot", 0, "A NGO"); await openCur(page);
   const t = await page.evaluate(() => { spRemember("atom_dept", "Pilot"); renderAtom(); return [...document.querySelectorAll("#atomGrid thead tr:last-child th")].map(x => x.textContent.replace(/\s+/g, " ").trim()); });
-  assert.deepStrictEqual(t, ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Hours (month)"]);   // reordered columns and the extra NVG Curr in the file change nothing
+  assert.deepStrictEqual(t, ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Airlift", "EIS", "MAS", "SAL", "SGH", "Hours (month)"]);   // reordered columns and the extra NVG Curr in the file change nothing
 }, { atom: [atomFixture({ variant: "moved" })], others: true, fresh: true });
 test("grid_hides_not_held_and_formats_dates", async ({ page }) => {
   await setIni(page, "Pilot", 0, "A NGO"); await openCur(page);
@@ -345,7 +352,8 @@ test("publish_writes_sheet_and_reads_back", async ({ page }) => {
   const c = await sheetCells(page), f = await page.evaluate(() => ({ asOf: atomAsOf(ATOMS[0]), month: ATOMS[0].hoursMonth }));
   assert.deepStrictEqual([c.A8, c.B8, c.D8, c.E8, c.F8, c.I8], ["A NGO", "Pilot", c.D8, "2026-11-16", "-", 3.9]);
   assert.strictEqual(c.B2, f.asOf); assert.strictEqual(c.B3, "ATOM_Export_full_default.xlsx"); assert.strictEqual(c.B4, f.month);
-  assert.ok(Object.keys(c).every(r => /^[A-I]\d+$/.test(r)), "a column beyond I");
+  assert.ok(Object.keys(c).every(r => /^[A-Q]\d+$/.test(r)), "a column beyond Q");   // z151: mission currencies in J:Q
+  assert.deepStrictEqual([c.J8, c.K8, c.L8, c.M8, c.P8, c.Q8], ["2026-10-28", "2026-09-03", "2031-06-30", "N/A", "-", "2026-10-30"]);   // A NGO: Airlift, EIS, MAS, MAS (M) not in the export, SAL not held, SGH
   assert.ok(!JSON.stringify(c).includes("FAKE personal remark"));
 }, PUB2);
 test("publish_replaces_and_leaves_no_stale_rows", async ({ page }) => {
@@ -375,8 +383,8 @@ test("publish_logs_one_line", async ({ page }) => {
 test("publish_stores_only_allowed_fields", async ({ page }) => {
   await opsMode(page);
   await page.evaluate(() => atomPublish(ATOMS[0]));
-  const c = await sheetCells(page), heads = "ABCDEFGHI".split("").map(L => c[L + "7"]);
-  assert.deepStrictEqual(heads, ["Initials", "Department", "CAT", "Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Clocked hours (month)"]);
+  const c = await sheetCells(page), heads = "ABCDEFGHIJKLMNOPQ".split("").map(L => c[L + "7"]);
+  assert.deepStrictEqual(heads, ["Initials", "Department", "CAT", "Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Clocked hours (month)", "Airlift", "EIS", "MAS", "MAS (M)", "MAS (S)", "MAS TACT", "SAL", "SGH"]);
   const names = await page.evaluate(() => books.filter(b => !b.S.kind).flatMap(b => b.S.roster.map(p => p.name)).filter(n => n && n.length > 4));
   const text = JSON.stringify(c); for (const n of names) assert.ok(!text.includes(n), n);
 }, PUB2);

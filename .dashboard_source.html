@@ -15,16 +15,20 @@
 .atomhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 12px}.atomhead input,.atomhead select{font:inherit;font-size:12px}
 .astale{border-radius:6px;padding:7px 12px;font-weight:600;border:1px solid #f59e0b;background:#fffbeb;color:#78350f}.astale.red{border-color:#dc2626;background:#fef2f2;color:#991b1b}
 .atombar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.atombar .seg{display:inline-flex;border:1px solid var(--s300);border-radius:5px;overflow:hidden}.atombar .seg button{border:0;background:#fff;padding:5px 11px;font-weight:600;font-size:12px;color:var(--s500);cursor:pointer}.atombar .seg button.on{background:var(--s900);color:#fff}
-.atombar .cnt{display:flex;gap:6px;margin-left:auto}.atombar .c{display:flex;align-items:baseline;gap:5px;border-radius:999px;padding:3px 11px;border:1px solid var(--s200);background:#fff;font-size:12px}.atombar .c b{font-size:15px}.atombar .c.r{border-color:#fca5a5;background:#fef2f2;color:var(--red)}.atombar .c.a{border-color:#fcd34d;background:#fffbeb;color:var(--amber)}
+.atombar .cnt{display:flex;gap:6px;margin-left:auto}.atombar .c{display:flex;align-items:baseline;gap:5px;border-radius:999px;padding:3px 11px;border:1px solid var(--s200);background:#fff;font-size:12px}.atombar .c b{font-size:15px}.atombar .c.r{border-color:#fca5a5;background:#fef2f2;color:var(--red)}.atombar .c.a{border-color:#fcd34d;background:#fffbeb;color:var(--amber)}.atombar .c.m{border-color:#c4b5fd;background:#f5f3ff;color:#6d28d9}
 .atomgrid{background:#fff;border:1px solid var(--s200);border-radius:8px;overflow:auto;max-height:calc(100vh - 250px)}
 .atomgrid table{border-collapse:collapse;width:100%}.atomgrid th{font-size:10px;font-weight:600;color:var(--s500);padding:3px 4px;text-align:center;border-bottom:1px solid var(--s200);position:sticky;top:0;background:#fff}
 .atomgrid th.g{font-size:10.5px;font-weight:800;color:var(--s900);background:var(--s100);border-left:1px solid var(--s200)}.atomgrid th.nm,.atomgrid td.nm{text-align:left;padding-left:10px;min-width:170px}
 .atomgrid td{height:24px;text-align:center;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--s100);padding:0 3px;font-variant-numeric:tabular-nums}.atomgrid td.nm{font-size:12.5px}.atomgrid td.nm b{margin-right:6px}.atomgrid td.nm span{color:var(--s500);font-size:11.5px}
-.atomgrid .gs{border-left:1px solid var(--s200)}.atomgrid td.lap{background:#fee2e2;color:#b91c1c;font-weight:700}.atomgrid td.due{background:#fef3c7;color:#92400e;font-weight:700}.atomgrid td.ok{color:var(--s600)}.atomgrid td.nh{color:var(--s300)}.atomgrid td.nr{color:var(--s400);font-style:italic;background:repeating-linear-gradient(135deg,#fff 0 4px,#f1f5f9 4px 8px)}
+.atomgrid .gs{border-left:1px solid var(--s200)}.atomgrid td.lap{background:#fee2e2;color:#b91c1c;font-weight:700}.atomgrid td.due{background:#fef3c7;color:#92400e;font-weight:700}.atomgrid td.ok{color:var(--s600)}.atomgrid td.nh{color:var(--s300)}.atomgrid td.mdue{background:#ede9fe;color:#6d28d9;font-weight:700}.atomgrid td.mexp{color:var(--s400);font-style:italic}.atomgrid td.nn{background:var(--s50)}.atomgrid th.g.mis{color:#6d28d9;background:#f5f3ff}.atomleg .mduex{background:#ede9fe}
+.atomgrid td.nr{color:var(--s400);font-style:italic;background:repeating-linear-gradient(135deg,#fff 0 4px,#f1f5f9 4px 8px)}
 .atomneeds{border-collapse:collapse;width:100%}.atomneeds th{font-size:11px;text-align:left;color:var(--s500);padding:2px 4px}.atomneeds td{padding:2px 4px}.atomneeds input{width:100%;font:inherit;font-size:12px;padding:3px 5px;border:1px solid var(--s300);border-radius:4px}
 #plan td.l1end{position:relative}#plan td.l1end.curr{box-shadow:inset -4px 0 0 #ea580c;background:#ffedd5!important}#plan td.l1end.capt{box-shadow:inset -4px 0 0 #ea580c,inset 0 0 0 1.5px #fdba74;background:#fff!important}
 #plan .l1lab{position:absolute;left:2px;top:2px;font-size:9px;font-weight:800;color:#c2410c;background:#fff;border-radius:3px;padding:0 3px;white-space:normal;line-height:1.05;max-width:74px;z-index:2}
-.chip.l1chip{background:#ffedd5;color:#c2410c;box-shadow:inset -4px 0 0 #ea580c}.chip.l1chip.capt{background:#fff;box-shadow:inset -4px 0 0 #ea580c,inset 0 0 0 1.5px #fdba74}
+.chip.nclbox{border-left:4px solid #f59e0b;background:#fffbeb;padding:8px 12px;font-size:12.5px}.nclbox ul{margin:6px 0 0;padding-left:18px;columns:2;column-gap:24px}.nclbox li{margin:1px 0}.ncl0{font-size:12px;padding:4px 2px 8px}.ncl0.ok{color:#15803d}
+#plan td.ncl{box-shadow:inset 0 -3px 0 #f59e0b}
+.misx{position:relative;box-shadow:inset -4px 0 0 #7c3aed;background:#ede9fe!important}#plan .mislab{position:absolute;left:2px;right:6px;top:2px;font-size:9px;font-weight:800;color:#6d28d9;line-height:1.05;text-align:left;white-space:normal;z-index:2}.mischip{background:#ede9fe;color:#6d28d9;box-shadow:inset -4px 0 0 #7c3aed}
+.l1chip{background:#ffedd5;color:#c2410c;box-shadow:inset -4px 0 0 #ea580c}.chip.l1chip.capt{background:#fff;box-shadow:inset -4px 0 0 #ea580c,inset 0 0 0 1.5px #fdba74}
 .atomw{position:relative}.atomw::after{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 8px 8px 0;border-color:transparent #dc2626 transparent transparent}
 .atomfix{max-height:260px;overflow:auto}.atomfix h3,.atomfix h4{margin:4px 0}.atomfixhd{display:flex;align-items:center;gap:10px}.atomfix ul{margin:2px 0 6px;padding-left:18px;columns:2}.atomfix a{color:var(--blue);cursor:pointer;margin-left:6px;font-size:11.5px}
 .acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#3b8ef0}.acat.C{background:#d99a06}.acat.D{background:#b91c1c}
@@ -868,7 +872,7 @@ body.opsfs #opsAreaAdd{display:none}
 .lodehi{display:flex;align-items:baseline;gap:10px}.lodehi h2{margin:0;font-size:21px}.lodehi .d{color:var(--s500);font-weight:600}
 .lodecards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:8px 0}.lc{background:#fff;border:1px solid var(--s200);border-left:5px solid var(--s300);border-radius:8px;padding:7px 12px}
 .lc .k{font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--s500);text-transform:uppercase}.lc .v{font-size:17px;font-weight:800;margin-top:1px}.lc .s{font-size:11.5px;color:var(--s500);min-height:14px}
-.lc.g{border-left-color:#16a34a}.lc.g .v{color:#15803d}.lc.o{border-left-color:#d97706}.lc.o .v{color:#d97706}.lc.y{border-left-color:#ca8a04}.lc.y .v{color:#a16207}.lc.r{border-left-color:#dc2626}.lc.r .v{color:#dc2626}.lc.n .v{color:var(--s500)}
+.lc.m{border-left-color:#7c3aed}.lc.m .v{color:#6d28d9}.lc.g{border-left-color:#16a34a}.lc.g .v{color:#15803d}.lc.o{border-left-color:#d97706}.lc.o .v{color:#d97706}.lc.y{border-left-color:#ca8a04}.lc.y .v{color:#a16207}.lc.r{border-left-color:#dc2626}.lc.r .v{color:#dc2626}.lc.n .v{color:var(--s500)}
 .lc .dots i{display:inline-block;width:11px;height:11px;border-radius:2px;background:#f59e0b;margin-left:3px}.lc .dots i.e{background:var(--s200)}
 .lodegrid{display:grid;grid-template-columns:1fr 320px;gap:10px}.lcard{background:#fff;border:1px solid var(--s200);border-radius:10px;overflow:hidden}.lcard h3{margin:0;padding:7px 14px;font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--s700);border-bottom:1px solid var(--s200)}.lcard h3 small{text-transform:none;letter-spacing:0;font-weight:500;color:var(--s500)}
 .lcard .today{display:grid;grid-template-columns:1.15fr 1fr}.lcard .tl{padding:8px 14px;border-right:1px solid var(--s200)}.lcard .tr{padding:8px 14px;display:flex;flex-direction:column;gap:6px}
@@ -1052,6 +1056,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <section class="view" id="v-cur">
     <div id="atomBox"></div>
     <div id="curNote" class="note"></div>
+    <div id="nclBox"></div>
     <div class="card"><div class="curhead"><h2>Crew currency</h2><label><input type="checkbox" id="curBaseEd"> Edit the dates before the planner</label><label><input type="checkbox" id="curOnlyBad"> Only show flagged crew</label></div><div class="curwrap"><table class="curt" id="curTable"></table></div></div>
     <div class="card"><h2>Rules</h2><div class="muted" style="font-size:12px;margin-bottom:6px">One rule per row, for pilots and non-pilots alike. Applies to: All, or Role / Cat Status / Status / Callsigns with the values in Who (comma separated). Counts: Any flight, a Mission type from the Activities tab (e.g. MSN), or Flight codes (e.g. NVG-2.0, MSN-3.0). At least: blank = 1; a 2xFLT code counts as 2.</div><div style="overflow:auto"><table class="edit" id="ruleTable"></table></div></div>
   </section>
@@ -1120,7 +1125,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-03 z150</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-03 z151</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1321,6 +1326,10 @@ function serialToISO(n) { const d = new Date(Date.UTC(1899, 11, 30) + Math.round
 const ATOM_DEPT = { PILOT: "Pilot", ACS: "Loadmaster", TACCO: "TACCO", SUP1: "SUP 1", SUP2: "SUP 2" };   // sheet -> department
 const ATOM_CUR = ["Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr"];   // the only currencies we read (Flight Currencies group), in this order
 const ATOM_HOURS_GROUP = "Flying Hours Clocked", ATOM_HOURS_COL = "Current Month";   // and the one hours figure
+// Mission Currencies group (Brandon, 3 Nov): shown, the expiry day marked on the WD row; an expired one stays quiet. MAI/MCAS is not used.
+const ATOM_MIS_GROUP = "Mission Currencies", ATOM_MIS = ["Airlift", "EIS", "MAS", "MAS (M)", "MAS (S)", "MAS TACT", "SAL", "SGH"];
+const ATOM_MIS_ONLY = { Airlift: ["Pilot", "Loadmaster"], SGH: ["Pilot", "Loadmaster"] };   // TACCO, SUP 1 and SUP 2 don't need Airlift (Brandon); ATOM has SGH only on the Pilot and ACS sheets
+const atomMisNeeded = (col, dept) => !ATOM_MIS_ONLY[col] || ATOM_MIS_ONLY[col].includes(dept);
 const ATOM_MON = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
 function isAtomExport(paths) {
   return Object.keys(ATOM_DEPT).some(n => paths[n]) && !["Dashboard", "Roster", "Flight Crew", "Departments", "Flight Codes"].some(n => paths[n]);
@@ -1354,7 +1363,7 @@ function atomParse(files, name) {
     if (!p || !files[p]) { out.missing.push(dept); continue; }
     const c = readCellsOf(files, p, sst);
     let maxC = 0, maxR = 0; for (const ref in c) { const m = ref.match(/^([A-Z]+)(\d+)$/); maxC = Math.max(maxC, colNum(m[1])); maxR = Math.max(maxR, +m[2]); }
-    let grp = "", nameL = null, statusL = null, catL = null, instL = null, hoursL = null; const cols = [];   // cols: { L, name } for the five currencies
+    let grp = "", nameL = null, statusL = null, catL = null, instL = null, hoursL = null; const cols = [], mcols = [];   // cols: { L, name } for the five currencies; mcols: the mission ones
     for (let n = 1; n <= maxC; n++) {
       const L = colL(n), g = str(c[L + "1"]), h = str(c[L + "2"]);
       if (g) grp = g;
@@ -1362,6 +1371,7 @@ function atomParse(files, name) {
       if (h === "Name") nameL = L; else if (h === "Status") statusL = L; else if (h === "CAT") catL = L; else if (h === "Instructor CAT") instL = L;
       else if (grp === "Flight Currencies" && ATOM_CUR.includes(h)) cols.push({ L, name: h });
       else if (grp === ATOM_HOURS_GROUP && h === ATOM_HOURS_COL) hoursL = L;
+      else if (grp === ATOM_MIS_GROUP && ATOM_MIS.includes(h) && atomMisNeeded(h, dept)) mcols.push({ L, name: h });
     }
     if (!nameL) { out.missing.push(dept); continue; }
     for (const k of cols) if (!out.groups[0].cols.includes(k.name)) out.groups[0].cols.push(k.name);
@@ -1370,8 +1380,9 @@ function atomParse(files, name) {
     for (let r = 3; r <= maxR; r++) {
       const nm = str(c[nameL + r]); if (!nm) continue;   // band rows (" -> Active") have no Name
       const cells = {}; for (const k of cols) cells[k.name] = atomCell(c[k.L + r]);
+      const mis = {}; for (const k of mcols) mis[k.name] = atomCell(c[k.L + r]);
       const hv = hoursL ? c[hoursL + r] : undefined;
-      rows.push({ name: nm, status: statusL ? str(c[statusL + r]) : "", cat: catL ? str(c[catL + r]) : "", instCat: instL ? str(c[instL + r]) : "", cells, hours: typeof hv === "number" ? hv : null });
+      rows.push({ name: nm, status: statusL ? str(c[statusL + r]) : "", cat: catL ? str(c[catL + r]) : "", instCat: instL ? str(c[instL + r]) : "", cells, mis, hours: typeof hv === "number" ? hv : null });
     }
     out.sheets[dept] = rows;
   }
@@ -1443,6 +1454,16 @@ function atomIssues(bi, i, day) {
   for (const c of atomCells(row, day)) if (c.state === "lap" || c.state === "due") o[c.state].push({ col: c.col, iso: c.iso });
   return o;
 }
+// a mission currency on a day: mdue (expires within the due window), mexp (already expired: quiet), ok, nr, nh
+function atomMisState(c, day) {
+  if (!c || c.k === "none" || c.k === "na") return "nh";
+  if (c.k !== "date") return "nr";
+  const d = dayDiff(c.iso, day); return d < 0 ? "mexp" : d <= atomDue() ? "mdue" : "ok";
+}
+function atomMisList(row, day) {   // [{ col, state, iso }] of the mission currencies this person has a date for, soonest first
+  if (!row || !row.mis) return [];
+  return ATOM_MIS.filter(k => row.mis[k] && row.mis[k].k === "date").map(k => ({ col: k, state: atomMisState(row.mis[k], day), iso: row.mis[k].iso })).sort((a, b) => a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : 0);
+}
 function atomAge(f, today) { return dayDiff(today, atomAsOf(f).slice(0, 10)); }
 function atomStale(f, today) { const n = atomAge(f, today); return n > 30 ? "red" : n > 7 ? "amber" : ""; }
 // ---------- ATOM currency: the Currency tab grid
@@ -1470,6 +1491,7 @@ function renderAtom() {
   const rows = atomGridRows(dept, only, today), allRows = atomGridRows(dept, false, today);
   const cols = f.groups.map(g => ({ group: g.group, cols: g.cols.filter(c => rows.some(r => r.row.cells[c])) })).filter(g => g.cols.length);
   let lap = 0, due = 0, bad = 0; for (const r of allRows) { lap += r.lap; due += r.due; if (r.lap || r.due) bad++; }
+  const mcols = ATOM_MIS.filter(k => rows.some(r => r.row.mis && r.row.mis[k])), mdue = allRows.reduce((n, r) => n + atomMisList(r.row, today).filter(x => x.state === "mdue").length, 0);
   const fix = atomFixCount(f), win = atomDue();
   let h = (f.missing && f.missing.length ? "<div class='astale amber'>This ATOM export has no data for " + esc(f.missing.join(", ")) + ".</div>" : "") + (stale ? "<div class='astale " + stale + "'>" + (stale === "red" ? "This ATOM export is " + age + " days old. Export it again before you rely on it." : "This ATOM export is " + age + " days old.") + " Data as of " + esc(atomAsOf(f)) + ".</div>" : "");
   const sh = atomShared(), opts = (sh ? [["-1", "Shared from the Ops Room"]] : []).concat(ATOMS.map((x, i) => [String(i), x.name]));
@@ -1479,12 +1501,12 @@ function renderAtom() {
     "<label>Due window <select id='atomDue'>" + [7, 14, 21, 30].map(n => "<option" + (n === win ? " selected" : "") + ">" + n + "</option>").join("") + "</select> days</label><button class='btn' id='atomAdd'>Add ATOM export</button>" + (f.source !== "shared" && OPS && books.some(k => k.S.kind === "ops") ? "<button class='btn primary' id='atomPublish' title='Save this export for every dashboard (replaces the data shared yesterday)'>Publish to everyone</button>" : "") + "<input type='file' id='atomFile' accept='.xlsx' style='display:none'></div>";
   h += "<div class='atombar'><span class='seg'>" + ["All"].concat(ATOM_DEPTS).map(d => "<button data-d='" + d + "' class='" + (d === dept ? "on" : "") + "'>" + d + "</button>").join("") + "</span>" +
     "<label><input type='checkbox' id='atomOnly'" + (only ? " checked" : "") + "> Only crew with a problem</label><span class='muted'>Sorted worst first</span>" +
-    "<span class='cnt'><span class='c r'><b>" + lap + "</b> expired</span><span class='c a'><b>" + due + "</b> expire within " + win + " days</span><span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
+    "<span class='cnt'><span class='c r'><b>" + lap + "</b> expired</span><span class='c a'><b>" + due + "</b> expire within " + win + " days</span>" + (mcols.length || mdue ? "<span class='c m' title='Mission currencies are not counted as problems'><b>" + mdue + "</b> mission expire within " + win + " days</span>" : "") + "<span class='c'><b>" + bad + "</b> of " + allRows.length + " crew with a problem</span><span class='c a' id='atomFix' style='cursor:pointer'><b>" + fix + "</b> to fix</span></span></div>";
   if (cur.atomFix) h += atomFixHtml(f);
   if (!allRows.length) h += "<div class='card muted'>Nobody matched yet. An ATOM name is matched to a person's <b>Initials</b> on the Crew Roster; open the department planners and fill the Initials in. " + fix + " to fix.</div>";
   else {
-    h += "<div class='atomgrid' id='atomGrid'><table><thead><tr><th class='nm' rowspan='2'>Crew</th>" + cols.map(g => "<th class='g gs' colspan='" + g.cols.length + "'>" + esc(g.group.replace(" Currencies", "")) + "</th>").join("") + "<th class='g gs'>Flying</th></tr><tr>" +
-      cols.map(g => g.cols.map((c, k) => "<th" + (k === 0 ? " class='gs'" : "") + ">" + esc(c) + "</th>").join("")).join("") + "<th class='gs'>Hours (month)</th></tr></thead><tbody>";
+    h += "<div class='atomgrid' id='atomGrid'><table><thead><tr><th class='nm' rowspan='2'>Crew</th>" + cols.map(g => "<th class='g gs' colspan='" + g.cols.length + "'>" + esc(g.group.replace(" Currencies", "")) + "</th>").join("") + (mcols.length ? "<th class='g gs mis' colspan='" + mcols.length + "'>Mission</th>" : "") + "<th class='g gs'>Flying</th></tr><tr>" +
+      cols.map(g => g.cols.map((c, k) => "<th" + (k === 0 ? " class='gs'" : "") + ">" + esc(c) + "</th>").join("")).join("") + mcols.map((c, k) => "<th" + (k === 0 ? " class='gs'" : "") + ">" + esc(c) + "</th>").join("") + "<th class='gs'>Hours (month)</th></tr></thead><tbody>";
     for (const r of rows) {
       const p = books[r.bi].S.roster[r.i], cat = atomCatKey(p.cat) || "T";
       h += "<tr><td class='nm'><i class='acat " + cat + "'></i><b>" + esc(p.id || r.row.name) + "</b><span>" + esc(p.name) + "</span></td>";
@@ -1492,17 +1514,24 @@ function renderAtom() {
         const cell = r.row.cells[c], st = cell ? atomState(cell, today) : "nh", gs = k === 0 ? " gs" : "";
         h += "<td class='" + st + gs + "'" + (cell && cell.raw ? " title='" + esc(c + ": " + cell.raw) + "'" : "") + ">" + (st === "nh" ? "–" : st === "nr" ? "?" : atomFmt(cell.iso, today)) + "</td>";
       });
+      mcols.forEach((c, k) => {
+        const gs = k === 0 ? " gs" : "", cell = r.row.mis && r.row.mis[c];
+        if (!atomMisNeeded(c, r.dept)) { h += "<td class='nn" + gs + "' title='" + esc(r.dept + " does not need " + c) + "'></td>"; return; }
+        const st = atomMisState(cell, today);
+        h += "<td class='" + st + gs + "'" + (cell && cell.raw ? " title='" + esc(c + ": " + cell.raw + (st === "mexp" ? " (expired)" : "")) + "'" : "") + ">" + (st === "nh" ? "–" : st === "nr" ? "?" : (st === "mexp" ? "exp " : "") + atomFmt(cell.iso, today)) + "</td>";
+      });
       h += "<td class='ok gs' title='Clocked hours this month, from ATOM'>" + (typeof r.row.hours === "number" ? r.row.hours.toFixed(1) : "–") + "</td></tr>";
     }
-    h += "</tbody></table></div><div class='atomleg'><span><i class='lapx'></i>Expired (before today)</span><span><i class='duex'></i>Expires within " + win + " days</span><span><i class='okx'></i>OK</span><span><i class='nrx'></i>Not recorded</span><span>– not held</span></div>";
+    h += "</tbody></table></div><div class='atomleg'><span><i class='lapx'></i>Expired (before today)</span><span><i class='duex'></i>Expires within " + win + " days</span><span><i class='okx'></i>OK</span><span><i class='nrx'></i>Not recorded</span><span>– not held</span>" + (mcols.length ? "<span><i class='mduex'></i>Mission expires within " + win + " days</span><span class='muted'><em>exp 3 Sep</em> = mission already expired (not counted)</span>" : "") + "</div>";
   }
   b.innerHTML = h; atomWire();
 }
 // ---------- ATOM currency: publishing to everyone (sheet "ATOM Currency" in the Ops Room file, written only in the Ops Room view)
 const ATOM_SHEET = "ATOM Currency", ATOM_SHEET_ROW0 = 8, ATOM_SHEET_N = 500, ATOM_DEPT_ORDER = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"];
-const ATOM_SHEET_HEAD = ["Initials", "Department", "CAT", "Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Clocked hours (month)"];
+const ATOM_SHEET_HEAD = ["Initials", "Department", "CAT", "Day Capt", "Day Curr", "IRT", "Night Capt", "Night Curr", "Clocked hours (month)"].concat(ATOM_MIS);   // the mission columns J:Q (z151)
+const ATOM_SHEET_L = "ABCDEFGHIJKLMNOPQ";
 const ATOM_SHEET_TITLE = "Written by the Lodestar dashboard from an ATOM export. Replaced every day. Do not edit.";
-const ATOM_SHEET_COLS = '<col min="1" max="1" width="16" customWidth="1"/><col min="2" max="3" width="13" customWidth="1"/><col min="4" max="8" width="12" customWidth="1"/><col min="9" max="9" width="20" customWidth="1"/>';
+const ATOM_SHEET_COLS = '<col min="1" max="1" width="16" customWidth="1"/><col min="2" max="3" width="13" customWidth="1"/><col min="4" max="8" width="12" customWidth="1"/><col min="9" max="9" width="20" customWidth="1"/><col min="10" max="17" width="11" customWidth="1"/>';
 function atomSharedCell(v) {   // a cell of the shared sheet: ISO text is an expiry date
   if (v === undefined || v === null || (typeof v === "string" && !v.trim())) return { k: "blank", iso: null, raw: "" };
   const t = String(v).trim();
@@ -1513,13 +1542,16 @@ function atomSharedCell(v) {   // a cell of the shared sheet: ISO text is an exp
 }
 function atomFromShared(c) {   // the cells of the ATOM Currency sheet -> the same AtomFile an export gives (null when nothing was published)
   const asOf = str(c.B2); if (!asOf) return null;
+  const misL = ATOM_MIS.map((k, n) => [k, ATOM_SHEET_L[9 + n]]).filter(([k, L]) => str(c[L + "7"]) === k);   // a sheet published before z151 has no mission columns
   const out = { name: "Shared from the Ops Room", created: asOf, groups: [{ group: "Flight Currencies", cols: ATOM_CUR.slice() }], sheets: {}, missing: [], hoursMonth: str(c.B4), source: "shared", by: str(c.B5), file: str(c.B3) };
   for (let r = ATOM_SHEET_ROW0; r < ATOM_SHEET_ROW0 + ATOM_SHEET_N; r++) {
     const nm = str(c["A" + r]); if (!nm) continue;
-    const dept = str(c["B" + r]), cells = {}; ATOM_CUR.forEach((k, n) => { cells[k] = atomSharedCell(c["DEFGH"[n] + r]); });
-    (out.sheets[dept] = out.sheets[dept] || []).push({ name: nm, status: "", cat: str(c["C" + r]), instCat: "", cells, hours: typeof c["I" + r] === "number" ? c["I" + r] : null });
+    const dept = str(c["B" + r]), cells = {}, mis = {}; ATOM_CUR.forEach((k, n) => { cells[k] = atomSharedCell(c["DEFGH"[n] + r]); });
+    misL.forEach(([k, L]) => { if (atomMisNeeded(k, dept)) mis[k] = atomSharedCell(c[L + r]); });
+    (out.sheets[dept] = out.sheets[dept] || []).push({ name: nm, status: "", cat: str(c["C" + r]), instCat: "", cells, mis, hours: typeof c["I" + r] === "number" ? c["I" + r] : null });
   }
   for (const d in out.sheets) for (const k of ATOM_CUR) if (out.sheets[d].every(r => r.cells[k].k === "na")) out.sheets[d].forEach(r => { delete r.cells[k]; });   // a column that department's ATOM sheet does not have
+  for (const d in out.sheets) for (const k of ATOM_MIS) if (out.sheets[d].every(r => !r.mis[k] || r.mis[k].k === "na")) out.sheets[d].forEach(r => { delete r.mis[k]; });
   out.missing = ATOM_DEPT_ORDER.filter(d => !out.sheets[d]);
   return out;
 }
@@ -1540,12 +1572,12 @@ function atomPublish(f) {   // writes every person of the export into the sheet,
     const set = (ref, v) => { put(ATOM_SHEET, ref, v); if (v !== "" && v != null) cells[ref] = v; };
     set("A1", ATOM_SHEET_TITLE);
     [["As of", asOf], ["Source file", f.name], ["Hours month", asOf.slice(0, 7)], ["Published by", SP.user && SP.user.Title || ""]].forEach(([k, v], n) => { set("A" + (2 + n), k); set("B" + (2 + n), v); });
-    ATOM_SHEET_HEAD.forEach((h, n) => set("ABCDEFGHI"[n] + "7", h));
+    ATOM_SHEET_HEAD.forEach((h, n) => set(ATOM_SHEET_L[n] + "7", h));
     people.forEach(([r, d], n) => {
       const row = ATOM_SHEET_ROW0 + n;
-      [r.name, d, r.cat, ...ATOM_CUR.map(c => r.cells[c] ? val(r.cells[c]) : "N/A"), typeof r.hours === "number" ? r.hours : ""].forEach((v, k) => set("ABCDEFGHI"[k] + row, v));
+      [r.name, d, r.cat, ...ATOM_CUR.map(c => r.cells[c] ? val(r.cells[c]) : "N/A"), typeof r.hours === "number" ? r.hours : "", ...ATOM_MIS.map(c => r.mis && r.mis[c] ? val(r.mis[c]) : "N/A")].forEach((v, k) => set(ATOM_SHEET_L[k] + row, v));
     });
-    for (let row = ATOM_SHEET_ROW0 + people.length; row <= last; row++) for (const L of "ABCDEFGHI") set(L + row, "");   // yesterday's extra rows
+    for (let row = ATOM_SHEET_ROW0 + people.length; row <= last; row++) for (const L of ATOM_SHEET_L) set(L + row, "");   // yesterday's extra rows
   });
   b.S.atomShared = atomFromShared(cells); b.S.atomPubLast = Math.max(last, ATOM_SHEET_ROW0 + people.length - 1); b.S.atomPub = { name: f.name, asOf, count: people.length };
   return true;
@@ -2873,6 +2905,53 @@ function computeRest(st = S) {
 // days flying in a row if this person also flies on day k (the days before and after it that already have a flight)
 function restIfFly(R, i, k) { const f = R[i].fly; let a = 0, b = 0, j0 = k - 1; for (let j = k - 1; j >= 0 && f[j]; j--) { a++; j0 = j - 1; } if (j0 < 0) a += R[i].inn || 0; for (let j = k + 1; j < f.length && f[j]; j++) b++; return a + 1 + b; }
 // crew on flights the Ops Room cancelled: "dept|callsign|month|day|shift" -> reason (needs the Ops Room file and the Master Planner open)
+// Past planned flights the Ops Room never closed (Flown or Cancelled), z151: they count as flown for the currency rules until it does, so they are
+// listed for checking. Looks back NCL_DAYS days, and never before the first flight the Ops Room closed (the days before Lodestar was used).
+const NCL_DAYS = 45;
+let nclMemo = null;
+function notClosed(bi) {   // -> { on, why, first, list: [{ i, iso, s, code, why }], keys: Set("row:mi:d") }
+  const today = opsToday(), oi = opsIdx(), sig = bi + "|" + today + "|" + CHIT_GEN + "|" + books.length + "|" + oi;
+  if (nclMemo && nclMemo.sig === sig) return nclMemo.out;
+  const out = { on: false, why: "", first: null, list: [], keys: new Set() };
+  if (bi < 0 || !books[bi] || books[bi].S.kind) return out;
+  if (oi < 0 || !masterBook()) out.why = "Open the Ops Room file and the Master Planner to see which past flights the Ops Room has not closed.";
+  else {
+    for (const [k, o] of books[oi].S.fc) if (/^cancel/i.test(o.st || "") || (o.atd && o.ata)) { const iso = k.split("|")[0]; if (!out.first || iso < out.first) out.first = iso; }
+    if (!out.first) out.why = "Starts once the Ops Room closes its first flight (fills ATD and ATA, or cancels it).";
+  }
+  if (out.first) {
+    out.on = true;
+    const back = lodeAddDays(today, -NCL_DAYS);
+    withBook(bi, () => {
+      const st = S, A = actIndex();
+      for (let iso = out.first > back ? out.first : back; iso < today; iso = lodeAddDays(iso, 1)) {
+        const q = ymd(iso, st.year); if (q.y !== st.year || (q.mi === NX_MI && !st.nx) || !st.m[q.mi]) continue;
+        const M = st.m[q.mi]; let D;
+        st.roster.forEach((p, i) => {
+          if (!p.name && !p.id) return;
+          for (let s = 0; s < 3; s++) {
+            const r = gridRow(i, s), v = M.grid[r] && M.grid[r][q.d], a = v && A.get(String(v).toUpperCase());
+            if (!a || a.ci !== CAT_FLIGHT || cxlOf(st, p.id, q.mi, q.d, s) || roleOf(st, q.mi, r, q.d) === "PAX") continue;
+            if (D === undefined) D = opsDay(iso) || null;
+            const who = { dept: st.dept, i, p }, hit = D && D.rows ? D.rows.filter(x => x.x.s === s && x.seats.concat(Object.values(x.auto || {}).flat()).some(c => lodeIsMe(who, c))) : [];
+            if (hit.some(x => { const oc = opsOutcome(x, iso); return oc === "flown" || oc === "cxl"; })) continue;
+            out.list.push({ i, iso, s, code: v, why: hit.length ? "not closed in the Ops Room" : "not on the Ops Room board" });
+            out.keys.add(r + ":" + q.mi + ":" + q.d);
+          }
+        });
+      }
+    });
+  }
+  nclMemo = { sig, out }; return out;
+}
+function nclHtml(x) {
+  if (!x.on) return x.why ? "<div class='ncl0 muted'>Past flights check: " + esc(x.why) + "</div>" : "";
+  if (!x.list.length) return "<div class='ncl0 ok'>✓ Every past flight in the last " + NCL_DAYS + " days is closed in the Ops Room (flown or cancelled).</div>";
+  const L = x.list.slice().sort((a, b) => a.iso < b.iso ? 1 : a.iso > b.iso ? -1 : a.s - b.s), MAX = 12;
+  return "<div class='card nclbox'><b>⚠ " + x.list.length + " past flight" + (x.list.length > 1 ? "s" : "") + " not closed in the Ops Room</b> <span class='muted'>They count as flown for the currency rules. The Ops Room should mark each one Flown (ATD and ATA) or Cancelled; if it did not fly, clear or change the cell here. Last " + NCL_DAYS + " days.</span><ul>" +
+    L.slice(0, MAX).map(z => { const p = S.roster[z.i]; return "<li><b>" + esc(p.id || p.name) + "</b> " + esc(lodeFmt(z.iso)) + " " + SHIFTS[z.s] + " · " + esc(z.code) + " <span class='muted'>(" + esc(z.why) + ")</span></li>"; }).join("") +
+    (L.length > MAX ? "<li class='muted'>and " + (L.length - MAX) + " more</li>" : "") + "</ul></div>";
+}
 let OPS_CXL_CACHE = null;
 function opsCancelled() {
   const oi = opsIdx(); if (oi < 0 || !masterBook()) return new Map();
@@ -3558,11 +3637,12 @@ function renderCur() {
   const tbtn = document.querySelector("nav.tabs button[data-v='cur']");
   if (S.kind || !S.hasCur) {
     $("curNote").innerHTML = S.kind ? "Open a department's planner to see its crew currency." : "<b>" + esc(S.dept) + "'s file has no currency rules yet.</b> Upload the new planner file for this department (from the project folder) to get the currency rules.";
-    $("curTable").innerHTML = ""; $("ruleTable").innerHTML = ""; return;
+    $("curTable").innerHTML = ""; $("ruleTable").innerHTML = ""; $("nclBox").innerHTML = ""; return;
   }
   const C = computeCurrency(), ed = mayEdit(cur.b), R = S.rules, on = R.map(ruleOn), cols = R.map((r, k) => k).filter(k => on[k]);
   const nb = C.filter(x => x.bad).length, nd = C.filter(x => !x.bad && x.due).length;
   $("curNote").innerHTML = "<b>As of " + serShort(curToday()) + " " + new Date(Date.UTC(1899, 11, 30) + curToday() * 86400000).getUTCFullYear() + ": " + nb + " crew with a lapsed currency, " + nd + " due soon.</b> Flights on past dates count as flown; change or clear a cell if a flight was cancelled. Flying from before this file goes in the date under each status (tick <b>Edit the dates before the planner</b>). The statuses are written into the Currency sheet when you <b>Save to Excel</b>.";
+  $("nclBox").innerHTML = nclHtml(notClosed(cur.b));
   const onlyBad = $("curOnlyBad").checked, baseEd = $("curBaseEd").checked && ed;
   let h = "<thead><tr><th class='cn'>Callsign</th><th class='cn'>Name</th>" + cols.map(k => "<th title='" + esc(R[k].note || "") + "'>" + esc(R[k].name) + "<small>" + esc((R[k].min > 1 ? R[k].min + " in " : "") + R[k].win + " days · " + (R[k].applies && !/^all$/i.test(R[k].applies) ? R[k].applies + ": " + R[k].who : "everyone")) + "</small></th>").join("") + "</tr></thead><tbody>";
   let rows = 0, sep = false;
@@ -3612,7 +3692,7 @@ function renderControls() {
   $("month").innerHTML = monOpts(cur.m, S.year, S.nx);
   $("legend").innerHTML = S.cats.map((c, i) => '<span class="chip cat' + i + '">' + esc(c) + "</span>").join("") +
     '<span class="chip shAM">AM</span><span class="chip shPM">PM</span><span class="chip shNIGHT">NIGHT</span><span class="chip" style="background:var(--s700);color:#fcd34d">Weekend</span><span class="chip" style="background:#9f1239;color:#fff">Holiday</span>' +
-    (atomCurrent() ? "<span class='chip l1chip' title='ATOM: the day a Day / Night currency expires'>Currency expires</span><span class='chip l1chip capt' title='ATOM: a Captain currency expires (only matters on the Aircraft Captain seat)'>Captain currency expires</span><span class='chip' style='background:#fee2e2;color:#b91c1c' title='ATOM: a flight planned after the expiry day'>⚠ Not current</span>" : "");
+    (atomCurrent() ? "<span class='chip l1chip' title='ATOM: the day a Day / Night currency expires'>Currency expires</span><span class='chip l1chip capt' title='ATOM: a Captain currency expires (only matters on the Aircraft Captain seat)'>Captain currency expires</span><span class='chip mischip' title='ATOM: the day a mission currency expires (on the WD row)'>Mission currency expires</span><span class='chip' style='background:#fee2e2;color:#b91c1c' title='ATOM: a flight planned after the expiry day'>⚠ Not current</span>" : "");
 }
 // ---------- Planner crew filter: status chips (everyone shown until a planner switches a group off; remembered per department in this browser)
 const CREW_STATUS = ["active", "sans", "nsmen", "inactive"];
@@ -3739,6 +3819,7 @@ function renderPlanner() {
   const vis = visibleCrew();
   if (!vis.length) h += "<tr><td colspan='" + (dim + 3 + NT) + "' style='padding:16px;text-align:center;color:var(--s500)'>No crew to show. Add crew in the Crew Roster tab.</td></tr>";
   let sep = false;
+  const NCL = notClosed(cur.b);   // past flights the Ops Room never closed
   for (const i of vis) {
     const p = S.roster[i], t = st.crew[i], inact = p.status.toLowerCase() === "inactive", ns = isSans(p);
     if (ns && !sep) { sep = true; h += "<tr class='sansSep'><td colspan='" + (dim + 3 + NT) + "'><span style='position:sticky;left:10px'>SANS / NSMEN</span></td></tr>"; }
@@ -3784,10 +3865,17 @@ function renderPlanner() {
           l1cls = " l1end " + sty; if (s === 0 || (s === 2 && kind !== "irt")) l1 = "<div class='l1lab " + sty + "'>" + esc(am.marks.find(z => z.kind === kind).label) + "</div>";   // IRT's label sits on the AM row only
           tip = am.marks.map(z => z.col + " expires " + atomFmt(diso, diso)).join("\n") + (tip ? "\n" + tip : "");
         }
+        const ncl = s < 3 && NCL.keys.has(gridRow(i, s) + ":" + mi + ":" + d);
+        if (ncl) { l1cls += " ncl"; tip = "Not closed in the Ops Room: counts as flown for the currency rules until it is marked Flown or Cancelled" + (tip ? "\n" + tip : ""); }
+        let mlab = "";   // ATOM mission currencies: only the expiry day, on the WD row (AM row in a file without one); never an alert
+        if (AR && AR.mis && (rp() > 3 ? isWdRow(gridRow(i, s)) : s === 0)) {
+          const diso = isoOf(y, mi, d), ms = ATOM_MIS.filter(k => AR.mis[k] && AR.mis[k].k === "date" && AR.mis[k].iso === diso);
+          if (ms.length) { l1cls += " misx"; mlab = "<div class='mislab'>" + esc(ms.join(", ") + (ms.length > 1 ? " expire" : " expires")) + "</div>"; tip = ms.map(k => k + " (mission currency) expires " + atomFmt(diso, diso)).join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent()) + (tip ? "\n" + tip : ""); }
+        }
         if (am && am.alert) { W.push(["⚠ NOT CURRENT", "bad"]); l1cls += " atomw"; tip = am.alert.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent()) + (tip ? "\n" + tip : ""); }
         if (a && CN.has(i)) { const t = dateSerial(y, mi, d); CN.get(i).forEach(([n, k]) => { const R = S.rules[k], key = i + ":" + k; if (n === t && !cnDone.has(key) && ruleMatch(R, a, v)) { cnDone.add(key); W.push(["⚠ NOT CURRENT", "bad"]); tip = (tip ? tip + "\n" : "") + "Not current for " + R.name + " when this flight is planned (" + curIssues(CC, i).filter(x => x.startsWith(R.name)).join("; ") + ")"; } }); }
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) tip = (tip ? tip + "\n" : "") + "Currency: " + CL.get(i).get(d).map(w => w[2]).join("; ");
-        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (gridRow(i, s)) + ":" + d + "' data-cd='" + esc(det.join("\n")) + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, gridRow(i, s), d) + l1 + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
+        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (gridRow(i, s)) + ":" + d + "' data-cd='" + esc(det.join("\n")) + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, gridRow(i, s), d) + l1 + mlab + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
       }
       if (s === 0) h += "<td class='tot' rowspan=" + RPB + ">" + (t.fl || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const ah = atomHours(cur.b, i, mi); if (ah) return "<td class='tot flown' rowspan=" + RPB + " title='" + esc("Clocked this month, from ATOM, as of " + ah.asOf) + "'>" + ah.h.toFixed(1) + "</td>"; const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=" + RPB + " title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=" + RPB + ">" + (t.gd || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.sdo || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.lv || "-") + "</td>";
       h += "</tr>";
@@ -3813,7 +3901,7 @@ function mergeRuns() {
   if (S.kind || !mergeOn()) return;
   const A = actIndex(), byRow = new Map(), plan = $("plan");
   plan.querySelectorAll("td[data-k^='g:']").forEach(td => { const [, r, d] = td.dataset.k.split(":"); if (!byRow.has(+r)) byRow.set(+r, []); byRow.get(+r)[+d] = td; });
-  const plain = td => { if (!td || td.childElementCount || td.className.match(/\b(hasnote|hassyl|offlist|rest|cxl|dnf|dnd|l1end|atomw|sel)\b/)) return ""; const v = td.textContent.trim().toUpperCase(), a = v && A.get(v); return a && a.ci !== CAT_FLIGHT ? v : ""; };
+  const plain = td => { if (!td || td.childElementCount || td.className.match(/\b(hasnote|hassyl|offlist|rest|cxl|dnf|dnd|l1end|atomw|misx|sel)\b/)) return ""; const v = td.textContent.trim().toUpperCase(), a = v && A.get(v); return a && a.ci !== CAT_FLIGHT ? v : ""; };
   const runsOf = tds => { const out = []; for (let d = 0; d < tds.length; d++) { const v = plain(tds[d]); if (!v) continue; let e = d; while (e + 1 < tds.length && plain(tds[e + 1]) === v) e++; out.push({ d0: d, d1: e, v }); d = e; } return out; };
   const blocks = [], used = new Set();
   const rows = [...byRow.keys()].sort((a, b) => a - b), per = new Map();
@@ -5516,7 +5604,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-03 z150 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-03 z151 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6148,6 +6236,12 @@ function lodeCards(who, iso) {
       curc = { level: x.lap.length ? "bad" : x.due.length ? "due" : "ok", sub: "from ATOM, data as of " + atomAsOf(f).slice(0, 10) + (n ? " · " + (n - x.lap.length - x.due.length) + " of " + n + " current" : ""),
         text: x.lap.length ? x.lap[0].col + " expired " + atomFmt(x.lap[0].iso, iso) : x.due.length ? x.due[0].col + " expires " + atomFmt(first.iso, iso) : "All current" };
     }
+    let mis = null;   // ATOM mission currencies: the next to expire; expired ones are listed quietly
+    if (arow && arow.mis && Object.keys(arow.mis).length) {
+      const L = atomMisList(arow, iso), live = L.filter(x => x.state !== "mexp"), gone = L.filter(x => x.state === "mexp"), soon = live.filter(x => x.state === "mdue");
+      mis = { level: soon.length ? "m" : live.length ? "g" : "n", text: live.length ? live[0].col + " " + (soon.length ? "expires " : "to ") + atomFmt(live[0].iso, iso) : "None current",
+        sub: [live.slice(1, 4).map(x => x.col + " " + atomFmt(x.iso, iso)).join(" · "), gone.length ? "expired: " + gone.map(x => x.col).join(", ") : ""].filter(Boolean).join(" · ") };
+    }
     let syl = null;
     if (st.hasSyl && st.sylDef) {
       const P = sylPath(st.sylDef, st, who.p), w = P.stages[P.wk];
@@ -6155,7 +6249,7 @@ function lodeCards(who, iso) {
       else { const nx = w.all.find(x => !x.pass), pl = nx && nx.plan.filter(l => l.iso >= iso).sort((a, b) => a.iso < b.iso ? -1 : 1)[0];
         syl = { label: "Syllabus · " + w.stg.name, text: nx ? nx.it.desc || nx.it.code : P.wk === P.stages.length - 1 ? "Path complete" : "Stage complete", sub: (pl ? "Planned " + lodeFmt(pl.iso) + " " + SHIFTS[pl.sh] + " · " : "") + w.done + " of " + w.n + " passed" }; }
     }
-    return { known, medical, rest, cur: curc, syl };
+    return { known, medical, rest, cur: curc, mis, syl };
   });
 }
 // What changed for one person: Change Log rows since sinceT (null = the last 7 days) that touch them. Entry = { kind, text, sub, t }, newest first, at most 8.
@@ -6225,6 +6319,7 @@ function lodeCardsHtml(c) {
   return card(c.medical.ok === null ? "n" : c.medical.ok ? "g" : "r", "Medical", c.medical.ok ? "✓ " + esc(c.medical.text) : esc(c.medical.text), c.medical.sub) +
     card(c.rest.na ? "n" : c.rest.flagged ? "r" : c.rest.run >= REST_DAYS - 1 ? "o" : "g", "Crew rest", esc(c.rest.text) + (c.rest.run ? " <span class='dots'>" + dots + "</span>" : ""), c.rest.sub) +
     card({ bad: "r", due: "o", ok: "g", na: "n" }[c.cur.level], "Currency", esc(c.cur.text), c.cur.sub) +
+    (c.mis ? card(c.mis.level, "Mission currencies", esc(c.mis.text), c.mis.sub) : "") +
     (c.syl ? card("y", c.syl.label, esc(c.syl.text), c.syl.sub) : "");
 }
 function lodeTodayHtml(who, D, isToday, iso) {
@@ -6425,9 +6520,9 @@ const HELP = {
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
-  cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b> and the month's <b>clocked hours</b>. Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
+  cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li></ul><p>Below it, the older per-rule currency checks stay as they were.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is filled in from the Master Planner when you save; <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
+    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li><li><b>Mission currencies:</b> purple = expires within the due window; an expired one is shown quietly in grey (\"exp 3 Sep\") and is not counted as a problem; a blank box = that department does not need it. In the Planner the day one expires is marked in purple on the person's <b>WD row</b>; nothing alerts. My Lodestar has a Mission currencies card. ATOM's dates are used as they are: a planned flight does not move them, only the next export does.</li></ul><p>Below it, the older per-rule currency checks stay as they were. <b>Past flights check:</b> a past planned flight counts as flown for these rules, so any flight in the last 45 days that the Ops Room has not closed (Flown with ATD and ATA, or Cancelled) is listed under the note and underlined amber in the Planner. It starts from the first flight the Ops Room closed.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is filled in from the Master Planner when you save; <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li></li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +

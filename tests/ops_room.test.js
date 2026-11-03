@@ -178,7 +178,7 @@ test("seat_names_use_cat_classes", async ({ page }) => {
   assert.ok(g.a == null || RGB(g.a) === "rgb(0,0,0)", "CAT A is black: " + g.a);
   await ALL_CAT(page, "CAT D", "Active");
   const d = await page.evaluate(() => [...document.querySelectorAll("#opsMain tr.f td.oc b")].map(b => b.className + "|" + getComputedStyle(b).color));
-  assert.ok(d.every(x => x.startsWith("catD|") && RGB(x.split("|")[1]) === "rgb(220,38,38)"), d.join());
+  assert.ok(d.every(x => x.startsWith("catD|") && RGB(x.split("|")[1]) === "rgb(185,28,28)"), d.join());   // z149: CAT D darker red
 }, ED);
 test("sans_person_gets_green_box", async ({ page }) => {
   await goOps(page, DAY);
@@ -205,10 +205,10 @@ test("standby_rows_flight_size", async ({ page }) => {
   assert.ok(g.sh >= 0.85 * g.fh, "standby row " + g.sh + " vs flight row " + g.fh);
   assert.ok(g.lab >= g.flab && g.w >= 700, JSON.stringify(g));
 }, ED);
-test("ocu_is_violet", async ({ page }) => {
+test("ocu_is_pink", async ({ page }) => {
   await goOps(page, DAY); await ALL_CAT(page, "TRAINEE", "Active");
   const d = await page.evaluate(() => [...document.querySelectorAll("#opsMain tr.f td.oc b")].map(b => b.className + "|" + getComputedStyle(b).color));
-  assert.ok(d.length && d.every(x => x.startsWith("catT|") && RGB(x.split("|")[1]) === "rgb(124,58,237)"), d.join());
+  assert.ok(d.length && d.every(x => x.startsWith("catT|") && RGB(x.split("|")[1]) === "rgb(217,70,168)"), d.join());   // z149: OCU pink again
 }, ED);
 test("key_line", async ({ page }) => {
   await goOps(page, DAY);

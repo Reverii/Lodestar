@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-02, after z147)
+# LODESTAR handoff (updated 2026-11-03, after z150)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,12 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z150 (3 Nov, Brandon: "opening the excel file gives me error"): saved files Excel can always open
+No file or error text could come out of the intranet, so the save path was checked for things that make desktop Excel say the file has a problem. Found: any hidden control character in a typed or pasted value (Word / Outlook Shift+Enter line break `\v`, other pasted control characters, a broken emoji half) was written as-is and made the whole sheet XML invalid (Excel then repairs or refuses the file). Fix in `cellXml` (the one place cells are written): `xmlSafe` turns line-break-like characters into a new line and drops the rest; NaN / Infinity are written as empty. Also `buildXlsx` now drops `xl/calcChain.xml` (with its relationship and content type) when a file was last saved by desktop Excel, since overwriting a formula cell listed in it also gives the repair message; Excel rebuilds it silently. New `tests/excel_safe.test.js` (all 8 files: valid XML, no calcChain, no NaN; fails on z149). Not confirmed as Brandon's actual cause: asked him for the exact message and which file. Seen but left alone (builder output since day one, Excel normally accepts them, changing means rebuilding files): single-cell merges (`A8`) from `banner()` / `card()` with width 1, and empty-string cells written as `<c t="inlineStr"/>`. Also z149's colour change had left two `ops_room` checks stale (CAT D / OCU colours); updated.
+
+## Health check (3 Nov): mock-up only
+`previews/health_check_mockup.html` / `.png`: a Maintenance tab (admins only, part of Admin mode): status banner, Files table (layout, last saved, by, Excel can open it, Change Log size, status), Checks list (files found, layout, Excel-readable, Names to fix, SharePoint version history, live refresh / autosave, file not saved for N days), Errors in this session with short codes, and a data-free Report code to read out. Awaiting Brandon.
 
 ## z147 (2 Nov, Brandon): several lines in the duty strip
 The Ops Room duty strip cells (SXO, OPS O, SDO, BDO) and Safety, Prefect, Security and Codes now open a text box that takes several lines (Enter = new line; Ctrl+Enter or clicking away saves), like Intel did. The saved text keeps the line breaks (`white-space:pre-line` on `.dc`, `pre-wrap` on `.dv`). DOB (a time) and the Area lines stay one line. Dashboard only; the Excel cell just holds the text with line breaks. Code: `opsDbClick`. Test `duty_strip_cells_take_several_lines`; `ops_room` 55/55. Very tall entries are cut by the box height (the cell does not grow).

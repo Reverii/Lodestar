@@ -64,7 +64,7 @@ header.top .grow{flex:1}
 .sylset{font-size:10.5px;color:var(--s500);margin:10px 4px 0;line-height:1.45;border-top:1px solid var(--s200);padding-top:8px}.sylset>b{color:var(--s900)}
 .sylouts{margin:8px 4px 0;font-size:10.5px;background:#fef2f2;color:#991b1b;border-radius:6px;padding:5px 7px}
 .syltree{background:radial-gradient(ellipse at 30% 20%,#1e293b 0%,#0b1120 70%);border-radius:12px;position:relative;overflow:auto;color:#e2e8f0}
-.syltree svg{display:block;font-family:inherit}.sylth{padding:12px 18px 0}.sylth h2{margin:0;font-size:18px;color:#fff}.sylth div{font-size:12px;color:#94a3b8}
+.syltree svg{display:block;font-family:inherit}.sylth{padding:12px 18px 0}.sylselb{margin-left:12px;font-size:12px;padding:3px 10px;vertical-align:middle;background:#1e293b;color:#cbd5e1;border:1px solid #475569;border-radius:6px;font-weight:700}.sylselb.on{background:#1e3a8a;color:#dbeafe;border-color:#60a5fa}.sylth h2{margin:0;font-size:18px;color:#fff}.sylth div{font-size:12px;color:#94a3b8}
 .sylkey{position:absolute;right:16px;top:14px;display:flex;gap:6px;font-size:11px}.sylkey span{padding:3px 8px;border-radius:12px;border:1px solid #334155}
 .sylkey .k1{background:#14532d;border-color:#22c55e}.sylkey .k2{border-color:#f59e0b;color:#fbbf24}.sylkey .k3{border-color:#ef4444;color:#fca5a5}.sylkey .k4{background:#7f1d1d;border-color:#ef4444}.sylkey .k5{color:#64748b}
 .sylpop{position:absolute;right:16px;bottom:14px;width:320px;background:#fff;color:#0f172a;border-radius:10px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:12px}
@@ -1125,7 +1125,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-03 z152</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-03 z153</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1906,8 +1906,9 @@ const sylTrk = (s, it) => s.tracks[s.names.find(n => same(n, it.track || "Items"
 function readSylLog(st) {
   // the definition: Syllabus Settings (B6 default chances, B7 warn level), Syllabus Stages (Stage, Gives, Notes), Syllabus Items (Stage, Track, Order, Code, Description, Chances, Notes)
   st.sylDef = null;
-  if (WB.paths["Syllabus Items"]) { const Y = st.sylDef = { stages: [], items: [], defCh: 3, warn: 1 };
-    if (WB.paths["Syllabus Settings"]) { const se = readCells("Syllabus Settings"); Y.defCh = num(se.B6) || 3; Y.warn = num(se.B7) != null ? num(se.B7) : 1; }
+  if (WB.paths["Syllabus Items"]) { const Y = st.sylDef = { stages: [], items: [], defCh: 3, warn: 1, sel: [], hasSet: !!WB.paths["Syllabus Settings"] };
+    if (WB.paths["Syllabus Settings"]) { const se = readCells("Syllabus Settings"); Y.defCh = num(se.B6) || 3; Y.warn = num(se.B7) != null ? num(se.B7) : 1;
+      Y.sel = str(se.B8).split(/[,;\n]+/).map(x => x.trim()).filter(Boolean); }   // B8: callsigns selected for the instructor stage (z153)
     const rows = (sheet, fn) => { if (!WB.paths[sheet]) return; const c = readCells(sheet); for (let r = 6; r < 1006 && str(c["A" + r]); r++) fn(c, r); };
     rows("Syllabus Stages", (c, r) => Y.stages.push({ name: str(c["A" + r]), gives: str(c["B" + r]), notes: str(c["C" + r]) }));
     rows("Syllabus Items", (c, r) => { if (str(c["D" + r])) Y.items.push({ stage: str(c["A" + r]), track: str(c["B" + r]), order: num(c["C" + r]) || 0, code: str(c["D" + r]), desc: str(c["E" + r]), ch: num(c["F" + r]), notes: str(c["G" + r]),
@@ -1925,12 +1926,14 @@ function readSylLog(st) {
 }
 const SYL_RANK = c => ({ TRAINEE: 0, "CAT D": 1, "CAT C": 2, "CAT B": 3, "CAT A": 4 })[String(c || "").toUpperCase().trim()] ?? -1;
 const SYL_CATC = g => ({ "CAT D": ["#7f1d1d", "#b91c1c"], "CAT C": ["#713f12", "#eab308"], "CAT B": ["#1e3a8a", "#93c5fd"], "CAT A": ["#020617", "#e2e8f0"] })[String(g).toUpperCase()] || (/instructor/i.test(g) ? ["#1e3a8a", "#60a5fa"] : ["#14532d", "#22c55e"]);
+const sylInsStage = stg => /instructor/i.test(stg.gives);
+const sylIsSel = (Y, p) => /instructor/i.test(p.role) || (Y.sel || []).some(c => same(c, p.id));
 const sylHeld = (p, stg) => /instructor/i.test(stg.gives) ? /instructor/i.test(p.role) : SYL_RANK(p.cat) >= SYL_RANK(stg.gives) && SYL_RANK(stg.gives) >= 0;
 // one person's whole path: per stage its items with state, and the stage they are working on
 function sylPath(Y, st, p) {
   const log = st.syl.filter(x => same(x.id, p.id)).sort((a, b) => a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : a.r - b.r);
   const stages = Y.stages.map(stg => {
-    const held = sylHeld(p, stg), its = Y.items.filter(it => same(it.stage, stg.name));
+    const held = sylHeld(p, stg), skip = !held && sylInsStage(stg) && !sylIsSel(Y, p), its = Y.items.filter(it => same(it.stage, stg.name));
     const names = []; its.forEach(it => { const t = it.track || "Items"; if (!names.some(n => same(n, t))) names.push(t); });   // tracks in order of first appearance
     const tracks = {}; names.forEach(t => tracks[t] = its.filter(it => same(it.track || "Items", t)).sort((a, b) => a.order - b.order).map(it => {
       const at = log.filter(x => same(x.code, it.code) && x.res !== "Planned"), plan = log.filter(x => same(x.code, it.code) && x.res === "Planned"), k = at.findIndex(x => x.res === "Pass"), fails = (k < 0 ? at : at.slice(0, k)).filter(x => x.res === "Fail").length;
@@ -1940,9 +1943,9 @@ function sylPath(Y, st, p) {
     // the next item in a track is in progress (or failed); later ones are locked (display only)
     names.forEach(t => { let open = true; tracks[t].forEach(x => { x.state = x.pass ? "pass" : !open ? "lock" : x.out ? "out" : x.fails ? "fail" : "next"; if (!x.pass) open = false; }); });
     const all = names.flatMap(t => tracks[t]), done = all.filter(x => x.pass).length;
-    return { stg, held, names, tracks, all, done, n: all.length, complete: all.length > 0 && done === all.length };
+    return { stg, held, skip, names, tracks, all, done, n: all.length, complete: all.length > 0 && done === all.length };
   });
-  const wk = stages.findIndex(s => !s.held);
+  const wk = stages.findIndex(s => !s.held && !s.skip);   // a stage for selected crew only (skip) does not hold the path open
   return { stages, wk, log, outs: stages.flatMap(s => s.all.filter(x => x.out).map(x => ({ x, s }))) };
 }
 let sylSel = { id: null, stage: null, code: null };
@@ -1961,8 +1964,8 @@ function renderSyl() {
   if (!P.some(x => same(x.p.id, sylSel.id))) sylSel = { id: P[0] ? P[0].p.id : null, stage: null, code: null };
   const line = x => { const S2 = x.path.stages, w = x.path.wk;
     if (w < 0) return ["Path complete", 1];
-    const s = S2[w], from = w ? S2[w - 1].stg.gives : (x.p.cat || "TRAINEE");
-    return [(w ? esc(from) + " → " : "") + (s.complete ? "<b class='sylgold'>" + esc(s.stg.name) + " complete, awaiting paperwork</b>" : "working on " + esc(s.stg.name) + " · " + s.done + " of " + s.n), s.n ? s.done / s.n : 0]; };
+    const s = S2[w];
+    return [s.complete ? "<b class='sylgold'>" + esc(s.stg.name) + " complete, awaiting paperwork</b>" : "working on " + esc(s.stg.name) + (s.stg.gives ? " (to " + esc(s.stg.gives) + ")" : "") + " · " + s.done + " of " + s.n, s.n ? s.done / s.n : 0]; };
   const list = P.map(x => { const [av, col] = sylAv(x.p), [txt, f] = line(x), out = x.path.outs[0];
     return "<div class='sylp" + (same(x.p.id, sylSel.id) ? " on" : "") + "' data-sylp='" + esc(x.p.id) + "'><div class='av' style='background:" + col + "'>" + av + "</div><div class='tx'><b>" + esc(x.p.id) + "</b> " + esc(x.p.name) +
       "<small>" + txt + (out ? " <b class='sylred'>⛔ " + esc(sylShort(out.x.it)) + "</b>" : "") + "</small><div class='bar'><i style='width:" + Math.round(f * 100) + "%;" + (f >= 1 ? "background:#22c55e" : "") + "'></i></div></div></div>"; }).join("");
@@ -1986,7 +1989,8 @@ function sylTree(Y, st, me, ed) {
     const txt = (l1, l2, c1, c2) => "<text x='" + x + "' y='" + (Y0 + (l2 ? -2 : 4)) + "' fill='" + c1 + "' font-size='" + (l1.length > 8 ? 9 : l1.length > 6 ? 10 : 11.5) + "'>" + esc(l1) + "</text>" + (l2 ? "<text x='" + x + "' y='" + (Y0 + 11) + "' fill='" + c2 + "' font-size='9'>" + esc(l2) + "</text>" : "");
     g += "<g class='sylst' data-sylst='" + k + "' style='cursor:pointer'" + (cur || on ? " filter='url(#sylgl)'" : "") + ">";
     if (cur) g += "<polygon points='" + [[0, -34], [30, -17], [30, 17], [0, 34], [-30, 17], [-30, -17]].map(([a, c]) => (x + a) + "," + (Y0 + c)).join(" ") + "' fill='" + (s.complete ? "#fde68a" : "url(#sylgold)") + "' stroke='#fde68a' stroke-width='2'/>" + txt(nm, s.complete ? "complete" : s.done + " / " + s.n, "#422006", "#78350f");
-    else if (held) { const cc = SYL_CATC(s.stg.gives); g += "<circle cx='" + x + "' cy='" + Y0 + "' r='" + (last ? 30 : 26) + "' fill='" + (last ? cc[0] : "#14532d") + "' stroke='" + (last ? cc[1] : "#22c55e") + "' stroke-width='3'/>" + txt(nm, last ? "current" : "", last ? "#fff" : "#bbf7d0", "#e2e8f0"); }
+    else if (held) { const cc = SYL_CATC(s.stg.gives); g += "<circle cx='" + x + "' cy='" + Y0 + "' r='" + (last ? 30 : 26) + "' fill='" + (last ? cc[0] : "#14532d") + "' stroke='" + (last ? cc[1] : "#22c55e") + "' stroke-width='3'/>" + txt(nm, last ? "passed" : "", last ? "#fff" : "#bbf7d0", "#e2e8f0"); }
+    else if (s.skip) g += "<circle cx='" + x + "' cy='" + Y0 + "' r='27' fill='#0f172a' stroke='" + (on ? "#94a3b8" : "#475569") + "' stroke-width='2' stroke-dasharray='4 4'/>" + (k && S2[k - 1].held ? txt(nm, "current", "#e2e8f0", "#94a3b8") : txt(two[0], two[1], "#64748b", "#64748b")) + "<text x='" + x + "' y='" + (Y0 + 46) + "' fill='#64748b' font-size='9.5' font-weight='700'>selected crew only</text>";
     else g += "<circle cx='" + x + "' cy='" + Y0 + "' r='27' fill='#1e293b' stroke='" + (on ? "#94a3b8" : "#475569") + "' stroke-width='2'/>" + txt(two[0], two[1], "#94a3b8", "#94a3b8") + "<text x='" + x + "' y='" + (Y0 + 46) + "' fill='#64748b' font-size='12'>🔒</text>";
     if (on && !cur) g += "<circle cx='" + x + "' cy='" + Y0 + "' r='36' fill='none' stroke='#93c5fd' stroke-width='1.5' stroke-dasharray='3 3'/>";
     g += "</g>"; });
@@ -2017,10 +2021,15 @@ function sylTree(Y, st, me, ed) {
     L.forEach((x, k) => { if (k) g += "<path d='M" + x0 + " " + (T0 + (k - 1) * DY + BH - (L[k - 1].it ? 0 : 8)) + " L" + x0 + " " + (T0 + k * DY + (x.it ? 0 : 8)) + "' stroke='" + (!x.it ? (x.fold ? "#22c55e" : "#334155") : !L[k - 1].it ? (L[k - 1].fold ? "#22c55e" : "#334155") : lineC(L[k - 1], x)) + "' stroke-width='3'" + (x.state === "next" ? " stroke-dasharray='5 4'" : "") + "/>"; g += x.it ? box(x, x0, T0 + k * DY) : node(x, T0 + k * DY); });
     if (!L.length) g += "<text x='" + x0 + "' y='" + (T0 + 20) + "' fill='#64748b' font-size='10'>no items</text>"; });
   const yEnd = T0 + Math.max(1, maxN) * DY + 8;
-  g += "<text x='" + cx + "' y='" + (yEnd + 2) + "' fill='" + (cs.complete && !cs.held ? "#fbbf24" : "#64748b") + "' font-size='10' font-weight='700'>" + (cs.held ? esc(cs.stg.name) + " held (" + esc(cs.stg.gives) + " on the Roster)" : cs.complete ? "Stage complete, awaiting paperwork: update the Roster by hand once it is approved" : "Every item in every track passed = stage complete") + "</text>";
-  const H = yEnd + 20, p = me.p;
-  const head = "<div class='sylth'><h2>" + esc(p.id) + " · " + esc(p.name) + "</h2><div>" + esc(p.cat || "No Cat Status") + (/instructor/i.test(p.role) ? " · Instructor" : "") + " · " +
-    (path.wk < 0 ? "path complete" : "working on " + esc(S2[path.wk].stg.name) + " · " + S2[path.wk].done + " of " + S2[path.wk].n + " items passed") +
+  const bx = Math.max(240, Math.min(cx, W - 240));
+  if (!cs.n) g += "<text x='" + bx + "' y='" + (T0 + 20) + "' fill='#64748b' font-size='11'>No items in this stage yet. Add them on the Syllabus Items sheet.</text>";
+  g += "<text x='" + bx + "' y='" + (yEnd + 2) + "' fill='" + (cs.complete && !cs.held ? "#fbbf24" : "#64748b") + "' font-size='10' font-weight='700'>" + (cs.held ? esc(cs.stg.name) + " held (" + esc(cs.stg.gives) + " on the Roster)" : cs.skip ? "Instructor training: only for CAT A crew selected for it" : cs.complete ? "Stage complete, awaiting paperwork: update the Roster by hand once it is approved" : "Every item in every track passed = stage complete") + "</text>";
+  const H = yEnd + 20, p = me.p, insI = S2.findIndex(s => sylInsStage(s.stg)), isSel = sylIsSel(Y, p), insRole = /instructor/i.test(p.role);
+  const canSel = insI >= 0 && !insRole && SYL_RANK(p.cat) === SYL_RANK("CAT A");
+  const selSw = !canSel ? "" : ed && Y.hasSet ? "<button class='btn sylselb" + (isSel ? " on" : "") + "' data-sylsel='1' title='" + (isSel ? "Take " + esc(p.id) + " off instructor training" : "Select " + esc(p.id) + " for instructor training: the " + esc(S2[insI].stg.name) + " stage opens for them") + "'>" + (isSel ? "✓ Selected for instructor training" : "Select for instructor training") + "</button>" :
+    (isSel ? "<span class='sylselb on'>✓ Selected for instructor training</span>" : "");
+  const head = "<div class='sylth'><h2>" + esc(p.id) + " · " + esc(p.name) + selSw + "</h2><div>" + esc(p.cat || "No Cat Status") + (/instructor/i.test(p.role) ? " · Instructor" : "") + " · " +
+    (path.wk < 0 ? (canSel && !isSel ? "path complete · instructor training only if selected" : "path complete") : "working on " + esc(S2[path.wk].stg.name) + " · " + S2[path.wk].done + " of " + S2[path.wk].n + " items passed") +
     (si !== path.wk ? " · <b style='color:#93c5fd'>showing " + esc(cs.stg.name) + "</b>" : "") + "<br><span style='color:#64748b'>Cat Status is never changed here: update the Roster by hand once the paperwork is approved.</span></div></div>" +
     "<div class='sylkey'><span class='k1'>✓ Passed</span><span class='k2'>● In progress</span><span class='k3'>✕ Failed, chances left</span><span class='k4'>⛔ Out of chances</span><span class='k5'>🔒 Locked</span></div>";
   el.innerHTML = head + "<svg width='" + W + "' height='" + H + "' viewBox='0 0 " + W + " " + H + "' text-anchor='middle' font-weight='800'><defs><filter id='sylgl' x='-50%' y='-50%' width='200%' height='200%'><feGaussianBlur stdDeviation='4' result='b'/><feMerge><feMergeNode in='b'/><feMergeNode in='SourceGraphic'/></feMerge></filter><linearGradient id='sylgold' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='#fde68a'/><stop offset='1' stop-color='#f59e0b'/></linearGradient></defs><g fill='none'>" + g + "</g></svg>" + sylPopHtml(Y, st, me, cs, ed);
@@ -2068,7 +2077,17 @@ $("sylWrap").addEventListener("click", e => {
   if (t.closest("[data-sylclose]")) { sylSel.code = null; renderSyl(); return; }
   const r = t.closest("[data-sylres]"); if (r) { sylAdd(r.dataset.sylres); return; }
   const x = t.closest("[data-sylx]"); if (x) { sylDel(+x.dataset.sylx); return; }
+  if (t.closest("[data-sylsel]")) { sylSelToggle(); return; }
 });
+// select / unselect the person on the tree for instructor training: a comma list of callsigns in Syllabus Settings B8 (A8 is the label)
+function sylSelToggle() {
+  const { st, b, Y, ed } = sylCtx(), id = sylSel.id; if (!ed || !Y || !Y.hasSet || !id) return;
+  const on = (Y.sel || []).some(c => same(c, id)), next = on ? Y.sel.filter(c => !same(c, id)) : (Y.sel || []).concat(id);
+  withBook(books.indexOf(b), () => { const se = readCells("Syllabus Settings");
+    if (!str(se.A8)) put("Syllabus Settings", "A8", "Selected for instructor training");
+    put("Syllabus Settings", "B8", next.join(", ")); S.sylDef.sel = next; });
+  toast(id + (on ? " is no longer selected for instructor training." : " is selected for instructor training.") + saveHint(), 2500); renderSyl();
+}
 window.addEventListener("resize", () => { if ($("v-syl").classList.contains("on")) renderSyl(); });
 function readMaster(name) {   // (the Crew Matrix sheet is read at the end)
   const st = { kind: "master", year: null, dept: "Master Planner", roster: [], acts: [], cats: [], hols: [], m: [], sdo: {}, mp: [], codes: [], fl: [] };
@@ -5604,7 +5623,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-03 z152 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-03 z153 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6510,11 +6529,11 @@ const HELP = {
     "<li>Struck-through flight: cancelled in the Ops Room. Blue column: today. Weekends dark, public holidays red.</li></ul>" +
     "<h3>Tools</h3><ul><li><b>Find in this month</b>: outlines matching codes, times, comments and names; Enter jumps to the next.</li><li><b>Today</b>: jumps to today's month and column.</li><li><b>Block of days…</b> (bottom of the cell list): one activity over a date range, e.g. a course or detachment.</li><li><b>↶ ↷</b> (top right) or Ctrl+Z / Ctrl+Y: undo and redo before you save.</li></ul>"],
   ov: ["Overview", "<p>Your department's year at a glance: flights, flying hours, ground duties, duty days and gaps per month, with a chart and each person's totals. Click a month to open it on the Planner.</p>"],
-  syl: ["Syllabus Tracking", "<p>Under <b>Planning ▾</b>. Each of your department's crew as a skill tree: the stages along the top (OCU, CAT C, CAT B, CAT A, Instructor), and under the stage they are working on the <b>Sim track</b> and <b>Flight track</b> side by side, then the <b>Check</b> once both tracks are passed. Click a stage to look at it, and click an item to see its attempts.</p>" +
+  syl: ["Syllabus Tracking", "<p>Under <b>Planning ▾</b>. Each of your department's crew as a skill tree: the stages along the top (OCU, CAT D, CAT C, CAT B, CAT A), and under the stage they are working on the <b>Sim track</b> and <b>Flight track</b> side by side, then the <b>Check</b> once both tracks are passed. Click a stage to look at it, and click an item to see its attempts.</p>" +
     "<p><b>Chances are per item</b>: every item has the default number of chances from the Syllabus Settings sheet, unless the item sets its own. Fails before the first pass use up chances; at 0 left the item shows ⛔ out of chances. Nothing is blocked: it is a flag for the chain of command.</p>" +
     "<p>Enter a result in the item pop-up: date, instructor, remarks, then <b>✓ Pass</b> or <b>✕ Fail</b>. It goes on your file's <b>Syllabus Log</b> sheet (× deletes a wrong entry). When every item of a stage is passed it shows <b>Stage complete, awaiting paperwork</b>. The dashboard never changes Cat Status or Role: update the Roster by hand once the paperwork is approved.</p>" +
     "<p><b>From the Planner:</b> right-click a crew cell, open the gold <b>🎓 Syllabus</b> box (off by default) and tick the item, then pick the flight or sim. The cell gets a gold corner and the item under the code; the item shows <b>planned</b> here. On the day or after, click the cell again to record <b>✓ Pass</b> or <b>✕ Fail</b>. Only Pass and Fail use a chance.</p>" +
-    "<p>The stages, items and chances are on your own planner file's <b>Syllabus Settings</b>, <b>Syllabus Stages</b> and <b>Syllabus Items</b> sheets (edit them in Excel). Only your department's crew are listed.</p>"],
+    "<p><b>Stages</b> are named after the Cat Status the person holds while working on them: OCU (trainees), CAT D, CAT C, CAT B, then CAT A, which is instructor training and opens only for CAT A crew selected for it: open the person and press <b>Select for instructor training</b> (saved on the Syllabus Settings sheet, row 8).</p><p>The stages, items and chances are on your own planner file's <b>Syllabus Settings</b>, <b>Syllabus Stages</b> and <b>Syllabus Items</b> sheets (edit them in Excel). No empty rows: the list stops at the first row with no Stage. Only your department's crew are listed.</p>"],
   log: ["Changelog", "<p>Every change saved from this dashboard to your own department's file, the Master Planner and the Ops Room, newest first: when, who, which file, what changed in words, and the value before and after. On SharePoint the name is the person signed in to SharePoint, so it follows their access rights: someone without edit rights on a file cannot save it, so cannot appear in its log.</p><p>Each Excel file keeps its own log on a <b>Change Log</b> sheet (added automatically the first time something is saved). This tab shows only your own department, the Master Planner and the Ops Room (everything in Ops Room mode); filter by person, file, day or text. Hover a change to see the exact sheet and cell.</p>"],
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],

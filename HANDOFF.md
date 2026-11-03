@@ -157,7 +157,14 @@ The flight card's code box is now an input with a datalist (`#fcList`, crew show
 ## z112 (31 Oct, Brandon): Ops Room ground programme is filled by hand
 Brandon was not happy with the z111 auto-merge. **Now the board shows only squadron events (Master Planner) and the Ops Room's own rows.** The planners' ground items (Meeting, Outstation, WD items) no longer appear by themselves. **+ Ops row** opens the dialog with a read-only "From the department plans" list grouped by department (`opsDeptRef`, with planner cell comments), then Time (quick buttons AM / PM / NIGHT / WD and a TILL date picker), Activity, Location (all typed) and the crew tick boxes (nothing pre-ticked). A manual row with time `TILL 25 OCT` shows every day from the day it was added to that date (hide / pencil on a later day saves a per-day hide / edit). `1500H` now parses as a clock time. Old z111 edits on department rows (`dept|` ids) are ignored. **My Lodestar** keeps reading the planners' cells (Brandon, 31 Oct: that is fine); Ops Room rows do not show there, by design. Tests: `ops_room` 42, `wd_row` 19, `my_lodestar` 60, `ground_rows` 13. The z111 notes below describe the old merge; `opsGround` no longer does it.
 
-## Next session: start here (handoff of 2 Nov 2026, after z130)
+## Next session: start here (handoff of 3 Nov 2026, after z153)
+
+**State:** everything through **z153** is merged on `main`. The repo's eight `.xlsx` are a fresh demo set built after z153 (new syllabus stages); the dashboard embeds them. Work branch `claude/practical-lamport-j13scq` equals `main`.
+**Done on 3 Nov:** z152 (New code panel and help wording, last-used tag on the department card edge), z153 (syllabus stages OCU / CAT D / CAT C / CAT B / CAT A named by the CAT held; CAT A = instructor training for selected crew, switch on the Syllabus tab, Syllabus Settings B8), the Master Planner part of the PDF guide drafted (`guide/`), demo set rebuilt.
+**Waiting on Brandon:** his read of the Master Planner guide draft (wording, order, missing bits; then the same layout for the Ops Room and Duty Planner parts); his look at z151 to z153; the instructor (CAT A stage) syllabus items and the Pilot / Loadmaster syllabus lists; the exact Excel error message (z150); the Health check mock-up; renaming the stages in his live SUP 2 file in Excel (or uploading the full new set).
+**Guide parts decided:** Getting started, Planners, Master Planner (drafted), Duty Planner, Ops Room; My Lodestar left out for now. Rebuild the PDF with `node guide/make_shots.js` then `node guide/make_pdf.js` (dashboard built first).
+
+## Earlier handoff (2 Nov 2026, after z130)
 
 **Flight codes missing from a department (2 Nov): solved in z131** (see the z131 section; waiting for his test on SharePoint).
 

@@ -319,8 +319,11 @@ if True:
 # Each department keeps its own syllabus (SUP 1 / SUP 2 / TACCO Mission Crew, Pilot, Loadmaster). Built for every department since the 26 Oct scale-up.
 SYL_DEPTS = {"SUP 1", "SUP 2", "TACCO", "Loadmaster", "Pilot"}
 SYL_KIND = {"SUP 1": "Mission Crew", "SUP 2": "Mission Crew", "TACCO": "Mission Crew", "Pilot": "Pilot", "Loadmaster": "Loadmaster"}.get(DEPT, "Mission Crew")
-SYL_STAGES = [("OCU", "CAT D", "Operational Conversion Unit. Passing it makes a TRAINEE a CAT D."), ("CAT C", "CAT C", ""), ("CAT B", "CAT B", ""), ("CAT A", "CAT A", ""),
-              ("Instructor", "Instructor", "Gives the Instructor Role on the Roster (not a Cat Status).")]
+# Stages are named after the Cat Status the person holds while working on them (Brandon, 3 Nov): OCU (TRAINEE) -> CAT D -> CAT C -> CAT B -> CAT A.
+# 'Gives' is what passing the stage leads to. The CAT A stage is instructor training, only for crew selected for it (Syllabus Settings row 8).
+SYL_STAGES = [("OCU", "CAT D", "Operational Conversion Unit, for TRAINEES. Passing it leads to CAT D."), ("CAT D", "CAT C", "For CAT D crew. Passing it leads to CAT C."),
+              ("CAT C", "CAT B", "For CAT C crew. Passing it leads to CAT B."), ("CAT B", "CAT A", "For CAT B crew. Passing it leads to CAT A."),
+              ("CAT A", "Instructor", "Instructor training: only for CAT A crew selected for it (Syllabus Settings row 8, or the switch on the Syllabus tab). Gives the Instructor Role on the Roster (not a Cat Status).")]
 SYL_SIM = {"Mission Crew": ["Systems familiarisation", "Sensor management", "Surface picture", "Emergency procedures"], "Pilot": ["Cockpit procedures", "Instrument flying", "Engine failures", "Crew coordination"],
            "Loadmaster": ["Cargo systems", "Load planning", "Emergency drills", "Airdrop procedures"]}
 SYL_FLT = {"Mission Crew": ["Day patrol", "Radar picture", "Night patrol", "Search pattern"], "Pilot": ["General handling", "Circuits", "Night flying", "Low level"],
@@ -376,11 +379,12 @@ CAT A,Flight,2,S2-A-FLT2,MAS Tact Flight 2,Flight
 CAT A,Flight,3,S2-A-FLT3,MAS Tact Flight 3,Flight
 CAT A,Flight,4,S2-A-FLTCHK,MAS Tact Flight Check,Flight
 """.strip().splitlines()]}
-SYL_NPER = {"OCU": 4, "CAT C": 3, "CAT B": 3, "CAT A": 2, "Instructor": 2}
-SYL_SC = {"OCU": "O", "CAT C": "C", "CAT B": "B", "CAT A": "A", "Instructor": "I"}
+SYL_RENAME = {"CAT C": "CAT D", "CAT B": "CAT C", "CAT A": "CAT B"}   # 3 Nov: the real list was written with stages named after the CAT they lead to; codes stay as they are
+SYL_REAL = {k: [[SYL_RENAME.get(r[0], r[0])] + r[1:] for r in v] for k, v in SYL_REAL.items()}
+SYL_NPER = {"OCU": 4, "CAT D": 3, "CAT C": 3, "CAT B": 2, "CAT A": 2}
+SYL_SC = {"OCU": "O", "CAT D": "D", "CAT C": "C", "CAT B": "B", "CAT A": "A"}
 if DEPT in SYL_DEPTS:
     SYL_NST, SYL_NI = 20, 1000
-    if DEPT in SYL_REAL: SYL_STAGES = [x for x in SYL_STAGES if x[0] != "Instructor"]
     def syl_inputs(ws, r0, n, ncol):
         for r in range(r0, r0 + n):
             for c in range(1, ncol + 1):
@@ -395,6 +399,10 @@ if DEPT in SYL_DEPTS:
         c = sset.cell(r, 2, v); c.fill = INPUT_FILL; c.font = f(True, "1D4ED8", 12); c.alignment = CENTER; c.border = BOX
         sset.cell(r, 3, m).font = f(False, SLATE500, 9); sset.cell(r, 3).border = BOX
         dv = DataValidation(type="whole", operator="between", formula1="0", formula2="99", allow_blank=False); dv.add(f"B{r}"); sset.add_data_validation(dv)
+    # row 8: callsigns selected for the instructor stage (the stage whose Gives is Instructor); the dashboard's switch writes it, a comma list
+    sset.cell(8, 1, "Selected for instructor training").font = f(True); sset.cell(8, 1).border = BOX
+    c = sset.cell(8, 2); c.fill = INPUT_FILL; c.font = INPUT_FONT; c.border = BOX; c.number_format = "@"
+    sset.cell(8, 3, "Callsigns, separated by commas. Only these CAT A crew see the instructor stage. The switch on the dashboard's Syllabus tab fills this in.").font = f(False, SLATE500, 9); sset.cell(8, 3).border = BOX
     sset.freeze_panes = "A6"; sset.sheet_properties.tabColor = "CA8A04"
     sstg = wb.create_sheet("Syllabus Stages", wb.sheetnames.index("Syllabus Settings") + 1)
     banner(sstg, f"SYLLABUS STAGES  |  {DEPT.upper()}", "The training path, first stage at the top. 'Gives' = the Cat Status (or Role) the stage leads to once the paperwork is approved. No gaps.", 3)

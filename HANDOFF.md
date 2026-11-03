@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-03, after z152)
+# LODESTAR handoff (updated 2026-11-03, after z153)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,14 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z153 (3 Nov, Brandon): syllabus stages named by the CAT held, instructor stage for selected crew
+Decided: stages are **OCU -> CAT D -> CAT C -> CAT B -> CAT A**, named after the Cat Status the person holds while working on them (Gives = where passing leads: CAT D, CAT C, CAT B, CAT A, Instructor). The **CAT A stage is instructor training, only for CAT A crew selected for it**; a CAT A who is not selected reads "path complete · instructor training only if selected" and the CAT A node is dashed "selected crew only". Crew with the Instructor role hold it.
+- **Selecting:** a switch "Select for instructor training" on the person's tree (Syllabus Tracking, CAT A crew only, editors only) writes a comma list of callsigns to **Syllabus Settings B8** (A8 label "Selected for instructor training"). New cell only, no layout stamp bump. A file without Settings shows no switch.
+- **Code:** `sylInsStage` (Gives = Instructor), `sylIsSel`, `stage.skip` in `sylPath` (the working stage skips it), `sylSelToggle`; tree: last held node says "passed" (was "current"), the reached selected-only node says "current", "No items in this stage yet", bottom line kept inside the picture; crew list line "working on CAT D (to CAT C)"; help text.
+- **Builder:** new `SYL_STAGES`; SUP 2's real items relabelled through `SYL_RENAME` (CAT C -> CAT D, CAT B -> CAT C, CAT A -> CAT B; **codes unchanged**, e.g. S2-C-FLT1 now sits in stage CAT D); the CAT A stage starts empty in SUP 2 until Brandon sends the instructor items; placeholders for the other four depts follow the new stages; `specs/SUP2_syllabus_items.csv` relabelled.
+- **Files:** the repo's eight xlsx were rebuilt as a fresh demo set (Brandon: "yes rebuild the demo set") and the dashboard re-embedded them, so the built-in sample has the new stages too. Tests on the repo files: syllabus_stages 6/6, ops_room 55/55, wd_row 19/19, flight_card 17/17, code_sync 17/17, master_calendar 8/8, excel_safe, merge_runs pass; my_lodestar same 3 old failures. Brandon's live files: rename the stages in Excel (steps given in chat) or wait for a rebuild.
+- Tests: new `tests/syllabus_stages.test.js` (6, needs a set built after z153 via `LODE_FILES`); `my_lodestar` syllabus check accepts CAT C or CAT D (same 3 old failures); `hours_from_times` 17/17, `hours_builder`, `wd_builder` pass.
 
 ## z152 (3 Nov, Brandon: "fix those four small things"): wording and one tag
 The New code panel now says each department gets the code by itself the next time it saves (z131 behaviour); the Master Planning help (?) describes the one-sheet Calendar export (no List sheet); the Flight Codes help no longer mentions sorties and hours per code; on the department screen the "You opened this last" tag sits on the card's top edge (like the Ops Room card) so it no longer covers a long name such as Master Planner. Dashboard only; upload the DEV dashboard. Tests: dept_select 24/24, flight_code_combo 4/4, master_calendar 8/8, mp_export 11/11. Guide screenshots retaken.

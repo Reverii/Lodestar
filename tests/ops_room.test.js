@@ -385,6 +385,53 @@ test("projector_bottom_cards_keep_their_row", async ({ page }) => {   // z143: t
   const r = await page.evaluate(() => ({ side: document.getElementById("opsSide").getBoundingClientRect().height, z: opsZEff, wb: document.getElementById("opsWrap").getBoundingClientRect().bottom, sb: document.getElementById("opsSide").getBoundingClientRect().bottom }));
   assert.ok(r.side >= 240 * r.z - 2, "bottom cards not squeezed: " + JSON.stringify(r)); assert.ok(Math.abs(r.wb - r.sb) < 3, "cards reach the bottom of the page: " + JSON.stringify(r));
 }, ED);
+test("added_crew_is_not_seated_again_from_the_plan", async ({ page }) => {   // z170: Brandon, "only on the first flight line"
+  const n0 = await page.evaluate(() => books.length);
+  await page.setInputFiles("#fileInputMore", require("path").join(process.env.LODE_FILES || require("path").resolve(__dirname, ".."), "Flight_Ops_Planner_SUP2.xlsx"));
+  await page.waitForFunction(n => books.length > n, n0, { timeout: 20000 });
+  await goOps(page, DAY);
+  const out = await page.evaluate(() => {
+    OPS = true;   // Ops Room mode on SharePoint: the department files are editable, so adding crew also writes the code into their plan
+    const res = {};
+    for (let k = 1; k < OPS_SEATS.length; k++) {
+      const dep = OPS_SEATS[k][1], D = opsDay(cur.opsDay), row = D.rows.find(z => !z.x.sb && z.seats[k] && !z.seats[k].set); if (!row) { res[dep] = "no seat"; continue; }
+      const c = row.seats[k], bi = books.findIndex(b => isDept(b) && same(b.S.dept, dep)); let pr = null;
+      withBook(bi, () => { const ci = S.roster.findIndex(p => same(p.id || p.name, c.id));   // someone above the seat holder with nothing planned in that shift
+        const j = S.roster.findIndex((p, i) => i < ci && p.id && !/inactive/i.test(p.status || "") && !S.m[D.mi].grid[gridRow(i, row.x.s)][D.d]); if (j >= 0) pr = S.roster[j]; });
+      if (!pr) { res[dep] = "nobody free above"; continue; }
+      opsOpenPop(row.key, k); const sel = document.getElementById("opsXAdd"); sel.value = pr.id; sel.dispatchEvent(new Event("change", { bubbles: true })); renderOps();
+      const nm = opsName(Object.assign({}, pr, { dept: dep })), all = [...document.querySelectorAll("#opsMain tr[data-ok]")].map(tr => [...tr.querySelectorAll("b")].filter(b => b.textContent.trim() === nm).length);
+      const D2 = opsDay(cur.opsDay), r2 = D2.rows.find(z => z.key === row.key), stillSeat = r2.seats[k] && same(r2.seats[k].id, c.id);
+      res[dep] = all.reduce((a, b) => a + b, 0) === 1 && stillSeat ? "once" : "on the board " + all.reduce((a, b) => a + b, 0) + "x, seat holder kept " + !!stillSeat;
+    }
+    return res;
+  });
+  if (process.env.SHOWOUT) console.log(JSON.stringify(out));
+  for (const [d, v] of Object.entries(out)) assert.ok(v === "once" || v === "no seat" || v === "nobody free above", d + ": " + v + " " + JSON.stringify(out));
+  assert.ok(Object.values(out).filter(v => v === "once").length >= 2, JSON.stringify(out));
+}, ED);
+test("seat_holder_also_listed_as_additional_shows_once", async ({ page }) => {   // z170: Brandon's SUP 2 flight showed TAN PH in the seat and again as additional crew; now once (as additional crew: the plan no longer seats them)
+  const n0 = await page.evaluate(() => books.length);   // the Ops Room view opens every file but SUP 2 in this harness: add it
+  await page.setInputFiles("#fileInputMore", require("path").join(process.env.LODE_FILES || require("path").resolve(__dirname, ".."), "Flight_Ops_Planner_SUP2.xlsx"));
+  await page.waitForFunction(n => books.length > n, n0, { timeout: 20000 });
+  await goOps(page, DAY);
+  const out = await page.evaluate(() => {
+    const res = {};
+    for (let k = 1; k < OPS_SEATS.length; k++) {
+      const dep = OPS_SEATS[k][1], row = opsDay(cur.opsDay).rows.find(z => !z.x.sb && z.seats[k]); if (!row) { res[dep] = "no seat"; continue; }
+      const c = row.seats[k], nm = opsName(c);
+      opsWrite(row.key, o => { const m = opsXtra(o); m[dep] = (m[dep] || []).concat(c.id); o.xtra = opsXtraStr(m); });   // the same person on the additional list too
+      renderOps();
+      const tr = document.querySelector("#opsMain tr[data-ok='" + row.key + "']"), shown = [...tr.querySelectorAll("b")].filter(b => b.textContent.trim() === nm).length;
+      opsOpenPop(row.key, k); const inPop = [...document.querySelectorAll("#opsPop .pxr b")].filter(b => b.textContent.trim() === nm).length; document.getElementById("opsPop").style.display = "none"; cur.opsPop = null;
+      opsOpenPop(row.key, k); const inSeat = document.querySelector("#opsPop .pp b") && document.querySelector("#opsPop .pp b").textContent.trim() === nm ? 1 : 0; document.getElementById("opsPop").style.display = "none"; cur.opsPop = null;
+      res[dep] = shown === 1 && inPop + inSeat === 1 ? "once" : "board " + shown + "x, seat " + inSeat + ", additional list " + inPop + "x";
+    }
+    return res;
+  });
+  for (const [d, v] of Object.entries(out)) assert.ok(v === "once" || v === "no seat", d + ": " + v + " " + JSON.stringify(out));
+  assert.strictEqual(out["SUP 2"], "once", JSON.stringify(out));
+}, ED);
 test("right_click_menus_on_the_two_cards", async ({ page }) => {   // z145
   await goOps(page, DAY);
   await page.click("#opsSide .olv", { button: "right", position: { x: 12, y: 12 } });

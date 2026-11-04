@@ -1184,7 +1184,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z168</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z170</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4914,8 +4914,14 @@ function opsDay(iso) {
   const spare = [[], [], []];
   for (let s = 0; s < 3; s++) {
     const byDept = {};
-    crew[s].forEach(c => (byDept[c.dept.toLowerCase()] = byDept[c.dept.toLowerCase()] || []).push(c));
     const fl = flights.filter(x => x.s === s);
+    // z170: crew the Ops Room placed itself on this shift's flights (additional crew, or a seat picked by hand) are not seated again from
+    // the plans. Adding someone as additional crew also writes the code into their plan (oaPlan); the first flight with that code then
+    // seated them as well, so they showed twice on the first flight line (or in a seat of the first flight and as additional on another).
+    const placed = new Set(); if (ob) fl.forEach(x => { for (let a = 0; a < x.ac; a++) { const o = ob.fc.get(x.key + "|" + (a + 1)); if (!o) continue;
+      const X = opsXtra(o); for (const d in X) X[d].forEach(id => placed.add((d + "|" + id).toLowerCase()));
+      OPS_SEATS.forEach((z, k) => { if (o.seat[k]) placed.add((z[1] + "|" + o.seat[k]).toLowerCase()); }); } });
+    crew[s].forEach(c => { if (placed.has((c.dept + "|" + c.id).toLowerCase())) return; (byDept[c.dept.toLowerCase()] = byDept[c.dept.toLowerCase()] || []).push(c); });
     fl.forEach(x => { x.seats = OPS_SEATS.map(() => Array(x.ac).fill(null)); });
     // a planner's AC tag: the tagged pilot is the Captain of an aircraft and the next pilot planned on the flight (roster order) its co-pilot; two AC tags on a formation take one aircraft each
     for (const x of fl) { const L = byDept.pilot || [], cap = OPS_SEATS.findIndex(z => z[0] === "Aircraft Captain"), cop = cap + 1; if (!x.need[cap]) continue;
@@ -4991,11 +4997,11 @@ function opsSylLines(r) {
   if (isSb(r.x.code)) return ""; const out = [];
   OPS_SEATS.forEach((z, k) => { if (!r.x.need[k]) return; const c = r.seats[k]; if (c) { const y = opsSyl(c.dept, c.id, cur.opsDay, r.x.s); if (y) out.push([opsName(c), y.desc]); } });
   Object.values(r.auto || {}).flat().forEach(c => { const y = opsSyl(c.dept, c.id, cur.opsDay, r.x.s); if (y) out.push([opsName(c), y.desc]); });
-  OPS_SEATS.forEach((z, k) => { if (k === 0) return; const dep = z[1]; (opsXtra(r.o)[dep] || []).forEach(id => { const y = opsSyl(dep, id, cur.opsDay, r.x.s); if (y) out.push([opsName(opsPerson(dep, id, [])) || id, y.desc]); }); });
+  OPS_SEATS.forEach((z, k) => { if (k === 0) return; const dep = z[1]; (opsXtraR(r)[dep] || []).forEach(id => { const y = opsSyl(dep, id, cur.opsDay, r.x.s); if (y) out.push([opsName(opsPerson(dep, id, [])) || id, y.desc]); }); });
   return out.map(([n, d]) => "<div class='osylr'>🎓 " + esc(n) + " · " + esc(d) + "</div>").join("");
 }
 function opsXtraHtml(r, k) {
-  const dep = OPS_SEATS[k][1], L = (opsXtra(r.o)[dep] || []), AU = (r.auto && r.auto[dep]) || [];
+  const dep = OPS_SEATS[k][1], L = (opsXtraR(r)[dep] || []), AU = (r.auto && r.auto[dep]) || [];
   const au = k === 0 ? "" : AU.map(c => "<div class='oxt' title='" + esc("Also planned on " + c.code + ": " + c.id + (c.name ? " · " + c.name : "") + " (" + dep + ")" + (c.note ? "\nComment: " + c.note : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" + opsSylTag(dep, c.id, r) + "</div>").join("");
   if (!L.length || k === 0) return au;   // Pilot extras show once, under the Pilot (co-pilot) seat, not the Aircraft Captain
   const D = opsDay(cur.opsDay);
@@ -5305,7 +5311,7 @@ function opsOpenPop(key, k, keep) {
     "<button class='btn pax" + (rowPax(r, c.id) ? " on" : "") + "' data-ppx='" + esc(c.id) + "'>Pax</button>" +
     (k < 2 && r.seats[0] && r.seats[1] ? "<button class='btn' data-psw='1'>⇅ Swap Captain / Pilot</button>" : "") + "</div>";
   if (!r.x.sb) {   // more crew from this department on the same aircraft
-    const xs = opsXtra(r.o)[dep] || [], taken = id => (c && same(c.id, id)) || xs.some(x => same(x, id)) || (dep === "Pilot" && r.seats.some(q => q && same(q.dept, dep) && same(q.id, id)));
+    const xs = opsXtraR(r)[dep] || [], taken = id => (c && same(c.id, id)) || xs.some(x => same(x, id)) || (dep === "Pilot" && r.seats.some(q => q && same(q.dept, dep) && same(q.id, id)));
     const opt = p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>";
     h += "<div class='pxl'><div class='pxh'>Additional " + esc(dep) + " crew</div>" + xs.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]);
       return "<div class='pxr'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b><span class='muted'>" + esc(id + (p.name ? " · " + p.name : "")) + "</span>" + (downOn(dep, id, D.iso) ? "<i class='opsb down'>DOWN</i>" : "") +
@@ -5319,6 +5325,10 @@ function opsOpenPop(key, k, keep) {
 }
 function opsSeat(o, k, id) { o.seat[k] = id || ""; }
 // additional crew on an aircraft, per department, beyond the one seat each department has; and the passengers (Pax) among the crew
+// z170: the Ops Room's additional crew of a board row, without anyone who already sits in a seat of that department. Adding someone as
+// additional crew also plans them on the flight (oaPlan), so an empty seat then filled itself from the plan with the same person and
+// they showed twice; they now show once, in the seat. The stored list is left as it is (if the seat changes, they are additional again).
+const opsXtraR = r => { const m = opsXtra(r.o); for (const d in m) m[d] = m[d].filter(id => !r.seats.some(z => z && same(z.dept, d) && same(z.id, id))); return m; };
 function opsXtra(o) { const m = {}; String(o && o.xtra || "").split(";").forEach(part => { const i = part.indexOf(":"); if (i < 0) return; const d = part.slice(0, i).trim(), ids = part.slice(i + 1).split(",").map(x => x.trim()).filter(Boolean); if (d && ids.length) m[d] = (m[d] || []).concat(ids); }); return m; }
 const opsXtraStr = m => Object.entries(m).filter(([d, L]) => L.length).map(([d, L]) => d + ": " + L.join(", ")).join("; ");
 const paxList = o => String(o && o.pax || "").split(",").map(x => x.trim()).filter(x => x && x !== "-");   // "-" = the Ops Room decided: nobody is a passenger
@@ -6148,7 +6158,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z168 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z170 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

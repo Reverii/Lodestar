@@ -1184,7 +1184,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z167</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z168</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -6149,7 +6149,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z167 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z168 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6674,10 +6674,27 @@ const LODE_RANKS = new Set("maj cpt lta ltc col me1 me2 me3 me4 me5 2lt 3sg 2sg 
 const lodeKey = name => String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(w => w && !LODE_RANKS.has(w)).sort();
 const lodeId = p => p.id && !/^nil$/i.test(p.id) ? p.id : p.name;   // NIL = no callsign: known by name
 const lodeFind = (dept, id) => mePeople().find(x => same(x.dept, dept) && same(lodeId(x.p), id)) || null;
+// z168: a SharePoint name often carries more than the name (the appointment at the back, "Brandon Tan OPS O 121 SQN"). When no roster
+// name has exactly the same words, a roster name whose every word is in the sign-in name counts (a single letter, as in "B TAN",
+// stands for a word starting with it; two or three letters, as in "TAN PH", for one word per letter); the person with the most matched words wins, and only when no one else ties.
+function lodeWithin(rw, tw) {   // roster words rw all found in sign-in words tw, each sign-in word used once; returns the count or 0
+  const left = tw.slice(); let n = 0;
+  for (const w of rw.slice().sort((a, b) => b.length - a.length)) {
+    let j = left.indexOf(w); if (j < 0 && w.length === 1) j = left.findIndex(t => t[0] === w);
+    if (j < 0 && w.length <= 3 && /^[a-z]+$/.test(w)) {   // initials run together ("PH" in "TAN PH" = Peng Hock): one word per letter
+      const take = []; for (const ch of w) { const q = left.findIndex((t, z) => t[0] === ch && t.length > 1 && !take.includes(z)); if (q < 0) return 0; take.push(q); }
+      take.sort((x, y) => y - x).forEach(z => left.splice(z, 1)); n++; continue; }
+    if (j < 0) return 0; left.splice(j, 1); n++; }
+  return rw.some(w => w.length > 1) ? n : 0;   // initials alone are not enough
+}
 function lodeMatch(title) {
-  const k = lodeKey(title).join(" "); if (!k) return null;
+  const tk = lodeKey(title), k = tk.join(" "); if (!k) return null;
   const hit = mePeople().filter(x => lodeKey(x.p.name).join(" ") === k);
-  return hit.length === 1 ? hit[0] : null;
+  if (hit.length) return hit.length === 1 ? hit[0] : null;
+  if (/@/.test(String(title))) return null;   // an e-mail address as the name: no guessing
+  let best = 0, who = [];
+  mePeople().forEach(x => { const n = lodeWithin(lodeKey(x.p.name), tk); if (!n) return; if (n > best) { best = n; who = [x]; } else if (n === best) who.push(x); });
+  return who.length === 1 ? who[0] : null;
 }
 function lodeResolve() {
   if (cur.lodeAs) { const w = lodeFind(cur.lodeAs.dept, cur.lodeAs.id); if (w) return { who: w, src: "viewing" }; }

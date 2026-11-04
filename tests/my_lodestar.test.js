@@ -45,6 +45,21 @@ test("match_unique", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => lodeMatch("Sarah Lim").p.id), "HAWK");
   assert.strictEqual(await page.evaluate(() => lodeMatch("lim sarah").p.id), "HAWK");
 });
+test("match_with_appointment_at_the_back", async ({ page }) => {   // z168
+  const r = await page.evaluate(() => {
+    const x = mePeople().find(z => z.p.id === "HAWK"), keep = x.p.name, out = [];
+    try {
+      out.push(lodeMatch("Sarah Lim OC OPS (121 SQN)") && lodeMatch("Sarah Lim OC OPS (121 SQN)").p.id);
+      x.p.name = "S LIM"; out.push(lodeMatch("Sarah Lim, Ops Officer 121SQN") && lodeMatch("Sarah Lim, Ops Officer 121SQN").p.id);
+      out.push(lodeMatch("Simon Lee Ops Officer"));   // S matches Simon, but LIM is not there
+      x.p.name = "ME3 LIM SJ"; out.push(lodeMatch("Lim Sarah Jane OPS O") && lodeMatch("Lim Sarah Jane OPS O").p.id);
+      x.p.name = "LIM"; const other = mePeople().find(z => z.p.id !== "HAWK"), k2 = other.p.name; other.p.name = "LIM";
+      try { out.push(lodeMatch("Sarah Lim OPS O")); } finally { other.p.name = k2; }   // two LIMs: nobody
+    } finally { x.p.name = keep; }
+    return out;
+  });
+  assert.deepStrictEqual(r, ["HAWK", "HAWK", null, "HAWK", null]);
+});
 test("match_none_for_email", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => lodeMatch("sarah.lim@x.mil")), null);
 });

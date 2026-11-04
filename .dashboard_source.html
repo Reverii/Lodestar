@@ -644,7 +644,7 @@ body.opsfs main,body.opsfs .view{padding-top:6px}
 .opsh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .opsh .grow{flex:1}
 .opst{font-size:15px}.opsc{font-family:Consolas,monospace;font-size:14px;color:var(--blue)}
-.sansbox{background:#16a34a!important;color:#fff!important;border-radius:5px;padding:0 6px;font-style:normal}#v-ops .catT{color:#d946a8!important}
+.sansbox{background:#16a34a!important;color:#fff!important;border-radius:5px;padding:0 6px;font-style:normal}.sansul{text-decoration:underline!important;text-decoration-thickness:2px!important;text-underline-offset:2px}#v-ops .catT{color:#d946a8!important}
 #opsKey{margin-left:auto;display:inline-flex;gap:8px;align-items:center;font-size:12px;color:var(--s500);font-weight:700}#opsKey b{font-weight:800}
 .opssh{display:inline-block;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;background:#f0f9ff;color:#075985}
 .opssh.s1{background:#fffbeb;color:#92400e}.opssh.s2{background:#1e1b4b;color:#c7d2fe}.opssh.s3{background:#ccfbf1;color:#115e59}
@@ -1166,7 +1166,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z156</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z157</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1271,7 +1271,7 @@ const REG_N = 45;   // roster rows 6-50 regular crew, 51-65 SANS / NSmen (files 
 const CREW_CATS = ["CAT A", "CAT B", "CAT C", "CAT D", "TRAINEE"], CREW_ROLES = ["Instructor", "Senior CAT A", "Junior"];
 const catCls = c => ({ "CAT A": "catA", "CAT B": "catB", "CAT C": "catC", "CAT D": "catD", TRAINEE: "catT" })[String(c || "").toUpperCase()] || "";
 const isSans = p => /^(SANS|NSMEN)$/i.test(p.status || "");
-const opsCatCls = p => p ? (isSans(p) ? "sansbox" : catCls(p.cat)) : "";   // Ops Room names: a SANS / NSMEN person is a green box, everyone else is coloured by Cat
+const opsCatCls = p => p ? (sansGrp(p) === "NSMEN" ? "sansbox" : sansGrp(p) === "SANS" ? (catCls(p.cat) + " sansul").trim() : catCls(p.cat)) : "";   // Ops Room names: NSMEN = green box, SANS = Cat colour underlined (z157), everyone else is coloured by Cat
 // roster column letters: new files have Callsign | Name | Cat Status | Role | Status | Remarks, older ones ID | Name | Role | Status | Remarks
 // columns are found from the header row (row 5), so a file with an extra column (Initials, say) still reads; old files fall back to the fixed layout
 const rosterCols = st => st.rcols || { id: "B", name: "C", role: "D", status: "E", remarks: "F" };
@@ -4739,7 +4739,7 @@ function renderOps() {
   $("opsStats").innerHTML = (D.status ? "<span class='opsk nofly'>" + esc(D.status) + "</span>" : "") +
     chip("", "Flights", D.flights.length) + chip("", "Sorties", D.rows.length) + chip("mc", "MC not set", noMc, noMc ? "warn" : "") + chip("flown", "Flown", D.rows.filter(r => opsOutcome(r, iso) === "flown").length) + chip("cxl", "Cancelled", D.rows.filter(r => opsOutcome(r, iso) === "cxl").length) +
     (iso < today || nOpen ? chip("open", "Not closed", nOpen, nOpen ? "warn" : "") : "");
-  $("opsStats").innerHTML += "<span id='opsKey'>Cat <b class='catA'>A</b> <b class='catB'>B</b> <b class='catC'>C</b> <b class='catD'>D</b> <b class='catT'>OCU</b> <b class='sansbox'>SANS / NSMEN</b></span>";
+  $("opsStats").innerHTML += "<span id='opsKey'>Cat <b class='catA'>A</b> <b class='catB'>B</b> <b class='catC'>C</b> <b class='catD'>D</b> <b class='catT'>OCU</b> <b class='sansul'>SANS</b> <b class='sansbox'>NSMEN</b></span>";
   const fl = cur.opsF ? OPS_FILT[cur.opsF] : null, rows = fl ? D.rows.filter(r => fl(r, iso)) : D.rows;
   if (D.other) el.innerHTML = "<div class='muted' style='padding:20px'>The Master Planner is for " + mb.S.year + ".</div>";
   else if (!D.rows.length && !D.sb.length) el.innerHTML = "<div class='muted' style='padding:20px'>No flights on the Master Planner for this day." + (D.status ? " Day status: " + esc(D.status) + "." : "") + (ed ? " Use <b>+ Ops Add</b> for an ad hoc flight." : "") + "</div>";
@@ -5821,7 +5821,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z156 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z157 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

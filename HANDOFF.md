@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-04, after z156)
+# LODESTAR handoff (updated 2026-11-04, after z157)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z157 (4 Nov, Brandon: "split SANS and NSMEN on the Ops Room too, SANS is underline")
+Ops Room names (seats, extra crew, duty strip, Down-chit, pickers, flight card crew; all through `opsCatCls`): **NSMEN** keep the green box (`sansbox`); **SANS** keep their Cat colour and are **underlined** (`sansul`, 2 px). The key reads `SANS` (underlined) and `NSMEN` (green box) instead of one "SANS / NSMEN" box. Dashboard only; upload the DEV dashboard. Tests: ops_room 56/56 (new `sans_person_is_underlined_in_cat_colour`; the green-box test now uses NSMEN; key test checks both), flight_card 17/17, role_tags 15/15, my_lodestar 65/65, wd_row 19/19. Real screenshot `previews/ops_sans_nsmen_real.png`.
 
 ## z156 (4 Nov, Brandon): sort by rank, Rank column on the Crew Roster
 - Sort dialog: new **Rank, then Cat Status** (`rosCmp("rank")`: rank, then Cat, then name).
@@ -185,7 +188,7 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 **State:** everything through **z156** is merged on `main` (dashboard `2026-11-04 z156`). Work branch `claude/practical-lamport-j13scq` equals `main`. The repo's eight `.xlsx` are still the demo set built after z153 (no Excel change since); the dashboard embeds them. Layout stamps unchanged (dept 4, master 3, roster 2, ops 2).
 **Done on 4 Nov:** z154 (edit the syllabus items on the dashboard: ✎ Edit syllabus items on the Syllabus tab; the Syllabus Items reader now skips empty rows) and z155 (Crew Roster right-click: Insert crew above / below, Move up / down, Sort with preview; plans, Personnel Info and Currency rows move with the person; SANS and NSMEN as two groups on the Crew Roster, Planner and Currency tab; rank order LTC MAJ CPT LTA · 1WO..3SG · ME3 ME2 ME1) and z156 (Rank, then Cat Status sort; Rank column left of Name on the Crew Roster). All dashboard only: upload the DEV dashboard.
 **Tests:** at z156 roster_order 16/16, planner_filter 6/6, excel_safe, changelog 8/8; at z155 syllabus_edit 12/12, changelog 8/8, excel_safe, planner_filter 6/6 (updated for the two bands), ops_room 55/55, flight_card 17/17, wd_row 19/19, role_tags 15/15, mission_currency, syllabus_stages 6/6, code_sync 17/17; my_lodestar 65/65 since the test fix of 4 Nov (see below).
-**Waiting on Brandon:** his test of z154 to z156 on SharePoint (syllabus editor: add / rename / remove, locked codes; roster: insert, move, sort incl. Rank then Cat Status, the Rank column with the department's ranks, save and reload, the SANS / NSMEN bands, one Change Log line per action); whether the Ops Room should also split SANS and NSMEN (it keeps one green box); his read of the Master Planner guide draft (then the Ops Room and Duty Planner parts in the same layout); his look at z151 to z153; the instructor (CAT A stage) syllabus items (he can now add them himself in the editor) and the Pilot / Loadmaster syllabus lists; the exact Excel error message (z150); the Health check mock-up; renaming the stages in his live SUP 2 file (or uploading the full new set).
+**Waiting on Brandon:** his test of z154 to z156 on SharePoint (syllabus editor: add / rename / remove, locked codes; roster: insert, move, sort incl. Rank then Cat Status, the Rank column with the department's ranks, save and reload, the SANS / NSMEN bands, one Change Log line per action); his read of the Master Planner guide draft (then the Ops Room and Duty Planner parts in the same layout); his look at z151 to z153; the instructor (CAT A stage) syllabus items (he can now add them himself in the editor) and the Pilot / Loadmaster syllabus lists; the exact Excel error message (z150); the Health check mock-up; renaming the stages in his live SUP 2 file (or uploading the full new set).
 **Next, if he says nothing new:** fix what he finds in those tests; the deferred minors and Admin mode as listed in the earlier handoff below. If the guide is resumed, retake the screenshots: the Crew Roster and Syllabus tabs changed in z154 to z156.
 **Guide parts decided:** Getting started, Planners, Master Planner (drafted), Duty Planner, Ops Room; My Lodestar left out for now. Rebuild the PDF with `node guide/make_shots.js` then `node guide/make_pdf.js` (dashboard built first).
 

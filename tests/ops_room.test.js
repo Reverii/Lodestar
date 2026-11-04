@@ -173,19 +173,26 @@ const RGB = c => c.replace(/\s/g, "");
 test("seat_names_use_cat_classes", async ({ page }) => {
   await goOps(page, DAY);
   const g = await page.evaluate(() => { const bs = [...document.querySelectorAll("#opsMain tr.f td.oc b")], a = bs.find(b => b.classList.contains("catA"));
-    return { n: bs.length, bad: bs.filter(b => !/^cat[ABCDT]$/.test(b.className) && b.className !== "sansbox").map(b => b.textContent + ":" + b.className), a: a ? getComputedStyle(a).color : null }; });
+    return { n: bs.length, bad: bs.filter(b => !/^(cat[ABCDT])?( ?sansul)?$/.test(b.className) && b.className !== "sansbox").map(b => b.textContent + ":" + b.className), a: a ? getComputedStyle(a).color : null }; });
   assert.ok(g.n > 0, "no seat names");
   assert.ok(g.a == null || RGB(g.a) === "rgb(0,0,0)", "CAT A is black: " + g.a);
   await ALL_CAT(page, "CAT D", "Active");
   const d = await page.evaluate(() => [...document.querySelectorAll("#opsMain tr.f td.oc b")].map(b => b.className + "|" + getComputedStyle(b).color));
   assert.ok(d.every(x => x.startsWith("catD|") && RGB(x.split("|")[1]) === "rgb(185,28,28)"), d.join());   // z149: CAT D darker red
 }, ED);
-test("sans_person_gets_green_box", async ({ page }) => {
+test("nsmen_person_gets_green_box", async ({ page }) => {
   await goOps(page, DAY);
   const g = await page.evaluate(() => { const r = opsDay(cur.opsDay).rows[0], c = r.seats.find(x => x), b = books.find(b => isDept(b) && same(b.S.dept, c.dept)), p = b.S.roster.find(q => same(q.id, c.id));
     p.status = "NSMEN"; renderOps(); const el = [...document.querySelectorAll("#opsMain tr.f td.oc b")].find(e => e.textContent === opsName(c));
     return { cls: el.className, bg: getComputedStyle(el).backgroundColor, fg: getComputedStyle(el).color }; });
   assert.strictEqual(g.cls, "sansbox"); assert.strictEqual(RGB(g.bg), "rgb(22,163,74)"); assert.strictEqual(RGB(g.fg), "rgb(255,255,255)");
+}, ED);
+test("sans_person_is_underlined_in_cat_colour", async ({ page }) => {   // z157: SANS = Cat colour, underlined, no green box
+  await goOps(page, DAY);
+  const g = await page.evaluate(() => { const r = opsDay(cur.opsDay).rows[0], c = r.seats.find(x => x), b = books.find(b => isDept(b) && same(b.S.dept, c.dept)), p = b.S.roster.find(q => same(q.id, c.id));
+    p.status = "SANS"; p.cat = "CAT B"; renderOps(); const el = [...document.querySelectorAll("#opsMain tr.f td.oc b")].find(e => e.textContent === opsName(c)), cs = getComputedStyle(el);
+    return { cls: el.className, line: cs.textDecorationLine, bg: cs.backgroundColor, fg: cs.color }; });
+  assert.strictEqual(g.cls, "catB sansul"); assert.strictEqual(g.line, "underline"); assert.notStrictEqual(RGB(g.bg), "rgb(22,163,74)"); assert.strictEqual(RGB(g.fg), "rgb(59,142,240)");
 }, ED);
 test("blank_cat_and_status_ok", async ({ page }) => {
   await goOps(page, DAY); await ALL_CAT(page, "", "");
@@ -213,7 +220,8 @@ test("ocu_is_pink", async ({ page }) => {
 test("key_line", async ({ page }) => {
   await goOps(page, DAY);
   const t = await page.evaluate(() => { const k = document.getElementById("opsKey"); return k && k.textContent; });
-  assert.ok(t && /SANS \/ NSMEN/.test(t) && /OCU/.test(t), String(t));
+  assert.ok(t && /SANS/.test(t) && /NSMEN/.test(t) && /OCU/.test(t), String(t));
+  assert.deepStrictEqual(await page.evaluate(() => [...document.querySelectorAll("#opsKey b")].slice(-2).map(b => b.className + ":" + b.textContent)), ["sansul:SANS", "sansbox:NSMEN"]);   // z157
 }, ED);
 
 const BGSUM = (page, sel) => page.evaluate(sel => { const m = getComputedStyle(document.querySelector(sel)).backgroundColor.match(/\d+/g).map(Number); return m[0] + m[1] + m[2]; }, sel);

@@ -76,6 +76,25 @@ test("sort_by_cat_then_rank", async ({ page }) => {
   await page.click("#rosSortGo");
   assert.deepStrictEqual(await ids(page, 9), ["VIPER", "HAWK", "MERLIN", "RAPTOR", "SHRIKE", "FALCON", "EAGLE", "ROBIN", "OWL"]);
 });
+test("rank_column_writes_one_crew_member_cell", async ({ page }) => {
+  await openRoster(page);
+  assert.deepStrictEqual(await page.evaluate(() => [document.querySelector("#rosterTable select[data-r='1'][data-f='rank']").value, document.querySelector("#rosterTable input[data-r='1'][data-f='name']").value]), ["CPT", "Sarah Lim"]);
+  assert.deepStrictEqual(await page.evaluate(() => [...document.querySelectorAll("#rosterTable select[data-r='1'][data-f='rank'] option")].map(o => o.value)), ["", "CPT", "ME3", "ME2", "ME1"], "SUP 2 offers the ME ranks (and the rank the name already has)");
+  await page.selectOption("#rosterTable select[data-r='1'][data-f='rank']", "ME3");
+  const nm = await page.$("#rosterTable input[data-r='2'][data-f='name']"); await nm.fill("Kumaravel Suresh"); await nm.press("Tab");
+  const r = await page.evaluate(() => [S.roster[1].name, S.roster[2].name, dirty.get("Roster!" + rosterCols(S).name + "7").val, dirty.get("Roster!" + rosterCols(S).name + "8").val]);
+  assert.deepStrictEqual(r, ["ME3 Sarah Lim", "CPT Kumaravel Suresh", "ME3 Sarah Lim", "CPT Kumaravel Suresh"]);
+  const nm2 = await page.$("#rosterTable input[data-r='3'][data-f='name']"); await nm2.fill("LTC Rachel Goh"); await nm2.press("Tab");   // a rank typed in the name box becomes the rank
+  assert.strictEqual(await page.evaluate(() => S.roster[3].name), "LTC Rachel Goh");
+  const t = await page.evaluate(() => [rankParts("CPT (NS) Lee Kok Wai"), rankParts("Mr Tan")]);
+  assert.deepStrictEqual(t, [{ rank: "CPT", rest: "(NS) Lee Kok Wai" }, { rank: "", rest: "Mr Tan" }]);
+});
+test("sort_by_rank_then_cat", async ({ page }) => {
+  await openRoster(page);
+  await page.evaluate(() => { Object.assign(S.roster[6], { id: "SHRIKE", name: "MAJ Daniel Tan", cat: "CAT C", role: "Junior", status: "Active" }); renderRoster(); });
+  await menu(page, 0, 4); await page.selectOption("#rosSortBy", "rank"); await page.click("#rosSortGo");
+  assert.deepStrictEqual(await ids(page, 7), ["VIPER", "SHRIKE", "HAWK", "RAPTOR", "FALCON", "EAGLE", "OWL"]);
+});
 test("rank_order_officers_wose_mes", async ({ page }) => {
   const r = await page.evaluate(() => ["LTC A", "MAJ B", "CPT C", "LTA D", "1WO E", "3SG F", "ME3 G", "ME1 H", "CPT (NS) I", "MR J"].map(n => rankOf({ name: n })));
   assert.deepStrictEqual(r, [0, 1, 2, 3, 4, 11, 12, 14, 2, 99]);

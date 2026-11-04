@@ -1166,7 +1166,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z155</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z156</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -5302,13 +5302,15 @@ function renderRoster() {
   const nw = !!S.catCol, opt = (list, v) => "<option></option>" + list.map(o => "<option" + (same(o, v) ? " selected" : "") + ">" + esc(o) + "</option>").join("") + (v && !list.some(o => same(o, v)) ? "<option selected>" + esc(v) + "</option>" : "");
   const filled = p => p.id || p.name || p.role;
   const ids = {}; S.roster.forEach(p => { if (p.id) ids[p.id.toUpperCase()] = (ids[p.id.toUpperCase()] || 0) + 1; });
-  let h = "<tr><th>#</th><th>Callsign</th><th>Crew Member (with rank)</th>" + (S.rcols && S.rcols.ini ? "<th style='width:90px'>Initials</th>" : "") + (nw ? "<th>Cat Status</th>" : "") + "<th>Role</th><th>Status</th><th>Remarks</th></tr>";
+  let h = "<tr><th>#</th><th style='width:130px'>Callsign</th><th style='width:84px' title='Read from the start of the name. Excel keeps rank and name in one cell (Crew Member).'>Rank</th><th>Name</th>" + (S.rcols && S.rcols.ini ? "<th style='width:90px'>Initials</th>" : "") + (nw ? "<th>Cat Status</th>" : "") + "<th>Role</th><th>Status</th><th>Remarks</th></tr>";
   const row = (i, grp, no) => {
     const p = S.roster[i], dup = p.id && ids[p.id.toUpperCase()] > 1, ns = nw && i >= REG_N;
     const sts = !nw ? ["Active", "Inactive"] : ns ? ["SANS", "NSMEN", "Inactive"] : ["Active", "Inactive"];
     return "<tr data-ri='" + i + "'" + (grp ? " data-grp='" + grp + "'" : "") + " class='" + (p.status.toLowerCase() === "inactive" ? "inactive" : "") + (ns ? " sans" : "") + "'><td class='n'>" + (no || i + 1) + "</td>" +
       "<td><input data-r='" + i + "' data-f='id' value='" + esc(p.id) + "'" + (dup ? " style='background:#fee2e2' title='Duplicate callsign'" : "") + (grp && rosEmpty(p) ? " placeholder='next " + grp + "'" : "") + "></td>" +
-      "<td><input data-r='" + i + "' data-f='name' value='" + esc(p.name) + "' class='" + catCls(p.cat) + "'></td>" +
+      (() => { const rp2 = rankParts(p.name), list = rankList(), opts = (rp2.rank && !list.includes(rp2.rank) ? [rp2.rank] : []).concat(list);
+        return "<td><select data-r='" + i + "' data-f='rank' class='" + catCls(p.cat) + "'><option></option>" + opts.map(r => "<option" + (r === rp2.rank ? " selected" : "") + ">" + r + "</option>").join("") + "</select></td>" +
+          "<td><input data-r='" + i + "' data-f='name' value='" + esc(rp2.rest) + "' class='" + catCls(p.cat) + "'" + (grp && rosEmpty(p) ? " placeholder='Name'" : "") + "></td>"; })() +
       (S.rcols && S.rcols.ini ? "<td><input data-r='" + i + "' data-f='ini' value='" + esc(p.ini) + "'></td>" : "") +
       (nw ? "<td><select data-r='" + i + "' data-f='cat' class='" + catCls(p.cat) + "'>" + opt(CREW_CATS, p.cat) + "</select></td>" : "") +
       (nw ? "<td><select data-r='" + i + "' data-f='role'>" + opt(CREW_ROLES, p.role) + "</select></td>" : "<td><input data-r='" + i + "' data-f='role' value='" + esc(p.role) + "'></td>") +
@@ -5327,11 +5329,11 @@ function renderRoster() {
     const free = idx.filter(i => rosEmpty(S.roster[i]) && !sansGrp(S.roster[i]));
     let no = REG_N;
     const grp = (g, label, cls) => { const mem = idx.filter(i => sansGrp(S.roster[i]) === g), nx = free.shift();
-      h += "<tr class='sansSep" + cls + "'><td colspan=8>" + label + "</td></tr>"; mem.forEach(i => h += row(i, g, ++no)); if (nx != null) h += row(nx, g, ++no); };
+      h += "<tr class='sansSep" + cls + "'><td colspan=9>" + label + "</td></tr>"; mem.forEach(i => h += row(i, g, ++no)); if (nx != null) h += row(nx, g, ++no); };
     grp("SANS", "SANS <span style='font-weight:500;opacity:.85'>(at the bottom of the planner)</span>", "");
     grp("NSMEN", "NSMEN <span style='font-weight:500;opacity:.85'>(at the bottom of the planner, under SANS)</span>", " nsSep");
     const rest = idx.filter(i => !sansGrp(S.roster[i]) && !rosEmpty(S.roster[i]));
-    if (rest.length) { h += "<tr class='sansSep'><td colspan=8>Inactive or other status</td></tr>"; rest.forEach(i => h += row(i, "", ++no)); }
+    if (rest.length) { h += "<tr class='sansSep'><td colspan=9>Inactive or other status</td></tr>"; rest.forEach(i => h += row(i, "", ++no)); }
   }
   $("rosterTable").innerHTML = h;
 }
@@ -5819,7 +5821,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z155 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z156 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6734,7 +6736,7 @@ const HELP = {
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
-    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b> and <b>Sort…</b> (Cat Status then rank, Callsign, Name or Role, with a preview). The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
+    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b> and <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
@@ -6832,8 +6834,13 @@ $("rosterTable").addEventListener("change", e => {
 });
 function rosterChange(e) {
   if (readOnly()) { renderRoster(); return; }
-  const el = e.target, i = +el.dataset.r, f = el.dataset.f; if (isNaN(i)) return;
-  const v = el.value.trim(); S.roster[i][f] = v;
+  const el = e.target, i = +el.dataset.r; let f = el.dataset.f; if (isNaN(i)) return;
+  let v = el.value.trim();
+  // z156: Rank and Name are shown apart but stay one cell (Crew Member) in Excel: "CPT Sarah Lim"
+  if (f === "rank" || f === "name") { const cur0 = rankParts(S.roster[i].name), typed = f === "name" ? rankParts(v) : null;
+    const rk = f === "rank" ? v : typed.rank || cur0.rank, rest = f === "rank" ? cur0.rest : typed.rank ? typed.rest : v;
+    v = rest ? (rk ? rk + " " : "") + rest : ""; f = "name"; if (!rest && rk) { toast("Type the name first, then pick the rank."); renderRoster(); return; } }
+  S.roster[i][f] = v;
   const rc = rosterCols(S); put("Roster", rc[f] + (ROSTER_ROW0 + i), v);
   if (f === "name" && v && !S.roster[i].status) { const g = el.closest("tr") && el.closest("tr").dataset.grp, d0 = S.catCol && i >= REG_N ? g || "NSMEN" : "Active"; S.roster[i].status = d0; put("Roster", rc.status + (ROSTER_ROW0 + i), d0); }
   renderRoster(); renderPlanner(); renderOverview();
@@ -6850,13 +6857,18 @@ const sansGrp = p => /^sans$/i.test(p.status || "") ? "SANS" : /^nsmen$/i.test(p
 const rosEmpty = p => !p.id && !p.name && !p.role;
 const rosSec = i => !S.catCol ? [0, N] : i >= REG_N ? [REG_N, N] : [0, REG_N];
 const rosGrp = i => S.catCol && i >= REG_N ? sansGrp(S.roster[i]) || "OTHER" : "REG";
-const ROS_SORTS = [["cat", "Cat Status, then rank"], ["id", "Callsign A to Z"], ["name", "Name A to Z"], ["role", "Role, then Cat Status"]];
+const ROS_SORTS = [["cat", "Cat Status, then rank"], ["rank", "Rank, then Cat Status"], ["id", "Callsign A to Z"], ["name", "Name A to Z"], ["role", "Role, then Cat Status"]];
+// the rank at the start of a name ("CPT (NS) Lee Kok Wai" -> CPT + "(NS) Lee Kok Wai"); a first word that is no known rank is part of the name
+const rankParts = n => { const t = String(n || "").trim(), m = /^(\S+)\s+(.*)$/.exec(t); return m && RANKS.includes(m[1].toUpperCase()) ? { rank: m[1].toUpperCase(), rest: m[2] } : RANKS.includes(t.toUpperCase()) ? { rank: t.toUpperCase(), rest: "" } : { rank: "", rest: t }; };
+// the ranks offered on the Crew Roster: the department's own structure (Pilot and TACCO officers, Loadmaster WOSE, SUP MEs), all of them elsewhere
+const rankList = () => { const d = String(S.dept || ""); return /pilot|tacco/i.test(d) ? RANKS.slice(0, 4) : /load/i.test(d) ? RANKS.slice(4, 12) : /sup/i.test(d) ? RANKS.slice(12) : RANKS.slice(); };
 const rosCatIx = p => { const k = CREW_CATS.indexOf(String(p.cat || "").toUpperCase()); return k < 0 ? 9 : k; };
 function rosCmp(by) {
   const nm = (a, b) => nameNoRank(a).localeCompare(nameNoRank(b)) || String(a.id).localeCompare(String(b.id));
   const ri = p => { const k = CREW_ROLES.findIndex(r => same(r, p.role)); return k < 0 ? 9 : k; };
   if (by === "id") return (a, b) => (!a.id - !b.id) || String(a.id).localeCompare(String(b.id)) || nm(a, b);
   if (by === "name") return nm;
+  if (by === "rank") return (a, b) => rankOf(a) - rankOf(b) || rosCatIx(a) - rosCatIx(b) || nm(a, b);
   if (by === "role") return (a, b) => ri(a) - ri(b) || rosCatIx(a) - rosCatIx(b) || rankOf(a) - rankOf(b) || nm(a, b);
   return (a, b) => rosCatIx(a) - rosCatIx(b) || rankOf(a) - rankOf(b) || nm(a, b);
 }

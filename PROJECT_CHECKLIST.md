@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 4 Nov 2026 (z155). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 4 Nov 2026 (z156). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -232,3 +232,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Several lines in the Ops Room duty strip (z147, 2 Nov, Brandon): SXO / OPS O / SDO / BDO, Safety, Prefect, Security, Codes take Enter for a new line (awaiting his look)
 - [?] Edit the syllabus items on the dashboard (z154, 4 Nov, Brandon; merged): ✎ Edit syllabus items on the Syllabus tab: a table per stage grouped by track, add / rename / reorder / remove items and tracks, default chances, codes with results locked, duplicate codes flagged and not saved; saved to the Syllabus Items sheet with Save to Excel; stage names stay in Excel (awaiting his test)
 - [?] Crew Roster order (z155 built 4 Nov, awaiting his test; Brandon: sorting, adding crew in the middle): right-click a person for Insert crew above / below, Move up / down, Sort regular crew… (Cat Status then rank, Callsign, Name, Role; preview before and after). Each person's plans on every month tab, Personnel Info and Currency rows move with them; comments, chits, syllabus and tags follow the callsign. Rank order (Brandon, 4 Nov): one structure per department: Pilot and TACCO officers LTC, MAJ, CPT, LTA; Loadmaster WOSE 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG; SUP 1 and SUP 2 ME3, ME2, ME1. One combined list in that order (a department only meets its own); "(NS)" ignored; unknown ranks last, same rank by name. Plus SANS and NSMEN as two separate groups (Crew Roster and Planner bands, SANS first; same purple rows in the file, kept grouped by Status, no layout change). Mock-up `previews/roster_order_mockup_*.png` (script `previews/roster_order_mockup.js`), awaiting his look
+- [?] Sort by rank and a Rank column (z156, 4 Nov, Brandon): Sort dialog "Rank, then Cat Status"; Crew Roster shows Rank left of Name (Excel keeps them in one Crew Member cell); the dropdown lists the department's own ranks (awaiting his test)

@@ -983,6 +983,25 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   .btn,.btn:active:not(:disabled),.mday,.mday .plus,nav.tabs button,td.c,#bookbar .bk,#bookbar .bk button,.opsk,.ost,table.opst td,.mday .chip{transition:none;transform:none}
   #bookbar .bk:active,.opsk:active{transform:none}
 }
+/* Miscellaneous Notes (z162): the department's own scratch sheet */
+.mnHead{display:flex;align-items:center;gap:10px;margin:0 0 8px;flex-wrap:wrap}.mnHead h2{margin:0;font-size:19px;color:var(--s900)}
+.mnLock{font-size:12.5px;padding:3px 10px;border:1px solid var(--s300);border-radius:999px;background:var(--s50);color:var(--s700)}
+.mnTools{margin-left:auto;display:flex;gap:6px}.mnTools button{border:1px solid var(--s300);background:#fff;color:var(--s800);border-radius:6px;padding:5px 11px;font-weight:600;cursor:pointer;font-size:13px}
+.mnTools button.on{background:#dbeafe;border-color:#93c5fd}.mnTools button:disabled{opacity:.45;cursor:default}
+.mnBar{display:flex;align-items:stretch;border:1px solid var(--s300);border-radius:6px;background:#fff;margin-bottom:8px}
+.mnBar b{min-width:60px;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--s200);font-size:13px;color:var(--s600)}
+.mnBar input{flex:1;border:0;padding:6px 10px;font:inherit;font-size:13.5px;outline:none;background:transparent;min-width:0}
+.mnGrid{overflow:auto;border:1px solid var(--s300);border-radius:6px;background:#fff;outline:none;position:relative}
+.mnGrid table{border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:13px;width:max-content}
+.mnGrid th{position:sticky;top:0;z-index:2;background:var(--s100);color:var(--s600);font-weight:600;height:24px;border-right:1px solid var(--s200);border-bottom:1px solid var(--s300);padding:0;user-select:none}
+.mnGrid th .mnRz{position:absolute;right:-3px;top:0;bottom:0;width:7px;cursor:col-resize;z-index:3}.mnGrid th .mnRz:hover{background:#93c5fd}
+.mnGrid th.rn{left:0;z-index:4}.mnGrid td.rn{position:sticky;left:0;z-index:1;background:var(--s100);color:var(--s500);text-align:center;padding:0;font-size:12px;border-right:1px solid var(--s300)}
+.mnGrid td{height:22px;padding:2px 6px;border-right:1px solid var(--s200);border-bottom:1px solid var(--s200);white-space:pre;overflow:hidden;text-overflow:ellipsis;vertical-align:top;cursor:cell;user-select:none;position:relative;color:var(--s900)}
+.mnGrid td.w{white-space:pre-wrap;word-break:break-word;text-overflow:clip}.mnGrid td.b{font-weight:700}
+.mnGrid td.un{background:#fef9c3}.mnGrid td.sel{background:#dbeafe}.mnGrid td.un.sel{background:#d9f0c0}
+.mnGrid td.act{box-shadow:inset 0 0 0 2px #2563eb}
+.mnGrid td textarea{position:absolute;left:0;top:0;width:100%;min-height:100%;box-sizing:border-box;border:2px solid #2563eb;padding:1px 5px;font:inherit;resize:none;outline:none;z-index:5;background:#fff;overflow:hidden}
+.mnFoot{font-size:12px;color:var(--s500);margin-top:6px}
 </style>
 </head>
 <body>
@@ -1005,7 +1024,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
 <nav class="tabs">
   <button data-v="lode">My Lodestar</button>
   <div class="tdd lft" id="plMenu"><button id="plTabBtn" type="button" class="on">Planning ▾</button>
-    <div class="tmenu"><button data-v="plan" class="on">Planner <small>the month plan</small></button><button data-v="ov">Overview <small>departments, months and crew totals</small></button><button data-v="syl">Syllabus Tracking <small>training path, Pass / Fail per item</small></button></div></div>
+    <div class="tmenu"><button data-v="plan" class="on">Planner <small>the month plan</small></button><button data-v="ov">Overview <small>departments, months and crew totals</small></button><button data-v="syl">Syllabus Tracking <small>training path, Pass / Fail per item</small></button><button data-v="misc" id="mnTab" style="display:none">Miscellaneous Notes <small>your department's own scratch sheet</small></button></div></div>
   <button data-v="roster">Crew Roster</button>
   <button data-v="cur">Currency</button>
   <button data-v="acts">Activities</button>
@@ -1105,6 +1124,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   </section>
   <section class="view" id="v-cmx"><div id="cmxWrap"></div></section>
   <section class="view" id="v-syl"><div id="sylWrap"></div></section>
+  <section class="view" id="v-misc"><div id="mnWrap"></div></section>
   <section class="view" id="v-roster">
     <div class="note">Add crew in the next empty row, or <b>right-click a person</b> to insert a row above or below them, move them up or down, or sort the list: their plans move with them. Regular crew at the top, SANS and NSMEN in their own groups (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE pink. To remove someone, set Status to Inactive. Don't clear a person's row to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
     <div class="card"><table class="edit" id="rosterTable"></table></div>
@@ -1164,7 +1184,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z161</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z162</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2324,6 +2344,240 @@ $("sylWrap").addEventListener("change", e => {
 });
 $("sylWrap").addEventListener("keydown", e => { if (sylEd.on && e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); e.target.blur(); } });
 window.addEventListener("resize", () => { if ($("v-syl").classList.contains("on")) renderSyl(); });
+// ---------- Miscellaneous Notes (z162): an Excel-like scratch sheet for a department's own planners, kept in a hidden 'Misc Notes' sheet of its own file.
+// Only shown for your own department file (books[0]), not in Ops Room mode. Text in A..Z from row 1; column AA of a row holds that row's formats
+// ("B:b,C:bw": b bold, w wrap), AB1 the column widths in px ("A:110,B:300"), AB2 the number of rows shown. The Change Log gets a count, never the text.
+const MN_SHEET = "Misc Notes", MN_NC = 26, MN_R0 = 100, MN_RMAX = 1000, MN_W0 = 110, MN_OPT = { hidden: true, plain: true },
+  MN_XCOLS = '<col min="1" max="26" width="16" customWidth="1"/><col min="27" max="28" width="12" hidden="1" customWidth="1"/>';
+const mn = { r: 0, c: 0, ar: 0, ac: 0, ed: null, drag: false };   // active cell, anchor of the picked range, the cell being edited
+const mnIdx = () => books.length && !OPS && books[0] && !books[0].S.kind ? 0 : -1;
+const mnCanEdit = () => mnIdx() === 0 && mayEdit(0);
+const mnRef = (r, c) => colL(c + 1) + (r + 1);
+// the sheet as it is now: the file plus unsaved changes
+function mnCells() {
+  const b = books[0], c = Object.assign({}, b.WB.paths[MN_SHEET] ? cellsAt(b, b.WB.files, MN_SHEET) : {});
+  for (const e of b.dirty.values()) if (e.sheet === MN_SHEET) { if (e.val === "" || e.val == null) delete c[e.ref]; else c[e.ref] = e.val; }
+  return c;
+}
+const mnTxt = (c, r, k) => { const v = c[mnRef(r, k)]; return v == null ? "" : String(v); };
+const mnFmtRow = (c, r) => { const m = {}; String(c["AA" + (r + 1)] || "").split(",").forEach(x => { const [L, f] = x.split(":"); if (L && f && /^[A-Z]$/.test(L.trim())) m[L.trim()] = f.trim(); }); return m; };
+const mnFmtStr = m => Object.keys(m).filter(L => m[L]).sort().map(L => L + ":" + m[L]).join(",");
+const mnWidths = c => { const w = {}; String(c.AB1 || "").split(",").forEach(x => { const [L, v] = x.split(":"); if (L && +v) w[L.trim()] = Math.max(30, Math.min(800, Math.round(+v))); }); return w; };
+function mnRows(c) {
+  let last = 0; for (const k in c) { const m = /^([A-Z]+)(\d+)$/.exec(k); if (m && m[1].length === 1) last = Math.max(last, +m[2]); }
+  return Math.min(MN_RMAX, Math.max(MN_R0, +c.AB2 || 0, last));
+}
+const mnRange = () => ({ r0: Math.min(mn.r, mn.ar), r1: Math.max(mn.r, mn.ar), c0: Math.min(mn.c, mn.ac), c1: Math.max(mn.c, mn.ac) });
+// write cells (list of [ref, value]) into your own file; unchanged ones are skipped. Returns how many changed.
+function mnPut(list) {
+  if (!mnCanEdit()) { readOnlyMn(); return 0; }
+  const c = mnCells(); let n = 0;
+  withBook(0, () => { sheetEnsure(WB, MN_SHEET, [], MN_XCOLS, MN_OPT);
+    for (const [ref, v] of list) { const val = v == null ? "" : String(v); if ((c[ref] == null ? "" : String(c[ref])) === val) continue; put(MN_SHEET, ref, val); c[ref] = val; n++; } });
+  return n;
+}
+const readOnlyMn = () => toast(books[0] && books[0].noEdit ? "You only have view access to this file." : "This page can't be changed here.", 2500);
+// ---- page
+function renderMisc() {
+  const v = $("v-misc"); if (!v || !v.classList.contains("on")) return;
+  const W = $("mnWrap");
+  if (mnIdx() < 0) { W.innerHTML = "<p class='muted' style='padding:20px'>Miscellaneous Notes belongs to a department planner. Open your own department's file to use it.</p>"; return; }
+  const b = books[0], c = mnCells(), wd = mnWidths(c), nr = mnRows(c), ed = mnCanEdit();
+  if (!W.querySelector(".mnGrid")) {
+    W.innerHTML = "<div class='mnHead'><h2>Miscellaneous Notes</h2><span class='mnLock' id='mnLock'></span><div class='mnTools'>" +
+      "<button id='mnBold' title='Bold (Ctrl+B) on the picked cells'><b>B</b> Bold</button><button id='mnWrapB' title='Wrap long text inside the picked cells'>Wrap</button>" +
+      "<button id='mnMore' title='Show 20 more rows'>+ 20 rows</button><button id='mnClear' title='Empty the whole sheet'>Clear sheet…</button></div></div>" +
+      "<div class='mnBar'><b id='mnAt'>A1</b><input id='mnIn' spellcheck='false' autocomplete='off'></div><div class='mnGrid' tabindex='0'></div><div class='mnFoot' id='mnFoot'></div>";
+    mnWire(W);
+  }
+  mn.r = Math.min(mn.r, nr - 1); mn.ar = Math.min(mn.ar, nr - 1);
+  $("mnLock").textContent = "🔒 Only " + b.S.dept + " sees this page. Other departments and the Ops Room don't." + (ed ? "" : " View only.");
+  ["mnBold", "mnWrapB", "mnMore", "mnClear"].forEach(id => $(id).disabled = !ed); $("mnIn").readOnly = !ed;
+  const un = new Set(); for (const e of b.dirty.values()) if (e.sheet === MN_SHEET) un.add(e.ref);
+  let h = "<colgroup><col style='width:44px'>"; for (let k = 0; k < MN_NC; k++) h += "<col style='width:" + (wd[colL(k + 1)] || MN_W0) + "px'>"; h += "</colgroup>";
+  h += "<thead><tr><th class='rn'></th>"; for (let k = 0; k < MN_NC; k++) h += "<th data-hc='" + k + "'>" + colL(k + 1) + "<span class='mnRz' data-rz='" + k + "'></span></th>"; h += "</tr></thead><tbody>";
+  for (let r = 0; r < nr; r++) {
+    const f = mnFmtRow(c, r); h += "<tr><td class='rn'>" + (r + 1) + "</td>";
+    for (let k = 0; k < MN_NC; k++) { const L = colL(k + 1), ff = f[L] || "", ref = L + (r + 1), cl = (ff.includes("b") ? " b" : "") + (ff.includes("w") ? " w" : "") + (un.has(ref) ? " un" : "");
+      h += "<td data-r='" + r + "' data-c='" + k + "'" + (cl ? " class='" + cl.trim() + "'" : "") + ">" + esc(mnTxt(c, r, k)) + "</td>"; }
+    h += "</tr>";
+  }
+  const G = W.querySelector(".mnGrid"), hadFocus = document.activeElement === G || G.contains(document.activeElement);
+  G.innerHTML = "<table>" + h + "</tbody></table>"; mn.ed = null;
+  $("mnFoot").textContent = MN_NC + " columns (A to Z), " + nr + " rows. Text only, no formulas. Saved with Save to Excel into a hidden Misc Notes sheet of the " + b.S.dept + " file; the Change Log only counts the changed cells.";
+  mnFit(); mnPaint(c); if (hadFocus) G.focus({ preventScroll: true });
+}
+function mnFit() { const G = document.querySelector("#mnWrap .mnGrid"); if (!G) return; const top = G.getBoundingClientRect().top; G.style.height = Math.max(200, window.innerHeight - top - 34) + "px"; }
+window.addEventListener("resize", () => { if ($("v-misc").classList.contains("on")) mnFit(); });
+// show the picked cells, the formula bar and the Bold / Wrap state (no redraw of the table)
+function mnPaint(c, scroll) {
+  const G = document.querySelector("#mnWrap .mnGrid"); if (!G) return; c = c || mnCells();
+  G.querySelectorAll("td.sel, td.act").forEach(t => t.classList.remove("sel", "act"));
+  const R = mnRange(), many = R.r0 !== R.r1 || R.c0 !== R.c1;
+  if (many) for (let r = R.r0; r <= R.r1; r++) for (let k = R.c0; k <= R.c1; k++) { const t = mnTd(r, k); if (t) t.classList.add("sel"); }
+  const a = mnTd(mn.r, mn.c); if (a) { a.classList.add("act"); if (scroll) mnScroll(a); }
+  $("mnAt").textContent = many ? mnRef(R.r0, R.c0) + ":" + mnRef(R.r1, R.c1) : mnRef(mn.r, mn.c);
+  if (document.activeElement !== $("mnIn")) $("mnIn").value = mnTxt(c, mn.r, mn.c);
+  const f = mnFmtRow(c, mn.r)[colL(mn.c + 1)] || ""; $("mnBold").classList.toggle("on", f.includes("b")); $("mnWrapB").classList.toggle("on", f.includes("w"));
+}
+const mnTd = (r, k) => document.querySelector("#mnWrap td[data-r='" + r + "'][data-c='" + k + "']");
+function mnScroll(td) {   // keep the cell clear of the sticky letters and row numbers
+  const G = td.closest(".mnGrid"), th = 25, rn = 44;
+  if (td.offsetTop - th < G.scrollTop) G.scrollTop = td.offsetTop - th; else if (td.offsetTop + td.offsetHeight > G.scrollTop + G.clientHeight) G.scrollTop = td.offsetTop + td.offsetHeight - G.clientHeight;
+  if (td.offsetLeft - rn < G.scrollLeft) G.scrollLeft = td.offsetLeft - rn; else if (td.offsetLeft + td.offsetWidth > G.scrollLeft + G.clientWidth) G.scrollLeft = td.offsetLeft + td.offsetWidth - G.clientWidth;
+}
+function mnGo(r, k, extend) {
+  const nr = mnRows(mnCells()); mn.r = Math.max(0, Math.min(nr - 1, r)); mn.c = Math.max(0, Math.min(MN_NC - 1, k));
+  if (!extend) { mn.ar = mn.r; mn.ac = mn.c; } mnPaint(null, true);
+}
+// ---- editing in the cell
+function mnEdit(seed) {
+  if (!mnCanEdit()) { readOnlyMn(); return; }
+  const td = mnTd(mn.r, mn.c); if (!td) return; mnScroll(td);
+  const ta = document.createElement("textarea"); ta.value = seed != null ? seed : mnTxt(mnCells(), mn.r, mn.c);
+  td.appendChild(ta); mn.ed = { r: mn.r, c: mn.c, ta, typed: seed != null };
+  ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); mnGrow(ta);
+  ta.oninput = () => { mnGrow(ta); $("mnIn").value = ta.value; };
+  ta.onblur = () => setTimeout(() => { if (mn.ed && mn.ed.ta === ta) mnCommit(0, 0); }, 0);
+}
+const mnGrow = ta => { ta.style.height = "auto"; ta.style.height = Math.max(ta.parentNode.offsetHeight, ta.scrollHeight + 4) + "px"; ta.style.width = Math.max(ta.parentNode.offsetWidth, Math.min(420, ta.scrollWidth + 6)) + "px"; };
+function mnCommit(dr, dc, cancel) {
+  const e = mn.ed; if (!e) return; mn.ed = null;
+  const val = e.ta.value; e.ta.remove();
+  const n = cancel ? 0 : mnPut([[mnRef(e.r, e.c), val]]);
+  mn.r = e.r; mn.c = e.c;
+  if (n) renderMisc();
+  mnGo(e.r + dr, e.c + dc); document.querySelector("#mnWrap .mnGrid").focus({ preventScroll: true });
+}
+// ---- the picked cells
+function mnClearRange() {
+  const R = mnRange(), c = mnCells(), list = [];
+  for (let r = R.r0; r <= R.r1; r++) for (let k = R.c0; k <= R.c1; k++) if (mnTxt(c, r, k)) list.push([mnRef(r, k), ""]);
+  if (mnPut(list)) renderMisc();
+}
+function mnFmtToggle(flag) {
+  if (!mnCanEdit()) { readOnlyMn(); return; }
+  const R = mnRange(), c = mnCells(); let all = true;
+  for (let r = R.r0; r <= R.r1 && all; r++) { const f = mnFmtRow(c, r); for (let k = R.c0; k <= R.c1; k++) if (!(f[colL(k + 1)] || "").includes(flag)) { all = false; break; } }
+  const list = [];
+  for (let r = R.r0; r <= R.r1; r++) { const f = mnFmtRow(c, r);
+    for (let k = R.c0; k <= R.c1; k++) { const L = colL(k + 1), x = (f[L] || "").replace(flag, ""); f[L] = all ? x : (flag === "b" ? "b" + x : x + "w"); }
+    list.push(["AA" + (r + 1), mnFmtStr(f)]); }
+  if (mnPut(list)) renderMisc();
+}
+const mnTsv = (c, R) => { const out = []; for (let r = R.r0; r <= R.r1; r++) { const row = []; for (let k = R.c0; k <= R.c1; k++) { const t = mnTxt(c, r, k); row.push(/[\t\n"]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t); } out.push(row.join("\t")); } return out.join("\r\n"); };
+// a block copied from Excel: tab between cells, new line between rows, a cell with a line break or tab comes in quotes
+function mnParseTsv(s) {
+  const rows = [[]]; let f = "", q = false, i = 0; s = String(s).replace(/\r\n?/g, "\n").replace(/\n$/, "");
+  while (i < s.length) { const ch = s[i];
+    if (q) { if (ch === '"' && s[i + 1] === '"') { f += '"'; i += 2; continue; } if (ch === '"') { q = false; i++; continue; } f += ch; i++; continue; }
+    if (ch === '"' && f === "") { q = true; i++; continue; }
+    if (ch === "\t") { rows[rows.length - 1].push(f); f = ""; i++; continue; }
+    if (ch === "\n") { rows[rows.length - 1].push(f); f = ""; rows.push([]); i++; continue; }
+    f += ch; i++; }
+  rows[rows.length - 1].push(f); return rows;
+}
+function mnPaste(text) {
+  if (!mnCanEdit()) { readOnlyMn(); return; }
+  const rows = mnParseTsv(text), c = mnCells(), list = []; let cut = false;
+  rows.forEach((row, i) => row.forEach((v, j) => { const r = mn.r + i, k = mn.c + j; if (k >= MN_NC || r >= MN_RMAX) { cut = cut || !!v; return; } list.push([mnRef(r, k), v]); }));
+  const need = mn.r + rows.length; if (need > mnRows(c)) list.push(["AB2", Math.min(MN_RMAX, need)]);
+  mnPut(list); mn.ar = Math.min(MN_RMAX, mn.r + rows.length) - 1; mn.ac = Math.min(MN_NC, mn.c + Math.max(...rows.map(x => x.length))) - 1;
+  renderMisc(); if (cut) toast("Some pasted cells fell outside A to Z (or past row " + MN_RMAX + ") and were left out.", 4000);
+}
+function mnWire(W) {
+  const G = W.querySelector(".mnGrid");
+  G.addEventListener("mousedown", e => {
+    const rz = e.target.closest(".mnRz");
+    if (rz) { e.preventDefault(); if (!mnCanEdit()) return; const k = +rz.dataset.rz, col = G.querySelectorAll("col")[k + 1], x0 = e.clientX, w0 = col.offsetWidth || parseInt(col.style.width);
+      const mv = ev => { col.style.width = Math.max(30, Math.min(800, w0 + ev.clientX - x0)) + "px"; };
+      const up = () => { document.removeEventListener("mousemove", mv); document.removeEventListener("mouseup", up);
+        const w = mnWidths(mnCells()); w[colL(k + 1)] = parseInt(col.style.width); if (mnPut([["AB1", Object.keys(w).sort().map(L => L + ":" + w[L]).join(",")]])) renderMisc(); };
+      document.addEventListener("mousemove", mv); document.addEventListener("mouseup", up); return; }
+    const td = e.target.closest("td[data-c]"); if (!td || e.target.tagName === "TEXTAREA") return;
+    if (mn.ed) mnCommit(0, 0);
+    e.preventDefault(); G.focus({ preventScroll: true });
+    const r = +td.dataset.r, k = +td.dataset.c; mnGo(r, k, e.shiftKey); mn.drag = true;
+  });
+  G.addEventListener("mouseover", e => { if (!mn.drag) return; const td = e.target.closest("td[data-c]"); if (!td) return; mn.r = +td.dataset.r; mn.c = +td.dataset.c; mnPaint(); });
+  document.addEventListener("mouseup", () => { mn.drag = false; });
+  G.addEventListener("dblclick", e => { const td = e.target.closest("td[data-c]"); if (!td || mn.ed) return; mnGo(+td.dataset.r, +td.dataset.c); mnEdit(null); });
+  G.addEventListener("keydown", e => {
+    const k = e.key, ctl = e.ctrlKey || e.metaKey;
+    if (mn.ed) {   // typing in a cell
+      if (k === "Enter" && e.altKey) { e.preventDefault(); const ta = mn.ed.ta, p = ta.selectionStart; ta.value = ta.value.slice(0, p) + "\n" + ta.value.slice(ta.selectionEnd); ta.setSelectionRange(p + 1, p + 1); mnGrow(ta); return; }
+      if (k === "Enter") { e.preventDefault(); mnCommit(e.shiftKey ? -1 : 1, 0); return; }
+      if (k === "Tab") { e.preventDefault(); mnCommit(0, e.shiftKey ? -1 : 1); return; }
+      if (k === "Escape") { e.preventDefault(); mnCommit(0, 0, true); return; }
+      const mv = mn.ed.typed && { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[k];
+      if (mv) { e.preventDefault(); mnCommit(mv[0], mv[1]); }
+      return;
+    }
+    const mv = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[k];
+    if (mv) { e.preventDefault(); if (ctl) { mnGo(mv[0] < 0 ? 0 : mv[0] > 0 ? mnRows(mnCells()) - 1 : mn.r, mv[1] < 0 ? 0 : mv[1] > 0 ? MN_NC - 1 : mn.c, e.shiftKey); return; } mnGo(mn.r + mv[0], mn.c + mv[1], e.shiftKey); return; }
+    if (k === "Enter") { e.preventDefault(); mnGo(mn.r + (e.shiftKey ? -1 : 1), mn.c); return; }
+    if (k === "Tab") { e.preventDefault(); mnGo(mn.r, mn.c + (e.shiftKey ? -1 : 1)); return; }
+    if (k === "Home") { e.preventDefault(); mnGo(ctl ? 0 : mn.r, 0, e.shiftKey); return; }
+    if (k === "PageDown" || k === "PageUp") { e.preventDefault(); const n = Math.max(1, Math.floor(G.clientHeight / 27) - 1); mnGo(mn.r + (k === "PageDown" ? n : -n), mn.c, e.shiftKey); return; }
+    if (k === "F2") { e.preventDefault(); mnEdit(null); return; }
+    if (k === "Delete" || k === "Backspace") { e.preventDefault(); if (!mnCanEdit()) { readOnlyMn(); return; } mnClearRange(); return; }
+    if (ctl && k.toLowerCase() === "b") { e.preventDefault(); mnFmtToggle("b"); return; }
+    if (ctl && k.toLowerCase() === "a") { e.preventDefault(); mn.ar = 0; mn.ac = 0; mn.r = mnRows(mnCells()) - 1; mn.c = MN_NC - 1; mnPaint(); return; }
+    if (k.length === 1 && !ctl && !e.altKey) { e.preventDefault(); mnEdit(k); }
+  });
+  G.addEventListener("copy", e => { if (mn.ed) return; e.preventDefault(); e.clipboardData.setData("text/plain", mnTsv(mnCells(), mnRange())); });
+  G.addEventListener("cut", e => { if (mn.ed) return; e.preventDefault(); e.clipboardData.setData("text/plain", mnTsv(mnCells(), mnRange())); if (mnCanEdit()) mnClearRange(); });
+  G.addEventListener("paste", e => { if (mn.ed) return; e.preventDefault(); mnPaste(e.clipboardData.getData("text/plain")); });
+  // the formula bar: the whole text of the cell; Enter saves it into the cell and moves down, Escape puts it back
+  const I = $("mnIn");
+  I.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); if (mnPut([[mnRef(mn.r, mn.c), I.value]])) renderMisc(); I.blur(); mnGo(mn.r + 1, mn.c); G.focus({ preventScroll: true }); }
+    else if (e.key === "Escape") { e.preventDefault(); I.value = mnTxt(mnCells(), mn.r, mn.c); G.focus({ preventScroll: true }); }
+  });
+  I.addEventListener("change", () => { if (mnCanEdit() && mnPut([[mnRef(mn.r, mn.c), I.value]])) renderMisc(); });
+  $("mnBold").onclick = () => { mnFmtToggle("b"); G.focus({ preventScroll: true }); };
+  $("mnWrapB").onclick = () => { mnFmtToggle("w"); G.focus({ preventScroll: true }); };
+  $("mnMore").onclick = () => { const c = mnCells(), n = mnRows(c); if (n >= MN_RMAX) { toast("The sheet already shows " + MN_RMAX + " rows, the most it takes.", 3000); return; } if (mnPut([["AB2", Math.min(MN_RMAX, n + 20)]])) renderMisc(); };
+  $("mnClear").onclick = () => {
+    const c = mnCells(), list = Object.keys(c).filter(k => /^([A-Z]|AA)\d+$/.test(k) && c[k] !== "").map(k => [k, ""]);
+    if (!list.length) { toast("The sheet is already empty.", 2000); return; }
+    if (!confirm("Clear every cell of Miscellaneous Notes (text, bold and wrap)?\n\nColumn widths stay. Undo brings it back until you save; after saving, SharePoint version history still has the old copy.")) return;
+    if (mnPut(list)) { mn.r = mn.c = mn.ar = mn.ac = 0; renderMisc(); toast("Sheet cleared. Save to Excel to keep it.", 2500); }
+  };
+}
+// ---- Excel side: bold, wrap and widths as real Excel formats (the hidden sheet still reads well if someone unhides it)
+function mnExcelLook(files, p) {
+  if (!p || !files[p]) return;
+  let x = td.decode(files[p]); const c = readCellsOf(files, p, WB.sst || []), wd = mnWidths(c), F = ["", "b", "w", "bw"];
+  let sOf = null, st = files["xl/styles.xml"] ? td.decode(files["xl/styles.xml"]) : "";
+  const fm = st.match(/<fonts\b[^>]*>[\s\S]*?<\/fonts>/), xm = st.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/);
+  if (fm && xm) {
+    const BF = '<font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font>', fonts = fm[0].match(/<font\b[^>]*\/>|<font\b[^>]*>[\s\S]*?<\/font>/g) || [];
+    let fi = fonts.indexOf(BF);
+    if (fi < 0) { fi = fonts.length; st = st.replace(fm[0], fm[0].replace(/<\/fonts>$/, BF + "</fonts>").replace(/count="\d+"/, 'count="' + (fonts.length + 1) + '"')); }
+    const xm2 = st.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/), xfs = xm2[0].match(/<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/g) || [];
+    const want = F.map(f => '<xf numFmtId="0" fontId="' + (f.includes("b") ? fi : 0) + '" fillId="0" borderId="0" xfId="0"' + (f.includes("b") ? ' applyFont="1"' : "") + ' applyAlignment="1"><alignment vertical="top"' + (f.includes("w") ? ' wrapText="1"' : "") + "/></xf>");
+    const add = want.filter(w => !xfs.includes(w));
+    if (add.length) st = st.replace(xm2[0], xm2[0].replace(/<\/cellXfs>$/, add.join("") + "</cellXfs>").replace(/count="\d+"/, 'count="' + (xfs.length + add.length) + '"'));
+    const all = xfs.concat(add); sOf = f => all.indexOf(want[F.indexOf(f)]);
+    files["xl/styles.xml"] = te.encode(st);
+  }
+  if (sOf) x = x.replace(/<c r="([A-Z]+)(\d+)"((?:\s+[\w:]+="[^"]*")*)(\s*\/?>)/g, (m0, L, r, attrs, end) => {
+    if (L.length > 1) return m0; const f = mnFmtRow(c, +r - 1)[L] || "", n = (f.includes("b") ? "b" : "") + (f.includes("w") ? "w" : "");
+    return '<c r="' + L + r + '"' + attrs.replace(/\s+s="\d+"/, "") + ' s="' + sOf(n) + '"' + end; });
+  let cols = ""; for (let k = 1; k <= MN_NC; k++) cols += '<col min="' + k + '" max="' + k + '" width="' + (Math.round((wd[colL(k)] || MN_W0) / 7 * 10) / 10) + '" customWidth="1"/>';
+  cols = "<cols>" + cols + '<col min="27" max="28" width="12" hidden="1" customWidth="1"/></cols>';
+  x = /<cols>[\s\S]*?<\/cols>/.test(x) ? x.replace(/<cols>[\s\S]*?<\/cols>/, cols) : x.replace(/<sheetData/, cols + "<sheetData");
+  files[p] = te.encode(x);
+}
+// ---- Change Log: "Misc Notes: 6 cells changed" (bold, wrap, widths and rows: "formatting"); saves within the merge time add up on one line
+const mnLogText = (n, f) => "Misc Notes: " + (n ? n + " cell" + (n === 1 ? "" : "s") + " changed" + (f ? ", formatting too" : "") : "formatting changed");
+function mnLogLine(b, sent, files) {
+  let n = 0, f = false; const before = cellsAt(b, files, MN_SHEET);
+  for (const e of sent.values()) { if (e.sheet !== MN_SHEET) continue; if (String(before[e.ref] ?? "") === String(e.val ?? "")) continue; if (/^A[AB]\d/.test(e.ref)) f = true; else n++; }
+  return n || f ? mnLogText(n, f) : "";
+}
+function mnLogSum(a, b) { const n = s => +((/(\d+) cells? changed/.exec(s) || [])[1] || 0), f = s => /formatting/.test(s); return mnLogText(n(a) + n(b), f(a) || f(b)); }
 function readMaster(name) {   // (the Crew Matrix sheet is read at the end)
   const st = { kind: "master", year: null, dept: "Master Planner", roster: [], acts: [], cats: [], hols: [], m: [], sdo: {}, mp: [], codes: [], fl: [] };
   const dash = readCells("Dashboard"); st.year = num(dash.A5) || new Date().getFullYear();
@@ -2729,12 +2983,14 @@ function buildXlsx() {
   if (bySheet[GRR_SHEET]) sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
   if (bySheet[FR_SHEET]) sheetEnsure(WB, FR_SHEET, FR_HEAD, FR_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
+  if (bySheet[MN_SHEET]) sheetEnsure(WB, MN_SHEET, [], MN_XCOLS, MN_OPT);
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
     const p = WB.paths[sheet]; if (!p || !files[p]) continue; let x = td.decode(files[p]);
     for (const e of list) x = setCell(x, e.ref, e.val);
     files[p] = te.encode(x);
   }
+  if (bySheet[MN_SHEET]) mnExcelLook(files, WB.paths[MN_SHEET]);   // bold, wrap and column widths as Excel shows them
   // Excel hides empty crew slots with a filter: un-hide the rows of anyone named on the roster so new crew show up straight away
   const unhide = {};
   S.roster.forEach((pp, i) => {
@@ -2808,6 +3064,7 @@ function logGroup(g, t, who, mail, dept) {
 function logLines(b, sent) {
   const out = [], t = logTime(), who = logWho(), mail = SP.user ? SP.user.Email || "" : "", files = b.WB.files, groups = new Map();
   for (const [k, e] of sent) {
+    if (e.sheet === MN_SHEET) continue;   // Misc Notes: one line per save below, never the text itself
     if (LOG_SKIP.has(e.sheet)) continue;
     if (e.quiet) continue;   // moved with a person (Crew Roster order): one line per action below
     if (e.sheet === "Syllabus Log" && !/^D\d/.test(e.ref)) continue;   // one line per attempt (its Result cell)
@@ -2823,13 +3080,14 @@ function logLines(b, sent) {
     } else out.push([t, who, mail, b.S.dept, w.what, bv, av, e.sheet + "!" + e.ref]);
   }
   [...new Set([...sent.values()].map(e => e.quiet).filter(Boolean))].forEach(q => out.push([t, who, mail, b.S.dept, q, "", "", "Roster"]));
+  { const m = mnLogLine(b, sent, files); if (m) out.push([t, who, mail, b.S.dept, m, "", "", MN_SHEET]); }
   if (b.S.atomPub && [...sent.values()].some(e => e.sheet === ATOM_SHEET)) out.push([t, who, mail, b.S.dept, "ATOM published: " + b.S.atomPub.name + ", as of " + b.S.atomPub.asOf, "", "", ATOM_SHEET]);   // one line, not one per cell
   return out.map(x => Array.isArray(x) ? x : logGroup(x, t, who, mail, b.S.dept));
 }
 // add the Change Log sheet to a workbook that has none (files is changed in place)
 // adds an empty sheet (header row 1, frozen) to a workbook's files in memory; cols = the <cols> xml
-function sheetEnsure(W, name, heads, cols) {
-  if (W.paths[name]) return;
+function sheetEnsure(W, name, heads, cols, opt) {   // opt.hidden: hidden in Excel; opt.plain: no header row, nothing frozen (Misc Notes)
+  if (W.paths[name]) return; opt = opt || {};
   const f = W.files; let n = 0;
   for (const k in f) { const m = /^xl\/worksheets\/sheet(\d+)\.xml$/.exec(k); if (m) n = Math.max(n, +m[1]); }
   const path = "xl/worksheets/sheet" + (n + 1) + ".xml";
@@ -2837,11 +3095,11 @@ function sheetEnsure(W, name, heads, cols) {
   const ids = [...wb.matchAll(/sheetId="(\d+)"/g)].map(m => +m[1]), rid = "rIdNew" + (n + 1);
   const tgt = /Target="\/xl\/worksheets\//.test(rels) ? "/" + path : path.slice(3);
   rels = rels.replace("</Relationships>", '<Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="' + tgt + '" Id="' + rid + '"/></Relationships>');
-  wb = wb.replace("</sheets>", '<sheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" name="' + name + '" sheetId="' + (Math.max(0, ...ids) + 1) + '" state="visible" r:id="' + rid + '"/></sheets>');
+  wb = wb.replace("</sheets>", '<sheet xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" name="' + name + '" sheetId="' + (Math.max(0, ...ids) + 1) + '" state="' + (opt.hidden ? "hidden" : "visible") + '" r:id="' + rid + '"/></sheets>');
   const ctp = "[Content_Types].xml"; let ct = td.decode(f[ctp]);
   if (!ct.includes('PartName="/' + path + '"')) ct = ct.replace("</Types>", '<Override PartName="/' + path + '" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
-  const head = "<row r=\"1\">" + heads.map((h, i) => cellXml(colL(i + 1) + "1", "", h)).join("") + "</row>";
-  const ws = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>' +
+  const head = heads.length ? "<row r=\"1\">" + heads.map((h, i) => cellXml(colL(i + 1) + "1", "", h)).join("") + "</row>" : "";
+  const ws = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0">' + (opt.plain ? "" : '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>') + '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>' +
     '<cols>' + cols + '</cols>' +
     "<sheetData>" + head + "</sheetData></worksheet>";
   f["xl/workbook.xml"] = te.encode(wb); f["xl/_rels/workbook.xml.rels"] = te.encode(rels); f[ctp] = te.encode(ct); f[path] = te.encode(ws);
@@ -2865,9 +3123,11 @@ function logApply(b, lines) {
   let rows = old.filter(L => !L[0] || String(L[0]) >= cutoff), changed = rows.length !== old.length;
   const add = [];
   for (const L of lines) {
-    if (!/:/.test(L[7])) {
+    const mn = L[7] === MN_SHEET;   // Misc Notes: saves by the same person within the merge time add up on one line
+    if (mn || (/!/.test(L[7]) && !/:/.test(L[7]))) {   // one plan cell (Roster moves and other lines without a cell are never merged)
       const t0 = cellOf(L[0]); let hit = -1;
       for (let k = rows.length - 1, seen = 0; k >= 0 && seen < 300; k--, seen++) { const R = rows[k]; if (R[7] === L[7] && R[1] === L[1] && Math.abs(t0 - cellOf(String(R[0]))) <= LOG_MERGE_MIN * 60000) { hit = k; break; } }
+      if (hit >= 0 && mn) { const R = rows[hit]; changed = true; rows[hit] = [L[0], R[1], R[2], R[3], mnLogSum(String(R[4]), String(L[4])), "", "", R[7]]; continue; }
       if (hit >= 0) { const R = rows[hit]; changed = true; if (String(R[5]) === String(L[6])) rows.splice(hit, 1); else rows[hit] = [L[0], R[1], R[2], R[3], R[4], R[5], L[6], R[7]]; continue; }
     }
     add.push(L);
@@ -3373,6 +3633,8 @@ function renderBooks() {
   document.body.classList.toggle("ro", !mayEdit(cur.b));
   $("robanner").textContent = books[cur.b] && books[cur.b].noEdit ? "You only have view access to " + WB.name + ". It is shown read-only." : !mayEdit(cur.b) ? "Viewing " + S.dept + " (" + WB.name + ") read-only. Changes can only be made in your own file, " + books[0].S.dept + "." : "";
   document.title = books.length ? S.dept + " · LODESTAR" : "LODESTAR";
+  $("mnTab").style.display = mnIdx() === 0 ? "" : "none";
+  if (mnIdx() < 0 && $("v-misc").classList.contains("on")) document.querySelector("nav.tabs button[data-v='" + (books.length ? "plan" : "lode") + "']").click();   // the page is not for this file: back to the Planner
   renderLayout();
 }
 // ---------- Master Planning: the Master Planner's month calendar. Only the Master Planner (its file opened as yours) can edit it; everyone else sees it locked.
@@ -3938,7 +4200,7 @@ $("curTable").addEventListener("change", e => {
   renderCur(); renderPlanner();
 });
 ["curBaseEd", "curOnlyBad"].forEach(id => $(id).addEventListener("change", renderCur));
-function renderAll() { renderBooks(); renderControls(); renderPlanner(); renderCur(); renderCodes(); renderCmx(); renderMp(); renderOverview(); renderSdo(); renderOps(); renderRoster(); renderActs(); if ($("v-lode").classList.contains("on")) renderLode(); renderLog(); renderSyl(); updateSave(); }
+function renderAll() { renderBooks(); renderControls(); renderPlanner(); renderCur(); renderCodes(); renderCmx(); renderMp(); renderOverview(); renderSdo(); renderOps(); renderRoster(); renderActs(); if ($("v-lode").classList.contains("on")) renderLode(); renderLog(); renderSyl(); renderMisc(); updateSave(); }
 function renderControls() {
   $("rollBtn").style.display = OPS ? "" : "none";
   $("year").value = S.year;
@@ -5855,7 +6117,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z161 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z162 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6761,6 +7023,11 @@ const HELP = {
     "<li>Struck-through flight: cancelled in the Ops Room. Blue column: today. Weekends dark, public holidays red.</li></ul>" +
     "<h3>Tools</h3><ul><li><b>Find in this month</b>: outlines matching codes, times, comments and names; Enter jumps to the next.</li><li><b>Today</b>: jumps to today's month and column.</li><li><b>Block of days…</b> (bottom of the cell list): one activity over a date range, e.g. a course or detachment.</li><li><b>↶ ↷</b> (top right) or Ctrl+Z / Ctrl+Y: undo and redo before you save.</li></ul>"],
   ov: ["Overview", "<p>Your department's year at a glance: flights, flying hours, ground duties, duty days and gaps per month, with a chart and each person's totals. Click a month to open it on the Planner.</p>"],
+  misc: ["Miscellaneous Notes", "<p>Under <b>Planning ▾</b>. A scratch sheet for your department's planners: to-do lists, phone numbers, ideas. Only your department sees it here; other departments and the Ops Room don't. It is saved in a hidden <b>Misc Notes</b> sheet of your own Excel file (anyone who opens the file in Excel and unhides the sheet can still read it, so keep personal data out).</p>" +
+    "<ul><li>Click a cell and type. <b>Enter</b> = down, <b>Tab</b> = right, arrows move, <b>Shift</b> + arrows or drag to pick several cells. <b>F2</b> or double-click edits the text in the cell. <b>Alt+Enter</b> = a new line inside the cell.</li>" +
+    "<li><b>Delete</b> clears the picked cells. <b>Ctrl+C</b>, <b>Ctrl+X</b>, <b>Ctrl+V</b> copy and paste, also a block copied from Excel.</li>" +
+    "<li><b>Bold</b> (Ctrl+B) and <b>Wrap</b> work on the picked cells. Drag the edge of a column letter to make it wider. <b>+ 20 rows</b> adds rows; <b>Clear sheet…</b> empties it.</li>" +
+    "<li>Yellow = changed, not saved yet. <b>Save to Excel</b> as usual; Undo works. The Change Log only says how many cells changed, never the text.</li></ul>"],
   syl: ["Syllabus Tracking", "<p>Under <b>Planning ▾</b>. Each of your department's crew as a skill tree: the stages along the top (OCU, CAT D, CAT C, CAT B, CAT A), and under the stage they are working on the <b>Sim track</b> and <b>Flight track</b> side by side, then the <b>Check</b> once both tracks are passed. Click a stage to look at it, and click an item to see its attempts.</p>" +
     "<p><b>Chances are per item</b>: every item has the default number of chances from the Syllabus Settings sheet, unless the item sets its own. Fails before the first pass use up chances; at 0 left the item shows ⛔ out of chances. Nothing is blocked: it is a flag for the chain of command.</p>" +
     "<p>Enter a result in the item pop-up: date, instructor, remarks, then <b>✓ Pass</b> or <b>✕ Fail</b>. It goes on your file's <b>Syllabus Log</b> sheet (× deletes a wrong entry). When every item of a stage is passed it shows <b>Stage complete, awaiting paperwork</b>. The dashboard never changes Cat Status or Role: update the Roster by hand once the paperwork is approved.</p>" +
@@ -6806,6 +7073,7 @@ document.querySelectorAll("nav.tabs button[data-v]").forEach(b => b.onclick = ()
   if (b.dataset.v === "lode") renderLode();
   if (b.dataset.v === "log") renderLog();
   if (b.dataset.v === "syl") renderSyl();
+  if (b.dataset.v === "misc") { renderMisc(); setTimeout(() => { const g = document.querySelector("#mnWrap .mnGrid"); if (g) g.focus({ preventScroll: true }); }, 0); }
   if (b.dataset.v === "ops") opsFit();
   sessSave({ v: b.dataset.v });
   closePop();

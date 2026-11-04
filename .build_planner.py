@@ -1204,12 +1204,12 @@ for k, (lab, key, accent, nf) in enumerate(dsum):
     sr = SUM_ROW[key]
     ref = "CHOOSE(" + MIX("$A$5") + "," + ",".join(f"'{mon}'!$D${sr}:$AH${sr}" for mon in MONTHS13) + ")"
     card(daily, 7, [1, 3, 4, 5, 6][k], 2 if k == 0 else 1, lab,
-         f'=IF(NOT('+INYR('$A$5')+'),"",INDEX({ref},1,DAY($A$5)))', accent, nf)
+         '=IF(NOT('+INYR('$A$5')+f'),"",INDEX({ref},1,DAY($A$5)))', accent, nf)
 sdoref = "CHOOSE(" + MIX("$A$5") + "," + ",".join(f"'{mon}'!$D${SDO_DEPT_ROW}:$AH${SDO_DEPT_ROW}" for mon in MONTHS13) + ")"
 if HAS_DUTY:
-    card(daily, 7, 7, 1, "Duty Day", f'=IF(NOT('+INYR('$A$5')+'),"",IF(INDEX({sdoref},1,DAY($A$5))="","No",INDEX({sdoref},1,DAY($A$5))))', "BE123C", "@")
+    card(daily, 7, 7, 1, "Duty Day", '=IF(NOT('+INYR('$A$5')+f'),"",IF(INDEX({sdoref},1,DAY($A$5))="","No",INDEX({sdoref},1,DAY($A$5))))', "BE123C", "@")
 else:
-    card(daily, 7, 7, 1, "SDO Day", f'=IF(NOT('+INYR('$A$5')+'),"",IF(INDEX({sdoref},1,DAY($A$5))="","No","Yes"))', "BE123C", "@")
+    card(daily, 7, 7, 1, "SDO Day", '=IF(NOT('+INYR('$A$5')+f'),"",IF(INDEX({sdoref},1,DAY($A$5))="","No","Yes"))', "BE123C", "@")
 header(daily, 10, 1, ["Callsign", "Crew Member", "Role", "AM", "PM", "NIGHT", "WD"])
 chooser = "CHOOSE(" + MIX("$A$5") + "," + ",".join(f"'{mon}'!$D${G0}:$AH${GL}" for mon in MONTHS13) + ")"
 for i in range(N):

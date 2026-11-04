@@ -1184,7 +1184,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z164</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z165</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2051,11 +2051,14 @@ function readSylLog(st) {
 const SYL_RANK = c => ({ TRAINEE: 0, "CAT D": 1, "CAT C": 2, "CAT B": 3, "CAT A": 4 })[String(c || "").toUpperCase().trim()] ?? -1;
 const SYL_CATC = g => ({ "CAT D": ["#7f1d1d", "#b91c1c"], "CAT C": ["#713f12", "#eab308"], "CAT B": ["#1e3a8a", "#93c5fd"], "CAT A": ["#020617", "#e2e8f0"] })[String(g).toUpperCase()] || (/instructor/i.test(g) ? ["#1e3a8a", "#60a5fa"] : ["#14532d", "#22c55e"]);
 const sylInsStage = stg => /instructor/i.test(stg.gives);
-const sylIsSel = (Y, p) => /instructor/i.test(p.role) || (Y.sel || []).some(c => same(c, p.id));
+// z165: a person is keyed by callsign, or by name when the callsign is blank (several blank callsigns used to select together and share results)
+const sylKey = p => str(p.id) || str(p.name);
+const sylMine = (p, who) => (str(p.id) && same(who, p.id)) || (str(p.name) && same(who, p.name));
+const sylIsSel = (Y, p) => /instructor/i.test(p.role) || (Y.sel || []).some(c => sylMine(p, c));
 const sylHeld = (p, stg) => /instructor/i.test(stg.gives) ? /instructor/i.test(p.role) : SYL_RANK(p.cat) >= SYL_RANK(stg.gives) && SYL_RANK(stg.gives) >= 0;
 // one person's whole path: per stage its items with state, and the stage they are working on
 function sylPath(Y, st, p) {
-  const log = st.syl.filter(x => same(x.id, p.id)).sort((a, b) => a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : a.r - b.r);
+  const log = st.syl.filter(x => sylMine(p, x.id)).sort((a, b) => a.iso < b.iso ? -1 : a.iso > b.iso ? 1 : a.r - b.r);
   const stages = Y.stages.map(stg => {
     const held = sylHeld(p, stg), skip = !held && sylInsStage(stg) && !sylIsSel(Y, p), its = Y.items.filter(it => same(it.stage, stg.name));
     const names = []; its.forEach(it => { const t = it.track || "Items"; if (!names.some(n => same(n, t))) names.push(t); });   // tracks in order of first appearance
@@ -2088,20 +2091,20 @@ function renderSyl() {
   if (sylEd.on) { sylEdRender(Y, st, canEd); return; }
   const crew = st.roster.map((p, i) => ({ p, i })).filter(x => x.p.name && !/inactive/i.test(x.p.status));
   const P = crew.map(x => Object.assign(x, { path: sylPath(Y, st, x.p) }));
-  if (!P.some(x => same(x.p.id, sylSel.id))) sylSel = { id: P[0] ? P[0].p.id : null, stage: null, code: null };
+  if (!P.some(x => same(sylKey(x.p), sylSel.id))) sylSel = { id: P[0] ? sylKey(P[0].p) : null, stage: null, code: null };
   const line = x => { const S2 = x.path.stages, w = x.path.wk;
     if (w < 0) return ["Path complete", 1];
     const s = S2[w];
     return [s.complete ? "<b class='sylgold'>" + esc(s.stg.name) + " complete, awaiting paperwork</b>" : "working on " + esc(s.stg.name) + (s.stg.gives ? " (to " + esc(s.stg.gives) + ")" : "") + " · " + s.done + " of " + s.n, s.n ? s.done / s.n : 0]; };
   const list = P.map(x => { const [av, col] = sylAv(x.p), [txt, f] = line(x), out = x.path.outs[0];
-    return "<div class='sylp" + (same(x.p.id, sylSel.id) ? " on" : "") + "' data-sylp='" + esc(x.p.id) + "'><div class='av' style='background:" + col + "'>" + av + "</div><div class='tx'><b>" + esc(x.p.id) + "</b> " + esc(x.p.name) +
+    return "<div class='sylp" + (same(sylKey(x.p), sylSel.id) ? " on" : "") + "' data-sylp='" + esc(sylKey(x.p)) + "'><div class='av' style='background:" + col + "'>" + av + "</div><div class='tx'><b>" + esc(x.p.id) + "</b> " + esc(x.p.name) +
       "<small>" + txt + (out ? " <b class='sylred'>⛔ " + esc(sylShort(out.x.it)) + "</b>" : "") + "</small><div class='bar'><i style='width:" + Math.round(f * 100) + "%;" + (f >= 1 ? "background:#22c55e" : "") + "'></i></div></div></div>"; }).join("");
   const outs = P.flatMap(x => x.path.outs.map(o => esc(x.p.id) + " · " + esc(sylShort(o.x.it)) + " (" + esc(o.s.stg.name) + ")"));
   const side = "<div class='sylset'><b>" + esc(st.dept) + " syllabus</b><br>Default chances per item: <b>" + Y.defCh + "</b><br>" + Y.items.length + " item" + (Y.items.length === 1 ? "" : "s") + " in " + Y.stages.length + " stage" + (Y.stages.length === 1 ? "" : "s") + "." +
     (canEd ? "<div style='margin-top:6px'><button class='btn primary syeopen' data-syeopen='1'>✎ Edit syllabus items</button></div>" : "<br>Set on the Syllabus sheets of " + esc(st.dept) + "'s planner file.") +
     (st.hasSyl ? "" : "<br><b class='sylred'>" + esc(st.dept) + "'s planner has no Syllabus Log sheet yet, so results can't be entered.</b>") + "</div>" +
     (outs.length ? "<div class='sylouts'><b>" + outs.length + " out of chances</b><br>" + outs.join("<br>") + "</div>" : "");
-  const me = P.find(x => same(x.p.id, sylSel.id));
+  const me = P.find(x => same(sylKey(x.p), sylSel.id));
   $("sylWrap").innerHTML = "<div class='syllist'><h3><span>" + esc(st.dept) + " crew</span><span>Path</span></h3>" + (list || "<p class='muted'>No crew on the Roster.</p>") + side + "</div><div class='syltree' id='sylTree'></div>";
   if (me) sylTree(Y, st, me, ed);
 }
@@ -6117,7 +6120,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z164 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z165 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

@@ -228,6 +228,10 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 **Guide parts decided:** Getting started, Planners, Master Planner (drafted), Duty Planner, Ops Room; My Lodestar left out for now. Rebuild the PDF with `node guide/make_shots.js` then `node guide/make_pdf.js` (dashboard built first).
 **Rule reminder:** do not run `dashboard --release` unless Brandon asks (it was run by mistake once on 4 Nov; it wrote nothing).
 
+## z165 Syllabus: crew with no callsign (4 Nov)
+
+Brandon: on Syllabus Tracking four people were highlighted at once. They were the crew with a blank callsign: the list selected by callsign, so every blank matched, and their Syllabus Log results would also have been shared. Now a person is keyed by callsign, or by name when the callsign is blank (`sylKey`, `sylMine`; also the instructor-training list in Settings B8). The planner grid already skips Syllabus Log links for people without a callsign. Test `blank_callsigns_select_one_person` in `tests/syllabus_stages.test.js` (7/7; fails on z164); syllabus_edit 12/12, my_lodestar 65/65. A result entered under a name stays matched when a callsign is typed later (the log matches callsign or name).
+
 ## z164 Leave and MC listed downwards (4 Nov)
 
 Brandon: the Ops Room Leave and MC card showed the names side by side with a sideways scrollbar. Now one name per line (CSS `.olv .dw` is a column flex). Test `leave_and_mc_names_listed_downwards` in `tests/ops_room.test.js` (56/57; the one failure is the known stale sample test).

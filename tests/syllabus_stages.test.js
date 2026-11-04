@@ -7,6 +7,19 @@ const test = (name, fn, opts) => tests.push({ name, fn, opts });
 const openSyl = (page, id) => page.evaluate(id => { document.querySelector("nav.tabs button[data-v='syl']").click(); if (id) { sylSel = { id, stage: null, code: null }; renderSyl(); } }, id);
 const pathOf = (page, id) => page.evaluate(id => { const p = S.roster.find(x => x.id === id), P = sylPath(S.sylDef, S, p); return { wk: P.wk < 0 ? null : P.stages[P.wk].stg.name, skip: P.stages.filter(s => s.skip).map(s => s.stg.name) }; }, id);
 
+test("blank_callsigns_select_one_person", async ({ page }) => {   // z165: crew with no callsign were all highlighted together and shared results
+  await page.evaluate(() => { const L = S.roster.filter(p => p.name && !/inactive/i.test(p.status)); L[1].id = ""; L[2].id = ""; L[3].id = ""; });
+  await openSyl(page, null);
+  const nm = await page.evaluate(() => S.roster.filter(p => p.name && !p.id && !/inactive/i.test(p.status)).map(p => p.name));
+  await page.click("[data-sylp='" + nm[1] + "']");
+  const on = await page.evaluate(() => [...document.querySelectorAll(".sylp.on")].map(x => x.dataset.sylp));
+  assert.deepStrictEqual(on, [nm[1]]);
+  const it = await page.evaluate(n => { const P = sylPath(S.sylDef, S, S.roster.find(p => p.name === n)), s = P.stages[P.wk >= 0 ? P.wk : 0]; return s.all.find(x => !x.pass).it.code; }, nm[1]);
+  await page.evaluate(code => { sylSel.code = code; renderSyl(); }, it);
+  await page.fill("#sylDate", "2026-10-14"); await page.click("[data-sylres='Pass']");
+  const d = await page.evaluate(names => names.map(n => sylPath(S.sylDef, S, S.roster.find(p => p.name === n)).stages.flatMap(s => s.all).filter(x => x.pass).length), nm);
+  assert.ok(d[1] > d[0] && d[1] > d[2], "only the selected person gets the pass: " + d);
+});
 test("builder_stages_by_cat_held", async ({ page }) => {
   const r = await page.evaluate(() => S.sylDef.stages.map(s => s.name + ">" + s.gives));
   assert.deepStrictEqual(r, ["OCU>CAT D", "CAT D>CAT C", "CAT C>CAT B", "CAT B>CAT A", "CAT A>Instructor"]);

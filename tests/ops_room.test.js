@@ -140,6 +140,13 @@ test("leave_and_mc_has_no_department_labels", async ({ page }) => {
   assert.ok(t.text.includes(r.who) && t.text.includes(r.code), t.text);
   assert.strictEqual(t.dn, 0, "no department label"); assert.strictEqual(t.chips, 0, "no department chips in down-chit or ground programme");
 }, ED);
+test("leave_and_mc_names_listed_downwards", async ({ page }) => {   // z164: one name per line, no sideways scroll
+  await PLAN_SET(page, "Pilot", "leave", DAY, [0], 0); await PLAN_SET(page, "SUP 1", "leave", DAY, [0], 0); await PLAN_SET(page, "TACCO", "leave", DAY, [0], 0);
+  const r = await page.evaluate(() => { const c = document.querySelector("#opsSide .olv"), p = [...c.querySelectorAll(".olp")].map(x => x.getBoundingClientRect());
+    return { n: p.length, lefts: p.map(b => Math.round(b.left)), tops: p.map(b => Math.round(b.top)), sideways: c.scrollWidth > c.clientWidth + 1 }; });
+  assert.ok(r.n >= 3, JSON.stringify(r)); assert.ok(new Set(r.lefts).size === 1, "same left edge " + r.lefts);
+  assert.ok(r.tops.every((t, i) => !i || t > r.tops[i - 1]), "each below the last " + r.tops); assert.ok(!r.sideways, "no sideways scroll");
+}, ED);
 test("remarks_and_ground_programme_swapped", async ({ page }) => {
   await goOps(page, DAY);
   const o = await page.evaluate(() => [...document.querySelectorAll("#opsSide > .card, #opsSide > .stack")].map(c => c.classList.contains("rmk") ? "rmk" : c.classList.contains("gp") ? "gp" : c.classList.contains("olv") ? "olv" : "stack"));

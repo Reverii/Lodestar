@@ -228,6 +228,10 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 **Guide parts decided:** Getting started, Planners, Master Planner (drafted), Duty Planner, Ops Room; My Lodestar left out for now. Rebuild the PDF with `node guide/make_shots.js` then `node guide/make_pdf.js` (dashboard built first).
 **Rule reminder:** do not run `dashboard --release` unless Brandon asks (it was run by mistake once on 4 Nov; it wrote nothing).
 
+## z164 Leave and MC listed downwards (4 Nov)
+
+Brandon: the Ops Room Leave and MC card showed the names side by side with a sideways scrollbar. Now one name per line (CSS `.olv .dw` is a column flex). Test `leave_and_mc_names_listed_downwards` in `tests/ops_room.test.js` (56/57; the one failure is the known stale sample test).
+
 ## Earlier handoff (2 Nov 2026, after z130)
 
 **Flight codes missing from a department (2 Nov): solved in z131** (see the z131 section; waiting for his test on SharePoint).

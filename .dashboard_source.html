@@ -162,8 +162,9 @@ tr.blkend td,tr.blkend th{border-bottom:2px solid var(--s400)}
 tr.inactive .who b{color:var(--s400)!important;text-decoration:line-through}
 td.mpdiff{outline:2px solid #f59e0b;outline-offset:-2px}
 #pop .grp .to{float:right;text-transform:none;font-weight:700;color:#1d4ed8;letter-spacing:0}#pop .grp .to.here{color:#15803d}
+#popRole .sor{margin-top:8px}#popRole .sor .sr{display:grid;grid-template-columns:78px 1fr;gap:6px;align-items:center;margin-top:5px;text-transform:none}#popRole .sor .l{font-size:11.5px;font-weight:800;color:var(--s800)}#popRole .sor .l small{display:block;font-weight:600;font-size:10.5px;color:var(--s500)}#popRole .sor .b{display:flex;gap:4px}#popRole .sor button.on.p{background:#16a34a;border-color:#16a34a}#popRole .sor button.on.n{background:#64748b;border-color:#64748b}#popRole .sor .hrs{margin-top:7px;padding:5px 7px;border-radius:5px;background:#eff6ff;color:#1e3a8a;font-size:11.5px;font-weight:600;text-transform:none}
 #popRole{padding:8px 8px 0;font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase}#popRole .rbtn{display:flex;gap:5px;margin-top:4px}#popRole button{flex:1;border:1px solid var(--s300);border-radius:5px;padding:5px 0;font-weight:700;font-size:11px;cursor:pointer;background:#f1f5f9;color:#1e293b}#popRole button.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}#popRole button.on[data-role='PAX']{background:#16a34a;border-color:#16a34a}
-td i.rtag{display:block;font-style:normal;font-size:8.5px;font-weight:800;line-height:1.1;letter-spacing:.3px;color:#1d4ed8}td i.rtag.pax{color:#15803d}
+td i.rtag{display:block;font-style:normal;font-size:8.5px;font-weight:800;line-height:1.1;letter-spacing:.3px;color:#1d4ed8}td i.rtag.pax{color:#15803d}td i.rtag.sor{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}td i.rtag.sor.no{color:#b91c1c}
 #pop .none{padding:4px 10px 8px;font-size:12px;color:var(--s500);font-style:italic}
 td.c.hassyl{position:relative;line-height:1.1}td.c.hassyl::before{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 7px 7px 0;border-color:transparent #f59e0b transparent transparent}td.c.hassyl.hasnote::before{right:auto;left:0;border-width:7px 7px 0 0;border-color:#f59e0b transparent transparent transparent}
 td.c .sytag{display:block;width:max-content;margin:1px auto 0;font-size:9px;font-weight:800;line-height:1.2;padding:0 4px;border-radius:3px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d}td.c .sytag.ok{background:#dcfce7;color:#166534;border-color:#86efac}td.c .sytag.no{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
@@ -322,6 +323,7 @@ tr.master td.c{background:#eff6ff;color:var(--blue);height:54px;line-height:1.2}
 tr.master td.c .nt{font-weight:500;font-style:italic;font-size:11px;color:#92400e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:10px}
 tr.master td.c.warn .nt,tr.master td.c.short .nt{color:#fff}
 tr.master td.c .tm{font-weight:500;font-size:11.5px;opacity:.9;min-height:13px}
+tr.master td.c .mso{font-size:10px;font-weight:800;letter-spacing:.2px}
 tr.master td.c .mx{margin-top:3px;padding-top:2px;border-top:1px dashed currentColor}
 tr.master td.c.ok{background:#dcfce7!important;color:#166534}
 tr.master td.c.warn{background:#dc2626!important;color:#fff}
@@ -1185,7 +1187,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z174</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z175</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1806,16 +1808,17 @@ function loadWorkbook(buf, name, handle, other) {
     }
   }
   // Role Tags sheet (made by the dashboard on the first tag): AC / Pax on a crew flight cell, header row 1, rows 2.. (A date, B shift, C callsign or name, D tag)
-  st.roleTags = new Map(); st.roleRow = new Map(); st.roleUsed = new Set();
+  st.roleTags = new Map(); st.roleRow = new Map(); st.roleUsed = new Set(); st.roleSor = new Map();   // z175: E "Flights" = Crew / Pax / Not on per flight of a running change ("P,C")
   if (WB.paths[ROLE_SHEET]) {
     const c = readCells(ROLE_SHEET);
     for (let r = ROLE_ROW0; r < ROLE_ROW0 + ROLE_N; r++) {
-      const a = c["A" + r], who = str(c["C" + r]), tag = str(c["D" + r]).toUpperCase(), si = SHIFTS.indexOf(str(c["B" + r]).toUpperCase());
-      if (a != null || who || tag) st.roleUsed.add(r);
-      if (typeof a !== "number" || si < 0 || !who || (tag !== "AC" && tag !== "PAX")) continue;
+      const a = c["A" + r], who = str(c["C" + r]), tag0 = str(c["D" + r]).toUpperCase(), si = SHIFTS.indexOf(str(c["B" + r]).toUpperCase());
+      const sor = str(c["E" + r]).toUpperCase().replace(/\s+/g, ""), sorOk = /^[CPN](,[CPN]){1,2}$/.test(sor), tag = tag0 === "AC" || tag0 === "PAX" ? tag0 : "";
+      if (a != null || who || tag0 || sor) st.roleUsed.add(r);
+      if (typeof a !== "number" || si < 0 || !who || (!tag && !sorOk)) continue;
       const iso = serialToISO(a), D = ymd(iso, st.year); if (D.y !== st.year) continue;
       let ci = st.roster.findIndex(p => p.id && same(p.id, who)); if (ci < 0) ci = st.roster.findIndex(p => p.name && same(p.name, who)); if (ci < 0) continue;
-      const k = D.mi + ":" + (gridRow(ci, si, st)) + ":" + D.d; st.roleTags.set(k, tag); st.roleRow.set(k, r);
+      const k = D.mi + ":" + (gridRow(ci, si, st)) + ":" + D.d; if (tag) st.roleTags.set(k, tag); if (sorOk) st.roleSor.set(k, sor.split(",")); st.roleRow.set(k, r);
     }
   }
   // Medical Chits sheet: up-chits (and hand-typed down-chits), rows 6..205 (A callsign, B down-chit, C up-chit, D up-chitted by, E remarks)
@@ -1860,7 +1863,7 @@ function setNote(mi, r, d, tx) {
   put("Cell Notes", "E" + row, tx); S.notes.set(k, tx); return true;
 }
 // ---------- role tags (AC / Pax): a planner's tag on a crew flight cell, kept in the department file's own Role Tags sheet
-const ROLE_SHEET = "Role Tags", ROLE_ROW0 = 2, ROLE_N = 1500, ROLE_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="4" width="14" customWidth="1"/>';
+const ROLE_SHEET = "Role Tags", ROLE_ROW0 = 2, ROLE_N = 1500, ROLE_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="5" width="14" customWidth="1"/>', ROLE_HEAD = ["Date", "Shift", "Callsign", "Tag", "Flights"];
 // a code is a flight when Activities holds it in the Flight category, or (no Activities row at all) when the Master Planner lists it or a MASTER row of this file carries it
 const isFlightCode = (st, code) => { const a = st.acts.find(x => x.code && same(x.code, code)); if (a) return !!st.cats[CAT_FLIGHT] && same(a.cat, st.cats[CAT_FLIGHT]);
   return !!st.cats[CAT_FLIGHT] && masterCodeSet(st).has(String(code || "").trim().toUpperCase()); };
@@ -1875,16 +1878,57 @@ function masterCodeSet(st) {
 }
 // "AC" | "PAX" | "" for crew grid row r (person i = r/3, shift r%3) on day d of month mi; a tag on a cell that is no longer a flight does not count
 function roleOf(st, mi, r, d) {
-  const k = mi + ":" + r + ":" + d, t = st.roleTags && st.roleTags.get(k); if (!t) return "";
-  const M = st.m[mi], v = M && M.grid[r] && M.grid[r][d]; return v && isFlightCode(st, v) ? t : "";
+  const k = mi + ":" + r + ":" + d, t = (st.roleTags && st.roleTags.get(k)) || "", e = st.roleSor && st.roleSor.get(k); if (!t && !e) return "";
+  const M = st.m[mi], v = M && M.grid[r] && M.grid[r][d]; if (!v || !isFlightCode(st, v)) return "";
+  if (e) { const f = sorOf(st, mi, r, d); if (f) return f.every(x => x === "P") ? "PAX" : t === "PAX" ? "" : t; }   // Pax on some flights only: not a passenger on the whole flight
+  return t;
+}
+// ---------- z175: running change (a flight with 2 or 3 sorties on the Master Planner, shown as Flight 1/2, Flight 2/2...)
+// the number of sorties of a flight code in a shift, from the Master Planner (1 when it is not open or the flight is not on it)
+function cellSorties(st, mi, s, d, code) {
+  const mb = masterBook(); if (!mb || !code || (st && mb.S.year !== st.year) || s > 2) return 1;
+  const f = mpShift(mb.S, mi, d, s).find(x => x.code && sameCode(x.code, code)); return f ? flSort(f) : 1;
+}
+// per flight of a running change, what a crew cell does on it: "C" crew, "P" passenger, "N" not on; null on an ordinary flight
+function sorOf(st, mi, r, d) {
+  const M = st.m[mi], v = M && M.grid[r] && M.grid[r][d]; if (!v || isWdRow(r, st)) return null;
+  const n = cellSorties(st, mi, rowShift(r, st), d, v); if (n < 2) return null;
+  const k = mi + ":" + r + ":" + d, t = (st.roleTags && st.roleTags.get(k)) || "", e = st.roleSor && st.roleSor.get(k);
+  return Array.from({ length: n }, (_, j) => e && e[j] ? e[j] : t === "PAX" && !e ? "P" : "C");
+}
+const sorName = (j, n) => "Flight " + (j + 1) + "/" + n;
+// "PAX FLIGHT 1/2", "FLIGHT 1/2 ONLY", "NOT ON" ("" when crew on every flight, or a passenger on every flight: the PAX tag says that)
+function sorLabel(f) {
+  if (!f) return ""; const n = f.length, L = t => f.map((x, j) => x === t ? (j + 1) + "/" + n : "").filter(Boolean), C = L("C"), P = L("P"), N = L("N");
+  if (!C.length) return P.length ? "" : "NOT ON";
+  return [P.length ? "PAX FLIGHT " + P.join(", ") : "", N.length ? "FLIGHT " + C.join(", ") + " ONLY" : ""].filter(Boolean).join(" · ");
+}
+const sorText = f => f ? f.map((x, j) => sorName(j, f.length) + ": " + ({ C: "crew", P: "passenger", N: "not on" })[x]).join(", ") : "";
+// the share of each flight in a running change: "1000H-1300H", 2 -> [["1000H","1130H"],["1130H","1300H"]] (null without a usable range)
+function sortieTimes(time, n) {
+  const [a, b] = opsTimes(time, 0), x = hhmm(a), y = hhmm(b); if (x == null || y == null || n < 2) return null;
+  const span = ((y - x) % 1440 + 1440) % 1440; if (!span) return null;
+  return Array.from({ length: n }, (_, j) => [fmtHM(x + Math.round(j * span / n)) + "H", fmtHM(x + Math.round((j + 1) * span / n)) + "H"]);
 }
 // set (AC / PAX) or clear ("") the tag on a cell of the current book
+// None and Pax apply to the whole flight (they clear a per-flight choice); AC keeps it (the AC flies the flights marked crew)
 function roleSet(mi, r, d, tag) {
+  const k = mi + ":" + r + ":" + d, e = S.roleSor.get(k);
+  return roleWrite(mi, r, d, tag, tag === "AC" && e ? e.join(",") : "");
+}
+// a running change: f = ["P", "C"]; crew on every flight clears it, a passenger on every flight is the PAX tag
+function sorSet(mi, r, d, f) {
+  const k = mi + ":" + r + ":" + d, t = S.roleTags.get(k) || "";
+  if (f.every(x => x === "C")) return roleWrite(mi, r, d, t === "PAX" ? "" : t, "");
+  if (f.every(x => x === "P")) return roleWrite(mi, r, d, "PAX", "");
+  return roleWrite(mi, r, d, t === "PAX" ? "" : t, f.join(","));
+}
+function roleWrite(mi, r, d, tag, e) {
   if (!mayEdit(cur.b)) return false;
-  const k = mi + ":" + r + ":" + d, old = S.roleTags.get(k) || ""; if (tag === old) return true;
-  sheetEnsure(WB, ROLE_SHEET, ["Date", "Shift", "Callsign", "Tag"], ROLE_COLS);
+  const k = mi + ":" + r + ":" + d, old = S.roleTags.get(k) || "", oe = (S.roleSor.get(k) || []).join(","); if (tag === old && e === oe) return true;
+  sheetEnsure(WB, ROLE_SHEET, ROLE_HEAD, ROLE_COLS);
   let row = S.roleRow.get(k);
-  if (!tag) { if (row) { ["A", "B", "C", "D"].forEach(L => put(ROLE_SHEET, L + row, "")); S.roleTags.delete(k); S.roleRow.delete(k); S.roleUsed.delete(row); } return true; }
+  if (!tag && !e) { if (row) { ["A", "B", "C", "D", "E"].forEach(L => put(ROLE_SHEET, L + row, "")); S.roleTags.delete(k); S.roleSor.delete(k); S.roleRow.delete(k); S.roleUsed.delete(row); } return true; }
   if (!row) {
     row = ROLE_ROW0; while (S.roleUsed.has(row) && row < ROLE_ROW0 + ROLE_N) row++;
     if (row >= ROLE_ROW0 + ROLE_N) { toast("The Role Tags sheet is full. Clear old rows in Excel to make room.", 5000); return false; }
@@ -1892,10 +1936,14 @@ function roleSet(mi, r, d, tag) {
     put(ROLE_SHEET, "A" + row, dateSerial(S.year, mi, d)); put(ROLE_SHEET, "B" + row, ROW_LABELS[rowShift(r)]); put(ROLE_SHEET, "C" + row, p.id || p.name);
     S.roleUsed.add(row); S.roleRow.set(k, row);
   }
-  put(ROLE_SHEET, "D" + row, tag); S.roleTags.set(k, tag); return true;
+  put(ROLE_SHEET, "D" + row, tag); if (tag) S.roleTags.set(k, tag); else S.roleTags.delete(k);
+  if (e || oe) { put(ROLE_SHEET, "E1", "Flights"); put(ROLE_SHEET, "E" + row, e); }
+  if (e) S.roleSor.set(k, e.split(",")); else S.roleSor.delete(k);
+  return true;
 }
 // the AC / PAX label on a planner cell
-const roleChip = (mi, r, d) => { const t = roleOf(S, mi, r, d); return t ? "<i class='rtag " + t.toLowerCase() + "'>" + (t === "AC" ? "AC" : "PAX") + "</i>" : ""; };
+const roleChip = (mi, r, d) => { const t = roleOf(S, mi, r, d), f = sorOf(S, mi, r, d), l = sorLabel(f);
+  return (t ? "<i class='rtag " + t.toLowerCase() + "'>" + (t === "AC" ? "AC" : "PAX") + "</i>" : "") + (l ? "<i class='rtag sor" + (l === "NOT ON" ? " no" : /^PAX/.test(l) ? " pax" : "") + "' title='" + esc(sorText(f)) + "'>" + esc(l) + "</i>" : ""); };
 // ---------- Ops Room ground programme edits: the Ground Rows sheet of the Ops Room file (made by the dashboard on the first edit)
 const GRR_SHEET = "Ground Rows", GRR_ROW0 = 2, GRR_N = 600, GRR_HEAD = ["Date", "Id", "Kind", "Time", "Activity", "Location", "Personnel", "Saved"],
   GRR_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="3" width="14" customWidth="1"/><col min="4" max="4" width="12" customWidth="1"/><col min="5" max="7" width="26" customWidth="1"/><col min="8" max="8" width="17" customWidth="1"/>';
@@ -3005,7 +3053,7 @@ function dvFormulaFix(files) {
 function buildXlsx() {
   const bySheet = {};
   for (const e of dirty.values()) (bySheet[e.sheet] = bySheet[e.sheet] || []).push(e);
-  if (bySheet[ROLE_SHEET]) sheetEnsure(WB, ROLE_SHEET, ["Date", "Shift", "Callsign", "Tag"], ROLE_COLS);
+  if (bySheet[ROLE_SHEET]) sheetEnsure(WB, ROLE_SHEET, ROLE_HEAD, ROLE_COLS);
   if (bySheet[GRR_SHEET]) sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
   if (bySheet[FR_SHEET]) sheetEnsure(WB, FR_SHEET, FR_HEAD, FR_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
@@ -3590,7 +3638,7 @@ function monthStats(mi, A) {
   const crew = [], day = [];
   const hasB = hasPlan(S, "BDO");
   for (let d = 0; d < 31; d++) { const ref = sdoRef(y, mi, d), b = d < dim && hasB && !!plan(S, "BDO")[ref], sd = d < dim && !!S.sdo[ref];
-    day.push({ sdoDay: b || sd, isB: b, isS: sd, duty: b && sd ? "BDO+SDO" : b ? "BDO" : sd ? "SDO" : "", nB: 0, nS: 0, fl: [0, 0, 0], hrs: 0, sdo: 0, gd: 0, lv: 0, off: 0, planned: [0, 0, 0], filled: [false, false, false], status: [null, null, null] }); }
+    day.push({ sdoDay: b || sd, isB: b, isS: sd, duty: b && sd ? "BDO+SDO" : b ? "BDO" : sd ? "SDO" : "", nB: 0, nS: 0, fl: [0, 0, 0], hrs: 0, sdo: 0, gd: 0, lv: 0, off: 0, planned: [0, 0, 0], filled: [false, false, false], status: [null, null, null], sor: [{}, {}, {}], gap: [[], [], []] }); }
   for (let i = 0; i < N; i++) {
     const t = { fl: 0, hrs: 0, gd: 0, sdo: 0, lv: 0 };
     for (let d = 0; d < 31; d++) {
@@ -3602,7 +3650,11 @@ function monthStats(mi, A) {
         if (d < dim) { if (cu === "BDO") day[d].nB++; else if (cu === "SDO") day[d].nS++; }
         if (a.ci === CAT_FLIGHT && cxlOf(S, S.roster[i].id, mi, d, s)) continue;   // cancelled in the Ops Room
         if (a.ci === CAT_FLIGHT && roleOf(S, mi, gridRow(i, s), d) === "PAX") continue;   // a passenger: not planned flying (Excel's own totals still count the cell)
-        if (a.ci === CAT_FLIGHT) { const hh = cellHrs(M, s, d, M.grid[gridRow(i, s)][d]); t.fl += 1; t.hrs += hh; if (d < dim) { day[d].fl[s] += 1; day[d].hrs += hh; } }
+        // z175: on a running change the hours are shared out between the flights, and each flight the person is crew on counts
+        const sf = a.ci === CAT_FLIGHT ? sorOf(S, mi, gridRow(i, s), d) : null, nc = sf ? sf.filter(x => x === "C").length : 1;
+        if (sf && !nc) continue;   // not crew on any of its flights
+        if (sf && d < dim) { const ck = String(M.grid[gridRow(i, s)][d]).trim().toUpperCase(), g = day[d].sor[s]; g[ck] = g[ck] || Array(sf.length).fill(0); sf.forEach((x, j) => { if (x === "C") g[ck][j]++; }); }
+        if (a.ci === CAT_FLIGHT) { const hh = cellHrs(M, s, d, M.grid[gridRow(i, s)][d]) * (sf ? nc / sf.length : 1); t.fl += 1; t.hrs += hh; if (d < dim) { day[d].fl[s] += nc; day[d].hrs += hh; } }
       }
       if (rp() > 3) { const w = look(M.grid[gridRow(i, 3)][d]); if (wdAllowed(w)) cats.add(w.ci); }   // the WD row adds its ground or admin item to the day, counted once
       if (cats.has(CAT_GD)) t.gd++; if (cats.has(CAT_SQD)) t.sdo++; if (cats.has(CAT_LEAVE)) t.lv++;
@@ -3613,14 +3665,17 @@ function monthStats(mi, A) {
   let unc = 0, short = 0, plannedTot = 0, sdoGaps = 0, sdoUncov = 0;
   for (let d = 0; d < dim; d++) {
     for (let s = 0; s < 3; s++) {
-      for (let k = 0; k < 2; k++) { const v = M.master[s * 2 + k][d]; if (v) { day[d].filled[s] = true; const a = look(v); day[d].planned[s] += a ? a.sorties : 0; } }
+      // z175: a running change plans one sortie per flight (2 or 3); each of its flights needs someone from this department
+      const gaps = day[d].gap[s], need = v => { const n = cellSorties(S, mi, s, d, v); if (n > 1) { const g = day[d].sor[s][String(v).trim().toUpperCase()]; if (g) for (let j = 0; j < n; j++) if (!g[j]) gaps.push(String(v).trim() + " " + sorName(j, n)); } return n; };
+      for (let k = 0; k < 2; k++) { const v = M.master[s * 2 + k][d]; if (v) { day[d].filled[s] = true; const a = look(v); day[d].planned[s] += a ? need(v) : 0; } }
       const more = String(M.mnote[s * 2 + 1][d] || "").match(MORE_RE);   // "+N more: CODE TIME, ..." from the Master Planner
-      if (more) more[2].split(",").forEach(x => { const v = moreSplit(x)[0]; if (!v) return; day[d].filled[s] = true; const a = look(v); day[d].planned[s] += a ? a.sorties : 1; });
+      if (more) more[2].split(",").forEach(x => { const v = moreSplit(x)[0]; if (!v) return; day[d].filled[s] = true; day[d].planned[s] += need(v); });
       plannedTot += day[d].planned[s];
       if (day[d].filled[s]) {
         const c = day[d].fl[s];
-        day[d].status[s] = c === 0 ? "warn" : c < day[d].planned[s] ? "short" : "ok";
-        if (c === 0) unc++; else if (c < day[d].planned[s]) short++;
+        const sh = c < day[d].planned[s] || day[d].gap[s].length > 0;
+        day[d].status[s] = c === 0 ? "warn" : sh ? "short" : "ok";
+        if (c === 0) unc++; else if (sh) short++;
       }
     }
     if (day[d].sdo !== 1) sdoGaps++;
@@ -4323,7 +4378,7 @@ function renderPlanner() {
     for (let d = 0; d < dim; d++) {
       const v = M.master[r][d], stt = v ? st.day[d].status[s] : null;
       const pre = stt === "warn" ? "⚠ " : stt === "short" ? "! " : "";
-      const tip = stt === "warn" ? "Planned but nobody in this shift is flying" : stt === "short" ? "Fewer crew sorties (" + st.day[d].fl[s] + ") than planned (" + st.day[d].planned[s] + ")" : "";
+      const tip = stt === "warn" ? "Planned but nobody in this shift is flying" : stt === "short" ? (st.day[d].gap[s].length ? st.day[d].gap[s].map(g => g + " has nobody from " + S.dept).join("\n") : "Fewer crew sorties (" + st.day[d].fl[s] + ") than planned (" + st.day[d].planned[s] + ")") : "";
       const tm = M.mtime[r][d], nt = M.mnote[r][d];
       const md = mset.has(r + ":" + d), mpv = md ? mb.S.mp[mi] : null, w = md ? deptSlots(mb.S, mi, d, S.dept)[r] : null, mtip = md ? "Master Planner: " + (mpv.status[d] ? "no flying (" + mpv.status[d] + ")" : w.code ? flText(w) + (w.note ? " (" + w.note + ")" : "") : "nothing for " + S.dept) : "";
       const nofly = String(M.mnote[0][d] || "").toUpperCase().startsWith(NOFLY);
@@ -4332,7 +4387,8 @@ function renderPlanner() {
       const xs = more ? more[2].split(",").map(x => x.trim()).filter(Boolean).map(moreSplit) : [];
       const nt2 = more ? String(nt).slice(0, more.index).replace(/\s*·\s*$/, "") : nt;
       const xh = xs.map(([c, t]) => "<div class='mx'>" + esc(pre + c) + "</div><div class='tm'>" + esc(normTime(t)) + "</div>").join("");
-      h += "<td class='c mc" + (stt ? " " + stt : "") + (md ? " mpdiff" : "") + (nofly ? " nofly" : "") + "' data-k='m:" + r + ":" + d + "' title='" + esc([tip, mtip, nt].filter(Boolean).join("\n")) + "'><div>" + esc(pre + v) + "</div><div class='tm'>" + esc(normTime(tm)) + "</div>" + xh + "<div class='nt'>" + esc(nt2) + "</div></td>";
+      const nso = v ? cellSorties(S, mi, s, d, v) : 1, so = nso > 1 ? "<div class='mso'>" + nso + " SORTIES</div>" : "";   // z175: a running change
+      h += "<td class='c mc" + (stt ? " " + stt : "") + (md ? " mpdiff" : "") + (nofly ? " nofly" : "") + "' data-k='m:" + r + ":" + d + "' title='" + esc([tip, mtip, nt].filter(Boolean).join("\n")) + "'><div>" + esc(pre + v) + "</div><div class='tm'>" + esc(normTime(tm)) + "</div>" + so + xh + "<div class='nt'>" + esc(nt2) + "</div></td>";
     }
     if (r === 0) h += mpanel(mvis.length);
     h += "</tr>";
@@ -4868,7 +4924,7 @@ function opsCrewOn(y, mi, d) {
       S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < SHIFT_ROWS; s++) { const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][d]; const a = v && A.get(String(v).toUpperCase());
         // standby crew (P1 / P2 / BU) belong to no shift: whichever shift the plan marks, they go in one whole-day list (kept in slot 2 so saved Ops Room rows still match)
         const sbk = a && a.ci !== CAT_FLIGHT && isSb(a.code) ? 2 : -1; if (sbk >= 0 && out.sb[2].some(c => c.dept === S.dept && c.i === i && same(c.code, v))) continue;
-        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: a.ci === CAT_FLIGHT ? roleOf(S, mi, gridRow(i, s), d) : "", note: (S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "" }); } }); });
+        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: a.ci === CAT_FLIGHT ? roleOf(S, mi, gridRow(i, s), d) : "", sor: a.ci === CAT_FLIGHT ? sorOf(S, mi, gridRow(i, s), d) : null, note: (S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "" }); } }); });
   });
   return out;
 }
@@ -4939,8 +4995,28 @@ function opsDay(iso) {
       OPS_SEATS.forEach((z, k) => { if (o.seat[k]) placed.add((z[1] + "|" + o.seat[k]).toLowerCase()); }); } });
     crew[s].forEach(c => { if (placed.has((c.dept + "|" + c.id).toLowerCase())) return; (byDept[c.dept.toLowerCase()] = byDept[c.dept.toLowerCase()] || []).push(c); });
     fl.forEach(x => { x.seats = OPS_SEATS.map(() => Array(x.ac).fill(null)); });
+    // z175: a running change (2 or 3 sorties): each row (Flight 1/2, Flight 2/2...) seats the crew the planners put on that flight. Someone on
+    // every flight sits on every row; with more people than seats, someone not yet seated on this flight goes first. Passengers on a flight
+    // ride on that row with the PAX tag; crew beyond the seats are additional crew on that row. They are then taken off the shift's lists.
+    for (const x of fl) { if (x.ac < 2) continue;
+      x.auto = Array.from({ length: x.ac }, () => ({}));
+      const role = (c, a) => c.sor ? c.sor[a] || "C" : c.tag === "PAX" ? "P" : "C", cap = OPS_SEATS.findIndex(z => z[0] === "Aircraft Captain");
+      for (const dep of [...new Set(OPS_SEATS.map(z => z[1]))]) {
+        const L = byDept[dep.toLowerCase()] || [], on = L.filter(c => sameCode(c.code, x.code)); if (!on.length || !OPS_SEATS.some((z, k) => z[1] === dep && x.need[k])) continue;
+        const ks = OPS_SEATS.map((z, k) => z[1] === dep && x.need[k] ? k : -1).filter(k => k >= 0), used = new Map(), add = (a, c) => (x.auto[a][c.dept] = x.auto[a][c.dept] || []).push(c);
+        for (let a = 0; a < x.ac; a++) {
+          const cand = on.filter(c => role(c, a) === "C").sort((p, q) => (used.get(p) || 0) - (used.get(q) || 0) || on.indexOf(p) - on.indexOf(q)), sat = new Set();
+          const seat = (k, c) => { x.seats[k][a] = c; sat.add(c); used.set(c, (used.get(c) || 0) + 1); };
+          if (ks.includes(cap)) { const c = cand.find(z => z.tag === "AC"); if (c) seat(cap, c); }
+          for (const k of ks) { if (x.seats[k][a]) continue; const c = cand.find(z => !sat.has(z)); if (c) seat(k, c); }
+          cand.filter(c => !sat.has(c)).forEach(c => add(a, c));
+          on.filter(c => role(c, a) === "P").forEach(c => add(a, Object.assign({}, c, { tag: "PAX" })));
+        }
+        on.forEach(c => L.splice(L.indexOf(c), 1));
+      }
+    }
     // a planner's AC tag: the tagged pilot is the Captain of an aircraft and the next pilot planned on the flight (roster order) its co-pilot; two AC tags on a formation take one aircraft each
-    for (const x of fl) { const L = byDept.pilot || [], cap = OPS_SEATS.findIndex(z => z[0] === "Aircraft Captain"), cop = cap + 1; if (!x.need[cap]) continue;
+    for (const x of fl) { const L = byDept.pilot || [], cap = OPS_SEATS.findIndex(z => z[0] === "Aircraft Captain"), cop = cap + 1; if (!x.need[cap] || x.auto) continue;
       const on = L.filter(c => c.tag !== "PAX" && sameCode(c.code, x.code)), acs = on.filter(c => c.tag === "AC").slice(0, x.ac), rest = on.filter(c => !acs.includes(c));
       acs.forEach((c, a) => { x.seats[cap][a] = c; L.splice(L.indexOf(c), 1); const q = x.need[cop] ? rest.shift() : null; if (q) { x.seats[cop][a] = q; L.splice(L.indexOf(q), 1); } }); }
     for (const pass of [0, 1]) for (const x of fl) for (const dep of [...new Set(OPS_SEATS.map(z => z[1]))]) {
@@ -4955,7 +5031,7 @@ function opsDay(iso) {
     // the more senior pilot is the Aircraft Captain
     fl.forEach(x => { for (let a = 0; a < x.ac; a++) { const c = x.seats[0][a], p = x.seats[1][a]; if (c && p && (c.tag === "AC" || p.tag === "AC" ? p.tag === "AC" && c.tag !== "AC" : (ROLE_RANK(p.role) - ROLE_RANK(c.role) || CAT_RANK(p.cat) - CAT_RANK(c.cat)) < 0)) { x.seats[0][a] = p; x.seats[1][a] = c; } } });
     // crew planned on a flight's code beyond its seats (a third SUP 2 on MSN-3.0) ride along as additional crew on it, not dropped
-    fl.forEach(x => { x.auto = Array.from({ length: x.ac }, () => ({})); });
+    fl.forEach(x => { x.auto = x.auto || Array.from({ length: x.ac }, () => ({})); });
     for (const k in byDept) byDept[k] = byDept[k].filter(c => { const x = fl.find(z => sameCode(c.code, z.code) && OPS_SEATS.some((q, j) => same(q[1], c.dept) && z.need[j])); if (!x) return true;
       const a = x.auto.reduce((m, A, i) => (A[c.dept] || []).length < (x.auto[m][c.dept] || []).length ? i : m, 0); (x.auto[a][c.dept] = x.auto[a][c.dept] || []).push(c); return false; });
     for (const k in byDept) spare[s].push(...byDept[k]);
@@ -4965,10 +5041,10 @@ function opsDay(iso) {
   flights.forEach(x => { for (let a = 0; a < x.ac; a++) {
     const key = x.key + "|" + (a + 1), o = ob && ob.fc.get(key) || null;
     const seats = OPS_SEATS.map((z, k) => { const v = o && o.seat[k]; return v ? Object.assign({}, opsPerson(z[1], v, crew[x.s]), { set: true }) : x.seats[k][a]; });
-    const [etd0, eta0] = opsTimes(x.f.time, x.hrs);
+    const tt = x.ac > 1 ? sortieTimes(x.f.time, x.ac) : null, [etd0, eta0] = tt ? tt[a] : opsTimes(x.f.time, x.hrs);   // z175: each flight of a running change has its share of the time
     const etd = o && o.etd || etd0, eta = o && o.eta || eta0;
     // planned duration from ETD / ETA (else the flight code's hours); actual duration from ATD / ATA
-    const pd = opsDur(etd, eta), pdur = pd != null ? pd : x.hrs || null, adur = o && o.atd && o.ata ? opsDur(o.atd, o.ata) : null;
+    const pd = opsDur(etd, eta), pdur = pd != null ? pd : x.hrs ? x.hrs / x.ac : null, adur = o && o.atd && o.ata ? opsDur(o.atd, o.ata) : null;
     // planned additional crew, unless the Ops Room already put them in a seat or on its own additional crew list
     const xt = opsXtra(o), auto = {}; Object.entries(x.auto[a] || {}).forEach(([dep, L]) => { const M = L.filter(c => !seats.some(z => z && same(z.dept, c.dept) && same(z.id, c.id)) && !(xt[dep] || []).some(id => same(id, c.id))); if (M.length) auto[dep] = M; });
     const pax = o && String(o.pax || "").trim() ? paxList(o) : Object.values(x.auto[a] || {}).flat().filter(c => c.tag === "PAX" && !seats.some(z => z && same(z.dept, c.dept) && same(z.id, c.id))).map(c => c.id);
@@ -5160,7 +5236,7 @@ function opsTable(D, rows, ed) {
     const cs = r.o && r.o.cs || "";
     h += "<tr class='f " + st + (fi % 2 ? " alt" : "") + (x !== lastX ? " fstart" : "") + (oc === "cxl" ? " cxl" : "") + "' data-ok='" + esc(r.key) + "'>" +
       "<td class='ocs l e-" + edge + (ed ? " oe" : "") + "'" + (ed ? " data-ef='cs' data-ph='Callsign'" : "") + ">" + (cs ? "<div class='ocsn'>" + esc(cs) + "</div>" : "<div class='ocsn ph' title='No callsign yet" + (ed ? ": click to type one" : "") + "'>" + esc(x.code) + "</div>") + pill + "</td>" +
-      opsTail(r, ed) + "<td class='osort' title='" + esc((x.f.oa ? "Ops Add: not on the Master Planner\n" : "") + (x.desc || "")) + "'><b>" + esc(x.code) + "</b>" + (x.ac > 1 ? "<div class='ocn'>aircraft " + (r.a + 1) + "/" + x.ac + "</div>" : "") + (() => { const mx = cmRow(r); return mx && !mx.ok ? "<div><span class='mxm' title='" + esc(cmText(mx)) + "'>CREW MATRIX ✕</span></div>" : ""; })() + "</td>" +
+      opsTail(r, ed) + "<td class='osort' title='" + esc((x.f.oa ? "Ops Add: not on the Master Planner\n" : "") + (x.desc || "")) + "'><b>" + esc(x.code) + "</b>" + (x.ac > 1 ? "<div class='ocn'>" + sorName(r.a, x.ac) + "</div>" : "") + (() => { const mx = cmRow(r); return mx && !mx.ok ? "<div><span class='mxm' title='" + esc(cmText(mx)) + "'>CREW MATRIX ✕</span></div>" : ""; })() + "</td>" +
       OPS_SEATS.map((z, k) => opsCrewCell(r, k, ed)).join("") +
       "<td class='oao l'>" + opsSub(r, "ao", ed, "AO", "oaon") + opsSub(r, "at", ed, "Area time", "oat") + "</td>" +
       opsTxt(r, "brf", ed, "", "otm obrf") + opsTxt(r, "etd", ed, r.etd0, "otm") + opsTxt(r, "eta", ed, r.eta0, "otm") +
@@ -5954,10 +6030,24 @@ function popRoleDraw(p0) {
   const el = $("popRole"), v = p0 && S.m[cur.m].grid[p0.r][p0.d], on = !!v && !isWdRow(p0.r) && isFlightCode(S, v) && mayEdit(cur.b);
   el.style.display = on ? "block" : "none"; if (!on) { el.innerHTML = ""; return; }
   const now = roleOf(S, cur.m, p0.r, p0.d), opts = [["", "None"]].concat(same(S.dept, "Pilot") ? [["AC", "AC"]] : [], [["PAX", "Pax"]]);
-  el.innerHTML = "Role on this flight<div class='rbtn'>" + opts.map(([k, l]) => "<button data-role='" + k + "'" + (k === now ? " class='on'" : "") + ">" + l + "</button>").join("") + "</div>";
+  el.innerHTML = "Role on this flight<div class='rbtn'>" + opts.map(([k, l]) => "<button data-role='" + k + "'" + (k === now ? " class='on'" : "") + ">" + l + "</button>").join("") + "</div>" + sorPopHtml(p0, v);
 }
-$("popRole").addEventListener("click", e => { const b = e.target.closest("button[data-role]"); if (!b || !popKey) return;
-  const p = keyParts(popKey); if (!roleSet(cur.m, p.r, p.d, b.dataset.role)) return; popRoleDraw(p); renderPlanner(); });
+// z175: a running change: Crew / Pax / Not on for each of its flights, with each flight's share of the time and the person's planned hours
+function sorPopHtml(p0, v) {
+  const f = sorOf(S, cur.m, p0.r, p0.d); if (!f) return "";
+  const s = rowShift(p0.r), mb = masterBook(), fl = mb && mpShift(mb.S, cur.m, p0.d, s).find(x => x.code && sameCode(x.code, v)), tt = fl ? sortieTimes(fl.time, f.length) : null;
+  const hAll = cellHrs(S.m[cur.m], s, p0.d, v), hMe = hAll * f.filter(x => x === "C").length / f.length, p = S.roster[rowPerson(p0.r)] || {};
+  const r1 = n => Math.round(n * 10) / 10;
+  return "<div class='sor'>On this flight · " + esc(String(v).trim()) + (fl && fl.time ? " " + esc(normTime(fl.time)) : "") + " · " + f.length + " sorties" +
+    f.map((x, j) => "<div class='sr'><div class='l'>" + sorName(j, f.length) + (tt ? "<small>" + tt[j][0] + "-" + tt[j][1] + "</small>" : "") + "</div><div class='b'>" +
+      [["C", "Crew", ""], ["P", "Pax", " p"], ["N", "Not on", " n"]].map(([k, l, c]) => "<button data-sor='" + j + "' data-sv='" + k + "' class='" + (x === k ? "on" + c : "") + "'>" + l + "</button>").join("") + "</div></div>").join("") +
+    (hAll > 0 ? "<div class='hrs'>Planned flying for " + esc(p.id || p.name || "this person") + ": " + r1(hMe) + " of " + r1(hAll) + " hrs (Pax hours do not count)</div>" : "") + "</div>";
+}
+$("popRole").addEventListener("click", e => { const b = e.target.closest("button[data-role],button[data-sor]"); if (!b || !popKey) return;
+  const p = keyParts(popKey);
+  if (b.dataset.sor != null) { const f = sorOf(S, cur.m, p.r, p.d); if (!f) return; f[+b.dataset.sor] = b.dataset.sv; if (!sorSet(cur.m, p.r, p.d, f)) return; }
+  else if (!roleSet(cur.m, p.r, p.d, b.dataset.role)) return;
+  popRoleDraw(p); renderPlanner(); });
 function drawPop() {
   const q = $("popSearch").value.trim().toLowerCase(), A = actIndex();
   const list = popItems.filter(a => !q || (a.code + " " + a.desc).toLowerCase().includes(q));
@@ -6174,7 +6264,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z174 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z175 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6782,7 +6872,7 @@ function lodeDay(who, iso, light) {   // light: items only (no Ops Room rows, no
       Object.values(r.auto || {}).flat().forEach(p => sit.push(["Additional crew", p]));
       if (!sit.some(([, p]) => lodeIsMe(who, p))) return;
       const o = r.o || {};
-      out.ops.push({ code: r.x.code, desc: r.x.desc || "", status: LODE_OUT[opsOutcome(r, iso)], tail: o.tail || "", stb: o.stb || "", s: r.x.s, sortie: r.x.code + (r.x.ac > 1 ? " (aircraft " + (r.a + 1) + "/" + r.x.ac + ")" : ""),
+      out.ops.push({ code: r.x.code, desc: r.x.desc || "", status: LODE_OUT[opsOutcome(r, iso)], tail: o.tail || "", stb: o.stb || "", s: r.x.s, sortie: r.x.code + (r.x.ac > 1 ? " (" + sorName(r.a, r.x.ac) + ")" : ""),
         brief: normTime(o.brf || ""), etd: normTime(r.etd || ""), eta: normTime(r.eta || ""), area: o.ao || "", seats: sit.map(([role, p]) => ({ role, id: p.id, me: lodeIsMe(who, p) })), fromPlan: false });
     });
     if (!light) out.items.filter(x => x.kind === "flight" && !out.ops.some(r => r.s === x.s)).forEach(x => {   // no Ops Room row: show the flight as planned
@@ -7287,7 +7377,7 @@ function rosApply(start, order, clear, init, note) {
   const o2n = new Map(); moved.forEach(j => { const o = src(j); if (o != null) o2n.set(o, j); });
   const rekey = m => { if (!m) return m; const out = new Map(); for (const [k, v] of m) { const [mi, r, d] = k.split(":").map(Number), p = rowPerson(r);
     if (o2n.has(p)) out.set(mi + ":" + gridRow(o2n.get(p), rowShift(r)) + ":" + d, v); else if (!moved.includes(p)) out.set(k, v); } return out; };
-  S.notes = rekey(S.notes); S.noteRow = rekey(S.noteRow); S.roleTags = rekey(S.roleTags); S.roleRow = rekey(S.roleRow);
+  S.notes = rekey(S.notes); S.noteRow = rekey(S.noteRow); S.roleTags = rekey(S.roleTags); S.roleRow = rekey(S.roleRow); if (S.roleSor) S.roleSor = rekey(S.roleSor);
   if (W.length) { put(W[0].sheet, W[0].ref, W[0].val); W.forEach(w => dirty.set(w.sheet + "!" + w.ref, { sheet: w.sheet, ref: w.ref, val: w.val, quiet: note })); }
   CHIT_GEN++; OPS_CXL_CACHE = null; updateSave(); autoKick();
   return moved.filter(j => src(j) != null && !rosEmpty(S.roster[j])).length;

@@ -18,7 +18,7 @@ const { boot } = require("./lode_lib");
     return { am2: cell(1), pm2: cell(3) };
   });
   ok("AM 2 shows both extra flights", () => assert.deepStrictEqual(r.am2.mx.map(x => x.replace(/^[!⚠] /, "")), ["FLT-2.0", "FLT-1.5"]));
-  ok("AM 2 shows their times", () => assert.deepStrictEqual(r.am2.tm, ["1000-1130", "1100-1300", "1130-1300"]));
+  ok("AM 2 shows their times", () => assert.deepStrictEqual(r.am2.tm, ["1000H-1130H", "1100H-1300H", "1130H-1300H"]));
   ok("AM 2 comment line no longer holds the list", () => assert.strictEqual(r.am2.nt, ""));
   ok("the full list stays in the tooltip", () => assert.ok(r.am2.title.includes("+2 more: FLT-2.0 1100-1300"), r.am2.title));
   ok("PM 2 keeps its own comment", () => { assert.strictEqual(r.pm2.nt, "MAS tactical"); assert.strictEqual(r.pm2.mx.length, 1); });

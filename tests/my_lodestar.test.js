@@ -129,7 +129,7 @@ test("day_ops_row_details", async ({ page }) => {
   const D = await day(page, "RAPTOR", "2026-10-14");
   assert.strictEqual(D.ops.length, 1);
   const r = D.ops[0];
-  assert.ok(/FLT-1\.5/.test(r.code) && r.etd === "0800" && r.eta === "1100", JSON.stringify(r));
+  assert.ok(/FLT-1\.5/.test(r.code) && r.etd === "0800H" && r.eta === "1100H", JSON.stringify(r));
   assert.strictEqual(r.status, "Not closed");
   assert.ok(/aircraft 2\/2/.test(r.sortie), r.sortie);
   assert.ok(r.seats.some(z => z.role === "SUP 2" && z.id === "RAPTOR") && r.seats.some(z => z.role === "TACCO" && z.id === "TUNA"));
@@ -167,7 +167,7 @@ test("night_flight_eta_after_midnight", async ({ page }) => {
   await page.evaluate(() => { const P = masterBook().S, f = P.fl.find(z => z.mi === 9 && z.d === 1 && z.s === 2); f.time = "2300-0100"; });
   const D = await day(page, "VIPER", "2026-10-02"), N = await day(page, "VIPER", "2026-10-03");
   const r = D.ops.find(z => /NVG/.test(z.code));
-  assert.ok(r && r.etd === "2300" && r.eta === "0100", JSON.stringify(D.ops));
+  assert.ok(r && r.etd === "2300H" && r.eta === "0100H", JSON.stringify(D.ops));
   assert.ok(!N.ops.some(z => /NVG/.test(z.code)));
 }, T3);
 test("missing_master_names_parts", async ({ page }) => {

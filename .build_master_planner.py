@@ -119,7 +119,7 @@ for i in range(NF):
     # Counts: 1 for a flight on a flying day (0 on a no-flying day); Hrs: its planned flying hours from the Flight Codes sheet
     fl.cell(r, 11, f'=IF(OR(A{r}="",C{r}=""),"",IF(IFERROR(INDEX(DayStat,A{r}-DATE(PlanYear,1,1)+1)&"","")<>"",0,1))').font = f(False, SLATE400, 8)
     # Hrs: planned hours from the Time column ("0830-1030"; an end earlier than the start means the next day; 0 or over 12 hours counts 0); helpers M..P (hidden)
-    fl.cell(r, 16, f'=IF(D{r}="","",SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(UPPER(D{r}),"H",""),":","")," ",""))')
+    fl.cell(r, 16, f'=IF(D{r}="","",SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(UPPER(D{r}),"H",""),":","")," ",""),"–","-"),"—","-"),"TO","-"))')   # z173: a long dash or "to" reads as "-" too
     fl.cell(r, 13, f'=IFERROR(INT(VALUE(LEFT(P{r},FIND("-",P{r})-1))/100)*60+MOD(VALUE(LEFT(P{r},FIND("-",P{r})-1)),100),"")')
     fl.cell(r, 14, f'=IFERROR(INT(VALUE(MID(P{r},FIND("-",P{r})+1,9))/100)*60+MOD(VALUE(MID(P{r},FIND("-",P{r})+1,9)),100),"")')
     fl.cell(r, 15, f'=IF(C{r}="","",IF(G{r}="",1,G{r}))')

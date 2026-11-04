@@ -46,7 +46,7 @@ test("master_cell_card_shows_time_and_comment", async ({ page }) => {
   await page.click("#plan td[data-k='" + c.mk + "']");
   assert.ok(await cardOn(page), "card on a MASTER cell");
   const r = await page.evaluate(() => ({ t: document.getElementById("cellCard").textContent, box: !!document.getElementById("ccIn"), seats: document.querySelectorAll("#cellCard .cseats").length, toast: getComputedStyle(document.getElementById("toast")).display }));
-  assert.ok(r.t.includes("0830-1030") && r.t.includes("Formation lead VIPER"), r.t);
+  assert.ok(r.t.includes("0830H-1030H") && r.t.includes("Formation lead VIPER"), r.t);
   assert.deepStrictEqual([r.box, r.seats], [false, 0], "read-only: no comment box, no crew table");
   assert.strictEqual(r.toast, "none", "a left click gives no lock message");
 });

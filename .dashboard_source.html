@@ -1151,7 +1151,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   </section>
 </main>
 <div id="cellCard"></div>
-<div id="pop"><div id="popTime" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Flight time (any text, e.g. 0830-1030 or TBC)</label><input id="popTimeIn" placeholder="e.g. 0830-1030" style="width:100%;margin:4px 0 6px;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Comment</label><input id="popNoteIn" placeholder="e.g. Wx dependent" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"></div><div id="popRole" style="display:none"></div><div id="popCur" style="display:none"></div><div id="popSyl" style="display:none"></div><input type="search" id="popSearch" placeholder="Type to search…"><div class="list" id="popList"></div></div>
+<div id="pop"><div id="popTime" style="display:none;padding:8px 8px 0"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Flight time (e.g. 0830H-1030H or TBC)</label><input id="popTimeIn" placeholder="e.g. 0830H-1030H" style="width:100%;margin:4px 0 6px;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"><label style="font-size:10px;font-weight:700;color:var(--s500);text-transform:uppercase">Comment</label><input id="popNoteIn" placeholder="e.g. Wx dependent" style="width:100%;margin:4px 0 0;padding:6px 8px;border:1px solid var(--s300);border-radius:6px"></div><div id="popRole" style="display:none"></div><div id="popCur" style="display:none"></div><div id="popSyl" style="display:none"></div><input type="search" id="popSearch" placeholder="Type to search…"><div class="list" id="popList"></div></div>
 <div id="toast"></div>
 <div id="welcome">
   <div class="box">
@@ -1185,7 +1185,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z172</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z173</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1199,7 +1199,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
 <div id="oaPop"><div class="box">
   <h2>Ops Add</h2>
   <div class="muted" style="font-size:12.5px" id="oaInfo"></div>
-  <div class="row"><label>Shift<select id="oaShift"><option>AM</option><option>PM</option><option>NIGHT</option></select></label><label>Flight code<select id="oaCode"></select></label><label>Time<input id="oaTime" placeholder="e.g. 1500-1700"></label></div>
+  <div class="row"><label>Shift<select id="oaShift"><option>AM</option><option>PM</option><option>NIGHT</option></select></label><label>Flight code<select id="oaCode"></select></label><label>Time<input id="oaTime" placeholder="e.g. 1500H-1700H"></label></div>
   <div class="row" style="align-items:center" id="oaCrew"></div>
   <div class="row"><label>Comment (optional)<input id="oaNote" placeholder="e.g. Tasking from HQ"></label></div>
   <div class="btns"><button class="btn" id="oaCancel">Cancel</button><button class="btn primary" id="oaGo">Add flight</button></div>
@@ -1215,7 +1215,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
 <div id="grPop"><div class="box">
   <h2 id="grTitle">Ground programme row</h2>
   <div id="grRef"></div>
-  <div class="row"><label>Time<input id="grTime" placeholder="e.g. 1400-1600"></label><label>Activity<input id="grAct" placeholder="e.g. Dinghy drill"></label><label>Location<input id="grLoc" placeholder="e.g. 121 CR"></label></div>
+  <div class="row"><label>Time<input id="grTime" placeholder="e.g. 1400H-1600H"></label><label>Activity<input id="grAct" placeholder="e.g. Dinghy drill"></label><label>Location<input id="grLoc" placeholder="e.g. 121 CR"></label></div>
   <div class="row" style="margin-top:6px"><span id="grQ"><b data-q="AM">AM</b><b data-q="PM">PM</b><b data-q="NIGHT">NIGHT</b><b data-q="WD">WD</b><label class="gtill">TILL <input type="date" id="grTill"></label></span></div>
   <div class="row"><label>Personnel<div id="grWho"></div></label></div>
   <div id="grMsg"></div>
@@ -2628,7 +2628,7 @@ const masterBook = () => books.find(b => b.S.kind === "master");
 const flOrd = f => f.time ? "T" + f.time.toUpperCase() : "ZZ";
 const grDay = (P, mi, d) => (P.gr || []).filter(g => g.mi === mi && g.d === d).sort((a, b) => flOrd(a) < flOrd(b) ? -1 : flOrd(a) > flOrd(b) ? 1 : a.row - b.row);
 const mpShift = (P, mi, d, s) => P.fl.filter(f => f.mi === mi && f.d === d && f.s === s).sort((a, b) => flOrd(a) < flOrd(b) ? -1 : flOrd(a) > flOrd(b) ? 1 : a.row - b.row);
-const flText = f => f.code + (f.time ? " " + f.time : "");
+const flText = f => f.code + (f.time ? " " + normTime(f.time) : "");
 // Ops Add: ad hoc flights the Ops Room added for a day and shift (kept in the Ops Room file, not on the Master Planner)
 const OA_ROW0 = 6, OA_N = 500;
 function oaShift(y, mi, d, s) { const ob = books.find(b => b.S.kind === "ops"); if (!ob || !ob.S.oa) return [];
@@ -2658,7 +2658,7 @@ function mpDiffs(bk, mb) {
   const out = []; if (!bk || !mb || mb.S.legacy || bk.S.year !== mb.S.year) return out;
   for (let mi = 0; mi < (bk.S.nx && mb.S.nx ? NMON : 12); mi++) { const A = bk.S.m[mi], dim = daysIn(bk.S.year, mi);
     for (let d = 0; d < dim; d++) { const W = deptSlots(mb.S, mi, d, bk.S.dept);
-      for (let r = 0; r < 6; r++) { const w = W[r]; if (!same(A.master[r][d], w.code) || !same(A.mtime[r][d], w.time) || !same(A.mnote[r][d], w.note)) out.push({ mi, d, r, code: w.code, time: w.time, note: w.note }); }
+      for (let r = 0; r < 6; r++) { const w = W[r]; if (!same(A.master[r][d], w.code) || !same(normTime(A.mtime[r][d]), normTime(w.time)) || !same(A.mnote[r][d], w.note)) out.push({ mi, d, r, code: w.code, time: w.time, note: w.note }); }
       if (bk.S.gndRow && mb.S.hasGr) { const g = deptGround(mb.S, mi, d, bk.S.dept); if (!same(A.gnd[d], g)) out.push({ mi, d, r: "g", code: g }); } } }
   return out;
 }
@@ -3761,9 +3761,9 @@ function renderMp() {
       (!lock && fk && fk.desc ? "<span>" + esc(fk.desc) + "</span>" : "") + (fk && fk.mtype ? "<span>" + esc(fk.mtype) + "</span>" : "") + (flSort(f) > 1 ? "<span>" + flSort(f) + " sorties</span>" : "") + (H.h > 0 && timeEndsNext(f.time) ? "<span>ends next day</span>" : "") + "</div>" : "";
     const tags = "<div class='tags" + (own ? "" : " def") + "' title='" + (own ? "Crew set for this flight" : "Crew from the flight code" + (cw.length ? "" : ": every department")) + "'>" +
       CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag t" + k + (cw.includes(k) && f.code ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (!cw.length && f.code ? "<span class='all'>all crew</span>" : "") + "</div>";
-    p += "<div class='spf" + (sOff ? " dim" : "") + "'><div class='spfh " + shCls[f.s] + "'>" + SHIFTS[f.s] + (f.time ? " · " + esc(f.time) : "") + (lock ? "" : "<button class='rm' " + key + " title='Remove this flight'>×</button>") + "</div><div class='spfb'>";
+    p += "<div class='spf" + (sOff ? " dim" : "") + "'><div class='spfh " + shCls[f.s] + "'>" + SHIFTS[f.s] + (f.time ? " · " + esc(normTime(f.time)) : "") + (lock ? "" : "<button class='rm' " + key + " title='Remove this flight'>×</button>") + "</div><div class='spfb'>";
     if (lock) p += "<div class='v set'>" + esc(f.code) + "</div>" + (fk && fk.desc ? "<div class='v spdesc'>" + esc(fk.desc) + "</div>" : "") + facts + tags + (f.note ? "<div class='v nt'>" + esc(f.note) + "</div>" : "");
-    else p += "<input " + key + " data-f='code' class='cbx" + (f.code ? " set" : "") + "' list='fcList' value='" + esc(cur.mpNew && cur.mpNew.row === f.row ? cur.mpNew.code : f.code) + "' placeholder='Flight code…' title='Pick a code or type a new one' autocomplete='off'>" + (cur.mpNew && cur.mpNew.row === f.row ? ncPanel(P, cur.mpNew) : "") + "<input " + key + " data-f='time' value='" + esc(f.time) + "' placeholder='Time, e.g. 0830-1030' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + (P.fcOld ? "" : "<input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>") + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
+    else p += "<input " + key + " data-f='code' class='cbx" + (f.code ? " set" : "") + "' list='fcList' value='" + esc(cur.mpNew && cur.mpNew.row === f.row ? cur.mpNew.code : f.code) + "' placeholder='Flight code…' title='Pick a code or type a new one' autocomplete='off'>" + (cur.mpNew && cur.mpNew.row === f.row ? ncPanel(P, cur.mpNew) : "") + "<input " + key + " data-f='time' value='" + esc(normTime(f.time)) + "' placeholder='Time, e.g. 0830H-1030H' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + (P.fcOld ? "" : "<input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>") + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
     p += "</div></div>";
   }
   if (!lock) p += "<datalist id='fcList'>" + P.codes.map(k => "<option value='" + esc(k.code) + "'>" + esc(k.crew || "all crew") + "</option>").join("") + "</datalist><datalist id='mtList'>" + [...new Set(P.codes.map(k => k.mtype).filter(Boolean))].map(m => "<option value='" + esc(m) + "'>").join("") + "</datalist>";
@@ -3776,9 +3776,9 @@ function renderMp() {
     for (const g of GL) {
       const cw = crewTags(g.crew), key = "data-grow='" + g.row + "'";
       const isAll = crewIsAll(g.crew), tags = "<div class='tags'>" + (!lock || isAll ? "<span class='tag gtag tALL" + (isAll ? " on" : "") + "' data-t='ALL' " + key + " title='Every department'>ALL</span>" : "") + CREW_TAGS.filter(([k]) => !lock || cw.includes(k)).map(([k, nm]) => "<span class='tag gtag t" + k + (cw.includes(k) ? " on" : "") + "' data-t='" + k + "' " + key + " title='" + nm + "'>" + k + "</span>").join("") + (crewMissing(g.crew) ? "<span class='nocrew' title='Pick ALL or the crew tags'>NO CREW</span>" : "") + "</div>";
-      p += "<div class='spf'><div class='spfh fGND'>GROUND" + (g.time ? " · " + esc(g.time) : "") + (lock ? "" : "<button class='rm grm' " + key + " title='Remove'>×</button>") + "</div><div class='spfb'>";
-      if (lock) p += "<div class='v set g'>" + esc(g.act) + "</div><div class='v'>" + esc(g.time) + "</div>" + tags + (g.note ? "<div class='v nt'>" + esc(g.note) + "</div>" : "");
-      else p += "<input " + key + " data-gf='act' class='gact' list='grList' value='" + esc(g.act) + "' placeholder='Activity, e.g. CRM Lecture'><input " + key + " data-gf='time' value='" + esc(g.time) + "' placeholder='Time'>" + tags + "<input " + key + " data-gf='note' class='nt' value='" + esc(g.note) + "' placeholder='Comment'>";
+      p += "<div class='spf'><div class='spfh fGND'>GROUND" + (g.time ? " · " + esc(normTime(g.time)) : "") + (lock ? "" : "<button class='rm grm' " + key + " title='Remove'>×</button>") + "</div><div class='spfb'>";
+      if (lock) p += "<div class='v set g'>" + esc(g.act) + "</div><div class='v'>" + esc(normTime(g.time)) + "</div>" + tags + (g.note ? "<div class='v nt'>" + esc(g.note) + "</div>" : "");
+      else p += "<input " + key + " data-gf='act' class='gact' list='grList' value='" + esc(g.act) + "' placeholder='Activity, e.g. CRM Lecture'><input " + key + " data-gf='time' value='" + esc(normTime(g.time)) + "' placeholder='Time'>" + tags + "<input " + key + " data-gf='note' class='nt' value='" + esc(g.note) + "' placeholder='Comment'>";
       p += "</div></div>";
     }
     if (!lock) p += "<datalist id='grList'>" + P.grList.map(x => "<option value='" + esc(x) + "'>").join("") + "</datalist><button class='addb gaddb' data-gadd='" + sd + "'>+ Add squadron event</button>";
@@ -3935,7 +3935,7 @@ function mpExportBytes(P, o) {   // one Calendar sheet: every day is two columns
         for (let x = 0; x < body; x++) {
           const f = c.status ? null : fls[x];
           if (c.status && x === 0) { cells[A + (r + 1)] = { v: c.status, s: XS.flOff }; cells[B + (r + 1)] = { v: "", s: XS.flOff }; merges.push(A + (r + 1) + ":" + B + (r + 1)); }
-          else if (f) { cells[A + (r + 1 + x)] = { v: (f.time ? f.time + "  " : "") + f.code, s: we ? XS.flEnd : XS.fl }; cells[B + (r + 1 + x)] = { v: r1(f.hrs), s: we ? XS.hrEnd : XS.hr }; }
+          else if (f) { cells[A + (r + 1 + x)] = { v: (f.time ? normTime(f.time) + "  " : "") + f.code, s: we ? XS.flEnd : XS.fl }; cells[B + (r + 1 + x)] = { v: r1(f.hrs), s: we ? XS.hrEnd : XS.hr }; }
           else { cells[A + (r + 1 + x)] = { v: "", s: we ? XS.flEnd : XS.fl }; cells[B + (r + 1 + x)] = { v: "", s: we ? XS.hrEnd : XS.hr }; }
         }
       });
@@ -4089,13 +4089,13 @@ $("mpWrap").addEventListener("change", e => {
     renderMp(); renderPlanner(); return;
   }
   if (el.dataset.gf && mpEditable()) {
-    const gf = el.dataset.gf, v = el.value.trim();
+    const gf = el.dataset.gf, v = gf === "time" ? normTime(el.value.trim()) : el.value.trim();
     withBook(mpIdx(), () => { const g = S.gr.find(x => x.row === +el.dataset.grow); if (!g) return; g[gf] = v; put("Ground Programme", { time: "B", act: "C", note: "E" }[gf] + g.row, v); });
     renderMp(); return;
   }
   if (el.dataset.ncf && cur.mpNew) { cur.mpNew[el.dataset.ncf] = el.value.trim(); return; }
   const k = el.dataset.f; if (!k || !mpEditable() || el.dataset.row == null) return;
-  const v = el.value.trim();
+  const v = k === "time" ? normTime(el.value.trim()) : el.value.trim();
   if (el.dataset.ncf && cur.mpNew) { cur.mpNew[el.dataset.ncf] = v; return; }
   if (k === "code") {
     const S = books[mpIdx()].S, hit = S.codes.find(c => codeKey(c.code) === codeKey(v));
@@ -4331,8 +4331,8 @@ function renderPlanner() {
       const more = k === 1 ? String(nt || "").match(MORE_RE) : null;
       const xs = more ? more[2].split(",").map(x => x.trim()).filter(Boolean).map(moreSplit) : [];
       const nt2 = more ? String(nt).slice(0, more.index).replace(/\s*·\s*$/, "") : nt;
-      const xh = xs.map(([c, t]) => "<div class='mx'>" + esc(pre + c) + "</div><div class='tm'>" + esc(t) + "</div>").join("");
-      h += "<td class='c mc" + (stt ? " " + stt : "") + (md ? " mpdiff" : "") + (nofly ? " nofly" : "") + "' data-k='m:" + r + ":" + d + "' title='" + esc([tip, mtip, nt].filter(Boolean).join("\n")) + "'><div>" + esc(pre + v) + "</div><div class='tm'>" + esc(tm) + "</div>" + xh + "<div class='nt'>" + esc(nt2) + "</div></td>";
+      const xh = xs.map(([c, t]) => "<div class='mx'>" + esc(pre + c) + "</div><div class='tm'>" + esc(normTime(t)) + "</div>").join("");
+      h += "<td class='c mc" + (stt ? " " + stt : "") + (md ? " mpdiff" : "") + (nofly ? " nofly" : "") + "' data-k='m:" + r + ":" + d + "' title='" + esc([tip, mtip, nt].filter(Boolean).join("\n")) + "'><div>" + esc(pre + v) + "</div><div class='tm'>" + esc(normTime(tm)) + "</div>" + xh + "<div class='nt'>" + esc(nt2) + "</div></td>";
     }
     if (r === 0) h += mpanel(mvis.length);
     h += "</tr>";
@@ -4388,7 +4388,7 @@ function renderPlanner() {
         const v = M.grid[gridRow(i, s)][d]; let a = v && A.get(v.toUpperCase());
         if (isWdRow(gridRow(i, s)) && a && !wdAllowed(a)) a = { ...a, ci: -1 };   // the WD row takes ground and admin items only: anything else pasted in is not a flight, leave or duty
         let tip = "";
-        if (a && a.ci === CAT_FLIGHT) { const fl = [0, 1].map(k => { const j = s * 2 + k; return M.master[j][d] ? M.master[j][d] + (M.mtime[j][d] ? " " + M.mtime[j][d] : "") + (M.mnote[j][d] ? " (" + M.mnote[j][d] + ")" : "") : ""; }).filter(Boolean); tip = fl.length ? SHIFTS[s] + " programme: " + fl.join(", ") : "No " + SHIFTS[s] + " flight on the master programme"; }
+        if (a && a.ci === CAT_FLIGHT) { const fl = [0, 1].map(k => { const j = s * 2 + k; return M.master[j][d] ? M.master[j][d] + (M.mtime[j][d] ? " " + normTime(M.mtime[j][d]) : "") + (M.mnote[j][d] ? " (" + M.mnote[j][d] + ")" : "") : ""; }).filter(Boolean); tip = fl.length ? SHIFTS[s] + " programme: " + fl.join(", ") : "No " + SHIFTS[s] + " flight on the master programme"; }
         const sd = st.day[d].miss.length > 0;
         if (sd) tip = (tip ? tip + "\n" : "") + st.day[d].miss.join(" and ") + " day with nobody on it yet";
         const cn = S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d);
@@ -4812,7 +4812,7 @@ function renderOpsBoard(iso, ed) {
   ["Safety", "Prefect", "Security"].forEach(lab => { const c = cell(lab), ref = c.col + row; g += "<div class='odi'><div class='dn'>" + lab + "</div>" + val(ref, st.db[ref] || "") + "</div>"; });
   // Intel: Flights lists the day's flights (ETD and callsign, else the code; cancelled left out) until something is typed; Intel Spec is typed
   const i1 = cell("Intel", "Flights"), i2 = cell("Intel", "Intel Spec"), r1 = i1.col + row, r2 = i2.col + row, v1 = st.db[r1] || "", v2 = st.db[r2] || "";
-  const flts = opsDay(iso).rows.filter(r => opsOutcome(r, iso) !== "cxl").map(r => (r.etd ? r.etd + " " : "") + (r.o && r.o.cs || r.x.code + (r.x.ac > 1 ? " #" + (r.a + 1) : ""))).join("\n");
+  const flts = opsDay(iso).rows.filter(r => opsOutcome(r, iso) !== "cxl").map(r => (r.etd ? normTime(r.etd) + " " : "") + (r.o && r.o.cs || r.x.code + (r.x.ac > 1 ? " #" + (r.a + 1) : ""))).join("\n");
   const half = (ref, v, lab, auto, tip) => "<div class='dbml" + (ed ? " oe" : "") + "'" + opsDbA(ref, "", ed, auto) + " title='" + esc(tip) + "'><small>" + lab + "</small>" + (v ? esc(v) : auto ? "<span class='oau'>" + esc(auto) + "</span>" : "<span class='oph'>–</span>") + "</div>";
   g += "<div class='odi wide'><div class='dn'>Intel</div><div class='dv2'>" + half(r1, v1, "Flights", flts, v1 ? "Typed in the Ops Room" : "From the day's flights" + (ed ? ". Click to edit." : "")) + half(r2, v2, "Intel Spec", null, "Intel Spec") + "</div></div>";
   const dob = cell("DOB"), rd = dob.col + row; g += "<div class='odi dob'><div class='dn'>DOB</div>" + val(rd, st.db[rd] || "", "tm") + "</div>";
@@ -4879,29 +4879,39 @@ function opsPerson(dept, id, crewS) {
   return p ? { dept, id: p.id, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: "", note: "" } : { dept, id, name: "", ini: "", cat: "", status: "", role: "", code: "", note: "" };
 }
 // "0830-1030" / "0830" / "TBC" -> [etd, eta]; minutes helpers for the duration
-const hhmm = v => { const m = /^(\d{1,2}):?(\d{2})$/.exec(String(v || "").trim()); return m ? +m[1] * 60 + +m[2] : null; };
+const hhmm = v => { const m = /^(\d{1,2}):?(\d{2})\s*H?$/i.exec(String(v || "").trim()); return m && +m[2] < 60 && (+m[1] < 24 || (+m[1] === 24 && +m[2] === 0)) ? +m[1] * 60 + +m[2] : null; };   // 2400 = midnight at the end of a night flight
+// z173: every clock time reads 24-hour with an H at the back (Brandon): "0830-1030", "8:30 to 10:30", "0830–1030" -> "0830H-1030H",
+// "1400" -> "1400H". Anything else ("TBC", "TILL 5 Nov", "AM") is left as typed. Used when a time is typed and when one is shown.
+const TIME_RANGE_RE = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*H?\s*(?:-|–|—|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*H?\s*$/i;
+function normTime(t) {
+  const x = String(t == null ? "" : t), hm = n => n === 1440 ? "2400" : fmtHM(n); let m = TIME_RANGE_RE.exec(x);
+  if (m) { const a = hhmm(m[1].replace(":", "")), b = hhmm(m[2].replace(":", "")); return a == null || b == null ? x : hm(a) + "H-" + hm(b) + "H"; }
+  m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*H?\s*$/i.exec(x);
+  if (m) { const a = hhmm(m[1].replace(":", "")); return a == null ? x : hm(a) + "H"; }
+  return x;
+}
 const fmtHM = n => String(Math.floor(((n % 1440) + 1440) % 1440 / 60)).padStart(2, "0") + String(((n % 60) + 60) % 60).padStart(2, "0");
 function opsTimes(t, hrs) {
   t = String(t || "").replace(/(\d)\s*h\b/gi, "$1");   // 1500H = 1500
-  const m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*$/i.exec(t || "");
-  if (m) return [m[1].replace(":", "").padStart(4, "0"), m[2].replace(":", "").padStart(4, "0")];
+  const m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|—|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*$/i.exec(t || "");
+  if (m) { const a = hhmm(m[1].replace(":", "")), b = hhmm(m[2].replace(":", "")); if (a != null && b != null) return [fmtHM(a) + "H", fmtHM(b) + "H"]; }
   const a = hhmm(String(t || "").replace(":", "")); if (a == null) return ["", ""];
-  return [fmtHM(a), hrs ? fmtHM(a + Math.round(hrs * 60)) : ""];
+  return [fmtHM(a) + "H", hrs ? fmtHM(a + Math.round(hrs * 60)) + "H" : ""];
 }
 // the time shown on a calendar chip: 0830H-1000H (the end is the start plus the flight code's hours, or the typed end), 0830H when only a start is known
 // planned hours of a Master Planner flight from its typed time range (an end earlier than the start means the next day) -> { h, bad: "" | "No time" | "No end time" | "Check time" }
 // a range of 0 or over 12 hours is "Check time"; with no usable range the hours are 0 (there is no code Flight Hrs any more)
 function mpFlHrs(P, f) {
-  const t = String(f.time || "").replace(/(\d)\s*h\b/gi, "$1"), m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*$/i.exec(t);
+  const t = String(f.time || "").replace(/(\d)\s*h\b/gi, "$1"), m = /^\s*(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|—|to)\s*(\d{3,4}|\d{1,2}:\d{2})\s*$/i.exec(t);
   if (!m) return { h: 0, bad: t.trim() ? "No end time" : "No time" };
   const a = hhmm(m[1].replace(":", "")), b = hhmm(m[2].replace(":", "")); if (a == null || b == null) return { h: 0, bad: "Check time" };
   let n = b - a; if (n < 0) n += 1440; if (n === 0 || n > 720) return { h: 0, bad: "Check time" };
   return { h: n / 60, bad: "" };
 }
 const flSort = f => f && f.sort >= 1 ? Math.round(f.sort) : 1;   // sorties typed on the flight (a running change: 2 or 3); blank = 1
-const timeEndsNext = t => { const m = /(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{3,4}|\d{1,2}:\d{2})/i.exec(String(t).replace(/(\d)\s*h\b/gi, "$1")); return !!m && hhmm(m[2].replace(":", "")) < hhmm(m[1].replace(":", "")); };
+const timeEndsNext = t => { const m = /(\d{3,4}|\d{1,2}:\d{2})\s*(?:-|–|—|to)\s*(\d{3,4}|\d{1,2}:\d{2})/i.exec(String(t).replace(/(\d)\s*h\b/gi, "$1")); return !!m && hhmm(m[2].replace(":", "")) < hhmm(m[1].replace(":", "")); };
 const fmtH = v => (Math.round(v * 10) / 10).toFixed(1) + " H";
-function mpRange(time, hrs) { const [a, b] = opsTimes(time, hrs); return a ? a + "H" + (b ? "-" + b + "H" : "") : ""; }
+function mpRange(time, hrs) { const [a, b] = opsTimes(time, hrs); return a ? a + (b ? "-" + b : "") : ""; }
 function opsDur(a, b) { const x = hhmm(a), y = hhmm(b); if (x == null || y == null) return null; let n = y - x; if (n < 0) n += 1440; return n / 60; }
 // one day: the Master Planner's flights, one row per aircraft, with crew picked from the department plans (same code first, then any flight that shift)
 function opsDay(iso) {
@@ -5048,7 +5058,7 @@ $("tailPop").addEventListener("click", e => {
 document.addEventListener("mousedown", e => { const P = $("tailPop"); if (P.style.display === "block" && !e.target.closest("#tailPop,td[data-tail]")) P.style.display = "none"; });
 document.addEventListener("keydown", e => { if (e.key === "Escape") $("tailPop").style.display = "none"; });
 function opsTxt(r, f, ed, ph, cls) {
-  const v = r.o && r.o[f] || "";
+  let v = r.o && r.o[f] || ""; if (/^(etd|eta|atd|ata|brf)$/.test(f)) { v = normTime(v); ph = normTime(ph); }
   if (!ed) return "<td class='" + (cls || "") + "'>" + esc(v || ph || "") + "</td>";
   // shown as text (it wraps, so nothing is cut off on the projector); click the cell to type
   return "<td class='oe " + (cls || "") + "' data-ef='" + f + "' data-ph='" + esc(ph || "") + "'>" + (v ? esc(v) : "<span class='oph'>" + esc(ph || "") + "</span>") + "</td>";
@@ -5146,7 +5156,7 @@ function opsTable(D, rows, ed) {
     const oc = opsOutcome(r, iso), edge = opsEdge(r, iso), due = edge === "due";
     r.urg = due;
     const pill = "<span class='ost " + (edge === "oa" ? "plan oa" : edge) + "'" + (ed ? " data-ost='1'" : "") + " title='" + esc(oc === "cxl" ? "Cancelled: " + (r.o.why || "no reason") : oc === "flown" ? "Flown (ATD and ATA filled)" : edge === "open" ? (oc === "open" ? "Day is over" : "Past its ETA") + ": fill ATD / ATA, or cancel it" : x.f.oa ? "Ops Add: planned in the Ops Room, not on the Master Planner" : due ? "Due: ETD " + r.etd : "Planned") + "'>" +
-      { flown: "FLOWN", cxl: "CANCELLED", open: "NOT CLOSED", due: "DUE " + (r.etd || ""), oa: "OPS ADD" + (ed ? " ▾" : ""), plan: "PLANNED" + (ed ? " ▾" : "") }[edge] + "</span>";
+      { flown: "FLOWN", cxl: "CANCELLED", open: "NOT CLOSED", due: "DUE " + normTime(r.etd || ""), oa: "OPS ADD" + (ed ? " ▾" : ""), plan: "PLANNED" + (ed ? " ▾" : "") }[edge] + "</span>";
     const cs = r.o && r.o.cs || "";
     h += "<tr class='f " + st + (fi % 2 ? " alt" : "") + (x !== lastX ? " fstart" : "") + (oc === "cxl" ? " cxl" : "") + "' data-ok='" + esc(r.key) + "'>" +
       "<td class='ocs l e-" + edge + (ed ? " oe" : "") + "'" + (ed ? " data-ef='cs' data-ph='Callsign'" : "") + ">" + (cs ? "<div class='ocsn'>" + esc(cs) + "</div>" : "<div class='ocsn ph' title='No callsign yet" + (ed ? ": click to type one" : "") + "'>" + esc(x.code) + "</div>") + pill + "</td>" +
@@ -5293,8 +5303,8 @@ function opsOpenPop(key, k, keep) {
   const cell = document.querySelector("#opsMain tr[data-ok='" + CSS.escape(key) + "'] " + (k === "st" ? "[data-ost]" : "td[data-oc='" + k + "']"));
   if (k === "st" && r && cell) {   // flight outcome: cancel with a reason, or undo
     cur.opsPop = { key, k }; const oc = opsOutcome(r, D.iso), why = r.o && r.o.why || "", w0 = OPS_CXL_WHY.find(x => why === x || why.startsWith(x + ":")) || (why ? "Other" : "");
-    pop.innerHTML = "<div class='pt'>" + esc((r.o && r.o.cs) || r.x.code) + " <span class='muted'>" + esc(SHIFTS[r.x.s] + " " + (r.x.f.time || "")) + "</span><button class='x' data-pc='1'>×</button></div>" +
-      "<div class='pp'>" + (oc === "flown" ? "Flown: ATD " + esc(r.o.atd) + ", ATA " + esc(r.o.ata) + "." : oc === "cxl" ? "Cancelled: " + esc(why || "no reason") : oc === "open" ? "Not closed: fill ATD and ATA if it flew, or cancel it." : "Planned. It counts as flown once ATD and ATA are filled.") + "</div>" +
+    pop.innerHTML = "<div class='pt'>" + esc((r.o && r.o.cs) || r.x.code) + " <span class='muted'>" + esc(SHIFTS[r.x.s] + " " + normTime(r.x.f.time || "")) + "</span><button class='x' data-pc='1'>×</button></div>" +
+      "<div class='pp'>" + (oc === "flown" ? "Flown: ATD " + esc(normTime(r.o.atd)) + ", ATA " + esc(normTime(r.o.ata)) + "." : oc === "cxl" ? "Cancelled: " + esc(why || "no reason") : oc === "open" ? "Not closed: fill ATD and ATA if it flew, or cancel it." : "Planned. It counts as flown once ATD and ATA are filled.") + "</div>" +
       (oc === "flown" ? "" : "<label>Reason<select id='opsWhy'>" + OPS_CXL_WHY.map(x => "<option" + (x === w0 ? " selected" : "") + ">" + x + "</option>").join("") + "</select></label><label>Note<input id='opsWhyNote' placeholder='Optional, e.g. low cloud' value='" + esc(why.includes(":") ? why.slice(why.indexOf(":") + 1).trim() : "") + "'></label>" +
         "<div class='pb'><button class='btn danger' data-pcx='1'>" + (oc === "cxl" ? "Update reason" : "Cancel this flight") + "</button>" + (oc === "cxl" ? "<button class='btn' data-pun='1'>Undo cancel</button>" : "") + "</div>") +
       (r.x.f.oa && opsEditable() ? "<div class='pb'><button class='btn' data-poa='1' title='Take this ad hoc flight off (it was added by mistake)'>Remove this Ops Add</button></div>" : "");
@@ -5306,7 +5316,7 @@ function opsOpenPop(key, k, keep) {
   const c = r.seats[k], dep = OPS_SEATS[k][1], pool = (r.x.sb ? D.crew.sb : D.crew)[r.x.s].filter(p => same(p.dept, dep));
   const list = pool.slice(); if (c && !list.some(p => same(p.id, c.id))) list.push(c);
   const rest = opsRosterOf(dep).filter(p => !list.some(q => same(q.id, p.id)));
-  let h = "<div class='pt'>" + esc(OPS_SEATS[k][0]) + " · " + esc((r.o && r.o.cs) || r.x.code) + " <span class='muted'>" + esc(SHIFTS[r.x.s] + " " + (r.x.f.time || "")) + "</span><button class='x' data-pc='1'>×</button></div>";
+  let h = "<div class='pt'>" + esc(OPS_SEATS[k][0]) + " · " + esc((r.o && r.o.cs) || r.x.code) + " <span class='muted'>" + esc(SHIFTS[r.x.s] + " " + normTime(r.x.f.time || "")) + "</span><button class='x' data-pc='1'>×</button></div>";
   const dwn = c && downOn(c.dept, c.id, D.iso);
   if (dwn) h += "<div class='pp' style='background:#fee2e2;color:#991b1b'><b>⚠ Down-chitted since " + esc(fmtDay(dwn.since)) + "</b>: not cleared to fly." + ((OPS || opsEditable() || dwn.bi === 0) ? " <button class='upc' data-upchit='" + dwn.bi + "|" + dwn.i + "|" + D.iso + "'>Up-chit…</button>" : " Pick someone else below.") + "</div>";
   if (c) h += "<div class='pp'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b> " + esc(c.id) + " · " + esc(c.name) + "<div class='muted'>" + esc(c.dept + (c.code ? " · planned " + c.code : "") + (c.set ? " · set in the Ops Room" : " · picked from the plan")) + "</div>" + (c.note ? "<div class='ocn' style='font-size:12px'>" + esc(c.note) + "</div>" : "") + "</div>";
@@ -5362,7 +5372,7 @@ $("opsMain").addEventListener("click", e => {
 $("opsMain").addEventListener("change", e => {
   const t = e.target;
   if (!t.dataset.of || t.dataset.cancel) return; const key = t.closest("tr").dataset.ok, f = t.dataset.of;
-  let v = t.value.trim(); if (/^(etd|eta|atd|ata|brf)$/.test(f) && v) { const n = hhmm(v.replace(":", "")); if (n == null) { toast("Type a time like 1300."); t.value = ""; return; } v = fmtHM(n); }
+  let v = t.value.trim(); if (/^(etd|eta|atd|ata|brf)$/.test(f) && v) { const n = hhmm(v.replace(":", "")); if (n == null) { toast("Type a time like 1300."); t.value = ""; return; } v = fmtHM(n) + "H"; }
   opsWrite(key, o => { o[f] = v; });
   if (f === "alert") { const D0 = opsDay(cur.opsDay), r0 = D0.sb.find(z => z.key === key); if (r0) D0.sb.filter(z => z !== r0 && z.x.s === r0.x.s && z.o && z.o.alert).forEach(z => opsWrite(z.key, o => { o.alert = ""; })); }
 });
@@ -5397,7 +5407,7 @@ function grOpen(row) {
   const D = opsDay(cur.opsDay); if (!opsEditable() || !D || D.other) return;
   GRD = { iso: D.iso, id: row ? row.id : grrNewKey(), kind: row && (row.orphan || row.src !== "manual") ? "edit" : "manual", row };
   $("grTitle").textContent = row ? "Change this ground programme row" : "Add a ground programme row";
-  $("grTime").value = row ? row.rt : ""; $("grAct").value = row ? row.act : ""; $("grLoc").value = row ? row.rn : "";
+  $("grTime").value = row ? normTime(row.rt) : ""; $("grAct").value = row ? row.act : ""; $("grLoc").value = row ? row.rn : "";
   const sel = new Set(row ? row.people.map(p => p.ini) : []), all = !!(row && row.all);
   $("grWho").innerHTML = "<label class='ck'><input type='checkbox' id='grAll'" + (all ? " checked" : "") + "> ALL (everyone)</label>" +
     books.filter(isDept).map(b => "<div class='gdep'><b>" + esc(b.S.dept) + "</b>" + b.S.roster.filter(p => p.name || p.id).map(p => { const n = p.ini || p.id; return "<label class='ck'><input type='checkbox' data-gp='" + esc(n) + "'" + (sel.has(n) && !all ? " checked" : "") + "> " + esc(n) + "</label>"; }).join("") + "</div>").join("");
@@ -5411,10 +5421,10 @@ $("grQ").onclick = e => { const q = e.target.dataset && e.target.dataset.q; if (
 $("grTill").onchange = e => { const v = e.target.value; if (v) $("grTime").value = "TILL " + +v.slice(8, 10) + " " + MON3[+v.slice(5, 7) - 1]; };
 $("grCancel").onclick = () => { $("grPop").style.display = "none"; GRD = null; };
 $("grGo").onclick = () => {
-  const g = GRD; if (!g) return; const time = $("grTime").value.trim(), act = $("grAct").value.trim(), loc = $("grLoc").value.trim(), who = grWhoText();
+  const g = GRD; if (!g) return; const time = normTime($("grTime").value.trim()), act = $("grAct").value.trim(), loc = $("grLoc").value.trim(), who = grWhoText();
   let f; if (g.kind === "manual") { f = { time, act, note: loc, who }; const bad = grrCheck(f); if (bad) { $("grMsg").textContent = bad; return; } }
   else { const r = g.row, ow = r.all ? "ALL" : r.people.map(p => p.ini).join(" / "); f = {};
-    if (time !== r.rt) f.time = time; if (act !== r.act) f.act = act; if (loc !== r.rn) f.note = loc; if (who !== ow) f.who = who; }
+    if (time !== normTime(r.rt)) f.time = time; if (act !== r.act) f.act = act; if (loc !== r.rn) f.note = loc; if (who !== ow) f.who = who; }
   if ((g.kind === "manual" || Object.keys(f).length) && !grrSave(g.iso, g.id, g.kind, f)) return;
   $("grPop").style.display = "none"; GRD = null; renderOps();
 };
@@ -5445,7 +5455,7 @@ $("opsAddBtn").onclick = oaOpen;
 $("oaCancel").onclick = () => { $("oaPop").style.display = "none"; };
 $("oaGo").onclick = () => {
   const ob = opsBook(), oi = books.indexOf(ob), D = opsDay(cur.opsDay), code = $("oaCode").value; if (!ob || !code) return;
-  const time = $("oaTime").value.trim(), ts = timeShift(time), s = ts >= 0 ? ts : SHIFTS.indexOf($("oaShift").value), note = $("oaNote").value.trim();
+  const time = normTime($("oaTime").value.trim()), ts = timeShift(time), s = ts >= 0 ? ts : SHIFTS.indexOf($("oaShift").value), note = $("oaNote").value.trim();
   const tags = [...document.querySelectorAll("#oaCrew input[data-oat]")].filter(x => x.checked).map(x => x.dataset.oat);
   if (!tags.length) { alert("Tick at least one department for the crew."); return; }
   const mb = masterBook(), def = crewTags(mb ? codeCrew(mb.S, code) : ""), crew = (def.length ? def : CREW_TAGS.map(x => x[0])).join(" ") === tags.join(" ") ? "" : tags.join(" ");
@@ -5862,7 +5872,7 @@ function openCard(k) {
   const p = keyParts(k);
   if (k.startsWith("m:")) {   // a MASTER cell (locked): the flight's time and comment, read-only
     const M = S.m[cur.m], code = String(M.master[p.r][p.d] || ""); if (!code) return false;
-    const ms = Math.floor(p.r / 2), t = M.mtime[p.r][p.d], n = M.mnote[p.r][p.d], ac = S.acts.find(x => same(x.code, code));
+    const ms = Math.floor(p.r / 2), t = normTime(M.mtime[p.r][p.d]), n = M.mnote[p.r][p.d], ac = S.acts.find(x => same(x.code, code));
     c.innerHTML = "<h4>" + esc(code) + " <span>· " + esc(p.d + 1 + " " + monLab(cur.m, S.year) + " · " + SHIFTS[ms]) + "</span></h4>" + (ac && ac.desc ? "<div class='csub'>" + esc(ac.desc) + "</div>" : "") +
       "<div class='cdet'>" + esc("Time: " + (t || "not set") + (n ? "\nComment: " + n : "\nNo comment")) + "</div><div class='cleg'>Set by the Master Planner. Esc or click away to close</div>";
     cardKey = k; c.style.display = "block"; cardPlace(el, c); return true; }
@@ -5873,7 +5883,7 @@ function openCard(k) {
   const lines = (el.dataset.cd || "").split("\n").filter(x => x && !/^Comment:/.test(x));   // the comment has its own box below
   let det = lines;
   if (flight) {   // this flight's own MASTER line (time and comment), matched on code in the cell's shift: not the whole day's programme
-    const ml = [0, 1].map(j => s * 2 + j).filter(j => sameCode(M0.master[j][p.d], v)).map(j => (M0.mtime[j][p.d] || "no time yet") + (M0.mnote[j][p.d] ? " (" + M0.mnote[j][p.d] + ")" : ""));
+    const ml = [0, 1].map(j => s * 2 + j).filter(j => sameCode(M0.master[j][p.d], v)).map(j => (normTime(M0.mtime[j][p.d]) || "no time yet") + (M0.mnote[j][p.d] ? " (" + M0.mnote[j][p.d] + ")" : ""));
     det = [ml.length ? "Planned: " + ml.join("; ") : "Not on the Master programme for this shift"].concat(lines); }
   let h = "<h4>" + esc(v || "No activity") + " <span>· " + esc(p.d + 1 + " " + monLab(cur.m, S.year) + " · " + (wd ? "Whole day" : SHIFTS[s])) + "</span></h4>" + (ac && ac.desc ? "<div class='csub'>" + esc(ac.desc) + "</div>" : "") +
     (det.length ? "<div class='cdet'>" + esc(det.join("\n")) + "</div>" : "");
@@ -5927,7 +5937,7 @@ function openPop(k, initial) {
   pop.style.top = (r.bottom + 2 + ph <= window.innerHeight ? r.bottom + 2 : r.top - ph >= 8 ? r.top - ph : Math.max(8, window.innerHeight - ph - 8)) + "px";
   $("popTime").style.display = isMaster ? "block" : "none";
   popRoleDraw(isMaster ? null : p0);
-  if (isMaster) { const p = keyParts(k); $("popTimeIn").value = S.m[cur.m].mtime[p.r][p.d] || ""; $("popNoteIn").value = S.m[cur.m].mnote[p.r][p.d] || ""; }
+  if (isMaster) { const p = keyParts(k); $("popTimeIn").value = normTime(S.m[cur.m].mtime[p.r][p.d] || ""); $("popNoteIn").value = S.m[cur.m].mnote[p.r][p.d] || ""; }
   { const iss = isMaster ? [] : curIssues(computeCurrency(), rowPerson(p0.r)), pc = $("popCur");
     if (!isMaster && !S.kind) { const R = computeRest(), i = rowPerson(p0.r), n = restIfFly(R, i, dayOfYear(S.year, cur.m, p0.d));
       if (n >= REST_DAYS) iss.unshift("Crew rest: a flight here makes " + n + " days of flying in a row (warning from " + REST_DAYS + ")"); }
@@ -5977,7 +5987,7 @@ function saveTime(k) {
   if (k && k.startsWith("g:")) { let ch = false; if (popSyl && popSyl.k === k) { const P = popSyl; popSyl = null; ch = sylCommit(P, k, getVal(k)); }
     return ch; }
   if (!k || !k.startsWith("m:")) return false;
-  const p = keyParts(k), M = S.m[cur.m], v = $("popTimeIn").value.trim(), n = $("popNoteIn").value.trim();
+  const p = keyParts(k), M = S.m[cur.m], v = normTime($("popTimeIn").value.trim()), n = $("popNoteIn").value.trim();
   let ch = false;
   if (M.mtime[p.r][p.d] !== v) { M.mtime[p.r][p.d] = v; put(monSheet(cur.m), colL(DAY_COL0 + p.d) + tRow(p.r), v); ch = true; }
   if (M.mnote[p.r][p.d] !== n) { M.mnote[p.r][p.d] = n; put(monSheet(cur.m), colL(DAY_COL0 + p.d) + nRow(p.r), n); ch = true; }
@@ -6164,7 +6174,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z172 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z173 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6773,7 +6783,7 @@ function lodeDay(who, iso, light) {   // light: items only (no Ops Room rows, no
       if (!sit.some(([, p]) => lodeIsMe(who, p))) return;
       const o = r.o || {};
       out.ops.push({ code: r.x.code, desc: r.x.desc || "", status: LODE_OUT[opsOutcome(r, iso)], tail: o.tail || "", stb: o.stb || "", s: r.x.s, sortie: r.x.code + (r.x.ac > 1 ? " (aircraft " + (r.a + 1) + "/" + r.x.ac + ")" : ""),
-        brief: o.brf || "", etd: r.etd || "", eta: r.eta || "", area: o.ao || "", seats: sit.map(([role, p]) => ({ role, id: p.id, me: lodeIsMe(who, p) })), fromPlan: false });
+        brief: normTime(o.brf || ""), etd: normTime(r.etd || ""), eta: normTime(r.eta || ""), area: o.ao || "", seats: sit.map(([role, p]) => ({ role, id: p.id, me: lodeIsMe(who, p) })), fromPlan: false });
     });
     if (!light) out.items.filter(x => x.kind === "flight" && !out.ops.some(r => r.s === x.s)).forEach(x => {   // no Ops Room row: show the flight as planned
       const [etd, eta] = opsTimes(x.time, 0);
@@ -6915,19 +6925,19 @@ function lodeTodayHtml(who, D, isToday, iso) {
   }
   const it = (tag, cls, t, sub) => "<div class='it'><span class='tg " + cls + "'>" + tag + "</span><div>" + t + (sub ? "<small>" + esc(sub) + "</small>" : "") + "</div></div>";
   const rows = D.items.filter(x => x.kind !== "flight").map(x => x.kind === "standby" ? it("STANDBY", "gr", esc(x.text), SHIFTS[x.s] || "All day") :
-    x.kind === "ground" ? it("GROUND", "am", esc(x.text + (x.time ? " " + x.time : "")), "") :
+    x.kind === "ground" ? it("GROUND", "am", esc(x.text + (x.time ? " " + normTime(x.time) : "")), "") :
     x.kind === "away" ? it("AWAY", "gy", esc(x.text), x.s < 0 ? "All day" : SHIFTS[x.s]) :
     x.kind === "wd" ? it("WHOLE DAY", "gr", esc(x.code + (x.text && !same(x.text, x.code) ? " " + x.text : "")), x.note ? "“" + x.note + "”" : "") :
-    x.kind === "duty" ? "" : it(x.s < 0 ? "ALL DAY" : SHIFTS[x.s], "am", esc(x.code + (x.time ? " " + x.time : "")), x.note ? "“" + x.note + "”" : ""));
+    x.kind === "duty" ? "" : it(x.s < 0 ? "ALL DAY" : SHIFTS[x.s], "am", esc(x.code + (x.time ? " " + normTime(x.time) : "")), x.note ? "“" + x.note + "”" : ""));
   rows.push(it("DUTY", "rs", esc(D.duty || "No duty " + (isToday ? "today" : "this day")), D.duty ? "" : D.nextDuty ? "Next: " + D.nextDuty : ""));
   const miss = D.missing.length ? "<div class='lodemiss'>Not open: " + esc(D.missing.join(", ")) + ". Those parts are left out.</div>" : "";
   return head + "<div class='today'><div class='tl'>" + left + "</div><div class='tr'>" + rows.join("") + "</div></div>" + miss;
 }
 // One pill for the week table and the month grid. data-iso / data-ix say which item a click opens (lodeDay's items list for that day).
 function lodePill(x, iso, ix, compact) {
-  const tm = x.time ? "<small>" + esc(x.time.split("-")[0]) + "</small>" : "", at = " data-iso='" + iso + "' data-ix='" + ix + "'";
+  const tm = x.time ? "<small>" + esc(normTime(x.time).split("-")[0]) + "</small>" : "", at = " data-iso='" + iso + "' data-ix='" + ix + "'";
   if (x.kind === "flight") return "<span class='pl " + (x.cancelled ? "cx" : "fl") + "'" + at + ">" + esc(x.code) + tm + (x.cancelled ? " <i>CXL</i>" : "") + "</span>" + (x.syl && !x.cancelled ? "<span class='pl sy'" + at + ">🎓 " + esc(x.syl) + "</span>" : "");
-  if (x.kind === "ground") return "<span class='pl gn'" + at + ">" + esc(x.text) + (x.time ? "<small>" + esc(x.time.split("-")[0]) + "</small>" : "") + "</span>";
+  if (x.kind === "ground") return "<span class='pl gn'" + at + ">" + esc(x.text) + (x.time ? "<small>" + esc(normTime(x.time).split("-")[0]) + "</small>" : "") + "</span>";
   return "<span class='pl " + ({ standby: "sb", duty: "dt", away: "lv" }[x.kind] || "gn") + "'" + at + ">" + esc(x.code) + tm + "</span>" + (x.s < 0 && !compact ? "<span class='lodemuted'> " + (x.kind === "duty" ? "whole day" : esc(x.text)) + "</span>" : "");
 }
 function lodeWeekHtml(who, iso) {
@@ -6966,7 +6976,7 @@ function lodeCardOpen(who, iso, ix, el) {
     const st = S, q = ymd(iso, st.year), M = st.m[q.mi], A = st.acts.find(a => x.code && same(a.code, x.code));
     const what = x.code || x.text, sh = x.s < 0 ? "Whole day" : SHIFTS[x.s], det = [];
     if (fl) {
-      const ml = [0, 1].map(j => x.s * 2 + j).filter(j => sameCode(M.master[j][q.d], x.code)).map(j => (M.mtime[j][q.d] || "no time yet") + (M.mnote[j][q.d] ? " (" + M.mnote[j][q.d] + ")" : ""));
+      const ml = [0, 1].map(j => x.s * 2 + j).filter(j => sameCode(M.master[j][q.d], x.code)).map(j => (normTime(M.mtime[j][q.d]) || "no time yet") + (M.mnote[j][q.d] ? " (" + M.mnote[j][q.d] + ")" : ""));
       det.push(ml.length ? "Planned: " + ml.join("; ") : "Not on the Master programme for this shift");
       if (x.cancelled) det.push("Cancelled: " + x.cancelled);
       if (x.syl) det.push("Syllabus: " + x.syl);

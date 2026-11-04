@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 4 Nov 2026 (z172). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 4 Nov 2026 (z173). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -112,6 +112,7 @@ Last updated: 4 Nov 2026 (z172). Tell Claude in this thread when something chang
 - [?] Syllabus Tracking: crew with no callsign are selected one at a time, picked by name (z165, 4 Nov bug fix); awaiting his test
 - [?] Ops Room: crew added to a flight no longer shows twice (seat and additional crew) on the first flight with that code (z170, 4 Nov bug fix); awaiting Brandon's test
 - [?] Planner MASTER rows show a 3rd (and later) flight in a shift as its own code and time, not a cut-off comment (z171, 4 Nov bug fix); awaiting Brandon's test
+- [?] Every time in 24-hour format with an H at the back, e.g. 0830H-1030H (z173, 4 Nov, Brandon): typed times are saved that way and older times are shown that way; Excel's Master Planner hours also read a long dash and "to" (after a rebuild); awaiting his test
 - [?] Ops Room duty strip headings slightly bigger (z172, 4 Nov, Brandon); awaiting his look
 - [?] My Lodestar recognises a SharePoint name with the appointment at the back, and short roster names like "B TAN" / "TAN PH" (z168, 4 Nov); awaiting Brandon's test
 - [x] Excel "problem with some content" in the department files: broken Daily View formulas fixed in the builder, and repaired by the dashboard on save (z167, 4 Nov)

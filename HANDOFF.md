@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-03, after z153)
+# LODESTAR handoff (updated 2026-11-04, after z154)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,12 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z154 (4 Nov, Brandon: "build it"): edit the syllabus items on the dashboard
+**✎ Edit syllabus items** under the crew list on the Syllabus tab (only when the department file can be edited) opens an editor: stages on the left (with item counts; stage names and order stay in Excel), the chosen stage's tracks as groups of rows (Order with ▲▼, Code, Description, Type, Chances, Notes, Results, ✕), **+ Add item to <track>**, **+ Add track**, Done. Default chances and the warn level (Settings B6 / B7) are editable at the bottom left. Rows: yellow changed, green new, red needs fixing. A **code with entries on the Syllabus Log is locked** (🔒, no code box, ✕ disabled; the description can change). A row with no code, no track or a code an earlier row already uses is red and **not written** (its row stays empty) until fixed. New codes are suggested from the track's own pattern (S2-C-FLT3 -> S2-C-FLT4), else `<prefix>-<stage letter>-<track>N` (S2-A-GND1); renaming a "New track" re-suggests its untouched codes and type. Saved with Save to Excel, Undo works, Change Log as usual.
+- **Reader change:** the Syllabus Items sheet is now read from every row 6..1005 and empty rows are skipped (it used to stop at the first empty Stage). A removed item clears its row in place; a new item goes in the row after the last used one (`Y.next`). Each item keeps `_r` (row), `_w` (values in the sheet), `_o` (values as opened). No Excel layout change, no stamp bump. Older dashboards would stop reading at a cleared row, so dashboard and files go together as always.
+- Code: `sylEd`, `sylEdRender`, `sylEdChange`, `sylPutAll`, `sylProb`, `sylLocked`, `sylNewCode`, `sylTrkNames`, `sylTrkItems`; CSS `.sye*`; help text updated. Dashboard only; upload the DEV dashboard.
+- Tests: new `node tests/syllabus_edit.test.js` (12; saves in memory and re-reads the bytes). syllabus_stages 6/6, excel_safe, changelog 8/8, flight_card 17/17 pass. Mock-up `previews/syllabus_edit_mockup*.png`, real `previews/syllabus_edit_real*.png`.
 
 ## z153 (3 Nov, Brandon): syllabus stages named by the CAT held, instructor stage for selected crew
 Decided: stages are **OCU -> CAT D -> CAT C -> CAT B -> CAT A**, named after the Cat Status the person holds while working on them (Gives = where passing leads: CAT D, CAT C, CAT B, CAT A, Instructor). The **CAT A stage is instructor training, only for CAT A crew selected for it**; a CAT A who is not selected reads "path complete · instructor training only if selected" and the CAT A node is dashed "selected crew only". Crew with the Instructor role hold it.
@@ -159,7 +165,8 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 
 ## Next session: start here (handoff of 3 Nov 2026, after z153)
 
-**State:** everything through **z153** is merged on `main`. The repo's eight `.xlsx` are a fresh demo set built after z153 (new syllabus stages); the dashboard embeds them. Work branch `claude/practical-lamport-j13scq` equals `main`.
+**4 Nov:** z154 built (syllabus editor, see its section); on the work branch, not merged.
+**State (3 Nov):** everything through **z153** is merged on `main`. The repo's eight `.xlsx` are a fresh demo set built after z153 (new syllabus stages); the dashboard embeds them. Work branch `claude/practical-lamport-j13scq` equals `main`.
 **Done on 3 Nov:** z152 (New code panel and help wording, last-used tag on the department card edge), z153 (syllabus stages OCU / CAT D / CAT C / CAT B / CAT A named by the CAT held; CAT A = instructor training for selected crew, switch on the Syllabus tab, Syllabus Settings B8), the Master Planner part of the PDF guide drafted (`guide/`), demo set rebuilt.
 **Waiting on Brandon:** his read of the Master Planner guide draft (wording, order, missing bits; then the same layout for the Ops Room and Duty Planner parts); his look at z151 to z153; the instructor (CAT A stage) syllabus items and the Pilot / Loadmaster syllabus lists; the exact Excel error message (z150); the Health check mock-up; renaming the stages in his live SUP 2 file in Excel (or uploading the full new set).
 **Guide parts decided:** Getting started, Planners, Master Planner (drafted), Duty Planner, Ops Room; My Lodestar left out for now. Rebuild the PDF with `node guide/make_shots.js` then `node guide/make_pdf.js` (dashboard built first).

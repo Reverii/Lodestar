@@ -5008,9 +5008,12 @@ function opsDay(iso) {
         for (let a = 0; a < x.ac; a++) {
           const cand = on.filter(c => role(c, a) === "C").sort((p, q) => (used.get(p) || 0) - (used.get(q) || 0) || on.indexOf(p) - on.indexOf(q)), sat = new Set();
           const seat = (k, c) => { x.seats[k][a] = c; sat.add(c); used.set(c, (used.get(c) || 0) + 1); };
-          if (ks.includes(cap)) { const c = cand.find(z => z.tag === "AC"); if (c) seat(cap, c); }
-          for (const k of ks) { if (x.seats[k][a]) continue; const c = cand.find(z => !sat.has(z)); if (c) seat(k, c); }
-          cand.filter(c => !sat.has(c)).forEach(c => add(a, c));
+          // the Captain seat: an AC-tagged pilot not seated yet on this flight; an AC already seated is used again only when there are not
+          // enough fresh pilots for the row (same crew on every flight). Another AC-tagged pilot is kept for a row of their own, not made co-pilot.
+          if (ks.includes(cap)) { const acs = cand.filter(z => z.tag === "AC"), fresh = cand.filter(z => !used.get(z) && z.tag !== "AC");
+            const c = acs.find(z => !used.get(z)) || (fresh.length < ks.length ? acs[0] : null); if (c) seat(cap, c); }
+          for (const k of ks) { if (x.seats[k][a]) continue; const c = cand.find(z => !sat.has(z) && !(z.tag === "AC" && !used.get(z) && k !== cap)) || cand.find(z => !sat.has(z)); if (c) seat(k, c); }
+          cand.filter(c => !sat.has(c)).forEach(c => add(a, c));   // no per-flight choice = crew on every flight, so they are on every row
           on.filter(c => role(c, a) === "P").forEach(c => add(a, Object.assign({}, c, { tag: "PAX" })));
         }
         on.forEach(c => L.splice(L.indexOf(c), 1));

@@ -43,11 +43,11 @@ test("saved_file_holds_the_tag", async ({ page }) => {
 const CLICK = `(() => { const code = ${PLANT}; cur.m = 9; renderPlanner(); const el = cellEl("g:0:13"); el.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true })); return code; })()`;
 const visible = id => `(() => { const e = $("${id}"); return !!e && getComputedStyle(e).display !== "none"; })()`;
 test("popup_shows_role_row", async ({ page }) => {
-  const r = await page.evaluate(([click, vis]) => { eval(click); return { shown: eval(vis), btns: [...$("popRole").querySelectorAll("button")].map(b => b.dataset.role) }; }, [CLICK, visible("popRole")]);
+  const r = await page.evaluate(([click, vis]) => { eval(click); return { shown: eval(vis), btns: [...$("popRole").querySelectorAll("button[data-role]")].map(b => b.dataset.role) }; }, [CLICK, visible("popRole")]);
   assert.ok(r.shown); assert.deepStrictEqual(r.btns, ["", "PAX"], "SUP 2 gets None and Pax only");
 });
 test("popup_offers_ac_in_the_pilot_file", async ({ page }) => {
-  const r = await page.evaluate(([click]) => { eval(click); return [S.dept, ...[...$("popRole").querySelectorAll("button")].map(b => b.dataset.role)]; }, [CLICK]);
+  const r = await page.evaluate(([click]) => { eval(click); return [S.dept, ...[...$("popRole").querySelectorAll("button[data-role]")].map(b => b.dataset.role)]; }, [CLICK]);
   assert.deepStrictEqual(r, ["Pilot", "", "AC", "PAX"]);
 }, { mine: "Flight_Ops_Planner_Pilot" });
 test("popup_hidden_on_a_non_flight_cell", async ({ page }) => {

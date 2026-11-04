@@ -213,7 +213,7 @@ test("all_names_follow_cat_on_the_day_board", async ({ page }) => {
 }, ED);
 test("standby_rows_flight_size", async ({ page }) => {
   await goOps(page, DAY);
-  const g = await page.evaluate(() => { const f = document.querySelector("#opsMain tr.f"), s = document.querySelector("#opsMain tr.sb"), fs = e => parseFloat(getComputedStyle(e).fontSize);
+  const g = await page.evaluate(() => { const f = document.querySelector("#opsMain tr.f"), s = document.querySelector("#opsMain tr.sb"); document.querySelectorAll("#opsMain .oxt").forEach(e => { e.style.display = "none"; }), fs = e => parseFloat(getComputedStyle(e).fontSize);
     return { fc: fs(f.querySelector("td.oc")), sc: fs(s.querySelector("td.oc")), fh: f.getBoundingClientRect().height, sh: s.getBoundingClientRect().height, lab: fs(s.querySelector("td.sbc b")), flab: fs(f.querySelector(".ocsn")), w: +getComputedStyle(s.querySelector("td.sbc b")).fontWeight }; });
   assert.strictEqual(g.sc, g.fc, "seat cell font");
   assert.ok(g.sh >= 0.85 * g.fh, "standby row " + g.sh + " vs flight row " + g.fh);

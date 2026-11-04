@@ -127,11 +127,10 @@ test("day_cancelled_flag", async ({ page }) => {
 });
 test("day_ops_row_details", async ({ page }) => {
   const D = await day(page, "RAPTOR", "2026-10-14");
-  assert.strictEqual(D.ops.length, 1);
-  const r = D.ops[0];
-  assert.ok(/FLT-1\.5/.test(r.code) && r.etd === "0800H" && r.eta === "1100H", JSON.stringify(r));
+  assert.strictEqual(D.ops.length, 2);   // z175: a running change with no per-flight choice: RAPTOR is on both flights
+  const r = D.ops.find(o => /Flight 2\/2/.test(o.sortie));
+  assert.ok(r && /FLT-1\.5/.test(r.code) && r.etd === "0930H" && r.eta === "1100H", JSON.stringify(D.ops));
   assert.strictEqual(r.status, "Not closed");
-  assert.ok(/aircraft 2\/2/.test(r.sortie), r.sortie);
   assert.ok(r.seats.some(z => z.role === "SUP 2" && z.id === "RAPTOR") && r.seats.some(z => z.role === "TACCO" && z.id === "TUNA"));
 });
 test("day_ground_and_duty", async ({ page }) => {
@@ -243,7 +242,7 @@ test("renders_greeting_and_cards", async ({ page }) => {
 test("today_panel_shows_flight_details", async ({ page }) => {
   await page.evaluate(() => { SP.user = { Title: "Kumaravel S." }; });
   const t = await shown(page, "2026-10-14");
-  for (const w of ["FLT-1.5", "0800", "1100", "NOT CLOSED", "SUP 2", "TUNA"]) assert.ok(t.toUpperCase().includes(w.toUpperCase()), w + " in: " + t);
+  for (const w of ["FLT-1.5", "0800", "0930", "NOT CLOSED", "SUP 2", "TUNA"]) assert.ok(t.toUpperCase().includes(w.toUpperCase()), w + " in: " + t);
 });
 test("next_days_table_rows", async ({ page }) => {
   await page.evaluate(() => { SP.user = { Title: "Sarah Lim" }; });
@@ -418,12 +417,12 @@ test("nil_callsign_people_do_not_share_flights", async ({ page }) => {
   await page.evaluate(() => { mePeople().find(z => z.p.id === "HAWK").p.id = "NIL"; mePeople().find(z => z.p.id === "OWL").p.id = "NIL"; });
   const r = await page.evaluate(() => { const hawk = mePeople().find(z => z.p.name === "CPT Sarah Lim"), owl = mePeople().find(z => z.p.name === "ME2 Nurul Huda");
     return { hawk: lodeDay(hawk, "2026-10-14").ops.map(o => [o.code, o.fromPlan]), owl: lodeDay(owl, "2026-10-14").ops.length, me: lodeDay(hawk, "2026-10-14").ops[0].seats.filter(z => z.me).length }; });
-  assert.deepStrictEqual(r, { hawk: [["FLT-1.5", false]], owl: 0, me: 1 });
+  assert.deepStrictEqual(r, { hawk: [["FLT-1.5", false], ["FLT-1.5", false]], owl: 0, me: 1 });   // z175: on both flights of the running change
 }, T8);
 test("empty_callsign_still_finds_ops_row", async ({ page }) => {
   await page.evaluate(() => { mePeople().find(z => z.p.id === "HAWK").p.id = ""; });
   const r = await page.evaluate(() => lodeDay(mePeople().find(z => z.p.name === "CPT Sarah Lim"), "2026-10-14").ops.map(o => [o.fromPlan, o.etd, o.seats.some(z => z.me)]));
-  assert.deepStrictEqual(r, [[false, "0800H", true]]);
+  assert.deepStrictEqual(r, [[false, "0800H", true], [false, "0930H", true]], JSON.stringify(r));   // z175: seated on Flight 1/2, rides along on 2/2
 }, T8);
 test("cards_on_unknown_day_say_so", async ({ page }) => {
   const u = await cards(page, "HAWK", "2028-01-05"), k = await cards(page, "HAWK", "2026-10-14");

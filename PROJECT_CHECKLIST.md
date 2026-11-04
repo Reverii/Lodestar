@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 4 Nov 2026 (z173). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 4 Nov 2026 (z174). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -113,7 +113,7 @@ Last updated: 4 Nov 2026 (z173). Tell Claude in this thread when something chang
 - [x] Ops Room: crew added to a flight no longer shows twice (seat and additional crew) on the first flight with that code (z170, 4 Nov bug fix) (SharePoint test OK, 4 Nov)
 - [x] Planner MASTER rows show a 3rd (and later) flight in a shift as its own code and time, not a cut-off comment (z171, 4 Nov bug fix) (SharePoint test OK, 4 Nov)
 - [x] Every time in 24-hour format with an H at the back, e.g. 0830H-1030H (z173, 4 Nov, Brandon): typed times are saved that way and older times are shown that way; Excel's Master Planner hours also read a long dash and "to" (after a rebuild) (SharePoint test OK, 4 Nov)
-- [ ] Running change (2 or 3 sorties on one flight) in the department Planner (Brandon, 4 Nov): the planner is responsible for crewing every sortie (1/2, 2/2), so the Planner must show the sorties and let each person be on one or both; the short-of-crew warning checks each sortie. **Settled (Brandon, 4 Nov):** the flight's time range covers the whole running change and is split evenly between the sorties (Circuit training 1000H-1300H with 2 sorties = 1.5 hrs each), so a person on one sortie gets 1.5 hrs and on both 3 hrs. Same crew on both sorties, or slightly different crew (someone Pax on callsign 1, crew on callsign 2). Proposal (sortie choice in the cell popup next to None / AC / Pax, saved in Role Tags; Ops Room rows seat by it) awaiting the Pax-per-sortie answer and a mock-up
+- [ ] Running change (2 or 3 sorties on one flight) in the department Planner (Brandon, 4 Nov): the planner is responsible for crewing every sortie (1/2, 2/2), so the Planner must show the sorties and let each person be on one or both; the short-of-crew warning checks each sortie. **Settled (Brandon, 4 Nov):** the flight's time range covers the whole running change and is split evenly between the sorties (Circuit training 1000H-1300H with 2 sorties = 1.5 hrs each), so a person on one sortie gets 1.5 hrs and on both 3 hrs. Same crew on both sorties, or slightly different crew (someone Pax on callsign 1, crew on callsign 2). Pax marked per sortie by the planner (option A, Brandon 4 Nov). Mock-up `previews/running_change_mockup_{planner,popup,ops}.png`, awaiting "build it"
 - [x] Ops Room duty strip headings slightly bigger (z172, 4 Nov, Brandon) (SharePoint test OK, 4 Nov)
 - [x] My Lodestar recognises a SharePoint name with the appointment at the back, and short roster names like "B TAN" / "TAN PH" (z168, 4 Nov) (SharePoint test OK, 4 Nov)
 - [x] Excel "problem with some content" in the department files: broken Daily View formulas fixed in the builder, and repaired by the dashboard on save (z167, 4 Nov) (SharePoint test OK, 4 Nov)

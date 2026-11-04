@@ -1185,7 +1185,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z173</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z174</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -5972,7 +5972,7 @@ function drawPop() {
     if (g !== lastCat) { h += "<div class='grp'>" + esc(g || "No category") + "" + "</div>"; lastCat = g; }
     const ci = (A.get(a.code.toUpperCase()) || {}).ci;
     h += "<div class='it" + (i === popHi ? " hi" : "") + "' data-code='" + esc(a.code) + "'" + (a.s != null ? " data-s='" + a.s + "'" : "") + "><span class='code " + (ci >= 0 ? "cat" + ci : "") + "'>" + esc(a.code) + "</span><span class='d'>" + esc(a.desc) + (a.sort > 1 ? " · " + a.sort + " sorties" : "") +
-      (a.pt !== undefined ? "<b class='plt'>" + (a.pt ? "Planned " + esc(a.pt) : "Planned") + (a.there ? " · replaces " + esc(a.there) : "") + "</b>" : a.off ? "<b class='plt off'>Not on the master list</b>" : "") + "</span></div>";
+      (a.pt !== undefined ? "<b class='plt'>" + (a.pt ? "Planned " + esc(normTime(a.pt)) : "Planned") + (a.there ? " · replaces " + esc(a.there) : "") + "</b>" : a.off ? "<b class='plt off'>Not on the master list</b>" : "") + "</span></div>";
   });
   h += "<div class='it clear' data-code=''>Clear cell</div>";
   if (popKey && popKey.startsWith("g:") && (mayEdit(cur.b))) h += "<div class='it blk' data-blk='1'>📅 Block of days…  <span class='d'>course, attachment, exercise</span></div>";
@@ -6175,7 +6175,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z173 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z174 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

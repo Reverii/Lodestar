@@ -423,7 +423,7 @@ test("nil_callsign_people_do_not_share_flights", async ({ page }) => {
 test("empty_callsign_still_finds_ops_row", async ({ page }) => {
   await page.evaluate(() => { mePeople().find(z => z.p.id === "HAWK").p.id = ""; });
   const r = await page.evaluate(() => lodeDay(mePeople().find(z => z.p.name === "CPT Sarah Lim"), "2026-10-14").ops.map(o => [o.fromPlan, o.etd, o.seats.some(z => z.me)]));
-  assert.deepStrictEqual(r, [[false, "0800", true]]);
+  assert.deepStrictEqual(r, [[false, "0800H", true]]);
 }, T8);
 test("cards_on_unknown_day_say_so", async ({ page }) => {
   const u = await cards(page, "HAWK", "2028-01-05"), k = await cards(page, "HAWK", "2026-10-14");

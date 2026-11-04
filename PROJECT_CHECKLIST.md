@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 4 Nov 2026 (z163). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 4 Nov 2026 (z166). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -108,6 +108,9 @@ Last updated: 4 Nov 2026 (z163). Tell Claude in this thread when something chang
 - [x] Ops Room redesign (z97, 27 Oct): side cards in a bottom row, Cat colours and a SANS / NSMEN box on every callsign, standby rows at flight size, Codes on the Day Board, Area only when filled, Ground programme by shift with "until", Leave and MC by department, clock, light / dark, no Timeline, fits the screen height (built; to tune on the real projector)
 - [x] Ops Room: SANS and NSMEN shown apart (z157, 4 Nov): NSMEN keep the green box, SANS are underlined in their Cat colour
 - [?] Miscellaneous Notes page (z162, 4 Nov, Brandon): an Excel-like scratch sheet per department under Planning ▾ (A to Z, 100 rows, type / paste from Excel / Bold / Wrap / column widths / Clear sheet), saved in a hidden `Misc Notes` sheet of the department file, not shown to other departments or the Ops Room (Brandon confirmed 4 Nov: the Ops Room should not see it); the Change Log only counts changed cells (awaiting his test)
+- [?] Ops Room Leave and MC card lists names downwards (z164, 4 Nov, Brandon); awaiting his test
+- [?] Syllabus Tracking: crew with no callsign are selected one at a time, picked by name (z165, 4 Nov bug fix); awaiting his test
+- [?] Flight Codes Syllabus tag is a dropdown of the syllabus tracks (z166, 4 Nov, Brandon; dashboard only, Excel column stays free text); awaiting his test
 - [x] Ops Room ground programme as a sorted table (z104, 31 Oct, Brandon): Time | Activity | Location (the Master Planner note) | Personnel; clock times, then AM/PM/NIGHT, WD, then TILL dates; strip grows with the list, auto-scrolls on the projector
 - [?] Ops Room ground programme rework (z111, 31 Oct, Brandon): rows merge across departments, borrow time and location from a squadron event, red NO PERSONNEL when nobody is on a row, pencil / hide / + Ops row saved in a `Ground Rows` sheet in the Ops Room file (awaiting his test)
 - [?] Ops Room ground programme filled by hand (z112, 31 Oct, Brandon): planners' items no longer pulled in; + Ops row shows them as a read-only reference by department; Time quick buttons; TILL rows run to the date (awaiting his test). My Lodestar keeps reading the planners' cells (his call)

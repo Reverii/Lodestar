@@ -592,6 +592,60 @@ const restore = () => { books = window.__bk.slice(); books.forEach((b, i) => { i
 const setIni = (page, dept, n, ini, cat) => page.evaluate(([dept, n, ini, cat]) => { const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept); const ix = books[bi].S.roster.map((p, i) => (p.name || p.id) ? i : -1).filter(i => i >= 0)[n]; books[bi].S.roster[ix].ini = ini; if (cat) books[bi].S.roster[ix].cat = cat; return [bi, ix]; }, [dept, n, ini, cat]);
 const ID = (page, dept, n) => page.evaluate(([dept, n]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept); return b.S.roster.filter(p => p.name || p.id)[n].id; }, [dept, n]);
 
+// ---- z159: fill the roster Initials from ATOM
+// dept roster: clear every Initials, then give the first people these names (status and CAT kept); returns their roster indexes
+const PEOPLE = (page, dept, names) => page.evaluate(([dept, names]) => { const b = books.find(b => !b.S.kind && b.S.dept === dept), ix = b.S.roster.map((p, i) => (p.name || p.id) && !/^inactive$/i.test(p.status || "") ? i : -1).filter(i => i >= 0);
+  b.S.roster.forEach(p => { p.ini = ""; }); names.forEach((n, k) => { b.S.roster[ix[k]].name = n; }); return ix.slice(0, names.length); }, [dept, names]);
+const PLAN = (page, dept) => page.evaluate(dept => { const d = atomIniPlan(ATOMS[0]).get(dept); return d ? { edit: d.edit, sug: Object.fromEntries(d.sug) } : null; }, dept);
+test("ini_score_reads_surname_and_initials", async ({ page }) => {
+  const r = await page.evaluate(() => [["A NGO", "CPT Andrew Ngo"], ["A NGO", "CPT Andrew Tan"], ["S LIM JH", "LTA Sarah Lim Jia Hui"], ["S LIM JH", "LTA Kevin Lim"], ["HO KM", "MAJ Ho Kok Ming"],
+    ["SAMY", "ME2 Raj Samy"], ["TEO WK", "CPT (NS) Teo Wei Kiat"], ["V TAN", "Victor Ng"]].map(([a, n]) => atomIniScore({ name: a, cat: "", status: "" }, { name: n, cat: "", status: "" })));
+  assert.ok(r[0] >= 10 && r[2] >= 10 && r[4] >= 10 && r[5] >= 10 && r[6] >= 10, JSON.stringify(r));
+  assert.strictEqual(r[1], 0); assert.strictEqual(r[7], 0);
+  assert.ok(r[3] < 10, "a surname with wrong initials is not suggested: " + r[3]);
+});
+test("ini_suggests_and_fills_one", async ({ page }) => {
+  const ix = await PEOPLE(page, "SUP 2", ["ME3 Victor Tan", "ME2 Hannah Lim", "ME1 Oliver Ng"]);
+  assert.deepStrictEqual(await PLAN(page, "SUP 2"), { edit: true, sug: { "V TAN": ix[0], "H LIM": ix[1], "O NG": ix[2] } });
+  await page.evaluate(() => { atomFixOpen(); });
+  const sel = "#atomFixPanel select[data-an='H LIM']";
+  assert.strictEqual(await page.$eval(sel, e => +e.value), ix[1]);
+  await page.evaluate(sel => document.querySelector(sel + " + button").click(), sel);
+  const r = await page.evaluate(i => { const b = books.find(b => !b.S.kind && b.S.dept === "SUP 2"), rc = rosterCols(b.S), k = "Roster!" + rc.ini + (ROSTER_ROW0 + i);
+    return { ini: b.S.roster[i].ini, cell: b.dirty.get(k) && b.dirty.get(k).val, left: atomMatch(ATOMS[0]).fix.atomOnly.some(x => x.name === "H LIM"), still: !!document.querySelector("#atomFixPanel select[data-an='H LIM']") }; }, ix[1]);
+  assert.deepStrictEqual(r, { ini: "H LIM", cell: "H LIM", left: false, still: false });
+});
+test("ini_pick_another_person", async ({ page }) => {
+  const ix = await PEOPLE(page, "SUP 2", ["ME3 Victor Tan", "ME2 Hannah Lim", "ME1 Oliver Ng"]);
+  await page.evaluate(() => { atomFixOpen(); });
+  await page.evaluate(v => { const e = document.querySelector("#atomFixPanel select[data-an='V TAN']"); e.value = v; e.nextElementSibling.click(); }, String(ix[2]));
+  assert.strictEqual(await page.evaluate(i => books.find(b => !b.S.kind && b.S.dept === "SUP 2").S.roster[i].ini, ix[2]), "V TAN");
+});
+test("ini_two_equal_people_no_guess", async ({ page }) => {
+  await PEOPLE(page, "SUP 2", ["ME3 Victor Tan", "ME3 Vincent Tan", "ME1 Oliver Ng"]);
+  const p = await PLAN(page, "SUP 2");
+  assert.ok(!("V TAN" in p.sug) && "O NG" in p.sug, JSON.stringify(p));
+  await page.evaluate(() => { atomFixOpen(); });
+  assert.strictEqual(await page.$eval("#atomFixPanel select[data-an='V TAN']", e => e.value), "");
+});
+test("ini_use_all_suggestions", async ({ page }) => {
+  await PEOPLE(page, "SUP 2", ["ME3 Victor Tan", "ME2 Hannah Lim", "ME1 Oliver Ng"]);
+  await PEOPLE(page, "TACCO", ["CPT Tom Lee", "LTA Ryan Koh"]);
+  await page.evaluate(() => { atomFixOpen(); });
+  const n = await page.evaluate(() => [...atomIniPlan(ATOMS[0]).values()].reduce((n, d) => n + (d.edit ? d.sug.size : 0), 0));
+  assert.strictEqual(n, 3, "only SUP 2 can be edited in this view (TACCO is read-only)");
+  await page.evaluate(() => $("atomIniAll").click());
+  const left = await page.evaluate(() => atomMatch(ATOMS[0]).fix.atomOnly.filter(x => x.dept === "SUP 2" || x.dept === "TACCO").map(x => x.name));
+  assert.deepStrictEqual(left, ["T LEE", "R KOH"]);
+  assert.ok(/T LEE \(TACCO\) probably/.test(await page.evaluate(() => { atomFixOpen(); return $("atomFixPanel").innerText; })));
+});
+test("ini_view_only_file_shows_probably", async ({ page }) => {
+  await PEOPLE(page, "SUP 2", ["ME3 Victor Tan", "ME2 Hannah Lim", "ME1 Oliver Ng"]);
+  const t = await page.evaluate(() => { const b = books.find(b => !b.S.kind && b.S.dept === "SUP 2"); b.noEdit = true; try { atomFixOpen(); return document.getElementById("atomFixPanel").innerText; } finally { b.noEdit = false; } });
+  assert.ok(/V TAN \(SUP 2\) probably/.test(t), t.slice(0, 400));
+  assert.strictEqual(await page.evaluate(() => !!document.querySelector("#atomFixPanel select[data-an='V TAN']")), false);
+});
+
 // ---- runner
 (async () => {
   const only = process.argv[2];

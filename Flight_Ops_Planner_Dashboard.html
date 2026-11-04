@@ -30,7 +30,7 @@
 .misx{position:relative;box-shadow:inset -4px 0 0 #7c3aed;background:#ede9fe!important}#plan .mislab{position:absolute;left:2px;right:6px;top:2px;font-size:9px;font-weight:800;color:#6d28d9;line-height:1.05;text-align:left;white-space:normal;z-index:2}.mischip{background:#ede9fe;color:#6d28d9;box-shadow:inset -4px 0 0 #7c3aed}
 .l1chip{background:#ffedd5;color:#c2410c;box-shadow:inset -4px 0 0 #ea580c}.chip.l1chip.capt{background:#fff;box-shadow:inset -4px 0 0 #ea580c,inset 0 0 0 1.5px #fdba74}
 .atomw{position:relative}.atomw::after{content:'';position:absolute;top:0;right:0;border-style:solid;border-width:0 8px 8px 0;border-color:transparent #dc2626 transparent transparent}
-.atomfix{max-height:260px;overflow:auto}.atomfix h3,.atomfix h4{margin:4px 0}.atomfixhd{display:flex;align-items:center;gap:10px}.atomfix ul{margin:2px 0 6px;padding-left:18px;columns:2}.atomfix a{color:var(--blue);cursor:pointer;margin-left:6px;font-size:11.5px}
+.atomfix{max-height:260px;overflow:auto}.atomfix h3,.atomfix h4{margin:4px 0}.atomfixhd{display:flex;align-items:center;gap:10px}.atomfix ul{margin:2px 0 6px;padding-left:18px;columns:2}.atomfix li.aini{break-inside:avoid;margin:2px 0}.atomfix li.aini select{margin-left:6px;max-width:270px;font-size:12px;padding:1px 4px}.atomfix li.aini .btn{margin-left:4px;padding:1px 8px;font-size:11.5px}.atomfix h4 .btn{margin-left:8px;padding:1px 8px;font-size:11.5px}.atomfix a{color:var(--blue);cursor:pointer;margin-left:6px;font-size:11.5px}
 .acat{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#94a3b8}.acat.A{background:#1d4ed8}.acat.B{background:#3b8ef0}.acat.C{background:#d99a06}.acat.D{background:#b91c1c}
 .atomleg{display:flex;gap:16px;color:var(--s500);font-size:11.5px;align-items:center}.atomleg i{display:inline-block;width:22px;height:11px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1px solid var(--s200)}.atomleg .lapx{background:#fee2e2}.atomleg .duex{background:#fef3c7}.atomleg .okx{background:#fff}.atomleg .nrx{background:repeating-linear-gradient(135deg,#fff 0 3px,#e2e8f0 3px 6px)}
 *{box-sizing:border-box}
@@ -1164,7 +1164,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z159</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z160</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1641,13 +1641,62 @@ function atomDayMarks(row, iso, s, flight) {   // one Planner cell: s = shift ro
 }
 function atomFixOpen() { cur.atomFix = true; renderAtom(); }
 function atomFixClose() { cur.atomFix = false; renderAtom(); }
+// ---------- z159: fill the roster Initials from ATOM. An ATOM name ("A NGO", "S LIM JH", "HO KM", "SAMY") is matched to a roster person of the
+// same department who has no Initials yet: one word of the ATOM name must be a word of their name (the surname), every other word is first-name
+// initials and each letter must start another word of their name. CAT and NSmen status only break ties. Only a suggestion: a click writes it.
+function atomIniWords(n) { return String(rankParts(n).rest).replace(/\(NS\)/ig, " ").toUpperCase().replace(/[^A-Z\s]/g, " ").split(/\s+/).filter(Boolean); }
+function atomIniScore(atomRow, p) {
+  const a = atomIniWords(atomRow.name), w = atomIniWords(p.name); if (!a.length || !w.length) return 0;
+  let best = 0;
+  a.forEach((sur, k) => {
+    const si = w.indexOf(sur); if (si < 0) return;
+    const rest = w.filter((_, j) => j !== si), letters = a.filter((_, j) => j !== k).join("").split("");
+    let sc = 10, used = new Set();
+    for (const ch of letters) { const j = rest.findIndex((x, n) => !used.has(n) && x[0] === ch); if (j < 0) { sc -= 6; continue; } used.add(j); sc += 3; }
+    if (sc > best) best = sc;
+  });
+  if (!best) return 0;
+  const ac = atomCatKey(atomRow.cat), pc = atomCatKey(p.cat); if (ac && pc) best += ac === pc ? 2 : -1;
+  const an = /nsmen/i.test(atomRow.status || ""), pn = /^nsmen$/i.test(p.status || ""); if (atomRow.status) best += an === pn ? 1 : 0;
+  return best;
+}
+// per department: the people who can still take Initials, and for each unmatched ATOM name the best of them (each person suggested once)
+function atomIniPlan(f) {
+  const x = atomMatch(f).fix, out = new Map();
+  const byDept = new Map(); x.atomOnly.forEach(o => { if (!byDept.has(o.dept)) byDept.set(o.dept, []); byDept.get(o.dept).push(o); });
+  for (const [dept, list] of byDept) {
+    const bi = books.findIndex(b => !b.S.kind && b.S.dept === dept); if (bi < 0) continue;
+    const st = books[bi].S, can = !!rosterCols(st).ini, free = [];
+    st.roster.forEach((p, i) => { if ((p.name || p.id) && !String(p.ini || "").trim() && !/^inactive$/i.test(p.status || "")) free.push(i); });
+    const rows = new Map((f.sheets[dept] || []).map(r => [atomKey(r.name), r])), pairs = [];
+    list.forEach(o => { const r = rows.get(atomKey(o.name)); if (r) free.forEach(i => { const sc = atomIniScore(r, st.roster[i]); if (sc >= 10) pairs.push({ name: o.name, i, sc }); }); });
+    pairs.sort((a, b) => b.sc - a.sc);
+    const takenN = new Set(), takenI = new Set(), sug = new Map();
+    for (const q of pairs) { if (takenN.has(q.name) || takenI.has(q.i)) continue;
+      if (pairs.some(z => z !== q && z.name === q.name && z.sc === q.sc && !takenI.has(z.i))) { takenN.add(q.name); continue; }   // two people fit equally: no guess
+      takenN.add(q.name); takenI.add(q.i); sug.set(q.name, q.i); }
+    out.set(dept, { bi, can, edit: can && mayEdit(bi), free, sug });
+  }
+  return out;
+}
+function atomIniSet(bi, i, name) {
+  withBook(bi, () => { const rc = rosterCols(S); if (!rc.ini || !mayEdit(bi)) return; S.roster[i].ini = name; put("Roster", rc.ini + (ROSTER_ROW0 + i), name); });
+}
 function atomFixHtml(f) {
   const x = atomMatch(f).fix, bi = d => books.findIndex(b => !b.S.kind && b.S.dept === d);
   const go = d => "<a data-bi='" + bi(d) + "'>" + esc(d) + " Crew Roster</a>";
   const sec = (key, title, items, li) => items.length ? "<div data-sec='" + key + "'><h4>" + title + " <span class='muted'>(" + items.length + ")</span></h4><ul>" + items.map(li).join("") + "</ul></div>" : "";
-  let h = "<div class='card atomfix' id='atomFixPanel'><div class='atomfixhd'><h3>Names to fix</h3><span class='muted'>Fix them on the Crew Roster: an ATOM name must equal the person's Initials there.</span><span style='flex:1'></span><button class='btn' id='atomFixClose'>Close</button></div>";
+  let h = "<div class='card atomfix' id='atomFixPanel'><div class='atomfixhd'><h3>Names to fix</h3><span class='muted'>An ATOM name must equal the person's Initials on the Crew Roster. For a name with no match, pick who it is (a likely person is suggested) and the Initials are filled in for you.</span><span style='flex:1'></span><button class='btn' id='atomFixClose'>Close</button></div>";
   h += x.closed.map(d => "<div class='muted'>Open the " + esc(d) + " file to match its names.</div>").join("");
-  const body = sec("atomOnly", "In ATOM, but no roster Initials match", x.atomOnly, i => "<li><b>" + esc(i.name) + "</b> (" + esc(i.dept) + ") " + go(i.dept) + "</li>") +
+  const plan = atomIniPlan(f), who = (st, i) => esc((st.roster[i].id ? st.roster[i].id + " · " : "") + st.roster[i].name);
+  const nSug = [...plan.values()].reduce((n, d) => n + (d.edit ? d.sug.size : 0), 0);
+  const aLi = i => { const d = plan.get(i.dept), st = d && books[d.bi].S, sg = d ? d.sug.get(i.name) : undefined;
+    let h = "<li class='aini'><b>" + esc(i.name) + "</b> (" + esc(i.dept) + ")";
+    if (d && d.edit && d.free.length) h += " <select data-aini='" + d.bi + "' data-an='" + esc(i.name) + "'><option value=''>" + (sg == null ? "Pick who this is…" : "Not this person") + "</option>" +
+      [sg, ...d.free.filter(k => k !== sg)].filter(k => k != null).map(k => "<option value='" + k + "'" + (k === sg ? " selected" : "") + ">" + who(st, k) + (k === sg ? " (suggested)" : "") + "</option>").join("") + "</select><button class='btn' data-ainigo>Use as Initials</button>";
+    else if (d && sg != null) h += " <span class='muted'>probably " + who(st, sg) + (d.can ? "; open the " + esc(i.dept) + " file to fill in the Initials" : "") + "</span>";
+    return h + " " + go(i.dept) + "</li>"; };
+  const body = sec("atomOnly", "In ATOM, but no roster Initials match" + (nSug > 1 ? " <button class='btn' id='atomIniAll'>Use all " + nSug + " suggestions</button>" : ""), x.atomOnly, aLi) +
     sec("dupes", "Same Initials twice on a roster", x.dupes, i => "<li><b>" + esc(i.ini) + "</b> (" + esc(i.dept) + "): " + esc(i.ids.join(", ")) + " " + go(i.dept) + "</li>") +
     sec("cat", "CAT differs from the roster", x.cat, i => "<li><b>" + esc(i.id) + "</b> (" + esc(i.dept) + "): ATOM " + esc(i.atom) + ", roster " + esc(i.roster) + " " + go(i.dept) + "</li>") +
     sec("rosterOnly", "On the roster, Initials not in ATOM", x.rosterOnly, i => "<li><b>" + esc(i.id || i.name) + "</b> (" + esc(i.dept) + ") " + go(i.dept) + "</li>");
@@ -1665,6 +1714,10 @@ function atomWire() {
   document.querySelectorAll("#atomBox .seg button").forEach(bt => bt.onclick = () => { spRemember("atom_dept", bt.dataset.d); renderAtom(); });
   if (q("atomFix")) q("atomFix").onclick = () => atomFixOpen();
   if (q("atomFixClose")) q("atomFixClose").onclick = () => atomFixClose();
+  document.querySelectorAll("#atomFixPanel [data-ainigo]").forEach(bt => bt.onclick = () => { const sel = bt.previousElementSibling; if (sel.value === "") { toast("Pick who " + sel.dataset.an + " is first."); return; }
+    atomIniSet(+sel.dataset.aini, +sel.value, sel.dataset.an); renderAll(); toast("Initials " + sel.dataset.an + " filled in. Save to Excel to keep them."); });
+  if (q("atomIniAll")) q("atomIniAll").onclick = () => { const f = atomCurrent(); let n = 0; for (const d of atomIniPlan(f).values()) if (d.edit) for (const [nm, i] of d.sug) { atomIniSet(d.bi, i, nm); n++; }
+    renderAll(); toast(n + " Initials filled in from ATOM. Check them on the Crew Roster, then Save to Excel."); };
   document.querySelectorAll("#atomFixPanel a[data-bi]").forEach(a => a.onclick = () => { const i = +a.dataset.bi; if (i < 0) return; useBook(i); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='roster']").click(); });
 }
 function atomShared() { const ob = books.find(b => b.S.kind === "ops"); return ob && ob.S.atomShared || null; }   // the data the Ops Room published, read from its ATOM Currency sheet
@@ -5803,7 +5856,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z159 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z160 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6722,7 +6775,7 @@ const HELP = {
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
-    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li><li><b>Mission currencies:</b> purple = expires within the due window; an expired one is shown quietly in grey (\"exp 3 Sep\") and is not counted as a problem; a blank box = that department does not need it. In the Planner the day one expires is marked in purple on the person's <b>WD row</b>; nothing alerts. My Lodestar has a Mission currencies card. ATOM's dates are used as they are: a planned flight does not move them, only the next export does.</li></ul><p>Below it, the older per-rule currency checks stay as they were. <b>Past flights check:</b> a past planned flight counts as flown for these rules, so any flight in the last 45 days that the Ops Room has not closed (Flown with ATD and ATA, or Cancelled) is listed under the note and underlined amber in the Planner. It starts from the first flight the Ops Room closed.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is filled in from the Master Planner when you save; <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
+    "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster. For an ATOM name with no match, the list suggests the likely person (a word of the ATOM name is their surname, the other letters start their other names; only people with no Initials yet): <b>Use as Initials</b> writes it in their Crew Roster row, or pick someone else first; <b>Use all suggestions</b> fills every one. Only files you can edit; check them, then Save to Excel.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li><li><b>Mission currencies:</b> purple = expires within the due window; an expired one is shown quietly in grey (\"exp 3 Sep\") and is not counted as a problem; a blank box = that department does not need it. In the Planner the day one expires is marked in purple on the person's <b>WD row</b>; nothing alerts. My Lodestar has a Mission currencies card. ATOM's dates are used as they are: a planned flight does not move them, only the next export does.</li></ul><p>Below it, the older per-rule currency checks stay as they were. <b>Past flights check:</b> a past planned flight counts as flown for these rules, so any flight in the last 45 days that the Ops Room has not closed (Flown with ATD and ATA, or Cancelled) is listed under the note and underlined amber in the Planner. It starts from the first flight the Ops Room closed.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is filled in from the Master Planner when you save; <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li></li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +

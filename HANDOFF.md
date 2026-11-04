@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-04, after z158)
+# LODESTAR handoff (updated 2026-11-04, after z160)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -9,11 +9,17 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
 
+## z159 (4 Nov, Brandon: "remove the demo file"): dashboard without demo files
+The DEV dashboard no longer embeds the eight demo xlsx: 7.7 MB -> 0.8 MB, no "Try with the built-in sample" button (it removes itself when `TEMPLATE_B64` is empty). `python3 .lodestar_build.py dashboard --demo --out PATH` builds a copy with them (assembler: `-` as the own file = none). Brandon chose to keep the demo on GitHub Pages only: `pages.yml` now builds `_site/index.html` with `--demo` (still guarded: publishes only while the repo xlsx hold the demo crew; also triggers on `.dashboard_source.html` and `*.xlsx`). Tests and the guide load the xlsx from the folder, so nothing else changed.
+
+## z160 (4 Nov, Brandon: "read atom initials" = fill the roster Initials from ATOM)
+Currency tab > **Names to fix** > "In ATOM, but no roster Initials match": each name gets a dropdown of that department's people with **no Initials yet** (not Inactive), the likely one pre-selected "(suggested)", and **Use as Initials** (writes the Initials cell of their Roster row, Save to Excel to keep, Undo works). **Use all N suggestions** in the section title fills every suggestion. A file you can't edit shows "probably <callsign · name>; open the <dept> file to fill in the Initials" instead. Matching (`atomIniScore`): one word of the ATOM name must be a word of the person's name (surname), each letter of the other words must start another word of their name (rank and "(NS)" ignored); CAT and NSmen status only break ties; two people who fit equally get no suggestion; each person is suggested once (`atomIniPlan`, `atomIniSet`). Help text updated. Dashboard only. Tests: atom 97/97 (six new `ini_*`), mission_currency, my_lodestar 65/65, excel_safe. Screenshot `previews/atom_initials_real.png`.
+
 ## z158 (4 Nov, Brandon: "do 2 and 3" of the redundancy review): tidy-up, no feature change
 - **Removed** the hidden **Open my Excel** and **Add other departments** buttons (hidden since z121) and their wiring. Kept `#fileInputMore` and `loadOthers` (the tests load files through them; also the only way to add files off SharePoint, as before).
 - **Messages** that told people to use Add other departments now say the file opens by itself on SharePoint and to check it is in the folder (Master Planning, Flight Codes, the Duty Planner's two notes, the welcome text). Old names `Ops_Room_2026.xlsx`, `Master_Planner_2026.xlsx`, `Sample_SUP2_Planner_2026.xlsx` now read without `_2026`.
 - **Dead code removed:** `opsMonthCard` (old month sorties card), `opsDownCount`, `deptIdx`, `isPax`, `monFull`, `xlSerial`, `LAYOUT_NAME`, `DEV_BUILD`, an unused `tbtn` in `renderCur`.
-- **Not done (review items awaiting Brandon):** (1) the 6.8 MB of demo xlsx embedded in the dashboard (only the welcome screen's sample button uses them; on SharePoint every file comes from the folder), (4) reading older file layouts (keep until his real files are on the new layouts), (5) the older per-rule currency checks under the ATOM table and the Ops Room "+ Area" menu item.
+- **Not done (review items awaiting Brandon):** (1) done in z159, (4) reading older file layouts (keep until his real files are on the new layouts), (5) the older per-rule currency checks under the ATOM table and the Ops Room "+ Area" menu item.
 - Tests: `other_depts` check renamed `add_and_open_buttons_are_gone`.
 
 ## z157 (4 Nov, Brandon: "split SANS and NSMEN on the Ops Room too, SANS is underline")

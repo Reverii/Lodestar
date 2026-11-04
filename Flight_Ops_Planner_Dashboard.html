@@ -995,8 +995,6 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <div id="bookbar"></div>
   <div class="grow"></div>
   <div class="fileinfo" id="fileinfo">No file open</div><span id="openingOthers" style="display:none;font-size:12px;color:#475569;margin-left:8px"></span><span id="viewOnly" title="SharePoint says you can read this file but not change it." style="display:none;background:#e0e7ff;color:#3730a3;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:600;margin-left:6px">View only</span>
-  <button class="btn primary" id="btnOpen" style="display:none">Open my Excel</button>
-  <button class="btn" id="btnAdd" style="display:none" disabled title="Other departments' planners, the Duty Roster or the Master Planner">Add other departments</button>
   <span id="zoomBar" title="Make everything smaller or larger (not the Ops Room, which has its own size buttons)"><button class="btn ur" id="zoomOut">−</button><b id="zoomLvl">85%</b><button class="btn ur" id="zoomIn">+</button></span>
   <button class="btn ur" id="btnUndo" disabled title="Undo (Ctrl+Z)">↶</button><button class="btn ur" id="btnRedo" disabled title="Redo (Ctrl+Y)">↷</button>
   <button class="btn ur" id="btnRefresh" style="display:none" title="Refresh from SharePoint (F5 or Ctrl+R). Keeps you signed in. Ctrl+Shift+R reloads the whole page.">⟳ Refresh</button>
@@ -1156,7 +1154,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
 <g transform="translate(18 18)"><rect class="ls-tile" width="64" height="64" rx="14" fill="#0f172a"/><circle class="ls-ring" cx="32" cy="32" r="21" fill="none" stroke="#334155" stroke-width="2" transform="rotate(-90 32 32)"/><g class="ls-rose"><g transform="rotate(0 32 32)"><path d="M32 6 L27 32 L32 32 Z" fill="#f5b301"/><path d="M32 6 L37 32 L32 32 Z" fill="#c98f00"/></g><g transform="rotate(45 32 32)"><path d="M32 16 L28.5 32 L32 32 Z" fill="#94a3b8"/><path d="M32 16 L35.5 32 L32 32 Z" fill="#64748b"/></g><g transform="rotate(90 32 32)"><path d="M32 6 L27 32 L32 32 Z" fill="#f8fafc"/><path d="M32 6 L37 32 L32 32 Z" fill="#cbd5e1"/></g><g transform="rotate(135 32 32)"><path d="M32 16 L28.5 32 L32 32 Z" fill="#94a3b8"/><path d="M32 16 L35.5 32 L32 32 Z" fill="#64748b"/></g><g transform="rotate(180 32 32)"><path d="M32 6 L27 32 L32 32 Z" fill="#f8fafc"/><path d="M32 6 L37 32 L32 32 Z" fill="#cbd5e1"/></g><g transform="rotate(225 32 32)"><path d="M32 16 L28.5 32 L32 32 Z" fill="#94a3b8"/><path d="M32 16 L35.5 32 L32 32 Z" fill="#64748b"/></g><g transform="rotate(270 32 32)"><path d="M32 6 L27 32 L32 32 Z" fill="#f8fafc"/><path d="M32 6 L37 32 L32 32 Z" fill="#cbd5e1"/></g><g transform="rotate(315 32 32)"><path d="M32 16 L28.5 32 L32 32 Z" fill="#94a3b8"/><path d="M32 16 L35.5 32 L32 32 Z" fill="#64748b"/></g><circle cx="32" cy="32" r="2.5" fill="#0f172a"/></g><circle class="ls-glow" cx="32" cy="8" r="7" fill="#f5b301" opacity="0" style="filter:blur(2px)"/><path class="ls-spark" d="M32 0 L33.4 4.6 L38 6 L33.4 7.4 L32 12 L30.6 7.4 L26 6 L30.6 4.6 Z" fill="#fff"/></g>
 <text class="ls-word" x="100" y="58" font-family="Segoe UI,Arial,sans-serif" font-size="38" font-weight="700" letter-spacing="5" fill="#f8fafc">LODESTAR</text>
 <text class="ls-sub" x="101" y="80" font-family="Segoe UI,Arial,sans-serif" font-size="13" letter-spacing="1" fill="#94a3b8">121 SQN · FLIGHT &amp; OPS PLANNER</text></svg></div>
-    <p>Open your department's planner Excel (or, for the Duty Planner, the Duty Roster) to view and edit it here. Then use <b>Add other departments</b> to view the other departments' files and the Duty Roster, read-only, as tabs. When you click <b>Save to Excel</b>, your changes are written back into the workbook. Its formulas, colours and dropdowns stay as they are, so the file keeps working in Excel.</p>
+    <p>Open your department's planner Excel (or, for the Duty Planner, the Duty Roster) to view and edit it here. On SharePoint the other departments' files, the Duty Roster and the Master Planner open by themselves, read-only, as tabs. When you click <b>Save to Excel</b>, your changes are written back into the workbook. Its formulas, colours and dropdowns stay as they are, so the file keeps working in Excel.</p>
     <p class="muted" style="font-size:12px">Nothing is sent anywhere. Everything runs in this browser page, so it works on the intranet with no internet. Close the file in Excel before saving to it.</p>
     <div class="row">
       <button class="btn primary" id="wOpen">Open planner Excel</button>
@@ -1166,7 +1164,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z157</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z158</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1260,7 +1258,6 @@ const MONTHS_FULL = ["January","February","March","April","May","June","July","A
 const NX_MI = 12, NMON = 13, MON_NX = "Jan (next year)";
 const monSheet = mi => mi < NX_MI ? MONTHS[mi] : MON_NX;
 const monLab = (mi, y) => MONTHS_FULL[mi % 12] + " " + (y + Math.floor(mi / 12));   // "January 2027" for next January
-const monFull = (mi, y) => mi < NX_MI ? MONTHS_FULL[mi] : "January " + (y + 1);
 // a date as plan-year coordinates: { y, mi, d } with January of year Y + 1 as month 12 of year Y
 const ymd = (iso, Y) => { let y = +String(iso).slice(0, 4), mi = +String(iso).slice(5, 7) - 1; if (Y != null && y === Y + 1 && mi === 0) { y = Y; mi = NX_MI; } return { y, mi, d: +String(iso).slice(8, 10) - 1 }; };
 const inYr = (iso, Y) => ymd(iso, Y).y === Y;   // in plan year Y, or in its look-ahead January
@@ -2385,7 +2382,7 @@ function addBook(st, other, name, handle) {
   books = [book]; useBook(0); cur.sel = null;
   if (S.year === new Date().getFullYear()) cur.m = new Date().getMonth(); else cur.m = 0;
   $("fileinfo").textContent = name + (handle ? (handle.sp ? "  (SharePoint)" : "") : "  (Save will download a copy)"); $("fileinfo").title = $("fileinfo").textContent;
-  $("welcome").style.display = "none"; $("btnAdd").disabled = false;
+  $("welcome").style.display = "none";
   renderAll();
   if (st.kind === "roster") document.querySelector("nav.tabs button[data-v='sdo']").click();
   if (st.kind === "master") document.querySelector("nav.tabs button[data-v='mp']").click();
@@ -2473,7 +2470,7 @@ function chitTarget(bi) {
   if (!(mayEdit(bi) || mayEdit(oi))) return { err: "Only " + st.dept + " (in its own file) or the Ops Room can up-chit." };
   if (st.hasChit && (mayEdit(bi))) return { bi, own: true };
   if (ob && ob.S.hasChit && mayEdit(oi)) return { bi: oi, own: false };
-  return { err: st.dept + "'s planner is an older layout with no Medical Chits sheet" + (ob ? ", and the Ops Room file open here is also an older one" : ", and the Ops Room file isn't open") + ". Upload the new " + (ob ? "Ops_Room_2026.xlsx" : st.dept + " planner") + " to SharePoint (from the project folder) and reopen, then up-chit again." };
+  return { err: st.dept + "'s planner is an older layout with no Medical Chits sheet" + (ob ? ", and the Ops Room file open here is also an older one" : ", and the Ops Room file isn't open") + ". Upload the new " + (ob ? "Ops_Room.xlsx" : st.dept + " planner") + " to SharePoint (from the project folder) and reopen, then up-chit again." };
 }
 let chitCtx = null;
 function chitOpen(bi, i, iso) {
@@ -2553,7 +2550,6 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-upch
 // A higher stamp than this dashboard knows = the file is newer (saving could write to the wrong cells). Files without a stamp (or with a lower one)
 // are checked by the sheets and rows this dashboard uses; anything missing is listed as "older layout".
 const LAYOUT = { dept: 4, master: 3, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
-const LAYOUT_NAME = { dept: "planner", master: "Master Planner", roster: "Duty Roster", ops: "Ops Room" };
 function layoutCheck(st) {
   const kind = st.kind || "dept", z = WB.paths["Dashboard"] ? str(readCells("Dashboard").Z2) : "", m = /(\w+)\s+layout\s+(\d+)/i.exec(z), miss = [];
   const stamp = m ? +m[2] : null;
@@ -3339,9 +3335,9 @@ function renderMp() {
   { const P0 = bi >= 0 ? books[bi].S : null; if (cur.mpM === NX_MI && !(P0 && P0.nx)) cur.mpM = 11;
     $("mpMonth").innerHTML = monOpts(cur.mpM, P0 ? P0.year : S.year, P0 && P0.nx); }
   if (bi < 0) $("mpReq").innerHTML = "";
-  if (bi < 0) { $("mpInfo").innerHTML = "The Master Planner isn't open. On SharePoint it opens with every department; otherwise add <b>Master_Planner</b> with <b>Add other departments</b>."; $("mpCal").innerHTML = ""; $("mpSide").innerHTML = ""; $("mpKpis").innerHTML = ""; return; }
+  if (bi < 0) { $("mpInfo").innerHTML = "The Master Planner isn't open. On SharePoint it opens by itself with every department; check that <b>Master_Planner.xlsx</b> is in the folder."; $("mpCal").innerHTML = ""; $("mpSide").innerHTML = ""; $("mpKpis").innerHTML = ""; return; }
   const P = books[bi].S;
-  if (P.legacy) { $("mpKpis").innerHTML = ""; $("mpInfo").innerHTML = "<span style='color:#b91c1c'><b>This Master Planner file is the old layout (6 fixed slots a day).</b> Replace it with the new Master_Planner_2026.xlsx, which keeps a list of flights so you can add as many as you need.</span>"; $("mpCal").innerHTML = ""; $("mpSide").innerHTML = ""; return; }
+  if (P.legacy) { $("mpKpis").innerHTML = ""; $("mpInfo").innerHTML = "<span style='color:#b91c1c'><b>This Master Planner file is the old layout (6 fixed slots a day).</b> Replace it with the new Master_Planner.xlsx, which keeps a list of flights so you can add as many as you need.</span>"; $("mpCal").innerHTML = ""; $("mpSide").innerHTML = ""; return; }
   const y = P.year, mi = cur.mpM, M = P.mp[mi], dim = daysIn(y, mi), off = (new Date(y, mi, 1).getDay() + 6) % 7;
   const daySort = d => M.status[d] ? 0 : P.fl.reduce((n, f) => n + (f.mi === mi && f.d === d && f.code ? flSort(f) : 0), 0);
   let tot = 0, offDays = 0; for (let d = 0; d < dim; d++) { if (M.status[d]) offDays++; tot += daySort(d); }
@@ -3578,7 +3574,6 @@ function xlsxBuild(sheets) {
   });
   return fflate.zipSync(f, { level: 6 });
 }
-const xlSerial = iso => { const [y, m, d] = iso.split("-").map(Number); return Math.round((Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 86400000); };
 const r1 = n => Math.round(n * 10) / 10;
 function mpExportBytes(P, o) {   // one Calendar sheet: every day is two columns (flight | hours), one row per flight
   const D = mpExportData(P, o), stamp = "Exported " + fmtLong(opsToday()), CL = n => String.fromCharCode(65 + n), NC = 15, LAST = CL(NC - 1), WK = CL(NC - 1), cells = {}, rowH = { 1: 36, 2: 18 }, merges = []; let r = 4;
@@ -3775,7 +3770,7 @@ $("mpWrap").addEventListener("change", e => {
 });
 // ---------- Flight Codes (Master Planner): the one list of flight codes; departments copy it into their Activities sheet
 function renderCodes() {
-  const bi = mpIdx(); if (bi < 0) { $("codesNote").innerHTML = "The Master Planner isn't open. On SharePoint it opens with every department; otherwise add <b>Master_Planner</b> with <b>Add other departments</b>."; $("codeTable").innerHTML = ""; $("codesWarn").innerHTML = ""; return; }
+  const bi = mpIdx(); if (bi < 0) { $("codesNote").innerHTML = "The Master Planner isn't open. On SharePoint it opens by itself with every department; check that <b>Master_Planner.xlsx</b> is in the folder."; $("codeTable").innerHTML = ""; $("codesWarn").innerHTML = ""; return; }
   const P = books[bi].S, ed = mpEditable(), C = P.codeAll;
   $("codesNote").innerHTML = (ed ? "<b>You keep the flights programme.</b> Every flight code the squadron uses lives here. Each department gets new and changed codes by itself the next time it saves. A code you stop using stays in the departments, so their old plans keep counting it; just leave it out of new flights. Add or change codes here, then <b>Save to Excel</b>."
     : "<b>🔒 Set by the Master Planner.</b> Your department's flight codes come from this list. New and changed codes are added to your Activities tab when you save.") +
@@ -3842,7 +3837,6 @@ function syncQuiet() {
 }
 function renderCur() {
   renderAtom();
-  const tbtn = document.querySelector("nav.tabs button[data-v='cur']");
   if (S.kind || !S.hasCur) {
     $("curNote").innerHTML = S.kind ? "Open a department's planner to see its crew currency." : "<b>" + esc(S.dept) + "'s file has no currency rules yet.</b> Upload the new planner file for this department (from the project folder) to get the currency rules.";
     $("curTable").innerHTML = ""; $("ruleTable").innerHTML = ""; $("nclBox").innerHTML = ""; return;
@@ -4243,7 +4237,7 @@ function rosterPeople() {
 function renderDutyCrew(src, ownRoster) {
   const D = DUTY, list = src ? src.S.crew && src.S.crew[D] || [] : [];
   $("dutyCrewTitle").textContent = D + " crew list: who can do " + dutyName(D);
-  if (!src) { $("dutyCrewNote").textContent = "Add the Duty Roster (Add other departments) to see who can do " + D + "."; $("dutyCrew").innerHTML = ""; return; }
+  if (!src) { $("dutyCrewNote").textContent = "The Duty Roster isn't open, so nobody can be listed for " + D + ". On SharePoint it opens by itself; check that Duty_Roster.xlsx is in the folder."; $("dutyCrew").innerHTML = ""; return; }
   if (!src.S.hasCrew) { $("dutyCrewNote").textContent = "This roster file is the older SDO Roster, which has no crew lists. Use the new Duty Roster file."; $("dutyCrew").innerHTML = ""; return; }
   $("dutyCrewNote").textContent = ownRoster ? "Add the people who can be put on " + D + ". Pick from the open department rosters, or type a callsign. Departments still choose who goes on each of their days." :
     "Set by the Duty Planner. When you plan " + D + " for someone not on this list, the cell is marked.";
@@ -4256,7 +4250,7 @@ function renderDutyCrew(src, ownRoster) {
     const ppl = rosterPeople().filter(p => !list.some(q => same(q.id, p.id) && same(q.dept, p.dept)));
     h += "<tr><td colspan=2 style='padding-top:8px'><select id='dcAdd'><option value=''>+ Add from an open department roster…</option>" +
       ppl.map((p, k) => "<option value='" + k + "'>" + esc(p.dept + ": " + p.id + (p.name ? " " + p.name : "")) + "</option>").join("") + "</select> " +
-      "<button class='btn' id='dcType'>+ Type a callsign</button>" + (ppl.length ? "" : " <span class='muted' style='font-size:11px'>Open the department files (Add other departments) to pick from their rosters.</span>") + "</td></tr>";
+      "<button class='btn' id='dcType'>+ Type a callsign</button>" + (ppl.length ? "" : " <span class='muted' style='font-size:11px'>No department file is open, so there is no roster to pick from.</span>") + "</td></tr>";
     $("dutyCrew").dataset.ppl = JSON.stringify(ppl);
   }
   $("dutyCrew").innerHTML = h;
@@ -4293,7 +4287,7 @@ function renderSdo() {
         "<b style='color:#15803d'>Your " + D + " days match the Duty Roster.</b> The coloured tag on each day is the department the roster gives it." + syncBtn;
   } else {
     note = "Tick <b>" + D + "</b> on each day " + esc(own.dept) + " has " + D + " duty (your own file). " +
-      (books.length > 1 ? "Other open departments are shown alongside. A red day has more than one department." : "Use <b>Add other departments</b> to add the <b>Duty Roster</b> and copy your duty days from it, or to see other departments' days.");
+      (books.length > 1 ? "Other open departments are shown alongside. A red day has more than one department." : "The <b>Duty Roster</b> and the other departments are not open. On SharePoint they open by themselves; then your duty days can be copied and the other departments' days are shown.");
   }
   $("sdoNote").innerHTML = note + (others.length ? " <span style='color:#b91c1c'>Not shown (different year): " + esc(others.join(", ")) + ".</span>" : "");
   const rosterOf = ref => (ownRoster ? plan(own, D)[ref] : rb && rb.S.year === y ? plan(rb.S, D)[ref] : "") || "";
@@ -4447,7 +4441,7 @@ const opsDbA = (ref, ph, ed, auto) => ed ? " data-db='" + ref + "' data-ph='" + 
 // then Safety, Prefect, Security, Intel (Flights / Intel Spec) and DOB (a time). Area and Codes sit in the right-hand column.
 function renderOpsBoard(iso, ed) {
   const oi = opsIdx(), st = oi >= 0 ? books[oi].S : null, el = $("opsBoard");
-  if (!st || !st.hasDb) { el.innerHTML = st ? "<div class='muted' style='font-size:12px;padding:2px 4px'>This Ops Room file has no Day Board yet. Use the new Ops_Room_2026.xlsx for the duty strip.</div>" : ""; el.style.display = st ? "" : "none"; return; }
+  if (!st || !st.hasDb) { el.innerHTML = st ? "<div class='muted' style='font-size:12px;padding:2px 4px'>This Ops Room file has no Day Board yet. Use the new Ops_Room.xlsx for the duty strip.</div>" : ""; el.style.display = st ? "" : "none"; return; }
   el.style.display = "";
   const { y, mi, d } = ymd(iso, st.year);
   if (y !== st.year) { el.innerHTML = ""; return; }
@@ -4714,7 +4708,6 @@ function opsEdge(r, iso) { const oc = opsOutcome(r, iso); return oc !== "plan" ?
 // the stat chips filter the flights: seats (empty seats), mc (no Mission Commander), flown, cxl, open
 const OPS_FILT = { seats: r => rowMiss(r) > 0, mc: r => !(r.o && r.o.mc), flown: (r, iso) => opsOutcome(r, iso) === "flown", cxl: (r, iso) => opsOutcome(r, iso) === "cxl", open: (r, iso) => opsEdge(r, iso) === "open" };
 const OPS_FILT_LAB = { seats: "Empty seats", mc: "MC not set", flown: "Flown", cxl: "Cancelled", open: "Not closed" };
-function opsDownCount(D) { let n = 0; books.forEach(b => { if (!isDept(b) || b.S.year !== D.y) return; const C = computeChit(b.S), k = dayOfYear(D.y, D.mi, D.d); b.S.roster.forEach((p, i) => { if (C[i] && C[i].down[k]) n++; }); }); return n; }
 function renderOps() {
   const el = $("opsMain"); if (!el) return;
   const tab = document.querySelector("nav.tabs button[data-v='ops']"); if (tab) tab.style.display = books.length && (OPS || opsIdx() >= 0 || masterBook()) ? "" : "none";
@@ -4727,7 +4720,7 @@ function renderOps() {
   const missing = ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"].filter(x => !deptOpen(x));
   // only what needs attention: no Master Planner, read-only, departments not open
   $("opsNote").innerHTML = !mb ? "<b style='color:#b91c1c'>Open the Master Planner to see the flights.</b> The Ops Room button on the start page opens every file at once." :
-    (ed ? "" : opsIdx() < 0 ? "Read-only: open the dashboard with <b>Ops Room</b> on the start page to fill in the flights (saved in Ops_Room_2026.xlsx). " : "Read-only: the Ops Room file is open for viewing. ") +
+    (ed ? "" : opsIdx() < 0 ? "Read-only: open the dashboard with <b>Ops Room</b> on the start page to fill in the flights (saved in Ops_Room.xlsx). " : "Read-only: the Ops Room file is open for viewing. ") +
     (missing.length ? "<span style='color:#b45309'>Not open, so their seats can't be filled: " + esc(missing.join(", ")) + ".</span>" : "");
   if (!mb) { el.innerHTML = ""; $("opsBoard").innerHTML = ""; $("opsSide").innerHTML = ""; $("opsStats").innerHTML = ""; $("opsFr").innerHTML = ""; return; }
   const D = opsDay(iso);
@@ -4893,16 +4886,6 @@ function opsGround(D) {
   return out.sort((x, y) => x.grp - y.grp || (x.key < y.key ? -1 : x.key > y.key ? 1 : 0) || (x.k < y.k ? -1 : x.k > y.k ? 1 : 0) || (x.act < y.act ? -1 : x.act > y.act ? 1 : 0));
 }
 // the month so far: sorties planned, flown, cancelled (by reason) and not closed, from the Ops Room's outcomes
-function opsMonthCard(D) {
-  const y = D.y, mi = D.mi, today = opsToday(), t = { plan: 0, flown: 0, cxl: 0, open: 0 }, why = new Map();
-  for (let d = 0; d < daysIn(y, mi); d++) { const iso = isoOf(y, mi, d), X = opsDay(iso); if (!X || !X.rows) continue;
-    X.rows.forEach(r => { const oc = opsOutcome(r, iso); t[oc]++; if (oc === "cxl") { const w = String(r.o.why || "No reason").split(":")[0]; why.set(w, (why.get(w) || 0) + 1); } }); }
-  const n = t.plan + t.flown + t.cxl + t.open, pct = v => n ? " <small class='muted'>" + Math.round(v * 100 / n) + "%</small>" : "";
-  return "<div class='card'><h2>" + MONTHS_FULL[mi % 12] + " sorties</h2><table class='opsgr opsmon'><tr><td>Planned</td><td><b>" + n + "</b></td></tr>" +
-    "<tr><td><span class='ost flown'>FLOWN</span></td><td><b>" + t.flown + "</b>" + pct(t.flown) + "</td></tr>" +
-    "<tr><td><span class='ost cxl'>CANCELLED</span></td><td><b>" + t.cxl + "</b>" + pct(t.cxl) + (why.size ? "<div class='muted'>" + [...why].sort((a, b) => b[1] - a[1]).map(([w, c]) => esc(w) + " " + c).join(" · ") + "</div>" : "") + "</td></tr>" +
-    "<tr><td><span class='ost open'>NOT CLOSED</span></td><td><b>" + t.open + "</b></td></tr><tr><td><span class='ost'>STILL TO FLY</span></td><td><b>" + t.plan + "</b></td></tr></table></div>";
-}
 // movement of a day: crew on Leave (LL, OL), Off (OIL) or Medical (MC) in their plans, one row per code across the departments,
 // each person once with the shifts when it is not the whole day
 // Down-chit column: everyone not cleared to fly that day (MC or a medical condition). Click a name to up-chit; + Down-chit adds someone.
@@ -4995,7 +4978,6 @@ function opsSeat(o, k, id) { o.seat[k] = id || ""; }
 function opsXtra(o) { const m = {}; String(o && o.xtra || "").split(";").forEach(part => { const i = part.indexOf(":"); if (i < 0) return; const d = part.slice(0, i).trim(), ids = part.slice(i + 1).split(",").map(x => x.trim()).filter(Boolean); if (d && ids.length) m[d] = (m[d] || []).concat(ids); }); return m; }
 const opsXtraStr = m => Object.entries(m).filter(([d, L]) => L.length).map(([d, L]) => d + ": " + L.join(", ")).join("; ");
 const paxList = o => String(o && o.pax || "").split(",").map(x => x.trim()).filter(x => x && x !== "-");   // "-" = the Ops Room decided: nobody is a passenger
-const isPax = (o, id) => paxList(o).some(x => same(x, id));
 // who is a passenger on a row: the Ops Room's saved list once it has one (even "-", nobody), else the people the planners tagged Pax
 const rowPax = (r, id) => (r.pax || []).some(x => same(x, id));
 const opsTogglePax = (o, r, id) => { const L = (r.pax || []).slice(), n = rowPax(r, id) ? L.filter(x => !same(x, id)) : L.concat(id); o.pax = n.length ? n.join(", ") : "-"; };
@@ -5088,7 +5070,7 @@ document.addEventListener("click", e => {
 function oaOpen() {
   const ob = opsBook(), oi = books.indexOf(ob), mb = masterBook();
   if (!ob || !opsEditable()) { alert("Ops Add needs the Ops Room file open in Ops Room mode."); return; }
-  if (!ob.S.hasOa) { alert("The Ops Room file open here is an older one with no Ops Add sheet. Upload the new Ops_Room_2026.xlsx to SharePoint (from the project folder) and reopen."); return; }
+  if (!ob.S.hasOa) { alert("The Ops Room file open here is an older one with no Ops Add sheet. Upload the new Ops_Room.xlsx to SharePoint (from the project folder) and reopen."); return; }
   const D = opsDay(cur.opsDay); if (!D || D.other) { alert("Pick a day in " + ob.S.year + "."); return; }
   const codes = mb ? mb.S.codes.filter(c => c.code) : [];
   $("oaCode").innerHTML = codes.map(c => "<option value='" + esc(c.code) + "'>" + esc(c.code + (c.desc ? " · " + c.desc : "")) + "</option>").join("");
@@ -5776,7 +5758,6 @@ function move(k, dr, dd) {
   return order[idx] + ":" + d;
 }
 
-const deptIdx = () => books.map((b, i) => i).filter(i => isDept(books[i]));
 // ---- opening every department at once (Ops)
 async function openOps(list) {   // list: [{name, buf, handle}]
   const errs = []; let first = true;
@@ -5823,7 +5804,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z157 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z158 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -5844,7 +5825,7 @@ async function spInit() {
   try { await spList(); } catch (e) { spDiag("site " + SP.web + " found, but couldn't list folder " + folder + " (" + (e.message || e) + ")"); return; }
   if (!SP.files.length) { spDiag("no .xlsx files found in " + folder); return; }
   spDiag("connected to " + folder + ", " + SP.files.length + " Excel files");
-  SP.on = true; $("btnAdd").style.display = "none"; $("btnRefresh").style.display = ""; liveStart(); logWhoAmI();
+  SP.on = true; $("btnRefresh").style.display = ""; liveStart(); logWhoAmI();
   $("wOpen").textContent = "Open from SharePoint";
   document.querySelector("#welcome p.muted").textContent = "Opened from SharePoint: the Excel files in this folder (" + folder.split("/").pop() + ") open and save directly here. Saving replaces the file on SharePoint, so make sure nobody is editing the same file in Excel at the same time.";
   if (!books.length) { /*DEV*/ devUi(); if (devGet("auto") === "1") { devOpen(); return; } /*/DEV*/ if (await sessResume()) return; spShowDepts(); }
@@ -6069,8 +6050,8 @@ async function spSave(h, bytes) {
 }
 
 // ---------- events ----------
-$("btnOpen").onclick = openFile; $("wOpen").onclick = openFile; $("btnSave").onclick = save;
-$("wSample").onclick = () => { load(b64ToBuf(TEMPLATE_B64), "Sample_SUP2_Planner_2026.xlsx", null); if (typeof SAMPLES_B64 !== "undefined") { for (const [nm, b64] of Object.entries(SAMPLES_B64)) { try { loadWorkbook(b64ToBuf(b64), nm, null, true); } catch (e) { } } if (opsIdx() >= 0) OPS = true; /* the sample includes the Ops Room file: every sample file can be edited, like the Ops Room start button */ renderAll(); } };
+$("wOpen").onclick = openFile; $("btnSave").onclick = save;
+$("wSample").onclick = () => { load(b64ToBuf(TEMPLATE_B64), "Sample_SUP2_Planner.xlsx", null); if (typeof SAMPLES_B64 !== "undefined") { for (const [nm, b64] of Object.entries(SAMPLES_B64)) { try { loadWorkbook(b64ToBuf(b64), nm, null, true); } catch (e) { } } if (opsIdx() >= 0) OPS = true; /* the sample includes the Ops Room file: every sample file can be edited, like the Ops Room start button */ renderAll(); } };
 $("fileInput").onchange = async e => { const f = e.target.files[0]; if (f) load(await f.arrayBuffer(), f.name, null); };
 $("mpTabBtn").onclick = e => { e.stopPropagation(); $("plMenu").classList.remove("open"); $("mpMenu").classList.toggle("open"); };
 $("plTabBtn").onclick = e => { e.stopPropagation(); $("mpMenu").classList.remove("open"); $("plMenu").classList.toggle("open"); };
@@ -6666,7 +6647,6 @@ const sw = (bg, fg, t) => "<span class='sw' style='background:" + bg + ";color:"
 /*DEV*/
 // ---------- DEV MODE: development builds only. One click (or automatically) opens every Excel in the folder with edit rights,
 // so a new revision doesn't need each department added by hand. assemble.py --release removes all of this.
-const DEV_BUILD = true;
 const devGet = k => { try { return localStorage.getItem("fop_dev_" + k); } catch (e) { return null; } };
 const devSet = (k, v) => { try { localStorage.setItem("fop_dev_" + k, v); } catch (e) { } };
 function devIdb(mode, fn) { return new Promise((ok, no) => { const r = indexedDB.open("lodestar_dev", 1); r.onupgradeneeded = () => r.result.createObjectStore("h"); r.onerror = () => no(r.error);
@@ -7050,7 +7030,6 @@ $("bookbar").addEventListener("click", e => {
   closePop(); useBook(+b.dataset.b); cur.sel = null; renderAll();
 });
 $("ovDept").addEventListener("click", e => { const a = e.target.closest("a[data-b]"); if (!a) return; e.preventDefault(); useBook(+a.dataset.b); cur.sel = null; renderAll(); document.querySelector("nav.tabs button[data-v='plan']").click(); });
-$("btnAdd").onclick = () => { if (SP.on) { spShowPicker(true); return; } $("fileInputMore").value = ""; $("fileInputMore").click(); };
 $("fileInputMore").onchange = e => loadOthers([...e.target.files]);
 $("actTable").addEventListener("change", e => {
   if (readOnly()) { renderActs(); return; }

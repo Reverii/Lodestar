@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-04, after z157)
+# LODESTAR handoff (updated 2026-11-04, after z158)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,13 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z158 (4 Nov, Brandon: "do 2 and 3" of the redundancy review): tidy-up, no feature change
+- **Removed** the hidden **Open my Excel** and **Add other departments** buttons (hidden since z121) and their wiring. Kept `#fileInputMore` and `loadOthers` (the tests load files through them; also the only way to add files off SharePoint, as before).
+- **Messages** that told people to use Add other departments now say the file opens by itself on SharePoint and to check it is in the folder (Master Planning, Flight Codes, the Duty Planner's two notes, the welcome text). Old names `Ops_Room_2026.xlsx`, `Master_Planner_2026.xlsx`, `Sample_SUP2_Planner_2026.xlsx` now read without `_2026`.
+- **Dead code removed:** `opsMonthCard` (old month sorties card), `opsDownCount`, `deptIdx`, `isPax`, `monFull`, `xlSerial`, `LAYOUT_NAME`, `DEV_BUILD`, an unused `tbtn` in `renderCur`.
+- **Not done (review items awaiting Brandon):** (1) the 6.8 MB of demo xlsx embedded in the dashboard (only the welcome screen's sample button uses them; on SharePoint every file comes from the folder), (4) reading older file layouts (keep until his real files are on the new layouts), (5) the older per-rule currency checks under the ATOM table and the Ops Room "+ Area" menu item.
+- Tests: `other_depts` check renamed `add_and_open_buttons_are_gone`.
 
 ## z157 (4 Nov, Brandon: "split SANS and NSMEN on the Ops Room too, SANS is underline")
 Ops Room names (seats, extra crew, duty strip, Down-chit, pickers, flight card crew; all through `opsCatCls`): **NSMEN** keep the green box (`sansbox`); **SANS** keep their Cat colour and are **underlined** (`sansul`, 2 px). The key reads `SANS` (underlined) and `NSMEN` (green box) instead of one "SANS / NSMEN" box. Dashboard only; upload the DEV dashboard. Tests: ops_room 56/56 (new `sans_person_is_underlined_in_cat_colour`; the green-box test now uses NSMEN; key test checks both), flight_card 17/17, role_tags 15/15, my_lodestar 65/65, wd_row 19/19. Real screenshot `previews/ops_sans_nsmen_real.png`.

@@ -27,10 +27,11 @@ test("hide_sans_and_nsmen", async ({ page }) => {
   const s = await setup(page);
   await chip(page, "sans");
   let rows = await shown(page); assert.ok(!rows.includes(s.ids[1]) && rows.includes(s.ids[2]) && rows.includes(s.ids[0]) && rows.includes(s.ids[3]), rows.join());
-  assert.ok(await page.evaluate(() => /SANS \/ NSMEN/.test(document.getElementById("plan").innerText)), "the divider stays while NSMEN shows");
+  const bands = () => page.evaluate(() => [...document.querySelectorAll("#plan tr.sansSep")].map(t => t.innerText.trim()));   // z155: a SANS band and an NSMEN band
+  assert.deepStrictEqual(await bands(), ["NSMEN"], "only the NSMEN band while SANS is hidden");
   await chip(page, "nsmen");
   rows = await shown(page); assert.ok(!rows.includes(s.ids[1]) && !rows.includes(s.ids[2]));
-  assert.ok(await page.evaluate(() => !/SANS \/ NSMEN/.test(document.getElementById("plan").innerText)), "no divider when both are hidden");
+  assert.deepStrictEqual(await bands(), [], "no band when both are hidden");
   const hidden = await page.evaluate(() => S.roster.filter(p => (p.name || p.id) && /^(sans|nsmen)$/i.test(p.status || "")).length);   // the demo roster has other SANS / NSMEN people too
   assert.strictEqual(await count(page), "Showing " + (s.total - hidden) + " of " + s.total + " crew");
 }, F);

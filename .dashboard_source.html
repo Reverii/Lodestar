@@ -873,7 +873,7 @@ table.gtab td.gl{color:#6d28d9;font-style:italic}table.gtab td.gw b{font-weight:
 /* duty strip */
 #opsBoard{margin:0;padding:6px 8px;background:var(--s50);border-bottom:1px solid var(--s200);display:flex;gap:6px;align-items:stretch;flex:none}
 .odg{flex:0 0 auto;width:clamp(290px,33%,470px);display:grid;grid-template-columns:42px repeat(4,minmax(0,1fr));grid-template-rows:14px repeat(3,17px);gap:2px 4px;background:#fff;border:1px solid var(--s200);border-left:4px solid #e11d48;border-radius:7px;padding:3px 7px 4px}
-.odg .dh{grid-row:1;font-weight:900;font-size:10px;letter-spacing:.5px;color:#be123c;white-space:nowrap}
+.odg .dh{grid-row:1;font-weight:900;font-size:12px;letter-spacing:.5px;color:#be123c;white-space:nowrap}
 .odg .tg{grid-column:1;font-size:8.5px;font-weight:800;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#fff}
 .odg .tg.s0{background:#0369a1}.odg .tg.s1{background:#b45309}.odg .tg.s2{background:#312e81}
 .odg .dc{display:flex;align-items:center;justify-content:center;background:#fff1f2;border:1px solid #fecdd3;border-radius:4px;font-weight:800;font-size:13px;color:var(--s900);overflow:hidden;white-space:pre-line;text-align:center;line-height:1.15;min-width:0}
@@ -881,7 +881,7 @@ table.gtab td.gl{color:#6d28d9;font-style:italic}table.gtab td.gw b{font-weight:
 .odg .dc.emp{background:#fff;border:1.5px dashed var(--s300);color:var(--s400);font-weight:600}.odg .dc .oph{color:var(--s500);font-weight:600;font-size:11px}.odg .dc input{text-align:center;padding:0 2px}
 .odsep{width:1px;background:var(--s300);margin:2px 1px;flex:none}
 .odi{flex:1 1 0;min-width:0;background:#fff;border:1px solid var(--s200);border-left:4px solid var(--s500);border-radius:7px;padding:3px 8px 4px;display:flex;flex-direction:column}
-.odi .dn{font-weight:900;font-size:10px;letter-spacing:.5px;color:var(--s600);text-transform:uppercase}
+.odi .dn{font-weight:900;font-size:12px;letter-spacing:.5px;color:var(--s600);text-transform:uppercase}
 .odi .dv{font-weight:800;font-size:14px;margin:auto 0;white-space:pre-wrap;line-height:1.15;overflow:hidden;max-height:3.5em}.odi .dv.tm{color:#0f766e;font-size:15px}
 .odi .oph{color:var(--s400);font-weight:600}.odi.wide{flex:2.4 1 0}.odi.dob{flex:.8 1 0}
 .odi .dv2{display:flex;gap:5px;flex:1;margin-top:2px;min-height:0}.odi .dv2>div{flex:1;min-width:0;background:var(--s50);border-radius:4px;padding:1px 5px;font-weight:800;font-size:12px;white-space:pre-wrap;line-height:1.15;overflow:hidden;max-height:4.7em}
@@ -1185,7 +1185,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z171</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z172</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -6164,7 +6164,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z171 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z172 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

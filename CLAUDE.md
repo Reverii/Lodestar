@@ -50,7 +50,7 @@ existing macro-heavy ops tool (Oracle).
 | `Flight_Ops_Planner_SUP2.xlsx` | SUP 2 planner, the master template (newest layout, Syllabus sheets, Jan (next year) tab) |
 | `Flight_Ops_Planner_{SUP1,TACCO,Loadmaster,Pilot}.xlsx` | other departments, same layout as SUP 2 (dept layout 4). Since 2 Nov the repo's eight xlsx are a fresh demo set, not Brandon's real-data files |
 | `Master_Planner.xlsx`, `Duty_Roster.xlsx`, `Ops_Room.xlsx` | shared files |
-| `Flight_Ops_Planner_Dashboard.html` | **the dev build Brandon uses** (~6 MB; embeds SUP 2 as template + the other files as samples) |
+| `Flight_Ops_Planner_Dashboard.html` | **the dev build Brandon uses** (about 0.8 MB since z159: no demo files inside; the GitHub Pages copy is built with them, `dashboard --demo --out`) |
 | `release/Flight_Ops_Planner_Dashboard.html` | release build (dev code stripped). Not for Brandon yet |
 | `input/LODESTAR_Data_Input.xlsx` | Brandon's filled real-data workbook (Crew, Flight Codes, Activities, Lists, Public Holidays) |
 | `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, `node tests/atom.test.js` (ATOM currency, synthetic exports from `tests/make_atom_fixture.py`), `node tests/planner_filter.test.js`, `node tests/mp_export.test.js`, `node tests/ops_room.test.js` (Ops Room board, about 40 checks), `node tests/master_calendar.test.js` (Master Planner calendar chips), `node tests/dept_select.test.js` (the SharePoint department screen, stubbed SharePoint), `node tests/other_depts.test.js` (other departments open by themselves, View only), `node tests/role_tags.test.js` (AC and Pax tags, planner grid and Ops Room), `node tests/syllabus_stages.test.js` (syllabus stages and instructor selection; needs a set built after z153 via `LODE_FILES`), `node tests/syllabus_edit.test.js` (the syllabus editor, z154), `node tests/roster_order.test.js` (Crew Roster insert / move / sort, SANS and NSMEN groups, z155), `node tests/wd_row.test.js` (WD fourth row, zoom, crew divider; needs a layout-3 set: `LODE_FILES=<folder from the excel build>`), `python3 tests/wd_builder.test.py` (builder checks on a fresh SUP 2 file), needs the dashboard built first; the ATOM file takes several minutes); `LODE_FILES=<folder>` points them at another set of xlsx files |
@@ -98,8 +98,8 @@ python3 .lodestar_build.py excel ../lodestar_rebuild --data input/LODESTAR_Data_
 Without `--data` the builders produce the demo set (sample crew, demo flights Oct-Nov). The driver refuses to write the
 Excel files into this folder.
 
-The dashboard embeds the current `.xlsx` files of this folder (SUP 2 as `TEMPLATE_B64`, the others in `SAMPLES_B64`), so
-re-run `dashboard` after changing any Excel file. Verified 2026-10-25: the driver reproduces the live dev and release
+Since z159 the dashboard carries no Excel files (no sample button). Only the GitHub Pages copy embeds this folder's `.xlsx`
+(SUP 2 as `TEMPLATE_B64`, the others in `SAMPLES_B64`): the Pages workflow runs `dashboard --demo --out _site/index.html`. Verified 2026-10-25: the driver reproduces the live dev and release
 dashboards byte for byte, and `excel --data input/LODESTAR_Data_Input.xlsx` reproduces all 8 live `.xlsx` files
 (identical apart from the created/modified timestamps). So the live files are still pristine builder output with empty
 plans; once Brandon starts planning in them, that stops being true.
@@ -112,7 +112,7 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 4`. The dashboard has
   `const LAYOUT = { dept: 4, master: 3, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
   lower or missing = checked sheet by sheet and listed as "older layout". Bump both sides together when cells move.
-- Dashboard version string: `Dashboard version 2026-11-04 z158` (two places in `.dashboard_source.html`: `#wDiag` and
+- Dashboard version string: `Dashboard version 2026-11-04 z159` (two places in `.dashboard_source.html`: `#wDiag` and
   `spDiag`). Bump the `zNN` number on each change you ship so Brandon can tell builds apart.
 
 ## Key cell layout (department file; full detail in the builders and dashboard constants)

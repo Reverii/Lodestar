@@ -2,8 +2,11 @@
 # LODESTAR build driver. Runs the dotted builder scripts in this folder from a temp copy under their import names
 # (seedplan.py, realdata.py, app.html, package/umd/index.js), so nothing outside this folder is needed.
 #
-#   python3 .lodestar_build.py dashboard            rebuild Flight_Ops_Planner_Dashboard.html (DEV build) from .dashboard_source.html
-#                                                   and the Excel files in this folder (SUP 2 = template, others = embedded samples)
+#   python3 .lodestar_build.py dashboard            rebuild Flight_Ops_Planner_Dashboard.html (DEV build) from .dashboard_source.html,
+#                                                   with no demo files inside (z159: the file for SharePoint, about 0.7 MB)
+#   python3 .lodestar_build.py dashboard --demo --out PATH
+#                                                   the same with the Excel files of this folder embedded for the built-in sample
+#                                                   (the GitHub Pages copy; the Pages workflow runs this)
 #   python3 .lodestar_build.py dashboard --release  release build into release/ (only when Brandon says so; stay in dev mode)
 #   python3 .lodestar_build.py excel OUTDIR [--data input/LODESTAR_Data_Input.xlsx] [--only sup2,master,duty,ops,others]
 #                                                   rebuild the Excel files into OUTDIR. Fresh files: EVERY PLAN IS EMPTY.
@@ -33,12 +36,13 @@ def run(tmp, args, env=None):
     subprocess.run([sys.executable] + args, cwd=tmp, check=True, env={**os.environ, **(env or {})})
 
 
-def dashboard(release):
+def dashboard(release, demo=False, out=None):
     tmp = stage()
     f = lambda n: os.path.join(HERE, n)
-    out = os.path.join(HERE, "release" if release else "", "Flight_Ops_Planner_Dashboard.html")
+    out = os.path.abspath(out) if out else os.path.join(HERE, "release" if release else "", "Flight_Ops_Planner_Dashboard.html")
     others = [f(f"Flight_Ops_Planner_{n}.xlsx") for _, n in OTHER_DEPTS] + [f("Duty_Roster.xlsx"), f("Master_Planner.xlsx"), f("Ops_Room.xlsx")]
-    run(tmp, ["assemble.py"] + (["--release"] if release else []) + [f("Flight_Ops_Planner_SUP2.xlsx"), out] + others)
+    own = f("Flight_Ops_Planner_SUP2.xlsx") if demo else "-"
+    run(tmp, ["assemble.py"] + (["--release"] if release else []) + [own, out] + (others if demo else []))
     shutil.rmtree(tmp)
     print("wrote", out)
 
@@ -61,7 +65,7 @@ def excel(outdir, data, only):
 if __name__ == "__main__":
     a = sys.argv[1:]
     if a[:1] == ["dashboard"]:
-        dashboard("--release" in a)
+        dashboard("--release" in a, "--demo" in a, a[a.index("--out") + 1] if "--out" in a else None)
     elif a[:1] == ["excel"] and len(a) > 1:
         data = a[a.index("--data") + 1] if "--data" in a else None
         only = set(a[a.index("--only") + 1].split(",")) if "--only" in a else {"sup2", "others", "master", "duty", "ops"}

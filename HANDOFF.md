@@ -228,6 +228,10 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 **Guide parts decided:** Getting started, Planners, Master Planner (drafted), Duty Planner, Ops Room; My Lodestar left out for now. Rebuild the PDF with `node guide/make_shots.js` then `node guide/make_pdf.js` (dashboard built first).
 **Rule reminder:** do not run `dashboard --release` unless Brandon asks (it was run by mistake once on 4 Nov; it wrote nothing).
 
+## z166 Flight Codes: Syllabus tag is a dropdown (4 Nov)
+
+Brandon: the Syllabus tag on the Master Planner Flight Codes tab should be a dropdown, not an open cell. It now lists "none" plus the syllabus track names of every open department file (the part after the last ":", so "Role: EIS" offers EIS), plus any tag already typed on a code (so "MAS Tact" stays even if no track matches). Dashboard only: the Excel Flight Codes sheet column E is still free text. A comma list of tags (still read by the planner picker) can't be picked from the dropdown, but one already in the file is kept as an option. Code: `stagSel` in `renderCodes`. Test `syllabus_tag_is_a_dropdown_of_tracks` in `tests/flight_code_combo.test.js` (5/5).
+
 ## z165 Syllabus: crew with no callsign (4 Nov)
 
 Brandon: on Syllabus Tracking four people were highlighted at once. They were the crew with a blank callsign: the list selected by callsign, so every blank matched, and their Syllabus Log results would also have been shared. Now a person is keyed by callsign, or by name when the callsign is blank (`sylKey`, `sylMine`; also the instructor-training list in Settings B8). The planner grid already skips Syllabus Log links for people without a callsign. Test `blank_callsigns_select_one_person` in `tests/syllabus_stages.test.js` (7/7; fails on z164); syllabus_edit 12/12, my_lodestar 65/65. A result entered under a name stays matched when a callsign is typed later (the log matches callsign or name).

@@ -14,6 +14,15 @@ const setup = page => page.evaluate(() => {
 const typeCode = (page, row, v) => page.evaluate(([row, v]) => { const el = document.querySelector("#mpSide input[data-f='code'][data-row='" + row + "']"); el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); }, [row, v]);
 const fl = (page, row) => page.evaluate(row => { const f = masterBook().S.fl.find(x => x.row === +row); return f && f.code; }, row);
 
+test("syllabus_tag_is_a_dropdown_of_tracks", async ({ page }) => {   // z166: Flight Codes tab, Syllabus tag picked from the syllabus tracks
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='codes']").click(); renderCodes(); });
+  const r = await page.evaluate(() => { const s = document.querySelector("#codeTable select[data-f='stag']"); return { inputs: document.querySelectorAll("#codeTable input[data-f='stag']").length, opts: s ? [...s.options].map(o => o.value) : null }; });
+  assert.strictEqual(r.inputs, 0, "no open cell"); assert.ok(r.opts && r.opts[0] === "" && r.opts.includes("EIS"), JSON.stringify(r.opts));
+  assert.ok(!r.opts.some(o => /^role:/i.test(o)), "Role: prefix dropped");
+  const row = await page.evaluate(() => { const s = document.querySelectorAll("#codeTable select[data-f='stag']")[0]; s.value = "EIS"; s.dispatchEvent(new Event("change", { bubbles: true })); return masterBook().S.codeAll[0]; });
+  assert.strictEqual(row.stag, "EIS");
+  assert.ok(await page.evaluate(() => [...masterBook().dirty].some(k => /Flight Codes!E/.test(String(k)))), "written to Flight Codes column E");
+}, ED);
 test("existing_code_ignores_case_and_spaces", async ({ page }) => {
   const k = await page.evaluate(() => masterBook().S.codes.find(c => c.code.length > 3 && /[\s-]/.test(c.code)) || masterBook().S.codes[0]);
   const row = await setup(page); await typeCode(page, row, k.code.toLowerCase().replace(/\s+/g, ""));

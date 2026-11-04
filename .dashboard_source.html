@@ -1184,7 +1184,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z165</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z166</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4093,8 +4093,13 @@ function renderCodes() {
     " Crew: P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2 (blank = everyone). Mission Type is used by the currency rules.";
   const show = Math.min(FC_N, Math.max(lastFilled(C, k => k.code || k.desc) + (ed ? 4 : 1), ed ? 6 : 1));
   const inp = (i, f, extra) => "<input data-fc='" + i + "' data-f='" + f + "' value='" + esc(C[i][f] == null ? "" : C[i][f]) + "'" + (extra || "") + (ed ? "" : " disabled") + ">";
+  // z166: the Syllabus tag is a dropdown of the syllabus tracks of every open department ("Role: EIS" offers EIS), plus tags already on a code
+  const tagOpts = []; const addT = t => { t = str(t); if (t && !tagOpts.some(x => same(x, t))) tagOpts.push(t); };
+  books.forEach(b => { const Y = b.S && b.S.sylDef; if (Y) Y.items.forEach(it => addT(String(it.track || "").split(":").pop())); });
+  C.forEach(k => addT(k.stag)); tagOpts.sort((x, y) => x.toLowerCase() < y.toLowerCase() ? -1 : 1);
+  const stagSel = i => "<select data-fc='" + i + "' data-f='stag'" + (str(C[i].stag) ? "" : " style='color:var(--s400)'") + (ed ? "" : " disabled") + "><option value=''>none</option>" + tagOpts.map(t => "<option" + (same(t, C[i].stag) ? " selected" : "") + ">" + esc(t) + "</option>").join("") + "</select>";
   let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only syllabus items whose Track or Description contains this (a comma list = any)'>Syllabus tag</th>" : "") + "</tr>";
-  for (let i = 0; i < show; i++) h += "<tr><td class='n'>" + (i + 1) + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td>" + (P.hasStag ? "<td>" + inp(i, "stag", " placeholder='e.g. EIS'") + "</td>" : "") + "</tr>";
+  for (let i = 0; i < show; i++) h += "<tr><td class='n'>" + (i + 1) + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td>" + (P.hasStag ? "<td>" + stagSel(i) + "</td>" : "") + "</tr>";
   $("codeTable").innerHTML = h;
   const gap = C.findIndex(k => !k.code), last = lastFilled(C, k => k.code), seen = {}, dups = [];
   C.forEach(k => { if (!k.code) return; const u = k.code.toUpperCase(); if (seen[u]) dups.push(k.code); seen[u] = 1; });
@@ -6120,7 +6125,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z165 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z166 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

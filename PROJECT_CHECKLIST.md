@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 3 Nov 2026 (z151). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 4 Nov 2026 (z154). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -230,3 +230,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Ops Room right-click menus (z145, 2 Nov, Brandon): + Area and + Down-chit buttons removed; right-click the Down-chit card for + Down-chit (and + Area), right-click the Leave and MC card for + Leave and + MC (fills the person's plan, any open department file) (awaiting his look)
 - [?] Remove Leave from the Ops Room (z146, 2 Nov, Brandon): right-click a name on the Leave and MC card, remove this day or the whole run (awaiting his look)
 - [?] Several lines in the Ops Room duty strip (z147, 2 Nov, Brandon): SXO / OPS O / SDO / BDO, Safety, Prefect, Security, Codes take Enter for a new line (awaiting his look)
+- [?] Edit the syllabus items on the dashboard (z154, 4 Nov, Brandon): ✎ Edit syllabus items on the Syllabus tab: a table per stage grouped by track, add / rename / reorder / remove items and tracks, default chances, codes with results locked, duplicate codes flagged and not saved; saved to the Syllabus Items sheet with Save to Excel; stage names stay in Excel (awaiting his test)

@@ -278,7 +278,7 @@ test("changes_include_cancelled_flight", async ({ page }) => {
   assert.ok(f, "no SUP 2 flight in the window");
   await page.evaluate(([k]) => { books[opsIdx()].S.fc.set(k, { row: 99, st: "Cancelled", why: "Weather", seat: ["", "", "", "", "", ""], atd: "", ata: "", etd: "", eta: "", tail: "", stb: "", ao: "", brf: "", xtra: "", pax: "" }); }, [f.key]);
   await inject(page, [row({ file: "Ops Room", who: "Ops Duty", what: "Flight Crew, x", z: "Cancelled", cell: "Flight Crew!" + (await page.evaluate(() => OPS_TXT.st)) + "99" })]);
-  const c = await chg(page, f.id, null);
+  const c = await chg(page, f.id, "2026-10-20 00:00:00");   // explicit start: with none the app looks back 7 days from the real clock, and these rows are dated 25 Oct
   assert.deepStrictEqual(c.map(x => x.kind), ["cancelled"]);
   assert.ok(/cancelled/i.test(c[0].text) && /Weather/.test(c[0].sub), JSON.stringify(c[0]));
 });
@@ -287,7 +287,7 @@ test("changes_include_master_move_and_duty", async ({ page }) => {
     if (it) { const fl = P.fl.find(z => z.mi === q.mi && z.d === q.d && z.s === it.s && z.code === it.code); if (fl && fl.row) return { id: w.p.id, iso, row: fl.row, code: it.code, time: it.time.split("-")[0], ref: sdoRef(q.y, q.mi, q.d) }; } } } });
   assert.ok(f, "no flight with a Master row in the window");
   await inject(page, [row({ t: "2026-10-25 11:00:00", file: "Master Planner", what: "Flights, x", a: f.time, z: "1330", cell: "Flights!D" + f.row }), row({ t: "2026-10-25 12:00:00", file: "Duty Roster", what: "SDO Plan, x", z: "SUP 2", cell: "SDO Plan!" + f.ref })]);
-  const c = await chg(page, f.id, null);
+  const c = await chg(page, f.id, "2026-10-20 00:00:00");
   assert.deepStrictEqual(c.map(x => x.kind), ["duty", "moved"]);
   assert.ok(new RegExp(f.code + " moved " + f.time + " → 1330").test(c[1].text), c[1].text);
 });
@@ -456,12 +456,13 @@ test("month_click_other_item_card_has_no_crew", async ({ page }) => {
 
 (async () => {
   const only = process.argv[2];
-  let pass = 0, ran = 0, S = null;
+  let pass = 0, ran = 0, S = null, grp = {};   // grp: the opts of the last test that set them, reused when a failure forces a restart mid-group
   for (const t of tests) {
     if (only && !t.name.includes(only)) continue;
     ran++;
     try {
-      if (!S || (t.opts && t.opts.fresh)) { if (S) await S.close(); S = await boot(Object.assign({}, t.opts)); }
+      if (t.opts) grp = t.opts;
+      if (!S || (t.opts && t.opts.fresh)) { if (S) await S.close(); S = await boot(Object.assign({}, grp)); }
       await t.fn(S); pass++; console.log("ok   " + t.name);
     } catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 300)); if (S) { await S.close(); S = null; } }
   }

@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-04, after z160)
+# LODESTAR handoff (updated 2026-11-04, after z161)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z161 (4 Nov, Brandon: "tidy up the headers, it's misaligned"): Crew Matrix table
+Master Planner > Crew Matrix: the seat headings (AC, CO-PILOT, LM, TACCO, SUP 1, SUP 2) were left-aligned over centred letters and the columns were spread unevenly. Now fixed column widths (`colgroup`: Mission 150 px, Shift 80 px, each seat 92 px, Notes takes the rest; `table-layout:fixed`), seat headings centred (`th.c`). Info line says "Each letter" (was "Each number"). Dashboard only. Tests: crew_matrix 24/24. Screenshot `previews/crew_matrix_aligned_real.png`.
 
 ## z159 (4 Nov, Brandon: "remove the demo file"): dashboard without demo files
 The DEV dashboard no longer embeds the eight demo xlsx: 7.7 MB -> 0.8 MB, no "Try with the built-in sample" button (it removes itself when `TEMPLATE_B64` is empty). `python3 .lodestar_build.py dashboard --demo --out PATH` builds a copy with them (assembler: `-` as the own file = none). Brandon chose to keep the demo on GitHub Pages only: `pages.yml` now builds `_site/index.html` with `--demo` (still guarded: publishes only while the repo xlsx hold the demo crew; also triggers on `.dashboard_source.html` and `*.xlsx`). Tests and the guide load the xlsx from the folder, so nothing else changed.

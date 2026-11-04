@@ -425,7 +425,7 @@ table.allday .free{color:var(--s400);font-size:11.5px}
 #cellCard .csh{background:#1e293b;color:#fff;font-size:10.5px;font-weight:700;padding:4px 0}#cellCard .csn{padding:5px 0 0;font-weight:800;font-size:13px}#cellCard .csn:last-child{padding-bottom:5px}
 #cellCard .you{background:#dbeafe;border-radius:4px}#cellCard .cnone{color:#94a3b8;font-weight:400}#cellCard .cpax{font-size:9px;font-weight:800;color:#166534;background:#dcfce7;border-radius:3px;padding:0 3px;margin-left:2px}
 #cellCard input{width:100%;margin:2px 0 4px;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px;font:inherit}
-.cmxt{border-collapse:collapse;width:100%}.cmxt th{font-size:10px;letter-spacing:.5px;color:var(--s500);text-align:left;padding:5px 8px;background:var(--s50);border-bottom:1px solid var(--s200)}.cmxt td{padding:4px 8px;border-bottom:1px solid var(--s100)}.cmxt td.c{text-align:center;font-weight:800}.cmxt tr.msep td{border-top:2px solid var(--s300)}
+.cmxt{border-collapse:collapse;width:100%;table-layout:fixed}.cmxt col.cm{width:150px}.cmxt col.cs{width:80px}.cmxt col.cq{width:92px}.cmxt th.c{text-align:center}.cmxt th{font-size:10px;letter-spacing:.5px;color:var(--s500);text-align:left;padding:5px 8px;background:var(--s50);border-bottom:1px solid var(--s200)}.cmxt td{padding:4px 8px;border-bottom:1px solid var(--s100)}.cmxt td.c{text-align:center;font-weight:800}.cmxt tr.msep td{border-top:2px solid var(--s300)}
 .cmxcat{padding:6px 0 8px;color:var(--s700)}.cmxcat b{background:var(--s100);border-radius:4px;padding:1px 8px;margin:0 2px}.cmxerr{margin-top:8px;padding:7px 12px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:6px;font-size:12px}.cmxinfo{margin-top:8px;padding:7px 12px;background:#f0f9ff;color:#075985;border-radius:6px;font-size:12px}.cmxcodes{margin-top:8px;font-size:12px;color:var(--s700)}
 #cellCard .ccat{display:block;font-style:normal;font-size:9.5px;font-weight:700;color:#64748b;line-height:1}
 #cellCard .cmx{border-radius:6px;padding:5px 8px;margin-top:6px;font-size:12px;font-weight:700}#cellCard .cmx small{display:block;font-weight:500;margin-top:1px}#cellCard .cmx.ok{background:#dcfce7;color:#166534}#cellCard .cmx.no{background:#fee2e2;color:#991b1b}
@@ -1164,7 +1164,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z160</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z161</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -5494,9 +5494,9 @@ function renderCmx() {
   const used = seen.map(m => { const L = codes.filter(k => cmNorm(k.mtype) === m).map(k => k.code); return "<b>" + esc(R.rows.find(r => cmNorm(r.m) === m).m) + "</b>: " + (L.length ? esc(L.join(", ")) : "<span style='color:#b45309'>no flight code has this Mission Type yet</span>"); });
   el.innerHTML = "<div class='card'><h2>Crew matrix <small class='muted'>the CAT each seat needs on a mission</small></h2><div class='muted' style='margin-bottom:8px'>" + src + " A flight is checked when its flight code's <b>Mission Type</b> (Flight Codes) is one of the missions below. It only warns; nothing is blocked.</div>" +
     "<div class='cmxcat'>CAT order, best first: " + R.cats.map(c => "<b>" + esc(c) + "</b>").join("") + " &nbsp;·&nbsp; a trainee, or a person with no CAT, counts below the last one. A crew passes when it fits <u>any one row</u> of its mission. A seat nobody is planned in yet is not counted against it.</div>" +
-    "<div style='overflow:auto'><table class='cmxt'><tr><th>MISSION</th><th>SHIFT</th><th>AC</th><th>CO-PILOT</th><th>LM</th><th>TACCO</th><th>SUP 1</th><th>SUP 2</th><th>NOTES</th></tr>" + (rows || "<tr><td colspan=9 class='muted' style='padding:12px'>No rules: nothing is checked.</td></tr>") + "</table></div>" +
+    "<div style='overflow:auto'><table class='cmxt'><colgroup><col class='cm'><col class='cs'><col class='cq'><col class='cq'><col class='cq'><col class='cq'><col class='cq'><col class='cq'><col></colgroup><tr><th>MISSION</th><th>SHIFT</th><th class='c'>AC</th><th class='c'>CO-PILOT</th><th class='c'>LM</th><th class='c'>TACCO</th><th class='c'>SUP 1</th><th class='c'>SUP 2</th><th>NOTES</th></tr>" + (rows || "<tr><td colspan=9 class='muted' style='padding:12px'>No rules: nothing is checked.</td></tr>") + "</table></div>" +
     (R.errors && R.errors.length ? "<div class='cmxerr'>" + R.errors.map(esc).join("<br>") + "</div>" : "") +
-    "<div class='cmxinfo'>Each number is the lowest CAT allowed in that seat. <b>Sup 1 and Sup 2</b> are two minimums for the pair: B and C means one is B or better and the other C or better, whichever seat holds which. The Captain is the pilot tagged AC; every other pilot is a co-pilot.</div>" +
+    "<div class='cmxinfo'>Each letter is the lowest CAT allowed in that seat. <b>Sup 1 and Sup 2</b> are two minimums for the pair: B and C means one is B or better and the other C or better, whichever seat holds which. The Captain is the pilot tagged AC; every other pilot is a co-pilot.</div>" +
     (used.length ? "<div class='cmxcodes'>Flight codes using each mission: " + used.join(" · ") + "</div>" : "") +
     (R.src === "sheet" ? "<div class='muted' style='margin-top:8px'>To change the matrix, edit the <b>Crew Matrix</b> sheet in the Master Planner Excel file and save it. This page and every warning follow it within about 15 seconds. Add a row for a new way to crew a mission, or use a new Mission Type name here and on its flight codes.</div>" :
       "<div style='margin-top:10px'>" + (mb ? "<button class='btn pri' id='cmxMake'" + (mayEdit(books.indexOf(mb)) ? "" : " disabled title='You cannot edit the Master Planner file'") + ">Make the Crew Matrix sheet in the Master Planner file</button> <span class='muted'>so you can change the matrix in Excel (then Save)</span>" : "<span class='muted'>Open the Master Planner file to make the sheet.</span>") + "</div>") + "</div>";
@@ -5855,7 +5855,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z160 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z161 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

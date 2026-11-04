@@ -44,7 +44,8 @@ SAMPLE_CREW = {
               ("ANACONDA", "MAJ (NS) Simon Lau", "CAT A", "Instructor", "NSMEN"), ("CORAL", "CPT (NS) Desmond Yap", "CAT B", "Senior CAT A", "NSMEN")],
 }
 # Opt-in (env LODESTAR_ATOM=<ATOM export .xlsx>): the crew names become the ATOM initials, no rank. Active people are the regulars,
-# NSmen the NSMEN section (Staff/Assigned are left out). The demo callsigns go to the first people so the demo plans stay; the rest have no callsign.
+# NSmen the NSMEN section; Staff/Assigned come after the Active people as regulars with "Staff/Assigned (ATOM)" in Remarks (Brandon, 4 Nov: the roster is the
+# whole ATOM list). The demo callsigns go to the first people so the demo plans stay; the rest have no callsign.
 # Nothing from the ATOM file is stored in this repo: it is read only when the env var is set.
 ATOM_INI = False
 def _atom_crew(demo, path):
@@ -53,13 +54,15 @@ def _atom_crew(demo, path):
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True); out = {}
     for sn, dept in sheets.items():
         if sn not in wb.sheetnames or dept not in demo: continue
-        reg, ns = [], []
+        reg, ns, staff = [], [], []
         for r in wb[sn].iter_rows(min_row=3, max_col=4, values_only=True):
             sec, nm = str(r[0] or "").strip(), str(r[1] or "").strip()
-            if not nm or sec not in ("Active", "NSmen"): continue
+            if not nm or sec not in ("Active", "NSmen", "Staff/Assigned"): continue
             cat = str(r[2] or "").strip().upper(); cat = "TRAINEE" if cat == "OCU" else "CAT " + cat if cat else "CAT D"
             role = "Instructor" if str(r[3] or "").strip() else "Senior CAT A" if cat in ("CAT A", "CAT B") else "Junior"
-            (reg if sec == "Active" else ns).append((nm, cat, role, "Active" if sec == "Active" else "NSMEN"))
+            if sec == "Staff/Assigned": staff.append((nm, cat, role, "Active", "Staff/Assigned (ATOM)"))
+            else: (reg if sec == "Active" else ns).append((nm, cat, role, "Active" if sec == "Active" else "NSMEN"))
+        reg += staff
         dr = [c[0] for c in demo[dept] if c[4] not in ("SANS", "NSMEN")]; dn = [c[0] for c in demo[dept] if c[4] in ("SANS", "NSMEN")]
         out[dept] = [((dr[k] if k < len(dr) else ""),) + p for k, p in enumerate(reg)] + [((dn[k] if k < len(dn) else ""),) + p for k, p in enumerate(ns)]
     return {**demo, **out}

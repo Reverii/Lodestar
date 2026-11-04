@@ -28,6 +28,11 @@ test("menu_item_for_your_own_department", async ({ page }) => {
 test("not_shown_for_the_master_planner_file", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => getComputedStyle(document.getElementById("mnTab")).display), "none");
 }, { mine: "Master_Planner", others: false });
+test("hidden_in_ops_room_mode_shown_in_dev_mode", async ({ page }) => {
+  const vis = () => page.evaluate(() => { renderBooks(); return getComputedStyle(document.getElementById("mnTab")).display; });
+  await page.evaluate(() => { OPS = true; devFull = false; }); assert.strictEqual(await vis(), "none", "Ops Room mode");
+  await page.evaluate(() => { OPS = true; devFull = true; }); assert.strictEqual(await vis(), "block", "dev mode, own department first");
+});
 test("type_enter_moves_down_tab_moves_right", async ({ page }) => {
   await open(page); await click(page, "B3");
   await page.keyboard.type("Ask OPS O"); await page.keyboard.press("Enter");

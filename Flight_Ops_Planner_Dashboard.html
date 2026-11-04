@@ -1184,7 +1184,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z162</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z163</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2351,7 +2351,7 @@ window.addEventListener("resize", () => { if ($("v-syl").classList.contains("on"
 const MN_SHEET = "Misc Notes", MN_NC = 26, MN_R0 = 100, MN_RMAX = 1000, MN_W0 = 110, MN_OPT = { hidden: true, plain: true },
   MN_XCOLS = '<col min="1" max="26" width="16" customWidth="1"/><col min="27" max="28" width="12" hidden="1" customWidth="1"/>';
 const mn = { r: 0, c: 0, ar: 0, ac: 0, ed: null, drag: false };   // active cell, anchor of the picked range, the cell being edited
-const mnIdx = () => books.length && !OPS && books[0] && !books[0].S.kind ? 0 : -1;
+const mnIdx = () => books.length && (!OPS || devFull) && books[0] && !books[0].S.kind ? 0 : -1;   // dev mode opens every file like the Ops Room: the first file is still your department
 const mnCanEdit = () => mnIdx() === 0 && mayEdit(0);
 const mnRef = (r, c) => colL(c + 1) + (r + 1);
 // the sheet as it is now: the file plus unsaved changes
@@ -6118,7 +6118,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z162 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z163 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

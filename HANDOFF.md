@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-04, after z162; next-session notes below)
+# LODESTAR handoff (updated 2026-11-04, after z163; next-session notes below)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,9 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z163 (4 Nov, Brandon: "i dont see the misc tab"): Misc Notes in dev mode
+Dev mode ("Open every file") opens the files through `openOps`, which switches on Ops Room mode (`OPS`), and z162 hid the page in Ops Room mode. Now `mnIdx` shows it when the first file is a department and either Ops Room mode is off or dev mode is on (`devFull`); the real Ops Room still never shows it. Test `hidden_in_ops_room_mode_shown_in_dev_mode` (misc_notes 17/17). If he still sees nothing: a cached old dashboard (Ctrl+Shift+R) or the page opened from the Ops Room card.
 
 ## z162 (4 Nov, Brandon: "build misc notes"): Miscellaneous Notes page
 **Planning ▾ > Miscellaneous Notes** (fourth item, "your department's own scratch sheet"): an Excel-like sheet, A to Z, 100 rows (+ 20 rows button, up to 1000). Only for your own department file (`books[0]`, a department, not Ops Room mode; `mnIdx`); the Master Planner, Duty Roster and Ops Room files and other departments never show it. Lock chip "Only SUP 2 sees this page. Other departments and the Ops Room don't." (+ "View only." without edit rights; then nothing can change).

@@ -1184,7 +1184,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z169</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z168</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -5741,7 +5741,7 @@ function cardSeatsHtml(mi, d, s, code, dept, me) {
   let h = "<div class='clab'>Crew on this flight</div><div class='cseats'><div class='csh'>" + CARD_SEATS.map(x => "<span>" + x + "</span>").join("") + "</div>";
   for (let r = 0; r < rows; r++) h += "<div class='csn'>" + cols.map(L => { const x = L[r]; if (!x) return "<span class='cnone'>" + (r === 0 ? "-" : "") + "</span>";
     return "<span class='" + opsCatCls(x) + (x.dept === dept && x.i === me ? " you" : "") + "'>" + esc(opsName(x)) + (x.tag === "PAX" ? "<i class='cpax'>PAX</i>" : "") + (mx ? "<i class='ccat'>" + esc(cmCat(x.cat) || "-") + "</i>" : "") + "</span>"; }).join("") + "</div>";
-  return h + "</div>" + (mx ? "<div class='cmx " + (mx.ok ? "ok" : "no") + "'>" + (mx.ok ? "✓ Meets the crew matrix" : "✕ Does not meet the crew matrix") + "<small>" + esc(mx.ok ? "Fits a " + mx.mission + " row." : "No " + mx.mission + " row fits. " + cmNearText(mx) + ".") + "</small></div>" : "");
+  return h + "</div>" + (mx ? "<div class='cmx " + (mx.ok ? "ok" : "no") + "'>" + (mx.ok ? "✓ Meets the crew matrix" : "✕ Does not meet the crew matrix") + "<small>" + esc(mx.ok ? "Fits a " + mx.mission + " row." : "No " + mx.mission + " row fits (" + mx.fails.join(", ") + "). Closest row needs at least: " + mx.closest + ".") + "</small></div>" : "");
 }
 
 // ---------- crew matrix: which CAT each seat needs on a MAS mission. A warning only, never blocks.
@@ -5803,7 +5803,7 @@ function cmCheck(mission, shift, G, R) {   // G = { ac: [cat], pilot: [cat], lm:
   const rows = R.rows.filter(r => cmNorm(r.m) === cmNorm(mission) && (!r.sh || cmNorm(r.sh) === (shift === 2 ? "NIGHT" : "DAY")));
   if (!rows.length) return null;
   const rank = c => { const k = R.cats.indexOf(cmCat(c)); return k < 0 ? 99 : k; }, need = c => c ? R.cats.indexOf(cmCat(c)) : -1;
-  let best = null; const tried = [];
+  let best = null;
   for (const r of rows) {
     const fails = [];
     for (const k of ["ac", "pilot", "lm", "tacco"]) { const n = need(r[k]); if (n >= 0 && (G[k] || []).some(c => rank(c) > n)) fails.push(CM_SEAT_LAB[k]); }
@@ -5811,14 +5811,10 @@ function cmCheck(mission, shift, G, R) {   // G = { ac: [cat], pilot: [cat], lm:
     if (ns.length && ps.length) { const bad = ps.length >= ns.length ? ns.some((n, k) => ps[k] > n) : ps.some(q => q > ns[ns.length - 1]); if (bad) fails.push("Sups"); }
     if (!best || fails.length < best.fails.length) best = { row: r, fails };
     if (!fails.length) return { ok: true, mission, row: r, fails: [] };
-    tried.push({ row: r, fails });
   }
-  // z169: every row that misses by as few seats as the best one is listed, each with what it misses (one row alone hid the row the planner meant)
-  const needs = r => [["AC", r.ac], ["Co-pilot", r.pilot], ["LM", r.lm], ["TACCO", r.tacco], ["Sups", [r.s1, r.s2].filter(Boolean).join(" and ")]].filter(z => z[1]).map(z => z[0] + " " + z[1]).join(", ");
-  const near = tried.filter(t => t.fails.length === best.fails.length).map(t => ({ row: t.row, fails: t.fails, needs: needs(t.row) }));
-  return { ok: false, mission, row: best.row, fails: best.fails, closest: needs(best.row), near };
+  const r = best.row, sups = [r.s1, r.s2].filter(Boolean);
+  return { ok: false, mission, row: best.row, fails: best.fails, closest: [["AC", r.ac], ["Co-pilot", r.pilot], ["LM", r.lm], ["TACCO", r.tacco], ["Sups", sups.join(" and ")]].filter(z => z[1]).map(z => z[0] + " " + z[1]).join(", ") };
 }
-const cmNearText = res => res.near && res.near.length > 1 ? "Closest rows: " + res.near.map(n => n.needs + " (misses " + n.fails.join(", ") + ")").join("; or ") : "Closest row needs at least: " + res.closest + " (misses " + res.fails.join(", ") + ")";
 function cmMission(code) {   // the code's Mission Type: the Master Planner's Flight Codes, else a department's Activities
   const mb = masterBook(); let k = mb && mb.S.codes && mb.S.codes.find(z => sameCode(z.code, code)); if (k && k.mtype) return k.mtype;
   for (const b of books) if (isDept(b)) { k = b.S.acts.find(z => z.code && sameCode(z.code, code)); if (k && k.mtype) return k.mtype; }
@@ -5830,7 +5826,7 @@ function cmRow(r) {   // an Ops Room flight row: the seats as filled on the boar
   const g = k => r.seats[k] ? [r.seats[k].cat || ""] : [];
   return cmCheck(mission, r.x.s, { ac: g(0), pilot: g(1), lm: g(2), tacco: g(3), sup: g(4).concat(g(5)) });
 }
-const cmText = res => res.ok ? "Meets the crew matrix" : "Does not meet the crew matrix: no " + res.mission + " row fits. " + cmNearText(res);
+const cmText = res => res.ok ? "Meets the crew matrix" : "Does not meet the crew matrix: no " + res.mission + " row fits (" + res.fails.join(", ") + "). Closest row needs at least: " + res.closest;
 const cmMemo = new Map();   // per render: the crew of a day and the result per flight
 // planned crew on a code and shift, grouped by seat. The AC tag is the Captain; with none, the best CAT among the pilots stands in for the Captain.
 function cmFlight(mi, d, s, code) {
@@ -6153,7 +6149,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z169 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z168 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

@@ -60,15 +60,6 @@ test("flight_result_pass_and_fail", async ({ page }) => {
     window.__mission = "GEN"; cmMemo.clear(); return [a.ok, b.ok, b.fails.length, cmFlight(9, 13, 0, "FLT-2.0")]; }, STUB);
   assert.deepStrictEqual(r, [true, false, 1, null]);
 });
-test("ties_list_every_closest_row", async ({ page }) => {   // z169: Brandon's MAS TACT row (A A A A A D) and a built-in row both miss by one seat
-  const r = await page.evaluate(() => {
-    const R = { cats: ["A", "B", "C", "D"], rows: CM_DEFAULT.rows.concat([{ m: "MAS TACT", sh: "", ac: "A", pilot: "A", lm: "A", tacco: "A", s1: "A", s2: "D", note: "" }]) };
-    const x = cmCheck("MAS TACT", 0, { ac: ["CAT A"], pilot: ["CAT A"], lm: ["CAT A"], tacco: ["CAT B"], sup: ["CAT D", "CAT A"] }, R);
-    return { ok: x.ok, n: x.near.length, t: cmText(x) };
-  });
-  assert.strictEqual(r.ok, false); assert.ok(r.n >= 2, r.t);
-  assert.ok(r.t.includes("TACCO A, Sups A and D (misses TACCO)"), r.t); assert.ok(/\(misses Sups\)/.test(r.t), r.t);
-});
 test("pax_is_ignored", async ({ page }) => {
   const r = await page.evaluate(stub => { window.__code = "FLT-2.0"; eval(stub); window.__crew.push({ dept: "Pilot", i: 9, id: "P9", name: "P9", ini: "P9", cat: "TRAINEE", code: "FLT-2.0", tag: "PAX" }); cmMemo.clear(); return cmFlight(9, 13, 0, "FLT-2.0").ok; }, STUB);
   assert.strictEqual(r, true);
@@ -79,7 +70,7 @@ test("no_ac_tag_best_cat_is_the_captain", async ({ page }) => {
 });
 test("card_shows_the_matrix_line_and_cat_letters", async ({ page, errs }) => {
   const r = await page.evaluate(stub => { window.__code = "FLT-2.0"; eval(stub); window.__crew[1].cat = "CAT D"; const h = cardSeatsHtml(9, 13, 0, "FLT-2.0", "Pilot", 1); const d = document.createElement("div"); d.innerHTML = h; return { no: !!d.querySelector(".cmx.no"), cats: [...d.querySelectorAll(".ccat")].map(x => x.textContent).join(""), t: d.querySelector(".cmx").textContent }; }, STUB);
-  assert.ok(r.no, r.t); assert.strictEqual(r.cats, "BDCCBC"); assert.ok(/Closest rows?\b/.test(r.t), r.t);
+  assert.ok(r.no, r.t); assert.strictEqual(r.cats, "BDCCBC"); assert.ok(/Closest row needs at least/.test(r.t), r.t);
   const g = await page.evaluate(stub => { window.__mission = "GEN"; return cardSeatsHtml(9, 13, 0, "FLT-2.0", "Pilot", 1).includes("cmx"); }, STUB);
   assert.strictEqual(g, false, "a code outside the matrix shows no line");
   assert.deepStrictEqual(errs, []);

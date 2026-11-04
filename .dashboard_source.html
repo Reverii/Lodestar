@@ -470,6 +470,19 @@ body.ro #robanner{display:block}
 #findInfo{font-size:11px;color:var(--s500);padding-bottom:9px;min-width:70px}
 header.top .btn.ur{padding:6px 9px;font-size:15px;line-height:1}
 #pop .it.blk{border-top:1px solid var(--s200);margin-top:4px;color:#1d4ed8;font-weight:700;font-size:12.5px}
+#rosSort{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:110}
+#rosSort .box{background:#fff;border-radius:12px;padding:18px 20px;width:760px;max-width:96%;max-height:92vh;overflow:auto}#rosSort h2{margin:0 0 2px}
+#rosSort .row{display:flex;gap:14px;margin-top:12px;align-items:flex-end}#rosSort label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase}
+#rosSort select{padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900);min-width:250px}
+#rosSort label.ck{flex-direction:row;align-items:center;gap:6px;text-transform:none;font-size:13px;color:var(--s700);font-weight:600}
+#rosSortCols{display:grid;grid-template-columns:1fr 30px 1fr;gap:6px;margin-top:12px;align-items:start}#rosSortCols h4{margin:0 0 4px;font-size:11px;color:var(--s500);text-transform:uppercase;letter-spacing:.4px}
+#rosSortCols .arr{align-self:center;text-align:center;font-size:22px;color:var(--s400)}
+.rsli{display:grid;grid-template-columns:22px 78px 1fr 64px;gap:6px;align-items:center;padding:3px 8px;border-radius:5px;font-size:12.5px;border:1px solid var(--s100);margin-bottom:3px}
+.rsli .k{color:var(--s400);font-size:11px}.rsli span:nth-child(3){font-weight:700}.rsli .c{font-size:11px;font-weight:700;text-align:right}.rsli.mv{background:#f0fdf4;border-color:#bbf7d0}.rsli.ia{opacity:.55}
+#rosSortInfo{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--s100);font-size:12.5px;color:var(--s700);line-height:1.4}
+#rosSort .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+#opsCtx .ctxhd{font-size:11px;font-weight:700;color:var(--s500);padding:6px 12px 4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}#opsCtx button:disabled{color:var(--s300);cursor:default;background:none}
+tr.nsSep td{background:#5b21b6!important}
 #blkPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:110}
 #blkPop .box{background:#fff;border-radius:12px;padding:20px;max-width:560px;width:96%;max-height:92vh;overflow:auto}
 #blkPop h2{margin:0 0 4px}#blkPop .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
@@ -1095,7 +1108,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <section class="view" id="v-cmx"><div id="cmxWrap"></div></section>
   <section class="view" id="v-syl"><div id="sylWrap"></div></section>
   <section class="view" id="v-roster">
-    <div class="note">Add crew in the next empty row: regular crew at the top, SANS and NSmen in the purple section (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE pink. To remove someone, set Status to Inactive. Don't clear a person's row to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
+    <div class="note">Add crew in the next empty row, or <b>right-click a person</b> to insert a row above or below them, move them up or down, or sort the list: their plans move with them. Regular crew at the top, SANS and NSMEN in their own groups (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE pink. To remove someone, set Status to Inactive. Don't clear a person's row to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
     <div class="card"><table class="edit" id="rosterTable"></table></div>
   </section>
   <section class="view" id="v-acts">
@@ -1153,7 +1166,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z154</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z155</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1212,6 +1225,12 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <div class="btns"><button class="btn" id="rollCancel">Cancel</button><button class="btn primary" id="rollGo">Start</button></div>
 </div></div>
 <div id="helpPop"><div class="box"><h2><span id="helpTitle">Help</span><button class="btn" id="helpX">Close</button></h2><div id="helpBody"></div><div class="muted" style="font-size:11px;margin-top:10px">LODESTAR · built by MARTELL</div></div></div>
+<div id="rosSort"><div class="box">
+  <h2 id="rosSortTitle">Sort regular crew</h2><div class="muted" style="font-size:12px" id="rosSortSub"></div>
+  <div class="row"><label>Sort by<select id="rosSortBy"></select></label><label class="ck"><input type="checkbox" id="rosSortInact" checked> Inactive crew at the end</label></div>
+  <div id="rosSortCols"></div><div id="rosSortInfo"></div>
+  <div class="btns"><button class="btn" id="rosSortCancel" style="background:var(--s200);color:var(--s800)">Cancel</button><button class="btn primary" id="rosSortGo">Sort</button></div>
+</div></div>
 <div id="blkPop"><div class="box">
   <h2>Block of days</h2>
   <div class="muted" style="font-size:12px" id="blkSub">Put one activity on a run of days, e.g. a course, attachment, detachment or overseas exercise.</div>
@@ -2741,6 +2760,7 @@ function logLines(b, sent) {
   const out = [], t = logTime(), who = logWho(), mail = SP.user ? SP.user.Email || "" : "", files = b.WB.files, groups = new Map();
   for (const [k, e] of sent) {
     if (LOG_SKIP.has(e.sheet)) continue;
+    if (e.quiet) continue;   // moved with a person (Crew Roster order): one line per action below
     if (e.sheet === "Syllabus Log" && !/^D\d/.test(e.ref)) continue;   // one line per attempt (its Result cell)
     const before = cellsAt(b, files, e.sheet)[e.ref];
     if (String(before ?? "") === String(e.val ?? "")) continue;
@@ -2753,6 +2773,7 @@ function logLines(b, sent) {
       g.items.push({ w, ref: e.ref, bv });
     } else out.push([t, who, mail, b.S.dept, w.what, bv, av, e.sheet + "!" + e.ref]);
   }
+  [...new Set([...sent.values()].map(e => e.quiet).filter(Boolean))].forEach(q => out.push([t, who, mail, b.S.dept, q, "", "", "Roster"]));
   if (b.S.atomPub && [...sent.values()].some(e => e.sheet === ATOM_SHEET)) out.push([t, who, mail, b.S.dept, "ATOM published: " + b.S.atomPub.name + ", as of " + b.S.atomPub.asOf, "", "", ATOM_SHEET]);   // one line, not one per cell
   return out.map(x => Array.isArray(x) ? x : logGroup(x, t, who, mail, b.S.dept));
 }
@@ -3831,10 +3852,11 @@ function renderCur() {
   const onlyBad = $("curOnlyBad").checked, baseEd = $("curBaseEd").checked && ed;
   let h = "<thead><tr><th class='cn'>Callsign</th><th class='cn'>Name</th>" + cols.map(k => "<th title='" + esc(R[k].note || "") + "'>" + esc(R[k].name) + "<small>" + esc((R[k].min > 1 ? R[k].min + " in " : "") + R[k].win + " days · " + (R[k].applies && !/^all$/i.test(R[k].applies) ? R[k].applies + ": " + R[k].who : "everyone")) + "</small></th>").join("") + "</tr></thead><tbody>";
   let rows = 0, sep = false;
-  for (const x of C) {
+  const gOrd = x => ({ SANS: 1, NSMEN: 2 })[sansGrp(S.roster[x.i])] || 0;
+  for (const x of C.slice().sort((a, b) => gOrd(a) - gOrd(b) || a.i - b.i)) {
     const p = S.roster[x.i]; if (!p.name || /^inactive$/i.test(p.status)) continue;
     if (onlyBad && !x.bad && !x.due) continue;
-    if (isSans(p) && !sep) { sep = true; h += "<tr class='sansSep'><td colspan='" + (cols.length + 2) + "'>SANS / NSMEN</td></tr>"; }
+    if (isSans(p) && sep !== sansGrp(p)) { sep = sansGrp(p); h += "<tr class='sansSep" + (sep === "NSMEN" ? " nsSep" : "") + "'><td colspan='" + (cols.length + 2) + "'>" + sep + "</td></tr>"; }
     rows++;
     h += "<tr" + (isSans(p) ? " class='sans'" : "") + "><td class='cn'><b>" + esc(p.id) + "</b></td><td class='cn'><b class='" + catCls(p.cat) + "'>" + esc(p.name) + "</b><small>" + esc(p.role) + "</small></td>";
     for (const k of cols) {
@@ -3898,8 +3920,8 @@ function visibleCrew() {
     if (q && !(p.name + " " + p.id + " " + p.role + " " + p.cat + " " + p.status).toLowerCase().includes(q)) return;
     out.push(i);
   });
-  // SANS / NSmen always at the bottom
-  return out.filter(i => !isSans(S.roster[i])).concat(out.filter(i => isSans(S.roster[i])));
+  // SANS / NSmen always at the bottom: SANS first, then NSMEN (z155)
+  return out.filter(i => !isSans(S.roster[i])).concat(out.filter(i => sansGrp(S.roster[i]) === "SANS"), out.filter(i => sansGrp(S.roster[i]) === "NSMEN"));
 }
 function renderPlanner() {
   cmMemo.clear();
@@ -4007,7 +4029,7 @@ function renderPlanner() {
   const NCL = notClosed(cur.b);   // past flights the Ops Room never closed
   for (const i of vis) {
     const p = S.roster[i], t = st.crew[i], inact = p.status.toLowerCase() === "inactive", ns = isSans(p);
-    if (ns && !sep) { sep = true; h += "<tr class='sansSep'><td colspan='" + (dim + 3 + NT) + "'><span style='position:sticky;left:10px'>SANS / NSMEN</span></td></tr>"; }
+    if (ns && sep !== sansGrp(p)) { sep = sansGrp(p); h += "<tr class='sansSep" + (sep === "NSMEN" ? " nsSep" : "") + "'><td colspan='" + (dim + 3 + NT) + "'><span style='position:sticky;left:10px'>" + sep + "</span></td></tr>"; }
     const AR = atomCurrent() ? atomFor(cur.b, i) : null;   // this person's ATOM row, looked up once
     const RPB = rp();   // rows in this person's block: 4 with WD, 3 in a file from before layout 3
     for (let s = 0; s < RPB; s++) {
@@ -5123,11 +5145,11 @@ $("opsSide").addEventListener("click", e => { if (e.target.id === "opsNext") { c
 // right-click menu on the Leave and MC card and the Down-chit card (z145): replaces the + buttons
 let opsCtxEl = null;
 function opsCtxClose() { if (opsCtxEl) { opsCtxEl.remove(); opsCtxEl = null; } }
-function opsCtxOpen(x, y, items) {
+function opsCtxOpen(x, y, items, head) {   // items: [label, fn]; a null fn shows the item greyed out. head: an optional title line (z155)
   opsCtxClose(); const m = document.createElement("div"); m.className = "opsctx"; m.id = "opsCtx";
-  m.innerHTML = items.map((it, k) => "<button type='button' data-k='" + k + "'>" + esc(it[0]) + "</button>").join("");
-  m.style.left = Math.min(x, innerWidth - 170) + "px"; m.style.top = Math.min(y, innerHeight - 40 * items.length - 10) + "px";
-  m.addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if (!b) return; const f = items[+b.dataset.k][1]; opsCtxClose(); f(); });
+  m.innerHTML = (head ? "<div class='ctxhd'>" + esc(head) + "</div>" : "") + items.map((it, k) => "<button type='button' data-k='" + k + "'" + (it[1] ? "" : " disabled") + ">" + esc(it[0]) + "</button>").join("");
+  m.style.left = Math.min(x, innerWidth - 260) + "px"; m.style.top = Math.min(y, innerHeight - 38 * items.length - (head ? 40 : 10)) + "px";
+  m.addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if (!b || b.disabled) return; const f = items[+b.dataset.k][1]; opsCtxClose(); f(); });
   document.body.appendChild(m); opsCtxEl = m;
 }
 // remove leave / MC / off from a person's plan (z146): this day, or the whole run of days that carries the same code (across months)
@@ -5281,11 +5303,11 @@ function renderRoster() {
   const filled = p => p.id || p.name || p.role;
   const ids = {}; S.roster.forEach(p => { if (p.id) ids[p.id.toUpperCase()] = (ids[p.id.toUpperCase()] || 0) + 1; });
   let h = "<tr><th>#</th><th>Callsign</th><th>Crew Member (with rank)</th>" + (S.rcols && S.rcols.ini ? "<th style='width:90px'>Initials</th>" : "") + (nw ? "<th>Cat Status</th>" : "") + "<th>Role</th><th>Status</th><th>Remarks</th></tr>";
-  const row = i => {
+  const row = (i, grp, no) => {
     const p = S.roster[i], dup = p.id && ids[p.id.toUpperCase()] > 1, ns = nw && i >= REG_N;
     const sts = !nw ? ["Active", "Inactive"] : ns ? ["SANS", "NSMEN", "Inactive"] : ["Active", "Inactive"];
-    return "<tr class='" + (p.status.toLowerCase() === "inactive" ? "inactive" : "") + (ns ? " sans" : "") + "'><td class='n'>" + (i + 1) + "</td>" +
-      "<td><input data-r='" + i + "' data-f='id' value='" + esc(p.id) + "'" + (dup ? " style='background:#fee2e2' title='Duplicate callsign'" : "") + "></td>" +
+    return "<tr data-ri='" + i + "'" + (grp ? " data-grp='" + grp + "'" : "") + " class='" + (p.status.toLowerCase() === "inactive" ? "inactive" : "") + (ns ? " sans" : "") + "'><td class='n'>" + (no || i + 1) + "</td>" +
+      "<td><input data-r='" + i + "' data-f='id' value='" + esc(p.id) + "'" + (dup ? " style='background:#fee2e2' title='Duplicate callsign'" : "") + (grp && rosEmpty(p) ? " placeholder='next " + grp + "'" : "") + "></td>" +
       "<td><input data-r='" + i + "' data-f='name' value='" + esc(p.name) + "' class='" + catCls(p.cat) + "'></td>" +
       (S.rcols && S.rcols.ini ? "<td><input data-r='" + i + "' data-f='ini' value='" + esc(p.ini) + "'></td>" : "") +
       (nw ? "<td><select data-r='" + i + "' data-f='cat' class='" + catCls(p.cat) + "'>" + opt(CREW_CATS, p.cat) + "</select></td>" : "") +
@@ -5300,8 +5322,16 @@ function renderRoster() {
     const reg = S.roster.slice(0, REG_N), ns = S.roster.slice(REG_N);
     const showR = Math.min(REG_N, Math.max(lastFilled(reg, filled) + 4, 8)), showN = Math.min(N - REG_N, Math.max(lastFilled(ns, filled) + 3, 3));
     for (let i = 0; i < showR; i++) h += row(i);
-    h += "<tr class='sansSep'><td colspan=8>SANS / NSMEN (always shown at the bottom of the planner)</td></tr>";
-    for (let i = REG_N; i < REG_N + showN; i++) h += row(i);
+    // SANS and NSMEN as two groups (by Status, z155), each with one empty row to add the next person; anyone else in this part (Inactive) after them
+    const idx = []; for (let i = REG_N; i < N; i++) idx.push(i);
+    const free = idx.filter(i => rosEmpty(S.roster[i]) && !sansGrp(S.roster[i]));
+    let no = REG_N;
+    const grp = (g, label, cls) => { const mem = idx.filter(i => sansGrp(S.roster[i]) === g), nx = free.shift();
+      h += "<tr class='sansSep" + cls + "'><td colspan=8>" + label + "</td></tr>"; mem.forEach(i => h += row(i, g, ++no)); if (nx != null) h += row(nx, g, ++no); };
+    grp("SANS", "SANS <span style='font-weight:500;opacity:.85'>(at the bottom of the planner)</span>", "");
+    grp("NSMEN", "NSMEN <span style='font-weight:500;opacity:.85'>(at the bottom of the planner, under SANS)</span>", " nsSep");
+    const rest = idx.filter(i => !sansGrp(S.roster[i]) && !rosEmpty(S.roster[i]));
+    if (rest.length) { h += "<tr class='sansSep'><td colspan=8>Inactive or other status</td></tr>"; rest.forEach(i => h += row(i, "", ++no)); }
   }
   $("rosterTable").innerHTML = h;
 }
@@ -5789,7 +5819,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z154 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z155 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -6704,6 +6734,7 @@ const HELP = {
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
+    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b> and <b>Sort…</b> (Cat Status then rank, Callsign, Name or Role, with a preview). The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
@@ -6804,9 +6835,140 @@ function rosterChange(e) {
   const el = e.target, i = +el.dataset.r, f = el.dataset.f; if (isNaN(i)) return;
   const v = el.value.trim(); S.roster[i][f] = v;
   const rc = rosterCols(S); put("Roster", rc[f] + (ROSTER_ROW0 + i), v);
-  if (f === "name" && v && !S.roster[i].status) { const d0 = S.catCol && i >= REG_N ? "NSMEN" : "Active"; S.roster[i].status = d0; put("Roster", rc.status + (ROSTER_ROW0 + i), d0); }
+  if (f === "name" && v && !S.roster[i].status) { const g = el.closest("tr") && el.closest("tr").dataset.grp, d0 = S.catCol && i >= REG_N ? g || "NSMEN" : "Active"; S.roster[i].status = d0; put("Roster", rc.status + (ROSTER_ROW0 + i), d0); }
   renderRoster(); renderPlanner(); renderOverview();
 }
+// ---------- Crew Roster order (z155): insert a row, move a person, sort a section. A person's data on roster row i moves with them: the Roster row,
+// their plan rows on every month tab (days D:AH; columns A to C are formulas), the typed Personnel Info cells and the Currency cells of that row, and
+// in memory their cell comments and AC / Pax tags (those sheets name the callsign, so the sheets don't change). The two sections never mix: regular
+// crew (rows 1 to 45) and SANS / NSMEN (46 to 60), where SANS and NSMEN are two groups by Status. The moved cells are written "quiet": the Change Log
+// gets one line per action ("Crew Roster: FALCON moved up") instead of hundreds of plan cells.
+const RANKS = ["LTC", "MAJ", "CPT", "LTA", "1WO", "2WO", "3WO", "MSG", "SSG", "1SG", "2SG", "3SG", "ME3", "ME2", "ME1"];   // one structure per department (Brandon, 4 Nov)
+const rankOf = p => { const k = RANKS.indexOf(String(p.name || "").replace(/\(NS\)/ig, " ").trim().split(/\s+/)[0].toUpperCase()); return k < 0 ? 99 : k; };
+const nameNoRank = p => { const w = String(p.name || "").replace(/\(NS\)/ig, " ").trim().split(/\s+/); return (rankOf(p) < 99 ? w.slice(1) : w).join(" "); };
+const sansGrp = p => /^sans$/i.test(p.status || "") ? "SANS" : /^nsmen$/i.test(p.status || "") ? "NSMEN" : "";
+const rosEmpty = p => !p.id && !p.name && !p.role;
+const rosSec = i => !S.catCol ? [0, N] : i >= REG_N ? [REG_N, N] : [0, REG_N];
+const rosGrp = i => S.catCol && i >= REG_N ? sansGrp(S.roster[i]) || "OTHER" : "REG";
+const ROS_SORTS = [["cat", "Cat Status, then rank"], ["id", "Callsign A to Z"], ["name", "Name A to Z"], ["role", "Role, then Cat Status"]];
+const rosCatIx = p => { const k = CREW_CATS.indexOf(String(p.cat || "").toUpperCase()); return k < 0 ? 9 : k; };
+function rosCmp(by) {
+  const nm = (a, b) => nameNoRank(a).localeCompare(nameNoRank(b)) || String(a.id).localeCompare(String(b.id));
+  const ri = p => { const k = CREW_ROLES.findIndex(r => same(r, p.role)); return k < 0 ? 9 : k; };
+  if (by === "id") return (a, b) => (!a.id - !b.id) || String(a.id).localeCompare(String(b.id)) || nm(a, b);
+  if (by === "name") return nm;
+  if (by === "role") return (a, b) => ri(a) - ri(b) || rosCatIx(a) - rosCatIx(b) || rankOf(a) - rankOf(b) || nm(a, b);
+  return (a, b) => rosCatIx(a) - rosCatIx(b) || rankOf(a) - rankOf(b) || nm(a, b);
+}
+// the new order of a section: filled rows sorted inside their group (regular: active then, if asked, inactive; SANS / NSMEN: SANS, NSMEN, the rest), empty rows last
+function rosSortOrder(sec, by, inactLast) {
+  const idx = []; for (let j = sec[0]; j < sec[1]; j++) idx.push(j);
+  const gk = j => { const p = S.roster[j]; return sec[0] >= REG_N && S.catCol ? ({ SANS: 0, NSMEN: 1 })[sansGrp(p)] ?? 2 : inactLast && /^inactive$/i.test(p.status) ? 1 : 0; };
+  const cmp = rosCmp(by), full = idx.filter(j => !rosEmpty(S.roster[j])), empty = idx.filter(j => rosEmpty(S.roster[j]));
+  return full.sort((a, b) => gk(a) - gk(b) || cmp(S.roster[a], S.roster[b]) || a - b).concat(empty);
+}
+// the current value of a cell: the file, or the unsaved change waiting for it
+function cellsNow(sheet) { if (!WB.paths[sheet]) return null; const c = Object.assign({}, readCells(sheet)); for (const e of dirty.values()) if (e.sheet === sheet) c[e.ref] = e.val; return c; }
+// apply a new order to roster rows start..start+order.length-1: row start+j takes the data of old row order[j]; rows in clear become empty (init values)
+function rosApply(start, order, clear, init, note) {
+  const len = order.length, src = j => clear.has(j) ? null : order[j - start], moved = [];
+  for (let j = start; j < start + len; j++) if (clear.has(j) || order[j - start] !== j) moved.push(j);
+  if (!moved.length) return 0;
+  const W = [], wr = (sheet, ref, val) => W.push({ sheet, ref, val });
+  const old = S.roster.map(p => Object.assign({}, p)), rc = rosterCols(S);
+  const blank = () => Object.assign({ id: "", name: "", cat: "", ini: "", role: "", status: "", remarks: "" }, init || {});
+  moved.forEach(j => { const o = src(j), np = o == null ? blank() : Object.assign({}, old[o]);
+    for (const f in rc) { const a = String(old[j][f] ?? ""), b = String(np[f] ?? ""); if (a !== b) wr("Roster", rc[f] + (ROSTER_ROW0 + j), b); }
+    S.roster[j] = np; });
+  // plan rows on every month tab
+  const R = rp(), G = g0();
+  S.m.forEach((M, mi) => { if (!M || !M.grid || !(mi < NX_MI || S.nx)) return; const sh = monSheet(mi), snap = [];
+    for (let j = start; j < start + len; j++) for (let s = 0; s < R; s++) snap[(j - start) * R + s] = (M.grid[gridRow(j, s)] || []).slice();
+    moved.forEach(j => { const o = src(j); for (let s = 0; s < R; s++) { const r = gridRow(j, s); if (!M.grid[r]) continue; const nv = o == null ? [] : snap[(o - start) * R + s];
+      for (let d = 0; d < 31; d++) { const a = M.grid[r][d] || "", b = nv[d] || ""; if (a !== b) { wr(sh, colL(DAY_COL0 + d) + (G + r), b); M.grid[r][d] = b; } } } }); });
+  // Personnel Info (typed columns, found by heading) and Currency (C flags, then Before / Status pairs): the same row as the Roster
+  const moveCells = (sheet, row0, cols) => { const c = cellsNow(sheet); if (!c || !cols.length) return; const snap = {};
+    for (let j = start; j < start + len; j++) cols.forEach(L => snap[j + L] = c[L + (row0 + j)]);
+    moved.forEach(j => { const o = src(j); cols.forEach(L => { const nv = o == null ? "" : snap[o + L] ?? "", ov = c[L + (row0 + j)] ?? ""; if (String(nv) !== String(ov)) wr(sheet, L + (row0 + j), nv); }); }); };
+  if (WB.paths["Personnel Info"]) { const h = readCells("Personnel Info"), cols = [];
+    for (let k = 1; k <= 40; k++) { const t = str(h[colL(k) + "5"]); if (t && !/^(#|callsign|crew member|age|passport)$/i.test(t)) cols.push(colL(k)); }
+    moveCells("Personnel Info", ROSTER_ROW0, cols); }
+  if (S.hasCur) { const cols = []; for (let k = 3; k <= 3 + 2 * CUR_N; k++) cols.push(colL(k)); moveCells("Currency", CUR_ROW0, cols);
+    const cb = S.curBase.map(r => r.slice()); moved.forEach(j => { const o = src(j); S.curBase[j] = o == null ? Array(CUR_N).fill(null) : cb[o].slice(); }); }
+  // comments and AC / Pax tags: keyed by plan row in memory
+  const o2n = new Map(); moved.forEach(j => { const o = src(j); if (o != null) o2n.set(o, j); });
+  const rekey = m => { if (!m) return m; const out = new Map(); for (const [k, v] of m) { const [mi, r, d] = k.split(":").map(Number), p = rowPerson(r);
+    if (o2n.has(p)) out.set(mi + ":" + gridRow(o2n.get(p), rowShift(r)) + ":" + d, v); else if (!moved.includes(p)) out.set(k, v); } return out; };
+  S.notes = rekey(S.notes); S.noteRow = rekey(S.noteRow); S.roleTags = rekey(S.roleTags); S.roleRow = rekey(S.roleRow);
+  if (W.length) { put(W[0].sheet, W[0].ref, W[0].val); W.forEach(w => dirty.set(w.sheet + "!" + w.ref, { sheet: w.sheet, ref: w.ref, val: w.val, quiet: note })); }
+  CHIT_GEN++; OPS_CXL_CACHE = null; updateSave(); autoKick();
+  return moved.filter(j => src(j) != null && !rosEmpty(S.roster[j])).length;
+}
+const rosWho = p => p.id || p.name || "the new row";
+function rosInsert(i, below) {
+  if (readOnly()) return;
+  const sec = rosSec(i), k = below ? i + 1 : i, who = rosWho(S.roster[i]);
+  let f = -1; for (let j = k; j < sec[1]; j++) if (rosEmpty(S.roster[j]) && !sansGrp(S.roster[j])) { f = j; break; }
+  if (f < 0) for (let j = k - 1; j >= sec[0]; j--) if (rosEmpty(S.roster[j]) && !sansGrp(S.roster[j])) { f = j; break; }
+  if (f < 0) { toast("No empty row left in this part of the roster (" + (sec[1] - sec[0]) + " rows). Clear an Inactive person's row in Excel first.", 5000); return; }
+  const g = rosGrp(i), init = g === "SANS" || g === "NSMEN" ? { status: g } : null;
+  let start, order, at;
+  if (f >= k) { start = k; order = [f]; for (let j = k; j < f; j++) order.push(j); at = k; }
+  else { start = f; order = []; for (let j = f + 1; j < k; j++) order.push(j); order.push(f); at = k - 1; }
+  const n = rosApply(start, order, new Set([at]), init, "Crew Roster: row added " + (below ? "below " : "above ") + who + " (crew below it moved with their plans)");
+  renderAll();
+  toast("Row " + (at + 1) + " added " + (below ? "below " : "above ") + who + "." + (n ? " " + n + " crew moved " + (f >= k ? "down" : "up") + " one row, with their plans for every month." : "") + saveHint() + " Ctrl+Z undoes it.", 6000);
+  setTimeout(() => { const el = document.querySelector("#rosterTable input[data-r='" + at + "'][data-f='id']"); if (el) { el.focus(); el.scrollIntoView({ block: "nearest" }); } }, 0);
+}
+function rosNeighbour(i, dir) { const sec = rosSec(i), g = rosGrp(i); for (let j = i + dir; j >= sec[0] && j < sec[1]; j += dir) if (!rosEmpty(S.roster[j]) && rosGrp(j) === g) return j; return -1; }
+function rosMove(i, dir) {
+  if (readOnly()) return;
+  const j = rosNeighbour(i, dir); if (j < 0) return;
+  const a = Math.min(i, j), b = Math.max(i, j), order = []; for (let k = a; k <= b; k++) order.push(k === i ? j : k === j ? i : k);
+  const who = rosWho(S.roster[i]);
+  rosApply(a, order, new Set(), null, "Crew Roster: " + who + " moved " + (dir < 0 ? "up" : "down") + " (with their plans)");
+  renderAll(); toast(who + " moved " + (dir < 0 ? "up" : "down") + "." + saveHint(), 2500);
+}
+function rosSortDo(sec, by, inactLast) {
+  if (readOnly()) return;
+  const order = rosSortOrder(sec, by, inactLast), lab = (ROS_SORTS.find(x => x[0] === by) || ROS_SORTS[0])[1];
+  const nm = sec[0] >= REG_N && S.catCol ? "SANS / NSMEN" : "regular crew";
+  const n = rosApply(sec[0], order, new Set(), null, "Crew Roster: " + nm + " sorted by " + lab + " (crew moved with their plans)");
+  renderAll(); toast(n ? "Sorted by " + lab + ": " + n + " crew moved, with their plans." + saveHint() + " Ctrl+Z undoes it." : "Already in that order.", 4000);
+}
+// the Sort dialog: a preview of now and after
+let rosDlgSec = null;
+function rosSortOpen(sec) {
+  rosDlgSec = sec; const d = $("rosSort"), san = sec[0] >= REG_N && S.catCol;
+  $("rosSortTitle").textContent = san ? "Sort SANS / NSMEN" : "Sort regular crew";
+  $("rosSortBy").innerHTML = ROS_SORTS.map(([k, t]) => "<option value='" + k + "'>" + t + "</option>").join("");
+  $("rosSortInact").parentNode.style.display = san ? "none" : "";
+  d.style.display = "flex"; rosSortPrev();
+}
+function rosSortPrev() {
+  const sec = rosDlgSec, by = $("rosSortBy").value, ia = $("rosSortInact").checked, san = sec[0] >= REG_N && S.catCol;
+  const now = []; for (let j = sec[0]; j < sec[1]; j++) if (!rosEmpty(S.roster[j])) now.push(j);
+  const after = rosSortOrder(sec, by, ia).filter(j => !rosEmpty(S.roster[j]));
+  const li = (j, k, mv) => { const p = S.roster[j]; return "<div class='rsli" + (mv ? " mv" : "") + (/^inactive$/i.test(p.status) ? " ia" : "") + "'><span class='k'>" + (k + 1) + "</span><b>" + esc(p.id) + "</b><span class='" + catCls(p.cat) + "'>" + esc(p.name) + "</span><span class='c " + catCls(p.cat) + "'>" + esc(san ? sansGrp(p) || p.status : p.cat) + "</span></div>"; };
+  const mv = after.filter((j, k) => now[k] !== j).length;
+  $("rosSortSub").textContent = "Puts the " + now.length + " " + (san ? "SANS / NSMEN" : "regular crew") + " in a new order on the Crew Roster, the Planner, the Ops Room and in Excel." + (san ? " SANS first, then NSMEN." : " SANS / NSMEN keep their own order at the bottom.");
+  $("rosSortCols").innerHTML = "<div><h4>Now</h4>" + now.map((j, k) => li(j, k)).join("") + "</div><div class='arr'>→</div><div><h4>After sorting</h4>" + after.map((j, k) => li(j, k, now[k] !== j)).join("") + "</div>";
+  $("rosSortInfo").innerHTML = "Rank is read from the start of the name ((NS) is skipped): LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1. Any other rank comes after them; the same rank goes by name.<br>Each person's plans for every month, Personnel Info and Currency rows move with them. <b>" + mv + " crew move</b> (green).";
+  $("rosSortGo").textContent = mv ? "Sort " + now.length + " crew" : "Already in this order"; $("rosSortGo").disabled = !mv;
+}
+$("rosSortBy").addEventListener("change", rosSortPrev); $("rosSortInact").addEventListener("change", rosSortPrev);
+$("rosSortCancel").addEventListener("click", () => { $("rosSort").style.display = "none"; });
+$("rosSortGo").addEventListener("click", () => { $("rosSort").style.display = "none"; rosSortDo(rosDlgSec, $("rosSortBy").value, $("rosSortInact").checked); });
+// right-click a person on the Crew Roster
+$("rosterTable").addEventListener("contextmenu", e => {
+  const tr = e.target.closest("tr[data-ri]"); if (!tr || S.kind || !mayEdit(cur.b)) return;
+  e.preventDefault(); const i = +tr.dataset.ri, p = S.roster[i], sec = rosSec(i), san = sec[0] >= REG_N && S.catCol, full = !rosEmpty(p);
+  const items = [];
+  if (full) items.push(["⤒  Insert crew above", () => rosInsert(i, false)], ["⤓  Insert crew below", () => rosInsert(i, true)],
+    ["▲  Move up", rosNeighbour(i, -1) >= 0 ? () => rosMove(i, -1) : null], ["▼  Move down", rosNeighbour(i, 1) >= 0 ? () => rosMove(i, 1) : null]);
+  items.push([san ? "⇅  Sort SANS / NSMEN…" : "⇅  Sort regular crew…", () => rosSortOpen(sec)]);
+  opsCtxOpen(e.clientX, e.clientY, items, full ? (p.id ? p.id + (p.name ? " · " + p.name : "") : p.name) : "");
+});
 $("mpNote").addEventListener("click", e => {
   if (e.target.id !== "mpSync") return;
   const diffs = mpDiffs(books[cur.b], masterBook()); if (!diffs.length) return;

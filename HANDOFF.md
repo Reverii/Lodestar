@@ -1,4 +1,4 @@
-# LODESTAR handoff (updated 2026-11-04, after z154)
+# LODESTAR handoff (updated 2026-11-04, after z155)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
@@ -8,6 +8,17 @@ The repo's own eight `.xlsx` files and the dashboard's built-in sample are now a
 
 ## CAT hours tracking: dropped (2 Nov, Brandon)
 Asked for hours per CAT (D to C 100, C to B 200, B to A 300) from ATOM. The sanitized ATOM sample has no total flying hours column, ATOM is another system, so nothing was built and the mock-up was deleted. Reopen only if the export gets a total column (then read it like `Current Month`, `ATOM_HOURS_COL`).
+
+## z155 (4 Nov, Brandon: "build it"): Crew Roster order, SANS and NSMEN apart
+**Right-click a person on the Crew Roster** (editors only): **Insert crew above / below**, **Move up / down** (greyed when there is nobody to swap with in the same group), **Sort regular crew…** or **Sort SANS / NSMEN…** (dialog: Cat Status then rank, Callsign A to Z, Name A to Z, Role then Cat; Inactive at the end (regular only); Now / After preview, moved people in green). The order is the real order: Planner, Ops Room and Excel follow it.
+- **What moves with a person** (`rosApply(start, order, clear, init, note)`): the Roster row (all `rosterCols`), the plan rows on every month tab (days D:AH; A to C are formulas), the typed Personnel Info columns of that row (found by heading: all but #, Callsign, Crew Member, Age, Passport), the Currency row (C flags and the Before / Status pairs) and `S.curBase`; in memory the comment and AC / Pax tag keys (`S.notes`, `noteRow`, `roleTags`, `roleRow`). Cell Notes, Role Tags, Medical Chits, Syllabus Log and the Ops Room name the callsign, so their sheets don't change. Current values = file plus unsaved changes (`cellsNow`).
+- **Insert** takes the nearest empty roster row (no id, name, role) after the spot, else before it, shifts the rows between and clears the new row (any leftover plan of an old cleared row is wiped). Section full = a message. Regular (rows 1 to 45) and SANS / NSMEN (46 to 60) never mix.
+- **SANS and NSMEN are two groups by Status** (no layout change; the same purple rows): Crew Roster bands SANS then NSMEN (then "Inactive or other status"), each with one empty "next SANS" / "next NSMEN" row that sets the Status when a name is typed; inserting next to a SANS / NSMEN person gives the new row that Status; Move swaps only inside the group; Sort puts SANS, NSMEN, the rest. Planner (`visibleCrew`) and Currency tab show a SANS band then an NSMEN band (`tr.nsSep`, darker violet). Ops Room keeps the single green SANS / NSMEN box.
+- **Rank order** (`RANKS`): LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 (one structure per department: Pilot / TACCO officers, Loadmaster WOSE, SUP MEs); "(NS)" skipped; unknown ranks last; same rank by name.
+- **Change Log:** moved cells are written with `quiet: <text>` on the dirty entry; `logLines` skips them and adds one line per action ("Crew Roster: FALCON moved up (with their plans)"). Undo works (one step per action).
+- `opsCtxOpen(x, y, items, head)` now takes a title line and greys an item whose function is null. Page note and help text updated. Dashboard only, no Excel layout change; upload the DEV dashboard.
+- Tests: new `node tests/roster_order.test.js` (14). Mock-up `previews/roster_order_mockup_*.png`, real `previews/roster_order_real_*.png`.
+- Watch: a big sort touches many cells (the Save count shows it); someone with the same file open in desktop Excel at the same time would be overwritten as with any save.
 
 ## z154 (4 Nov, Brandon: "build it"): edit the syllabus items on the dashboard
 **✎ Edit syllabus items** under the crew list on the Syllabus tab (only when the department file can be edited) opens an editor: stages on the left (with item counts; stage names and order stay in Excel), the chosen stage's tracks as groups of rows (Order with ▲▼, Code, Description, Type, Chances, Notes, Results, ✕), **+ Add item to <track>**, **+ Add track**, Done. Default chances and the warn level (Settings B6 / B7) are editable at the bottom left. Rows: yellow changed, green new, red needs fixing. A **code with entries on the Syllabus Log is locked** (🔒, no code box, ✕ disabled; the description can change). A row with no code, no track or a code an earlier row already uses is red and **not written** (its row stays empty) until fixed. New codes are suggested from the track's own pattern (S2-C-FLT3 -> S2-C-FLT4), else `<prefix>-<stage letter>-<track>N` (S2-A-GND1); renaming a "New track" re-suggests its untouched codes and type. Saved with Save to Excel, Undo works, Change Log as usual.
@@ -165,7 +176,7 @@ Brandon was not happy with the z111 auto-merge. **Now the board shows only squad
 
 ## Next session: start here (handoff of 3 Nov 2026, after z153)
 
-**4 Nov:** z154 built (syllabus editor, see its section); on the work branch, not merged.
+**4 Nov:** z154 (syllabus editor) merged to main; z155 (Crew Roster order, SANS / NSMEN apart) built on the work branch.
 **State (3 Nov):** everything through **z153** is merged on `main`. The repo's eight `.xlsx` are a fresh demo set built after z153 (new syllabus stages); the dashboard embeds them. Work branch `claude/practical-lamport-j13scq` equals `main`.
 **Done on 3 Nov:** z152 (New code panel and help wording, last-used tag on the department card edge), z153 (syllabus stages OCU / CAT D / CAT C / CAT B / CAT A named by the CAT held; CAT A = instructor training for selected crew, switch on the Syllabus tab, Syllabus Settings B8), the Master Planner part of the PDF guide drafted (`guide/`), demo set rebuilt.
 **Waiting on Brandon:** his read of the Master Planner guide draft (wording, order, missing bits; then the same layout for the Ops Room and Duty Planner parts); his look at z151 to z153; the instructor (CAT A stage) syllabus items and the Pilot / Loadmaster syllabus lists; the exact Excel error message (z150); the Health check mock-up; renaming the stages in his live SUP 2 file in Excel (or uploading the full new set).

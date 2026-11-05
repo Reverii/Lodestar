@@ -60,6 +60,14 @@ test("match_with_appointment_at_the_back", async ({ page }) => {   // z168
   });
   assert.deepStrictEqual(r, ["HAWK", "HAWK", null, "HAWK", null]);
 });
+test("every_roster_rank_is_skipped", async ({ page }) => {   // z178: the Crew Roster rank list (RANKS) includes WOSE ranks
+  const r = await page.evaluate(() => {
+    const miss = RANKS.filter(k => lodeKey(k + " Tan Ah Kow").join(" ") !== "ah kow tan");
+    const x = mePeople().find(z => z.p.id === "HAWK"), keep = x.p.name;
+    try { x.p.name = "1WO Sarah Lim"; const m = lodeMatch("Sarah Lim"); return [miss, m && m.p.id]; } finally { x.p.name = keep; }
+  });
+  assert.deepStrictEqual(r, [[], "HAWK"]);
+});
 test("match_none_for_email", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => lodeMatch("sarah.lim@x.mil")), null);
 });

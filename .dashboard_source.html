@@ -700,6 +700,8 @@ table.opsfc td.ok{color:var(--green);font-weight:700}table.opsfc td.short{color:
 .calm td .own{display:flex;align-items:center;gap:6px;font-size:14px;margin-top:4px;font-weight:700;color:var(--s600);cursor:pointer}
 .calm td.clash{background:#fee2e2}
 .calm td.diff{background:#fef3c7;box-shadow:inset 0 0 0 2px #f59e0b}
+.calm td select.bdos{font-size:12px;padding-left:3px;padding-right:0;letter-spacing:-.2px}
+.calm td .bdod{font-size:10px;color:var(--s500);margin-top:2px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.calm td .bdod b{color:#b45309}.calm td .bdop{display:block;max-width:100%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:4px;font-size:13px}
 .calm td.gap .dn{color:#dc2626}
 .dept{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:800;font-size:11.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .d0{background:#dbeafe;color:#1e3a8a}.d1{background:#fecdd3;color:#881337}.d2{background:#d1fae5;color:#065f46}.d3{background:#fef3c7;color:#78350f}
@@ -1187,7 +1189,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-05 z176</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-05 z177</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1309,7 +1311,7 @@ const ROWS_PER = 4, SHIFT_ROWS = 3, ROW_LABELS = ["AM", "PM", "NIGHT", "WD"];
 const rp = st => { const b = st || S; return (b && b.rp) || ROWS_PER; };
 const gridRow = (i, s, st) => i * rp(st) + s, rowPerson = (r, st) => Math.floor(r / rp(st)), rowShift = (r, st) => r % rp(st), isWdRow = (r, st) => rp(st) > 3 && rowShift(r, st) === 3;
 const opsListOn = a => S.hasOps ? /^y/i.test(a.ops || "") : (a.ci === CAT_ADMIN || a.ci === CAT_SIM || a.ci === CAT_OS);   // does this activity go in the Ops Room list of the planners' ground items
-const wdAllowed = a => !!a && (a.ci === CAT_GD || a.ci === CAT_ADMIN);   // the WD row takes ground and admin items only
+const wdAllowed = a => !!a && (a.ci === CAT_GD || a.ci === CAT_ADMIN || String(a.code || "").trim().toUpperCase() === "BDO");   // the WD row takes ground and admin items only, and BDO (z177: the Duty Roster's person goes there)
 // master slot j (= shift*2 + slot) has its code on row 6+3j, its time on the row below and its comment below that
 const DASH_CREW_ROW0 = 12, DAILY_ROW0 = 11; // first crew row on the Dashboard crew table and the Daily View
 const mRow = j => MASTER_ROW0 + 3 * j, tRow = j => MASTER_ROW0 + 3 * j + 1, nRow = j => MASTER_ROW0 + 3 * j + 2;
@@ -3656,7 +3658,8 @@ function monthStats(mi, A) {
         if (sf && d < dim) { const ck = String(M.grid[gridRow(i, s)][d]).trim().toUpperCase(), g = day[d].sor[s]; g[ck] = g[ck] || Array(sf.length).fill(0); sf.forEach((x, j) => { if (x === "C") g[ck][j]++; }); }
         if (a.ci === CAT_FLIGHT) { const hh = cellHrs(M, s, d, M.grid[gridRow(i, s)][d]) * (sf ? nc / sf.length : 1); t.fl += 1; t.hrs += hh; if (d < dim) { day[d].fl[s] += nc; day[d].hrs += hh; } }
       }
-      if (rp() > 3) { const w = look(M.grid[gridRow(i, 3)][d]); if (wdAllowed(w)) cats.add(w.ci); }   // the WD row adds its ground or admin item to the day, counted once
+      if (rp() > 3) { const wv = M.grid[gridRow(i, 3)][d], w = look(wv); if (wdAllowed(w)) cats.add(w.ci);   // the WD row adds its ground or admin item to the day, counted once
+        if (String(wv || "").trim().toUpperCase() === "BDO") { if (!duty && d < dim) day[d].nB++; duty = true; } }   // z177: BDO on the WD row
       if (cats.has(CAT_GD)) t.gd++; if (cats.has(CAT_SQD)) t.sdo++; if (cats.has(CAT_LEAVE)) t.lv++;
       if (d < dim) { if (duty) day[d].sdo++; if (cats.has(CAT_GD)) day[d].gd++; if (cats.has(CAT_LEAVE)) day[d].lv++; if ([...cats].some(AWAY)) day[d].off++; }
     }
@@ -4622,16 +4625,41 @@ function sdoDays(mi, D = DUTY) { // per day: departments whose own (open) planne
   books.forEach(b => { if (!isDept(b) || b.S.year !== y) return; for (let d = 0; d < dim; d++) if (plan(b.S, D)[sdoRef(y, mi, d)]) out[d].push(b.S.dept); });
   return out;
 }
-// days where a department's own file doesn't match the Duty Roster: [{D, mi, d, ref, want}]
+// z177: a BDO day on the Duty Roster holds a person from the BDO crew list (their department comes from that list); older files hold a
+// department, read as "that department, nobody picked yet". SDO days hold a department. A blank day = that duty is not needed that day.
+// -> null, or { dept, id, name } (id blank when only the department is known)
+function dutyAt(rs, D, ref) {
+  const v = String(plan(rs, D)[ref] || "").trim(); if (!v) return null;
+  const dep = (rs.depts || []).find(o => same(o, v)); if (D !== "BDO" || dep) return { dept: dep || v, id: "", name: "" };
+  const p = (rs.crew && rs.crew.BDO || []).find(q => same(q.id || q.name, v)); if (p) return { dept: p.dept, id: p.id || p.name, name: p.name };
+  const q = rosterPeople().find(q => same(q.id, v)); return { dept: q ? q.dept : "", id: v, name: q ? q.name : "" };
+}
+// BDO goes on the person's WD (whole day) row; files without one: the AM row
+const bdoRow = (st, i) => gridRow(i, rp(st) > SHIFT_ROWS ? SHIFT_ROWS : 0, st);
+// roster indexes of the people in a department file with BDO in any of their rows on that day
+function bdoOnDay(st, mi, d) { const M = st.m[mi], out = []; if (!M) return out; st.roster.forEach((p, i) => { for (let s = 0; s < rp(st); s++) if (dutyKey(M.grid[gridRow(i, s, st)][d]) === "BDO") { out.push(i); break; } }); return out; }
+// days where a department's own file doesn't match the Duty Roster: [{D, mi, d, ref, want, put: roster index to give BDO or -1, clr: roster indexes to take BDO off}]
+// The department's BDO Plan sheet keeps holding its own name on its days (as before); for a BDO day with a person, the person's WD row
+// also gets BDO and nobody else in the department keeps BDO that day. When a BDO day moves away from the department, its BDO cells are cleared.
 function sdoDiffs(bk, rb, only) {
   const out = [], y = bk.S.year; if (!rb || rb.S.year !== y) return out;
   for (const [D] of DUTIES) {
     if ((only && only !== D) || !doesDuty(bk.S, D) || !hasPlan(rb.S, D)) continue;
     for (let mi = 0; mi < (bk.S.nx && rb.S.nx ? NMON : 12); mi++) for (let d = 0; d < daysIn(y, mi); d++) {
-      const ref = sdoRef(y, mi, d), want = same(plan(rb.S, D)[ref], bk.S.dept), have = !!plan(bk.S, D)[ref];
-      if (want !== have) out.push({ D, mi, d, ref, want });
+      const ref = sdoRef(y, mi, d), r = dutyAt(rb.S, D, ref), want = !!r && same(r.dept, bk.S.dept), have = !!plan(bk.S, D)[ref];
+      let put = -1, clr = [];
+      if (D === "BDO" && want && r.id) { const i = bk.S.roster.findIndex(p => same(p.id || p.name, r.id)), on = bdoOnDay(bk.S, mi, d); if (i >= 0 && !on.includes(i)) put = i; clr = on.filter(j => j !== i); }
+      else if (D === "BDO" && !want && have) clr = bdoOnDay(bk.S, mi, d);
+      if (want !== have || put >= 0 || clr.length) out.push({ D, mi, d, ref, want, put, clr, who: r && r.id });
     }
   }
+  return out;
+}
+// what else a person has planned on a day in their own department file (codes other than BDO), for the BDO picker
+function dayPlans(dept, id, mi, d) {
+  const b = books.find(x => isDept(x) && same(x.S.dept, dept)); if (!b || !b.S.m[mi]) return [];
+  const i = b.S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0) return [];
+  const out = []; for (let s = 0; s < rp(b.S); s++) { const v = String(b.S.m[mi].grid[gridRow(i, s, b.S)][d] || "").trim(); if (v && dutyKey(v) !== "BDO" && !out.some(x => same(x, v))) out.push(v); }
   return out;
 }
 // people in the open department rosters, for adding to a duty crew list
@@ -4682,7 +4710,7 @@ function renderSdo() {
     note = "<b>" + esc(own.dept) + " has no " + D + " days in its file.</b> " + (D === "SDO" && !doesSdo(own) ? "Only " + SDO_DEPTS.join(", ") + " are rostered for SDO. " : "Its Excel has no " + D + " Plan sheet yet (upload the new planner file). ") + "The calendar shows the roster for reference." + syncBtn;
   } else if (ownRoster) {
     const off = deptBooks.map(b => ({ b, n: sdoDiffs(b, books[dutyBi()], D).length })).filter(x => x.n);
-    note = "Pick the department on " + D + " duty for each day. Save to Excel writes to the Duty Roster only. " +
+    note = (D === "BDO" ? "Pick the person on BDO for each day, from the BDO crew list; leave a day blank when no BDO is needed. Their department's dashboard copies BDO onto that person's WD row. " : "Pick the department on " + D + " duty for each day. ") + "Save to Excel writes to the Duty Roster only. " +
       (deptBooks.length ? "Department files open: " + deptBooks.map(b => esc(b.S.dept)).join(", ") + ". Amber days don't match a department's own file yet" + (off.length ? " (" + off.map(x => esc(x.b.S.dept) + ": " + x.n).join(", ") + " days); each department copies its days across from its own dashboard." : ".") :
         "Use <b>Add other departments</b> to see each department's own plans alongside.");
   } else if (rb) {
@@ -4690,7 +4718,7 @@ function renderSdo() {
     note = rb.S.year !== y ? "<span style='color:#b91c1c'>The Duty Roster is for " + rb.S.year + " but your file is for " + y + ".</span>" :
       !hasPlan(rb.S, D) ? "The open roster file has no " + D + " calendar (it's the older SDO Roster)." :
       diffs.length ? "<b style='color:#b45309'>Your " + D + " days differ from the Duty Roster on " + diffs.length + " day" + (diffs.length === 1 ? "" : "s") + " (amber).</b>" + syncBtn :
-        "<b style='color:#15803d'>Your " + D + " days match the Duty Roster.</b> The coloured tag on each day is the department the roster gives it." + syncBtn;
+        "<b style='color:#15803d'>Your " + D + " days match the Duty Roster.</b> " + (D === "BDO" ? "Your days show the person the Duty Planner picked; other departments' days show their department." : "The coloured tag on each day is the department the roster gives it.") + syncBtn;
   } else {
     note = "Tick <b>" + D + "</b> on each day " + esc(own.dept) + " has " + D + " duty (your own file). " +
       (books.length > 1 ? "Other open departments are shown alongside. A red day has more than one department." : "The <b>Duty Roster</b> and the other departments are not open. On SharePoint they open by themselves; then your duty days can be copied and the other departments' days are shown.");
@@ -4698,11 +4726,16 @@ function renderSdo() {
   $("sdoNote").innerHTML = note + (others.length ? " <span style='color:#b91c1c'>Not shown (different year): " + esc(others.join(", ")) + ".</span>" : "");
   const rosterOf = ref => (ownRoster ? plan(own, D)[ref] : rb && rb.S.year === y ? plan(rb.S, D)[ref] : "") || "";
   const opts = ownRoster ? own.depts : [];
+  const rs = ownRoster ? own : rb && rb.S.year === y ? rb.S : null, isB = D === "BDO", rsB = isB && rs && rs.hasCrew;   // rsB: BDO days hold a person
+  // amber days: per day, the departments whose own file doesn't match the roster yet (roster view), or this department's own differences
+  const diffAt = new Map(); (ownRoster ? deptBooks : rb && !noDuty ? [books[dutyBi()]] : []).forEach(b => sdoDiffs(b, ownRoster ? books[dutyBi()] : rb, D).forEach(x => diffAt.set(x.ref, (diffAt.get(x.ref) || []).concat([[b.S.dept, x]]))));
+  const crewB = rsB ? rs.crew.BDO : [], crewDeps = [...new Set(crewB.map(p => p.dept || ""))];
   let h = "";
   for (let mi = 0; mi < (own.nx ? NMON : 12); mi++) {
     const dim = daysIn(y, mi), off = (new Date(y, mi, 1).getDay() + 6) % 7, all = sdoDays(mi, D);
     let cnt = 0; for (let d = 0; d < dim; d++) if (plan(own, D)[sdoRef(y, mi, d)]) cnt++;
-    h += "<div class='calm" + (mi === NX_MI ? " nx" : "") + "'><h3>" + (mi === NX_MI ? "JANUARY " + (y + 1) + " (next year)" : MONTHS_FULL[mi].toUpperCase() + " " + y) + "<small>" + (ownRoster ? cnt + " / " + dim + " days set" : esc(own.dept) + ": " + cnt + " day" + (cnt === 1 ? "" : "s")) + "</small></h3><table><tr>" + ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((x, i) => "<th class='" + (i > 4 ? "we" : "") + "'>" + x + "</th>").join("") + "</tr>";
+    const cntTxt = ownRoster ? (isB ? cnt + " BDO day" + (cnt === 1 ? "" : "s") : cnt + " / " + dim + " days set") : esc(own.dept) + ": " + cnt + " day" + (cnt === 1 ? "" : "s");
+    h += "<div class='calm" + (mi === NX_MI ? " nx" : "") + "'><h3>" + (mi === NX_MI ? "JANUARY " + (y + 1) + " (next year)" : MONTHS_FULL[mi].toUpperCase() + " " + y) + "<small>" + cntTxt + "</small></h3><table><tr>" + ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((x, i) => "<th class='" + (i > 4 ? "we" : "") + "'>" + x + "</th>").join("") + "</tr>";
     for (let w = 0; w < 6; w++) {
       if (w * 7 - off >= dim) break;
       h += "<tr>";
@@ -4714,17 +4747,33 @@ function renderSdo() {
         let cls = (hol.has(iso) ? "hol" : "") + (iso === opsToday() ? " today" : ""), tip = "", body;
         if (ownRoster) {
           // amber: a department file that is open disagrees with the roster on this day
-          const bad = deptBooks.filter(b => doesDuty(b.S, D) && !!plan(b.S, D)[ref] !== same(rv, b.S.dept));
-          if (bad.length) { cls += " diff"; tip = "Not yet matched in: " + bad.map(b => b.S.dept).join(", "); }
+          const bad = diffAt.get(ref) || [];
+          if (bad.length) { cls += " diff"; tip = "Not yet matched in: " + bad.map(z => z[0]).join(", "); }
+          if (rsB) {   // z177: BDO, a person from the BDO crew list, grouped by department; blank = no BDO that day
+            const r = dutyAt(own, D, ref), inList = r && r.id && crewB.some(p => same(p.id || p.name, r.id));
+            const busy = p => dayPlans(p.dept, p.id || p.name, mi, d), o1 = p => { const b = busy(p), id = p.id || p.name; const on = r && same(r.id, id); return "<option value='" + esc(id) + "'" + (on ? " selected" : "") + ">" + esc(on ? id : id + (p.name ? " · " + p.name : "") + (b.length ? "  · has " + b.join(", ") : "")) + "</option>"; };   // the picked one shows only the callsign (the box is narrow)
+            const bz = r && r.id ? dayPlans(r.dept, r.id, mi, d) : [];
+            if (bz.length) tip = (tip ? tip + "\n" : "") + r.id + " also has " + bz.join(", ") + " that day";   // shown under the box; amber stays for days a department hasn't copied
+            body = "<select data-sdo='" + ref + "' class='bdos " + (r && r.dept ? deptCls(r.dept) : "") + "' title='" + esc(r ? (r.id ? r.id + (r.name ? " · " + r.name : "") + (r.dept ? " (" + r.dept + ")" : "") : r.dept + ": nobody picked yet") : "No BDO needed this day") + "'><option value=''>" + (r ? "(no BDO)" : "") + "</option>" +
+              (r && !r.id ? "<option value='" + esc(rv) + "' selected>" + esc(rv) + "</option>" : "") + (r && r.id && !inList ? "<option value='" + esc(rv) + "' selected>" + esc(rv) + " (not on the BDO list)</option>" : "") +
+              crewDeps.map(dp => "<optgroup label='" + esc(dp || "(no department)") + "'>" + crewB.filter(p => (p.dept || "") === dp).map(o1).join("") + "</optgroup>").join("") + "</select>" +
+              (r ? "<div class='bdod'>" + (r.id ? esc(r.dept || "department not known") : "<i>nobody picked yet</i>") + (bz.length ? " · <b>has " + esc(bz.join(", ")) + "</b>" : "") + "</div>" : "");
+          } else {
           const list2 = rv && !opts.some(o => same(o, rv)) ? opts.concat([rv]) : opts;
           body = "<select data-sdo='" + ref + "' class='" + (rv ? deptCls(rv) : "") + "'><option value=''></option>" + list2.map(o => "<option" + (same(o, rv) ? " selected" : "") + ">" + esc(o) + "</option>").join("") + "</select>" +
             "<div class='chips'>" + list.filter(x => !same(x, rv)).map(x => "<span class='dept dx' title='" + esc(x) + "&#39;s own file has this as a " + D + " day'>" + esc(x) + "?</span>").join("") + "</div>";
+          }
         } else {
-          const on = !!plan(own, D)[ref];
-          if (!noDuty && rb && rb.S.year === y && hasPlan(rb.S, D) && on !== same(rv, own.dept)) { cls += " diff"; tip = same(rv, own.dept) ? "The Duty Roster gives this day to " + own.dept : "The Duty Roster gives this day to " + (rv || "nobody"); }
+          const on = !!plan(own, D)[ref], r = rs && hasPlan(rs, D) ? dutyAt(rs, D, ref) : null, mine = r && same(r.dept, own.dept), dx = diffAt.get(ref);
+          if (dx) { cls += " diff"; tip = mine ? (r.id ? "The Duty Roster puts " + r.id + " on BDO; not copied into your plan yet" : "The Duty Roster gives this day to " + own.dept) : "The Duty Roster gives this day to " + (r ? r.id || r.dept : "nobody"); }
           if (!rb && list.length > 1) { cls += " clash"; tip = "More than one department: " + list.join(", "); }
+          if (rsB && !noDuty) {   // z177: the department no longer picks: its days show the person the Duty Planner chose
+            const i = mine && r.id ? own.roster.findIndex(p => same(p.id || p.name, r.id)) : -1, done = i >= 0 && bdoOnDay(own, mi, d).includes(i);
+            body = mine ? (r.id ? "<span class='dept " + deptCls(own.dept) + " bdop' title='" + esc(r.id + (r.name ? " · " + r.name : "")) + "'>" + esc(r.id) + "</span><div class='bdod'>" + (i < 0 ? "<b>not in your Crew Roster</b>" : done ? "BDO on " + (rp(own) > SHIFT_ROWS ? "WD" : "AM") + " row ✓" : "<b>not copied yet</b>") + "</div>"
+                : "<span class='dept " + deptCls(own.dept) + "'>" + esc(own.dept) + "</span><div class='bdod'><i>nobody picked yet</i></div>") : r ? "<div class='chips'><span class='dept " + deptCls(r.dept) + "' title='" + esc(r.id ? r.id + " (" + r.dept + ")" : r.dept) + "'>" + esc(r.dept || r.id) + "</span></div>" : "";
+          } else
           body = (noDuty ? "" : "<label class='own'><input type='checkbox' data-sdo='" + ref + "'" + (on ? " checked" : "") + "> " + D + "</label>") + "<div class='chips'>" +
-            (rb ? (rv ? deptChip(rv) : "") : list.filter(x => x !== own.dept).map(deptChip).join("")) + "</div>";
+            (rb ? (r ? deptChip(r.dept) : "") : list.filter(x => x !== own.dept).map(deptChip).join("")) + "</div>";
         }
         h += "<td class='" + cls + "'" + (tip ? " title='" + esc(tip) + "'" : "") + "><div class='dn'>" + (d + 1) + "</div>" + body + "</td>";
       }
@@ -4738,17 +4787,17 @@ function renderSdo() {
   $("sdoSumTitle").textContent = D + " dates by department, " + y + (src ? " (Duty Roster)" : "");
   const depts = src ? src.S.depts : deptBooks.filter(b => doesDuty(b.S, D)).map(b => b.S.dept);
   $("sdoSumNote").textContent = src ? "From the Duty Roster, the master duty plan." : "Only departments whose files are open are included.";
-  let t = "<tr><th>Month</th>" + depts.map(o => "<th>" + deptChip(o) + "</th>").join("") + (src ? "<th>Not set</th>" : "") + "</tr>";
+  let t = "<tr><th>Month</th>" + depts.map(o => "<th>" + deptChip(o) + "</th>").join("") + (src && !isB ? "<th>Not set</th>" : "") + "</tr>";
   const tot = depts.map(() => 0); let gapTot = 0;
   let nxRow = "";
   for (let mi = 0; mi < (own.nx && (!src || src.S.nx) ? NMON : 12); mi++) {
     const all = sdoDays(mi, D), dim = daysIn(y, mi), nx = mi === NX_MI;   // next January: shown under the year total, not counted in it
     let r = "<tr class='" + (mi === cur.m ? "cur" : "") + (nx ? " nx" : "") + "'><td>" + (nx ? "Jan " + (y + 1) : MONTHS[mi]) + "</td>";
-    depts.forEach((o, k) => { const ds = []; for (let d = 0; d < dim; d++) if (src ? same(plan(src.S, D)[sdoRef(y, mi, d)], o) : all[d].includes(o)) ds.push(d + 1); if (!nx) tot[k] += ds.length; r += "<td class='dates'>" + ds.join(", ") + "</td>"; });
-    if (src) { let g = 0; for (let d = 0; d < dim; d++) if (!plan(src.S, D)[sdoRef(y, mi, d)]) g++; if (!nx) gapTot += g; r += "<td style='color:#b91c1c;font-weight:700'>" + (g || "-") + "</td>"; }
+    depts.forEach((o, k) => { const ds = []; for (let d = 0; d < dim; d++) if (src ? same((dutyAt(src.S, D, sdoRef(y, mi, d)) || {}).dept, o) : all[d].includes(o)) ds.push(d + 1); if (!nx) tot[k] += ds.length; r += "<td class='dates'>" + ds.join(", ") + "</td>"; });
+    if (src && !isB) { let g = 0; for (let d = 0; d < dim; d++) if (!plan(src.S, D)[sdoRef(y, mi, d)]) g++; if (!nx) gapTot += g; r += "<td style='color:#b91c1c;font-weight:700'>" + (g || "-") + "</td>"; }
     r += "</tr>"; if (nx) nxRow = r; else t += r;
   }
-  t += "<tr class='tot'><td>Total days</td>" + tot.map(x => "<td>" + x + "</td>").join("") + (src ? "<td>" + gapTot + "</td>" : "") + "</tr>" + nxRow;
+  t += "<tr class='tot'><td>Total days</td>" + tot.map(x => "<td>" + x + "</td>").join("") + (src && !isB ? "<td>" + gapTot + "</td>" : "") + "</tr>" + nxRow;
   $("sdoSum").innerHTML = t;
   renderDutyCrew(ownRoster ? books[dutyBi()] : rb, ownRoster);
 }
@@ -4829,9 +4878,11 @@ function opsDutyPerson(iso, code, deps) {
   books.forEach(b => {
     if (!isDept(b) || b.S.year !== y || (deps && !deps.some(o => same(o, b.S.dept)))) return;
     const M = b.S.m[mi]; if (!M) return;
-    b.S.roster.forEach((p, i) => { for (let s = 0; s < SHIFT_ROWS; s++) if (dutyKey(M.grid[gridRow(i, s)][d]) === k) on[s].push({ n: p.ini || p.id, c: opsCatCls(p) }); });
+    b.S.roster.forEach((p, i) => { let hit = false; for (let s = 0; s < SHIFT_ROWS; s++) if (dutyKey(M.grid[gridRow(i, s, b.S)][d]) === k) { on[s].push({ n: p.ini || p.id, c: opsCatCls(p) }); hit = true; }
+      // z177: a duty on the WD (whole day) row, where the Duty Roster's BDO goes: the whole day
+      if (!hit && rp(b.S) > SHIFT_ROWS && dutyKey(M.grid[gridRow(i, SHIFT_ROWS, b.S)][d]) === k) on[0].push({ n: p.ini || p.id, c: opsCatCls(p) }); });
   });
-  if (!on.some(x => x.length)) return rdep ? rdep + ": ?" : "";
+  if (!on.some(x => x.length)) return rdep ? (rdep.id ? rdep.id + (rdep.dept ? " (" + rdep.dept + ")" : "") : rdep.dept + ": ?") : "";
   // a shift nobody is planned on is covered by the previous shift's person (else the next one's): one person on any cell = the whole day,
   // AM + NIGHT cells = AM to PM and NIGHT; then consecutive shifts with the same person merge into one segment
   const w = on.map(x => x.map(z => z.n).join(", ")), h = on.map(x => x.map(z => "<b class='" + z.c + "'>" + esc(z.n) + "</b>").join(", "));
@@ -5072,7 +5123,7 @@ function opsDay(iso) {
 function opsDuty(iso) {   // BDO / SDO departments from the Duty Roster
   const rb = rosterBook(); if (!rb) return null;
   const { y, mi, d } = ymd(iso, rb.S.year); if (rb.S.year !== y || (mi === NX_MI && !rb.S.nx)) return null;
-  const ref = sdoRef(y, mi, d); return DUTIES.map(([D]) => [D, plan(rb.S, D)[ref] || ""]);
+  const ref = sdoRef(y, mi, d); return DUTIES.map(([D]) => [D, dutyAt(rb.S, D, ref)]);   // z177: [duty, null or { dept, id, name }]
 }
 const opsToday = () => { const t = window.OPS_TODAY || window.CUR_TODAY; if (t) return t; const n = new Date(); return isoOf(n.getFullYear(), n.getMonth(), n.getDate() - 1); };
 function opsFmt(iso, long) { const t = new Date(iso + "T00:00:00Z"); return t.toLocaleDateString("en-GB", { weekday: long ? "long" : "short", day: "numeric", month: long ? "long" : "short", year: long ? "numeric" : undefined, timeZone: "UTC" }); }
@@ -6270,7 +6321,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-05 z176 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-05 z177 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7470,9 +7521,20 @@ $("sdoNote").addEventListener("click", e => {
   if (e.target.id !== "sdoSync") return;
   const rb = rosterBook(), diffs = sdoDiffs(books[dutyBi()], rb); if (!diffs.length) return;
   const keep = cur.b; useBook(dutyBi());
-  for (const x of diffs) { const v = x.want ? S.dept : "", P = plan(S, x.D); if (v) P[x.ref] = v; else delete P[x.ref]; put(x.D + " Plan", x.ref, v); }
+  let skip = 0;
+  for (const x of diffs) {
+    const v = x.want ? S.dept : "", P = plan(S, x.D);
+    if (!!P[x.ref] !== !!v) { if (v) P[x.ref] = v; else delete P[x.ref]; put(x.D + " Plan", x.ref, v); }
+    // z177: BDO on the person the Duty Planner picked (their WD row), off anyone else in the department that day (only cells that say BDO)
+    const M = S.m[x.mi]; if (!M || (!x.clr.length && x.put < 0)) continue;
+    const L = colL(DAY_COL0 + x.d), sh = monSheet(x.mi);
+    x.clr.forEach(j => { for (let s = 0; s < rp(S); s++) { const rr = gridRow(j, s); if (dutyKey(M.grid[rr][x.d]) === "BDO") { M.grid[rr][x.d] = ""; put(sh, L + (g0() + rr), ""); } } });
+    if (x.put >= 0) { const rr = bdoRow(S, x.put), old = String(M.grid[rr][x.d] || "").trim(), p = S.roster[x.put];
+      if (old && !confirm((p.id || p.name) + " already has " + old + " on " + ROW_LABELS[rowShift(rr)] + " on " + (x.d + 1) + " " + MONTHS[x.mi] + ". The Duty Roster puts them on BDO that day. Replace it with BDO?")) { skip++; continue; }
+      M.grid[rr][x.d] = "BDO"; put(sh, L + (g0() + rr), "BDO"); }
+  }
   useBook(keep); renderSdo(); renderPlanner(); renderOverview();
-  toast("Copied " + diffs.length + " duty day" + (diffs.length === 1 ? "" : "s") + " (BDO and SDO) from the Duty Roster. Click Save to Excel to keep them.");
+  toast("Copied " + (diffs.length - skip) + " duty day" + (diffs.length - skip === 1 ? "" : "s") + " (BDO and SDO) from the Duty Roster" + (skip ? "; " + skip + " left as they were" : "") + ". Click Save to Excel to keep them.");
 });
 $("sdoCal").addEventListener("change", e => {
   const ref = e.target.dataset.sdo; if (!ref) return;

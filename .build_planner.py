@@ -564,13 +564,13 @@ for i in range(NA):
     acts.cell(r, 12, f'=IF($A{r}="","",IF($E{r}="",1,$E{r}))')
     acts.cell(r, 13, f'=IF(AND($A{r}<>"",$C{r}=$G$6),COUNTIFS($A$6:$A{r},"<>",$C$6:$C{r},$G$6),"")')
     acts.cell(r, 14, f'=IFERROR(INDEX($A$6:$A${5+NA},MATCH({i + 1},$M$6:$M${5+NA},0)),"")')
-    # the WD row takes ground and admin items only
-    acts.cell(r, 15, f'=IF(AND($A{r}<>"",OR($C{r}={catref("Ground Duty")},$C{r}={catref("Admin")})),COUNTIFS($A$6:$A{r},"<>",$C$6:$C{r},{catref("Ground Duty")})+COUNTIFS($A$6:$A{r},"<>",$C$6:$C{r},{catref("Admin")}),"")')
+    # the WD row takes ground and admin items only, and BDO (z177: the Duty Roster's BDO person goes on their WD row)
+    acts.cell(r, 15, f'=IF(AND($A{r}<>"",OR($C{r}={catref("Ground Duty")},$C{r}={catref("Admin")},$A{r}="BDO")),COUNTIFS($A$6:$A{r},"<>",$C$6:$C{r},{catref("Ground Duty")})+COUNTIFS($A$6:$A{r},"<>",$C$6:$C{r},{catref("Admin")})+COUNTIFS($A$6:$A{r},"BDO",$C$6:$C{r},"<>"&{catref("Ground Duty")},$C$6:$C{r},"<>"&{catref("Admin")}),"")')
     acts.cell(r, 16, f'=IFERROR(INDEX($A$6:$A${5+NA},MATCH({i + 1},$O$6:$O${5+NA},0)),"")')
 for col in "LMNOP":
     acts.column_dimensions[col].hidden = True
 name("FlightCodes", f"Activities!$N$6:$N${5+NA}" if STATICNAMES else f"Activities!$N$6:INDEX(Activities!$N$6:$N${5+NA},MAX(1,COUNTIF(Activities!$C$6:$C${5+NA},Activities!$G$6)))")
-name("WdCodes", f"Activities!$P$6:$P${5+NA}" if STATICNAMES else f"Activities!$P$6:INDEX(Activities!$P$6:$P${5+NA},MAX(1,COUNTIF(Activities!$C$6:$C${5+NA},{catref('Ground Duty')})+COUNTIF(Activities!$C$6:$C${5+NA},{catref('Admin')})))")
+name("WdCodes", f"Activities!$P$6:$P${5+NA}" if STATICNAMES else f'Activities!$P$6:INDEX(Activities!$P$6:$P${5+NA},MAX(1,COUNTIF(Activities!$C$6:$C${5+NA},{catref("Ground Duty")})+COUNTIF(Activities!$C$6:$C${5+NA},{catref("Admin")})+COUNTIFS(Activities!$A$6:$A${5+NA},"BDO",Activities!$C$6:$C${5+NA},"<>"&{catref("Ground Duty")},Activities!$C$6:$C${5+NA},"<>"&{catref("Admin")})))')
 name("ActCodesAll", f"Activities!$A$6:$A${5+NA}")
 name("ActCat", f"Activities!$C$6:$C${5+NA}")
 acts.column_dimensions["D"].hidden = True; acts.column_dimensions["E"].hidden = True
@@ -939,7 +939,7 @@ for m, mon in enumerate(MONTHS13, start=1):
                 if D1 <= c <= D31:
                     cell.alignment = Alignment(horizontal="center", vertical="center", shrink_to_fit=True); cell.font = f(False, SLATE700, 10)
             ws.row_dimensions[r].height = 19
-        blk3 = f"$D{r0}:$AH{r0 + 2}"   # the three shift rows: flights, hours and duty never sit in WD
+        blk3 = f"$D{r0}:$AH{r0 + 2}"   # the three shift rows: flights and hours never sit in WD (BDO can, z177)
         for k, (lab, cat, mode, col) in enumerate(METRICS):
             hc = f"{CL(MC0 + k)}$3"
             if mode == "entries":
@@ -947,7 +947,7 @@ for m, mon in enumerate(MONTHS13, start=1):
             elif mode == "hours":
                 fx = '""'   # hours are planned in the dashboard from the Master Planner time range (no Flight Hrs in Excel any more)
             elif mode == "duty":
-                rows = "+".join(f"($D{r0 + s}:$AH{r0 + s}=\"{dc}\")" for s in range(3) for dc in DUTY_CODES)
+                rows = "+".join(f"($D{r0 + s}:$AH{r0 + s}=\"{dc}\")" for s in range(PER) for dc in DUTY_CODES)
                 fx = f"SUMPRODUCT(--(({rows})>0))"
             else:
                 rows = "+".join(f"COUNTIFS(ActCodesAll,$D{r0 + s}:$AH{r0 + s},ActCat,{hc})" for s in range(PER))
@@ -970,7 +970,7 @@ for m, mon in enumerate(MONTHS13, start=1):
             parts += [f"COUNTIFS(ActCodesAll,{rng},ActCat,{catref(c)})" for c in cats]
         return f"SUMPRODUCT(($C${G0}:$C${GL - (PER - 1)}=\"AM\")*(({'+'.join(parts)})>0))"
     def persons_duty(L):
-        parts = [f'({L}${G0 + s}:{L}${GL - (PER - 1) + s}="{dc}")' for s in range(3) for dc in DUTY_CODES]
+        parts = [f'({L}${G0 + s}:{L}${GL - (PER - 1) + s}="{dc}")' for s in range(PER) for dc in DUTY_CODES]
         return f"SUMPRODUCT(($C${G0}:$C${GL - (PER - 1)}=\"AM\")*(({'+'.join(parts)})>0))"
     for lab in SUMMARY:
         r = SUM_ROW[lab]
@@ -1019,7 +1019,7 @@ for m, mon in enumerate(MONTHS13, start=1):
         formula=[f'INDEX(CrewStatus,INT((ROW()-{G0})/{PER})+1)="Inactive"'], font=Font(color=SLATE400, italic=True, strike=True), stopIfTrue=True))
     cat_cf(ws, f"B{G0}:B{GL}", f"INT((ROW()-{G0})/{PER})+1")
     dv = DataValidation(type="list", formula1=f'IF($C{G0}="WD",WdCodes,ActCodes)', allow_blank=True, showErrorMessage=True, errorStyle="stop",
-                        errorTitle="Unknown activity", error="Pick an activity from the dropdown. New activities go on the Activities sheet. The WD row takes ground and admin items only.")
+                        errorTitle="Unknown activity", error="Pick an activity from the dropdown. New activities go on the Activities sheet. The WD row takes ground and admin items, and BDO.")
     dv.add(grid); ws.add_data_validation(dv)
 
     ws.column_dimensions["A"].width = 11; ws.column_dimensions["B"].width = 27; ws.column_dimensions["C"].width = 8

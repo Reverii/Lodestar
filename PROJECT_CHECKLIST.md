@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 5 Nov 2026 (z176). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 5 Nov 2026 (z177). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -100,6 +100,7 @@ Last updated: 5 Nov 2026 (z176). Tell Claude in this thread when something chang
 - [-] ~~SDO fairness count per person (weekdays vs weekends / public holidays)~~ Not required (21 Oct)
 - [-] ~~SDO swap: a simple way to record a swap between two people~~ Not required (21 Oct)
 - [x] SUP 1 / Loadmaster moved to the Duty Planner setup (22 Oct scale-up)
+- [?] BDO is a person from the BDO crew list, not a department (Brandon, 5 Nov): the Duty Planner picks the person per day (blank = no BDO needed); the department's copy puts BDO on that person's WD row. **Built z177**, awaiting his test. The live Duty_Roster.xlsx needs a rebuild (migration) for the Excel dropdown to list people
 
 ## 8. Ops Room (all departments)
 

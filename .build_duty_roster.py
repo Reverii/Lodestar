@@ -57,7 +57,7 @@ def header(ws, row, col, labels):
         c.font = f(True, "FFFFFF", 10); c.fill = fill(SLATE900); c.alignment = CENTER; c.border = BOX
 def apply_dept_cf(ws, rng, tl, duty=None):
     for k, (bg, fg) in enumerate(DEPT_COL):
-        val = f'IFERROR(INDEX({duty}Dept,MATCH({tl},{duty}Call,0)),"")' if duty else tl
+        val = f'IFERROR(INDEX({duty}Dept,MATCH({tl},{duty}Call,0)),{tl})' if duty else tl   # a callsign from the duty's crew list, else the department typed in (older days)
         ws.conditional_formatting.add(rng, FormulaRule(
             formula=[f'AND({tl}<>"",{val}=Departments!$A${6 + k})'], fill=fill(bg), font=Font(color=fg, bold=True), stopIfTrue=True))
 
@@ -78,9 +78,9 @@ steps = [
     ("HOW DUTY PLANNING WORKS", True),
     ("1. Duty crew: on the Duty Crew sheet, list who can do each duty (callsign, name, department). BDO and SDO have separate lists.", False),
     ("2. Duty Planner: open this file in the planner dashboard (Open my Excel), then Add other departments to see every department's plans read-only.", False),
-    ("3. On the dashboard's Duty Planner tab, pick the department for BDO and for SDO on each day. Save to Excel writes only to this file.", False),
+    ("3. On the dashboard's Duty Planner tab, pick the person for BDO (blank = no BDO that day) and the department for SDO on each day. Save to Excel writes only to this file.", False),
     ("4. Each department: open your own planner in the dashboard with this Duty Roster alongside. The Duty Planner tab shows what differs; click 'Copy my duty days from the Duty Roster', then Save to Excel.", False),
-    ("5. Then put someone from the crew list on BDO / SDO for each of your duty days on the month tabs. The DUTY DAYS row turns red on a day with nobody on that duty.", False),
+    ("5. The copy puts BDO on the chosen person's WD row. For SDO, put someone from the crew list on each of your SDO days on the month tabs. The DUTY DAYS row turns red on a day with nobody on that duty.", False),
     ("", False),
     ("You can also plan straight in Excel on the BDO Plan and SDO Plan sheets: pick a department from the dropdown in each day. The table on the right lists each department's dates.", False),
     ("Departments are listed on the Departments sheet. Use the same spelling as the Department name in each department's planner (its Dashboard, cell G5).", False),
@@ -135,20 +135,26 @@ SC0 = SDO_LAST + 3
 DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 for code, nm, shname, sample, cc0, col in DUTIES:
     sdo = plans[code]
-    banner(sdo, f"{code} PLANNING CALENDAR  |  {nm.upper()}", f"Pick the department on {code} duty for each day. The table on the right lists each department's dates. Who can do {code}: the Duty Crew sheet.", SC0 + NDS)
+    IS_B = code == "BDO"   # z177: a BDO day holds a person from the BDO crew list; a blank day = no BDO needed that day
+    banner(sdo, f"{code} PLANNING CALENDAR  |  {nm.upper()}", (f"Pick the person on BDO for each day from the BDO list on the Duty Crew sheet. Leave a day blank when no BDO is needed. The table on the right lists each department's dates." if IS_B else
+           f"Pick the department on {code} duty for each day. The table on the right lists each department's dates. Who can do {code}: the Duty Crew sheet."), SC0 + NDS)
     sdo["A4"] = "HIGHLIGHT DEPT"; sdo["A4"].font = f(True, SLATE500, 9)
     sdo.merge_cells("A4:B4"); sdo.merge_cells("C4:D4")
     sdo["C4"].fill = INPUT_FILL; sdo["C4"].border = BOX; sdo["C4"].font = f(True, "1D4ED8", 11); sdo["C4"].alignment = CENTER
     sdo["E4"] = "Pick a department to highlight its days."; sdo["E4"].font = f(italic=True, color=SLATE500, size=9)
     dv = DataValidation(type="list", formula1="Depts", allow_blank=True); dv.add("C4"); sdo.add_data_validation(dv)
     sdo.row_dimensions[4].height = 22
-    dv_sdo = DataValidation(type="list", formula1="Depts", allow_blank=True, showErrorMessage=True, errorStyle="stop",
-                            errorTitle=f"{code} department", error="Pick a department from the list. Departments are listed on the Departments sheet.")
+    dv_sdo = (DataValidation(type="list", formula1="BDOCall", allow_blank=True, showErrorMessage=True, errorStyle="stop",
+                             errorTitle="BDO", error="Pick a person from the BDO list (Duty Crew sheet), or leave the day blank when no BDO is needed.") if IS_B else
+              DataValidation(type="list", formula1="Depts", allow_blank=True, showErrorMessage=True, errorStyle="stop",
+                            errorTitle=f"{code} department", error="Pick a department from the list. Departments are listed on the Departments sheet."))
+    DEP = (lambda x: f'IFERROR(INDEX(BDODept,MATCH({x},BDOCall,0)),{x})') if IS_B else (lambda x: x)   # the department of a day's value
     blocks = {}
+    MO = 60   # z177 BDO: hidden helper cells 60 columns to the right hold each day's department (from the BDO crew list), for the table on the right
     for mi in range(13):   # 12 months + next January (the look-ahead block sits under January, rows 70-85)
         c0, r0 = sdo_block(mi)
         first = f"DATE(PlanYear,{mi + 1},1)"
-        blocks[mi] = f"${CL(c0)}${r0 + 3}:${CL(c0 + 6)}${r0 + 13}"
+        blocks[mi] = f"${CL(c0 + (MO if IS_B else 0))}${r0 + 3}:${CL(c0 + 6 + (MO if IS_B else 0))}${r0 + 13}"
         sdo.merge_cells(start_row=r0, start_column=c0, end_row=r0, end_column=c0 + 6)
         t = sdo.cell(r0, c0, f'=UPPER(TEXT({first},"mmmm yyyy"))&"  ·  {code}"'); t.font = f(True, "FFFFFF", 11); t.alignment = CENTER
         for c in range(c0, c0 + 7):
@@ -165,13 +171,14 @@ for code, nm, shname, sample, cc0, col in DUTIES:
                 dcell.border = Border(left=thin, right=thin, top=thin)
                 pcell = sdo.cell(rp, c); pcell.fill = INPUT_FILL; pcell.font = f(True, "1D4ED8", 10)
                 pcell.alignment = Alignment(horizontal="center", vertical="center", shrink_to_fit=True); pcell.border = Border(left=thin, right=thin, bottom=thin)
+                if IS_B: sdo.cell(rp, c + MO, f'=IF({CL(c)}{rp}="","",{DEP(f"{CL(c)}{rp}")})')
             sdo.row_dimensions[rd].height = 14; sdo.row_dimensions[rp].height = 24
             L0, L6 = CL(c0), CL(c0 + 6)
             rng = f"{L0}{rp}:{L6}{rp}"
             dv_sdo.add(rng)
             sdo.conditional_formatting.add(f"{L0}{rd}:{L6}{rp}", FormulaRule(formula=[f'{L0}${rd}=""'], fill=fill(SLATE200), stopIfTrue=True))
-            sdo.conditional_formatting.add(rng, FormulaRule(formula=[f'AND($C$4<>"",{L0}{rp}=$C$4)'], fill=fill(SLATE900), font=Font(color="FFFFFF", bold=True), stopIfTrue=True))
-            apply_dept_cf(sdo, rng, f"{L0}{rp}")
+            sdo.conditional_formatting.add(rng, FormulaRule(formula=[f'AND($C$4<>"",{DEP(f"{L0}{rp}")}=$C$4)'], fill=fill(SLATE900), font=Font(color="FFFFFF", bold=True), stopIfTrue=True))
+            apply_dept_cf(sdo, rng, f"{L0}{rp}", "BDO" if IS_B else None)
         for c in range(c0, c0 + 7):
             sdo.column_dimensions[CL(c)].width = 12
         if mi % 3 < 2:
@@ -190,25 +197,31 @@ for code, nm, shname, sample, cc0, col in DUTIES:
         sdo.column_dimensions[L].width = 15
         for mi in range(13):
             r = 6 + mi + (mi == 12); first = f"DATE(PlanYear,{mi + 1},1)"
-            terms = "&".join(f'IF(INDEX({blocks[mi]},2*INT(({d}+WEEKDAY({first},2)-1)/7)+1,MOD({d}+WEEKDAY({first},2)-1,7)+1)={L}$5,", "&{d + 1},"")' for d in range(31))
+            terms = "&".join(f'IF({(f"INDEX({blocks[mi]},2*INT(({d}+WEEKDAY({first},2)-1)/7)+1,MOD({d}+WEEKDAY({first},2)-1,7)+1)")}={L}$5,", "&{d + 1},"")' for d in range(31))
             c = sdo.cell(r, cc, f'=IF({L}$5="","",MID({terms},3,200))')
             c.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True); c.font = f(False, SLATE800, 9); c.border = BOX
         cnt = "+".join(f"COUNTIF({blocks[mi]},{L}$5)" for mi in range(12))
         c = sdo.cell(18, cc, f'=IF({L}$5="","",{cnt})'); c.font = f(True); c.alignment = CENTER; c.border = BOX; c.fill = fill(SLATE100)
     gcol = SC0 + 1 + NDS
-    header(sdo, 5, gcol, ["Days not set"]); sdo.column_dimensions[CL(gcol)].width = 12
+    header(sdo, 5, gcol, ["BDO days" if IS_B else "Days not set"]); sdo.column_dimensions[CL(gcol)].width = 12
     for mi in range(13):
         r = 6 + mi + (mi == 12)   # next January goes under the total
         sdo.cell(r, SC0, MONTHS_FULL[mi] if mi < 12 else "Jan (next yr)").font = f(True, SLATE800, 9); sdo.cell(r, SC0).border = BOX; sdo.cell(r, SC0).alignment = Alignment(vertical="top")
-        g = sdo.cell(r, gcol, f"=DAY(EOMONTH(DATE(PlanYear,{mi + 1},1),0))-COUNTIF({blocks[mi]},\"?*\")"); g.alignment = CENTER; g.border = BOX; g.font = f(True, "B91C1C", 10); g.number_format = "0;-0;-"
+        g = sdo.cell(r, gcol, f"=COUNTIF({blocks[mi]},\"?*\")" if IS_B else f"=DAY(EOMONTH(DATE(PlanYear,{mi + 1},1),0))-COUNTIF({blocks[mi]},\"?*\")"); g.alignment = CENTER; g.border = BOX; g.font = f(True, SLATE800 if IS_B else "B91C1C", 10); g.number_format = "0;-0;-"
         sdo.row_dimensions[r].height = max(sdo.row_dimensions[r].height or 15, 26)
     sdo.cell(18, SC0, "Total days").font = f(True); sdo.cell(18, SC0).fill = fill(SLATE100); sdo.cell(18, SC0).border = BOX
     apply_dept_cf(sdo, f"{CL(SC0 + 1)}5:{CL(SC0 + NDS)}5", f"{CL(SC0 + 1)}5")
+    if IS_B:
+        for c in range(1 + MO, 1 + MO + 3 * SDO_BW): sdo.column_dimensions[CL(c)].hidden = True
     sdo.freeze_panes = "A6"
     sdo.sheet_properties.tabColor = col
     # sample: October (SDO matches the department samples except 9 Oct goes to Loadmaster, to show a difference to copy)
+    used = {}
     for dd, dep in seedplan.DUTY[code].items():
         c0, r0 = sdo_block(dd.month - 1); n = dd.day - 1 + dt.date(YEAR, dd.month, 1).weekday()
+        if IS_B:   # z177: a person from that department's BDO crew, in turn
+            L = [p[0] for p in sample if p[2] == dep]
+            if L: used[dep] = used.get(dep, -1) + 1; dep = L[used[dep] % len(L)]
         sdo.cell(r0 + 3 + 2 * (n // 7), c0 + n % 7, dep)
 
 for ws in wb.worksheets:

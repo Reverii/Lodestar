@@ -509,6 +509,15 @@ test("flight_rows_carry_the_hours_of_their_range", async ({ page }) => {
   const r = await page.evaluate(() => { const D = opsDay("2026-10-01"), x = D.rows.find(z => z.x.code === "FLT-2.0" && z.x.s === 0); return { hrs: x.x.hrs, n: D.rows.filter(z => z.x.code === "FLT-2.0" && z.x.s === 0).length }; });
   assert.deepStrictEqual(r, { hrs: 4, n: 2 });   // demo: FLT-2.0 0830-1230 with Sorties 2
 }, ED);
+test("picker_lists_extra_crew_from_the_plan", async ({ page }) => {   // z176: a cell with three pilots opened a picker that showed one
+  await goOps(page, DAY);
+  const r = await page.evaluate(() => { const D = opsDay(cur.opsDay), row = D.rows.find(z => z.auto && (z.auto.Pilot || []).length >= 2), k = OPS_SEATS.findIndex(z => z[0] === "Pilot");
+    opsOpenPop(row.key, k); const pop = $("opsPop"), ids = row.auto.Pilot.map(c => c.id);
+    return { ids, listed: [...pop.querySelectorAll(".pxr[data-pxa] .muted")].map(e => e.textContent), offered: [...pop.querySelectorAll("#opsXAdd option")].map(o => o.value).filter(v => ids.includes(v)) }; });
+  assert.strictEqual(r.listed.length, r.ids.length, JSON.stringify(r));
+  r.ids.forEach(id => assert.ok(r.listed.some(t => t.startsWith(id) && /from the plan/.test(t)), id + " not listed: " + JSON.stringify(r)));
+  assert.deepStrictEqual(r.offered, [], "planned extras offered again in + Add");
+}, ED);
 
 (async () => {
   const only = process.argv[2];

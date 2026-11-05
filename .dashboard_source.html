@@ -1187,7 +1187,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-04 z175</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-05 z176</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -5406,11 +5406,14 @@ function opsOpenPop(key, k, keep) {
     "<button class='btn pax" + (rowPax(r, c.id) ? " on" : "") + "' data-ppx='" + esc(c.id) + "'>Pax</button>" +
     (k < 2 && r.seats[0] && r.seats[1] ? "<button class='btn' data-psw='1'>⇅ Swap Captain / Pilot</button>" : "") + "</div>";
   if (!r.x.sb) {   // more crew from this department on the same aircraft
-    const xs = opsXtraR(r)[dep] || [], taken = id => (c && same(c.id, id)) || xs.some(x => same(x, id)) || (dep === "Pilot" && r.seats.some(q => q && same(q.dept, dep) && same(q.id, id)));
+    // z176: the extra crew the department planned on this flight (r.auto, shown in the cell under the seat) are listed here too, marked "from the plan";
+    // before, only the ones the Ops Room added showed, so a cell with three pilots opened a picker with one, and "+ Add" offered the other two again
+    const xs = opsXtraR(r)[dep] || [], au = ((r.auto && r.auto[dep]) || []).filter(p => !xs.some(x => same(x, p.id))),
+      taken = id => (c && same(c.id, id)) || xs.some(x => same(x, id)) || au.some(p => same(p.id, id)) || (dep === "Pilot" && r.seats.some(q => q && same(q.dept, dep) && same(q.id, id)));
     const opt = p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>";
-    h += "<div class='pxl'><div class='pxh'>Additional " + esc(dep) + " crew</div>" + xs.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]);
-      return "<div class='pxr'><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b><span class='muted'>" + esc(id + (p.name ? " · " + p.name : "")) + "</span>" + (downOn(dep, id, D.iso) ? "<i class='opsb down'>DOWN</i>" : "") +
-        "<button class='btn pax" + (rowPax(r, id) ? " on" : "") + "' data-ppx='" + esc(id) + "'>Pax</button><button class='pxd' data-pxd='" + esc(id) + "' title='Take off this aircraft'>×</button></div>"; }).join("") +
+    const xrow = (id, p, fromPlan) => "<div class='pxr'" + (fromPlan ? " data-pxa='1'" : "") + "><b class='" + opsCatCls(p) + "'>" + esc(opsName(p) || id) + "</b><span class='muted'>" + esc(id + (p.name ? " · " + p.name : "") + (fromPlan ? " · from the plan" : "")) + "</span>" + (downOn(dep, id, D.iso) ? "<i class='opsb down'>DOWN</i>" : "") +
+      "<button class='btn pax" + (rowPax(r, id) ? " on" : "") + "' data-ppx='" + esc(id) + "'>Pax</button><button class='pxd' data-pxd='" + esc(id) + "' title='" + (fromPlan ? "Take off this aircraft (also clears the code from " + esc(dep) + "&#39;s plan)" : "Take off this aircraft") + "'>×</button></div>";
+    h += "<div class='pxl'><div class='pxh'>Additional " + esc(dep) + " crew</div>" + xs.map(id => xrow(id, opsPerson(dep, id, D.crew[r.x.s]), false)).join("") + au.map(p => xrow(p.id, p, true)).join("") +
       "<select id='opsXAdd'><option value=''>+ Add " + esc(dep) + " crew…</option><optgroup label='Flying this shift'>" + pool.filter(p => !taken(p.id)).map(opt).join("") + "</optgroup><optgroup label='Others in the " + esc(dep) + " roster'>" + rest.filter(p => !taken(p.id)).map(opt).join("") + "</optgroup></select></div>";
   }
   pop.innerHTML = h; pop.style.display = "block";
@@ -6267,7 +6270,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-04 z175 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-05 z176 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

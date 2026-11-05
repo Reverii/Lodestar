@@ -539,6 +539,11 @@ body.ro .edit input,body.ro .edit select{pointer-events:none;color:var(--s600)}
 .frb .ft{font-weight:800;letter-spacing:.07em;font-size:12px;white-space:nowrap}.frb .fm{flex:1;min-width:0;overflow-wrap:anywhere}.frb .fd{font-size:11px;opacity:.9;white-space:nowrap}.frb .fx{white-space:nowrap}
 .frb button,.fri button{background:none;border:0;color:inherit;cursor:pointer;font-size:14px;padding:0 3px;opacity:.85}.frb button:hover,.fri button:hover{opacity:1}
 #opsFrBtn{background:#dc2626;color:#fff;border-color:#dc2626}
+#afpPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
+#afpPop .box{background:#fff;border-radius:12px;padding:22px 24px;max-width:560px;width:94%}#afpPop h2{margin:0 0 4px}#afpPop .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+#afpPop label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase;flex:1;min-width:130px}
+#afpPop input{padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900);font-family:inherit}
+#afpWarn{color:#b45309;font-size:12.5px;margin-top:10px;line-height:1.5}#afpPop .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
 #frPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
 #frPop .box{background:#fff;border-radius:12px;padding:22px 24px;max-width:560px;width:94%}
 #frPop h2{margin:0 0 4px;color:#b91c1c}#frPop .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
@@ -1098,6 +1103,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
       <input type="date" id="opsDate">
       <span class="grow"></span>
       <span id="opsClock" title="The time now">--:--</span>
+      <button class="btn" id="opsAfpBtn" title="Fill the squadron AFP format from this day on the Ops Room and download it as an Excel file.">⇩ Export AFP</button>
       <button class="btn" id="opsFrBtn" title="Add a flying restriction. It shows as a red banner on the Ops Room for the dates you choose.">+ Restriction</button>
       <button class="btn" id="opsAddBtn" title="Add an ad hoc flight for this day. It isn't put on the Master Planner; departments see it on their programme." style="background:#7c3aed;color:#fff;border-color:#7c3aed">+ Ops Add</button>
       <span id="opsSize"><button class="btn" data-z="-1" title="Smaller">A−</button><button class="btn" data-z="1" title="Bigger">A+</button></span>
@@ -1189,7 +1195,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-05 z178</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-05 z179</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1215,6 +1221,14 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <div id="frQ"><b data-n="0">Today only</b><b data-n="1">Until tomorrow</b><b data-n="6">Next 7 days</b></div>
   <div id="frMsg"></div>
   <div class="btns"><button class="btn" id="frCancel">Cancel</button><button class="btn primary" id="frGo">Save restriction</button></div>
+</div></div>
+<div id="afpPop"><div class="box">
+  <h2 id="afpTitle">Export AFP</h2>
+  <div class="muted" style="font-size:13px" id="afpInfo"></div>
+  <div class="row"><label>CO name<input id="afpCo" placeholder="e.g. LTC Tan Ah Kow"></label><label>CO contact no.<input id="afpTel" placeholder="e.g. 9123 4567"></label></div>
+  <div class="muted" style="font-size:12px;margin-top:4px" id="afpCoNote"></div>
+  <div id="afpWarn"></div>
+  <div class="btns"><button class="btn" id="afpCancel">Cancel</button><button class="btn primary" id="afpGo">Export AFP</button></div>
 </div></div>
 <div id="grPop"><div class="box">
   <h2 id="grTitle">Ground programme row</h2>
@@ -1271,6 +1285,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
 <input type="file" id="fileInputMore" accept=".xlsx" multiple style="display:none">
 <script>/*FFLATE*/</script>
 <script>const TEMPLATE_B64 = "/*TEMPLATE*/";</script>
+<script>const AFP_B64 = "/*AFP*/";</script>
 <script>
 "use strict";
 // ---------- workbook layout (must match the Excel builder) ----------
@@ -1985,6 +2000,176 @@ function grrUnhide(iso, id) {
 function grrPeople(text) {
   return String(text || "").split(/\s*[\/,]\s*/).map(t => t.trim()).filter(Boolean).map(t => { for (const b of books) { if (!isDept(b)) continue; const p = b.S.roster.find(x => same(x.ini || x.id, t)); if (p) return { dept: b.S.dept, ini: p.ini || p.id, cls: opsCatCls(p) }; } return { dept: "", ini: t, cls: "" }; });
 }
+// ---------- AFP export (z179, Brandon): the squadron's AFP format (sheet "121"), filled from the Ops Room day and downloaded.
+// The format is built into the dashboard (AFP_B64: the 121 sheet only, no CO details). Names read "Rank Name (CAT)". The duty boxes give
+// line 1 AM, 2 PM, 3 NIGHT (a box with one line fills the whole day). Standby P1 = AM SAL, P2 = PM SAL, BU = BU (no alert timing).
+// The brief time goes in the flight's REMARKS; no Mission Commander / CRMO. IN TIME is always 0900H. Prepared by the SDO, Vetted by the OPS O.
+// Planned = the Master Planner's flights for the day, Tasked = the Ops Room board (Ops Adds in, cancelled out). Simulator = crew planned on
+// a Sim activity that day. More flights, ground rows or sim lines than the format has add rows (copies of the last row).
+// The CO's name and number are typed once in the Export AFP dialog and kept in the Ops Room file's "AFP Settings" sheet (A2 / B2, A3 / B3).
+const AFP_SHEET = "AFP Settings", AFP_HEAD = ["Item", "Value"], AFP_COLS = '<col min="1" max="1" width="18" customWidth="1"/><col min="2" max="2" width="40" customWidth="1"/>';
+const AFP_FL0 = 13, AFP_FLN = 3, AFP_GR0 = 25, AFP_GRN = 4, AFP_SIM0 = 39, AFP_SIMN = 2, AFP_SB = { P1: [18], P2: [20], BU: [22], "P1/P2": [18, 20] };
+const afpCat = c => { const k = String(c || "").trim().toUpperCase(); if (!k) return ""; if (/TRAINEE|OCU/.test(k)) return "OCU"; const m = /^CAT\s*([A-D])$/.exec(k); return m ? m[1] : k; };
+const afpName = p => { if (!p) return ""; const n = String(p.name || p.id || "").trim(), c = afpCat(p.cat); return n + (n && c ? " (" + c + ")" : ""); };
+const afpText = h => { const e = document.createElement("div"); e.innerHTML = String(h || "").replace(/<span class='(?:was|nocrew)'[\s\S]*?<\/span>/g, "").replace(/<br\s*\/?>/gi, "\n"); return e.textContent.replace(/[ \t]+/g, " ").trim(); };
+const afpSet = () => { const ob = opsBook(); return ob && ob.S.afp || { co: "", tel: "" }; };
+// the people of one department on a row (seat, additional crew, planned extras), Pax apart
+function afpSeat(r, dep, crewS) {
+  const out = [], pax = [], seen = new Set();
+  const add = c => { if (!c) return; const k = (c.dept + "|" + c.id).toLowerCase(); if (seen.has(k)) return; seen.add(k); (rowPax(r, c.id) || c.tag === "PAX" ? pax : out).push(c); };
+  OPS_SEATS.forEach((z, k) => { if (z[1] === dep && r.x.need[k]) add(r.seats[k]); });
+  (opsXtraR(r)[dep] || []).forEach(id => add(opsPerson(dep, id, crewS)));
+  ((r.auto && r.auto[dep]) || []).forEach(add);
+  (r.extra || []).filter(c => same(c.dept, dep)).forEach(add);
+  return { out, pax };
+}
+// SXO / OPS O / SDO for AM, PM, NIGHT: the Ops Room box (line 1 AM, 2 PM, 3 NIGHT; a missing line takes the one before), else the plans
+function afpDuty(iso, lab) {
+  const ob = opsBook(), st = ob && ob.S, c = OPS_DB_CELLS.find(z => z.lab === lab); if (!c) return ["", "", ""];
+  const { y, mi, d } = ymdB(iso), v = st && st.hasDb && st.year === y ? st.db[c.col + (6 + dayOfYear(y, mi, d))] || "" : "";
+  const L = String(v).split("\n").map(s => s.trim()).filter(Boolean);
+  if (L.length) return [0, 1, 2].map(s => L[Math.min(s, L.length - 1)]);
+  const k = dutyKey(c.code), on = [[], [], []];
+  books.forEach(b => { if (!isDept(b) || b.S.year !== y || (c.deps && !c.deps.some(o => same(o, b.S.dept)))) return; const M = b.S.m[mi]; if (!M) return;
+    b.S.roster.forEach((p, i) => { let hit = false; for (let s = 0; s < SHIFT_ROWS; s++) if (dutyKey(M.grid[gridRow(i, s, b.S)][d]) === k) { on[s].push(p.name || p.id); hit = true; }
+      if (!hit && rp(b.S) > SHIFT_ROWS && dutyKey(M.grid[gridRow(i, SHIFT_ROWS, b.S)][d]) === k) [0, 1, 2].forEach(s => on[s].push(p.name || p.id)); }); });
+  const w = on.map(x => x.join(", "));
+  for (let s = 1; s < 3; s++) if (!w[s]) w[s] = w[s - 1];
+  for (let s = 1; s >= 0; s--) if (!w[s]) w[s] = w[s + 1];
+  return w;
+}
+// crew planned on a Sim activity that day, one line per code and shift (the cell comment as the time when it holds one)
+function afpSims(D) {
+  const by = new Map();
+  books.forEach((b, bi) => { if (!isDept(b) || b.S.year !== D.y) return;
+    withBook(bi, () => { const A = actIndex(), M = S.m[D.mi]; if (!M) return;
+      S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < rp(S); s++) { const g = M.grid[gridRow(i, s)], v = g && g[D.d], a = v && A.get(String(v).toUpperCase()); if (!a || a.ci !== CAT_SIM) continue;
+        const note = (S.notes && S.notes.get(D.mi + ":" + gridRow(i, s) + ":" + D.d)) || "", tm = normTime(note), when = tm !== note || /\d{3,4}H/.test(tm) ? tm : ["AM", "PM", "NIGHT", "WD"][s];
+        const key = a.code.toUpperCase() + "|" + when; if (!by.has(key)) by.set(key, { loc: a.code, when, s, who: [] }); by.get(key).who.push(afpName(p)); } }); }); });
+  return [...by.values()].sort((x, y) => x.s - y.s || (x.loc < y.loc ? -1 : 1));
+}
+// everything that goes on the AFP for a day, as plain values (also used by the tests)
+function afpData(iso) {
+  const D = opsDay(iso); if (!D || D.other) return null;
+  const mb = masterBook(), P = mb.S, mt = code => { const k = P.codes.find(z => same(z.code, code)); return k && k.mtype || code; };
+  const fl = D.rows.filter(r => opsOutcome(r, iso) !== "cxl").map((r, n) => {
+    const o = r.o || {}, x = r.x, cs = D.crew[x.s] || [], seat = {}, pax = [];
+    [...new Set(OPS_SEATS.map(z => z[1]))].forEach(dep => { const q = afpSeat(r, dep, cs); seat[dep] = q.out.map(afpName); pax.push(...q.pax); });
+    const rem = [o.brf ? "BRF " + normTime(o.brf) : "", o.rem || x.f.note || "", o.oth ? "Others: " + o.oth : "", pax.length ? "PAX: " + pax.map(c => c.name || c.id).join(", ") : ""].filter(Boolean);
+    return { sn: n + 1, etd: normTime(r.etd || ""), eta: normTime(r.eta || ""), cs: [o.cs || "", x.ac > 1 ? sorName(r.a, x.ac).toUpperCase() : ""].filter(Boolean).join("\n"),
+      seat, mission: mt(x.code), area: [o.ao, o.at].filter(Boolean).join("\n"), rem: rem.join("\n"), tail: o.tail || "" };
+  });
+  let ps = 0, ph = 0; for (let s = 0; s < 3; s++) mpShift(P, D.mi, D.d, s).forEach(f => { if (!f.code) return; ps += flSort(f); ph += mpFlHrs(P, f).h || 0; });
+  const tk = D.rows.filter(r => opsOutcome(r, iso) !== "cxl"), th = tk.reduce((n, r) => n + (r.pdur || 0), 0);
+  const sb = opsSbList(D, D.sb).map(r => { const o = r.o || {}, seat = {}; [...new Set(OPS_SEATS.map(z => z[1]))].forEach(dep => { const q = afpSeat(r, dep, D.crew.sb[2] || []); seat[dep] = q.out.concat(q.pax).map(afpName); });
+    return { code: r.lab || r.x.code, tail: o.tail || "", seat, brf: o.brf ? normTime(o.brf) : "", rem: o.rem || "" }; });
+  const GSH = ["AM", "PM", "NIGHT", "WD"];
+  const gr = opsGround(D).map(g => ({ time: g.grp === 0 ? (mpRange(afpText(g.when), 0) || afpText(g.when)) : g.grp === 3 ? g.until.replace(/^until /, "TILL ").toUpperCase() : GSH[g.sh] || "", act: g.act + (g.desc && !same(g.desc, g.act) ? " (" + g.desc + ")" : ""), who: afpText(g.who), venue: afpText(g.note) }));
+  const sxo = afpDuty(iso, "SXO"), opso = afpDuty(iso, "OPS O"), sdo = afpDuty(iso, "SDO");
+  const ob = opsBook(), dobRef = ob && ob.S.hasDb && ob.S.year === D.y ? OPS_DB_CELLS.find(z => z.lab === "DOB").col + (6 + dayOfYear(D.y, D.mi, D.d)) : null, set = afpSet();
+  return { iso, y: D.y, mi: D.mi, d: D.d, fl, sb, gr, sims: afpSims(D), sxo, opsSdo: [0, 1, 2].map(s => [opso[s], sdo[s]].filter(Boolean).join(" / ")), opso, sdo,
+    dob: dobRef ? normTime(ob.S.db[dobRef] || "") : "", inTime: "0900H", planned: { s: ps, h: r1(ph) }, tasked: { s: tk.length, h: r1(th) },
+    co: set.co, coTel: set.tel, prepared: sdo[0] || "", vetted: opso[0] || "" };
+}
+// rows: insert n copies of row `after` (values emptied) below it; everything lower moves down, merges too
+function afpInsertRows(x, after, n) {
+  if (n <= 0) return x;
+  const sh = (L, r) => L + (r > after ? r + n : r);
+  x = x.replace(/<sheetData>([\s\S]*)<\/sheetData>/, (m0, body) => {
+    const rows = body.match(/<row\b[^>]*?(?:\/>|>[\s\S]*?<\/row>)/g) || [];
+    const out = [];
+    rows.forEach(rw => { const r = +/<row r="(\d+)"/.exec(rw)[1];
+      if (r > after) rw = rw.replace(/<row r="\d+"/, '<row r="' + (r + n) + '"').replace(/<c r="([A-Z]+)(\d+)"/g, (m, L, k) => '<c r="' + sh(L, +k) + '"');
+      out.push(rw);
+      if (r === after) for (let k = 1; k <= n; k++) out.push(rw.replace(/<row r="\d+"/, '<row r="' + (r + k) + '"').replace(/<c r="([A-Z]+)\d+"([^>]*?)(?:\/>|>[\s\S]*?<\/c>)/g, (m, L, at) => '<c r="' + L + (r + k) + '"' + at.replace(/\s+t="[^"]*"/, "") + "/>")); });
+    return "<sheetData>" + out.join("") + "</sheetData>"; });
+  const extra = [];
+  x = x.replace(/<mergeCell ref="([A-Z]+)(\d+):([A-Z]+)(\d+)"\s*\/>/g, (m0, a, r1_, b, r2) => {
+    if (+r1_ === after && +r2 === after) for (let k = 1; k <= n; k++) extra.push('<mergeCell ref="' + a + (after + k) + ":" + b + (after + k) + '"/>');
+    return '<mergeCell ref="' + sh(a, +r1_) + ":" + sh(b, +r2) + '"/>'; });
+  if (extra.length) x = x.replace("</mergeCells>", extra.join("") + "</mergeCells>").replace(/<mergeCells count="(\d+)"/, (m, c) => '<mergeCells count="' + (+c + extra.length) + '"');
+  return x.replace(/<dimension ref="([A-Z]+\d+):([A-Z]+)(\d+)"/, (m, a, b, r) => '<dimension ref="' + a + ":" + b + (+r + n) + '"');
+}
+function afpBytes(A) {
+  const files = fflate.unzipSync(new Uint8Array(b64ToBuf(AFP_B64))), p = sheetPaths(files)["121"]; let x = td.decode(files[p]);
+  const nf = Math.max(0, A.fl.length - AFP_FLN), ng = Math.max(0, A.gr.length - AFP_GRN), ns = Math.max(0, A.sims.length - AFP_SIMN);
+  x = afpInsertRows(x, AFP_SIM0 + AFP_SIMN - 1, ns); x = afpInsertRows(x, AFP_GR0 + AFP_GRN - 1, ng); x = afpInsertRows(x, AFP_FL0 + AFP_FLN - 1, nf);
+  // a wrapping copy of a cell's style (several lines in one cell), added to styles.xml once per style
+  let st = td.decode(files["xl/styles.xml"]); const xm = st.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/), xfs = xm[0].match(/<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/g), wrapOf = new Map(), add = [];
+  const wrap = s => { if (wrapOf.has(s)) return wrapOf.get(s); const f = xfs[s] || xfs[0], AL = '<alignment horizontal="center" vertical="center" wrapText="1"/>'; let nx = null;
+    if (/<alignment\b[^>]*wrapText="1"/.test(f)) { wrapOf.set(s, s); return s; }
+    if (/<alignment\b/.test(f)) nx = f.replace(/<alignment\b/, '<alignment wrapText="1"');
+    else if (/\/>$/.test(f)) nx = f.replace(/\s*\/>$/, ' applyAlignment="1">' + AL + "</xf>");
+    else nx = f.replace(/^(<xf\b[^>]*)>/, '$1 applyAlignment="1">' + AL);
+    const w = xfs.length + add.length; add.push(nx); wrapOf.set(s, w); return w; };
+  const colW = {}; for (const m of x.matchAll(/<col min="(\d+)" max="(\d+)" width="([\d.]+)"/g)) for (let k = +m[1]; k <= +m[2]; k++) colW[k] = +m[3];
+  const merged = [...x.matchAll(/<mergeCell ref="([A-Z]+)(\d+):([A-Z]+)(\d+)"/g)].map(m => ({ a: colN(m[1]), r: +m[2], b: colN(m[3]), r2: +m[4] }));
+  const rowLines = {};
+  const set = (ref, val, font) => {
+    if (val == null || val === "") return; x = setCell(x, ref, val);
+    const L = colN(ref.match(/[A-Z]+/)[0]), r = +ref.match(/\d+/)[0], mg = merged.find(m => m.r === r && m.a === L), w = mg ? Array.from({ length: mg.b - mg.a + 1 }, (_, k) => colW[mg.a + k] || 9).reduce((s, v) => s + v, 0) : colW[L] || 9;
+    const per = Math.max(4, Math.floor(w * 11 / (font || 32))), lines = String(val).split("\n").reduce((n, t) => n + Math.max(1, Math.ceil(t.length / per)), 0);
+    if (lines > 1 || typeof val === "string" && val.length > per) x = x.replace(new RegExp('<c r="' + ref + '"([^>]*?) s="(\\d+)"'), (m, a, s) => '<c r="' + ref + '"' + a + ' s="' + wrap(+s) + '"');
+    if (lines > 1) rowLines[r] = Math.max(rowLines[r] || 0, lines * (font || 32) * 1.4 + 16);
+  };
+  set("I1", dateSerial(A.y, A.mi, A.d), 48);
+  ["F4", "F6", "F8"].forEach((ref, s) => set(ref, A.sxo[s], 24)); ["I4", "I6", "I8"].forEach((ref, s) => set(ref, A.opsSdo[s], 24));
+  set("C6", A.dob, 24); set("C7", A.inTime, 24);
+  set("L6", A.planned.s, 24); set("M6", A.planned.h.toFixed(1), 24); set("L7", A.tasked.s, 24); set("M7", A.tasked.h.toFixed(1), 24);
+  A.fl.forEach((f, k) => { const r = AFP_FL0 + k;
+    set("A" + r, f.sn); set("B" + r, f.etd); set("C" + r, f.eta); set("D" + r, f.cs);
+    ["Pilot", "Loadmaster", "TACCO", "SUP 1", "SUP 2"].forEach((dep, j) => set("EFGHI"[j] + r, (f.seat[dep] || []).join("\n")));
+    set("J" + r, f.mission); set("K" + r, f.area); set("L" + r, f.rem); set("M" + r, f.tail); });
+  const o = nf;
+  A.sb.forEach(b => (AFP_SB[b.code] || []).forEach(r0 => { const r = r0 + o;
+    set("B" + r, b.tail, 24); set("C" + r, (b.seat.Pilot || []).join("\n"), 24);
+    ["Loadmaster", "TACCO", "SUP 1", "SUP 2"].forEach((dep, j) => set("EFGH"[j] + r, (b.seat[dep] || []).join("\n"), 24));
+    set("I" + r, b.brf, 24); set("J" + r, b.rem, 24); }));
+  A.gr.forEach((g, k) => { const r = AFP_GR0 + o + k; set("B" + r, g.time, 24); set("C" + r, g.act, 24); set("F" + r, g.who, 24); set("G" + r, g.venue, 24); });
+  const o2 = o + ng;
+  set("C" + (33 + o2), A.co, 24); set("F" + (33 + o2), A.coTel, 24); set("C" + (34 + o2), A.sxo[0], 24); set("C" + (35 + o2), A.opso[0], 24);
+  set("L" + (31 + o2), A.prepared, 24); set("L" + (33 + o2), A.vetted, 24);
+  A.sims.forEach((m, k) => { const r = AFP_SIM0 + o2 + k; set("B" + r, m.loc, 24); set("C" + r, m.when, 24); set("E" + r, m.who.join(", "), 24); });
+  // rows grow for several lines (never shrink below the format's height)
+  x = x.replace(/<row r="(\d+)"([^>]*)>/g, (m0, r, at) => { const need = rowLines[+r]; if (!need) return m0; const h = +((/\bht="([\d.]+)"/.exec(at) || [])[1] || 31.2); if (need <= h) return m0;
+    return '<row r="' + r + '"' + at.replace(/\s+ht="[\d.]+"/, "").replace(/\s+customHeight="[^"]*"/, "") + ' ht="' + Math.ceil(need) + '" customHeight="1">'; });
+  if (add.length) { st = st.replace(xm[0], xm[0].replace(/<\/cellXfs>$/, add.join("") + "</cellXfs>").replace(/count="\d+"/, 'count="' + (xfs.length + add.length) + '"')); files["xl/styles.xml"] = te.encode(st); }
+  files[p] = te.encode(x);
+  return fflate.zipSync(files, { level: 6 });
+}
+const afpFileName = A => "121 SQN AFP " + new Date(A.iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" }) + ".xlsx";
+// what may still be missing, shown in the dialog (export still works)
+function afpWarn(A) {
+  const w = [], nc = A.fl.filter(f => !f.cs || /^FLIGHT \d/.test(f.cs)).length, nt = A.fl.filter(f => !f.tail).length;
+  if (!A.fl.length) w.push("No flights on the board for this day.");
+  if (nc) w.push(nc + " flight" + (nc === 1 ? " has" : "s have") + " no callsign yet.");
+  if (nt) w.push(nt + " flight" + (nt === 1 ? " has" : "s have") + " no tail number yet.");
+  if (!A.sdo[0]) w.push("No SDO: Prepared by stays blank."); if (!A.opso[0]) w.push("No OPS O: Vetted by stays blank.");
+  if (!A.co) w.push("Type the CO's name below (kept for the next time).");
+  return w;
+}
+function afpOpen() {
+  const iso = cur.opsDay || opsToday(), A = afpData(iso); if (!A) { toast("Open the Master Planner and the Ops Room file first."); return; }
+  const set = afpSet(), ed = opsEditable();
+  $("afpTitle").textContent = "Export AFP for " + opsFmt(iso, true);
+  $("afpInfo").textContent = A.fl.length + " flight" + (A.fl.length === 1 ? "" : "s") + ", " + A.sb.length + " standby row" + (A.sb.length === 1 ? "" : "s") + ", " + A.gr.length + " ground programme row" + (A.gr.length === 1 ? "" : "s") + (A.sims.length ? ", " + A.sims.length + " simulator line" + (A.sims.length === 1 ? "" : "s") : "") + ". Everything is filled from the Ops Room.";
+  $("afpCo").value = set.co; $("afpTel").value = set.tel; $("afpCo").disabled = $("afpTel").disabled = !ed;
+  $("afpCoNote").textContent = ed ? "Kept in the Ops Room file for the next time." : "Only the Ops Room can change these.";
+  $("afpWarn").innerHTML = afpWarn(A).map(t => "<div>• " + esc(t) + "</div>").join("");
+  $("afpPop").style.display = "flex";
+}
+function afpSaveSet(co, tel) {
+  const oi = opsIdx(); if (oi < 0 || !mayEdit(oi)) return;
+  const old = afpSet(); if (old.co === co && old.tel === tel) return;
+  withBook(oi, () => { sheetEnsure(WB, AFP_SHEET, AFP_HEAD, AFP_COLS); put(AFP_SHEET, "A2", "CO name"); put(AFP_SHEET, "B2", co); put(AFP_SHEET, "A3", "CO contact no."); put(AFP_SHEET, "B3", tel); S.afp = { co, tel }; });
+}
+$("afpCancel").onclick = () => { $("afpPop").style.display = "none"; };
+$("afpGo").onclick = () => {
+  if (opsEditable()) afpSaveSet($("afpCo").value.trim(), $("afpTel").value.trim());
+  const A = afpData(cur.opsDay || opsToday()); if (!A) return;
+  const name = afpFileName(A); rollDl(name, afpBytes(A)); $("afpPop").style.display = "none"; toast("Exported " + name);
+};
+$("opsAfpBtn").onclick = afpOpen;
 // ---------- Flying Restriction: the Flying Restrictions sheet of the Ops Room file (made by the dashboard on the first save)
 // A From, B To, C Remark, D Added by, E Saved; a restriction shows on every day from From to To (dates inclusive).
 const FR_SHEET = "Flying Restrictions", FR_ROW0 = 2, FR_N = 300, FR_HEAD = ["From", "To", "Remark", "Added by", "Saved"],
@@ -3058,6 +3243,7 @@ function buildXlsx() {
   if (bySheet[ROLE_SHEET]) sheetEnsure(WB, ROLE_SHEET, ROLE_HEAD, ROLE_COLS);
   if (bySheet[GRR_SHEET]) sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
   if (bySheet[FR_SHEET]) sheetEnsure(WB, FR_SHEET, FR_HEAD, FR_COLS);
+  if (bySheet[AFP_SHEET]) sheetEnsure(WB, AFP_SHEET, AFP_HEAD, AFP_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   if (bySheet[MN_SHEET]) sheetEnsure(WB, MN_SHEET, [], MN_XCOLS, MN_OPT);
   const files = Object.assign({}, WB.files);
@@ -4860,6 +5046,8 @@ function readOps(name) {
       if (a != null || text) st.frUsed.add(r);
       if (typeof a !== "number" || !text) continue; const from = serialToISO(a), to = typeof b === "number" && b >= a ? serialToISO(b) : from;
       st.fr.push({ row: r, from, to, text, by: str(c["D" + r]) }); } }
+  // AFP Settings sheet (made by the dashboard from the Export AFP dialog): B2 the CO's name, B3 the CO's contact number
+  st.afp = { co: "", tel: "" }; if (WB.paths[AFP_SHEET]) { const c = readCells(AFP_SHEET); st.afp = { co: str(c.B2), tel: str(c.B3) }; }
   st.hasDb = !!WB.paths["Day Board"]; st.db = {};
   if (st.hasDb) { const g = readCells("Day Board"); for (const ref in g) { const m = /^([B-Q])(\d+)$/.exec(ref); if (m && +m[2] >= 6) st.db[ref] = str(g[ref]); } }
   return st;
@@ -6321,7 +6509,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-05 z178 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-05 z179 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7266,7 +7454,7 @@ const HELP = {
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
     "<h3>Reading it</h3><ul><li>Bands: AM blue, PM amber, NIGHT indigo. A dashed + seat: nobody planned from that department yet; it turns red when the flight is due (2 hours before ETD).</li><li>The chips on top count the day; click one (MC not set, Flown, Cancelled, Not closed) to show only those flights, click it again to show all.</li></li><li>" + sw("#991b1b", "#fff", "DOWN") + " seat: that person is down-chitted (MC); click the seat to up-chit or pick someone else.</li>" +
     "<li>Status: the left edge and the pill under the callsign. PLANNED, DUE, FLOWN (ATD and ATA filled), CANCELLED (with reason), NOT CLOSED (past and still open), OPS ADD.</li><li>Duty strip on top: SXO, OPS O and SDO by shift from the plans (AM / PM / NIGHT), BDO for the whole day, then Safety, Prefect, Security, Intel and DOB; click to type.</li><li>Right: Area &amp; Codes, movement (leave, off, MC), the Down-chit card (click a name to up-chit; + Down-chit adds someone), the ground programme and the day's remarks.</li><li>Brief Timing is typed in the Ops Room; Type ATD and ATA in their own columns; Hours shows Plan above Actual (Actual amber if longer than planned, green if shorter).</li></ul>" +
-    "<h3>Tools</h3><ul><li>Click a seat to change it, mark MC / CRMO, or swap Captain and Co-Pilot. Click a text cell to type.</li><li><b>+ Ops Add</b>: an ad hoc flight for the day. It isn't put on the Master Planner; departments see it on their MASTER rows (OPS ADD), and crew you seat on it get it on their plan. Remove it from its status pill.</li><li>A- / A+ sizes the board; Projector hides the menus.</li><li>Save writes every file you changed: the Ops Room file, and a department's file when you up-chit someone from it.</li></ul>"],
+    "<h3>Tools</h3><ul><li>Click a seat to change it, mark MC / CRMO, or swap Captain and Co-Pilot. Click a text cell to type.</li><li><b>+ Ops Add</b>: an ad hoc flight for the day. It isn't put on the Master Planner; departments see it on their MASTER rows (OPS ADD), and crew you seat on it get it on their plan. Remove it from its status pill.</li><li><b>⇩ Export AFP</b>: fills the squadron AFP format for the day on screen and downloads it (Excel). Names read Rank Name (CAT); cancelled flights are left out; the brief time goes in the remarks. SXO, OPS O and SDO: line 1 of the box is AM, line 2 PM, line 3 NIGHT (one line = the whole day). Standby P1 is AM SAL, P2 PM SAL. Prepared by is the SDO, Vetted by the OPS O. The CO's name and number are typed once in the dialog.</li><li>A- / A+ sizes the board; Projector hides the menus.</li><li>Save writes every file you changed: the Ops Room file, and a department's file when you up-chit someone from it.</li></ul>"],
   mp: ["Master Planning", "<p>The Master Planner's calendar: every flight and squadron event, which all departments copy. Only the Master Planner (its own file) can edit; everyone else sees it locked.</p>" +
     "<ul><li>Chips: time + code in shift colours, crew tags (P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2; on a flight, none = the flight code's crew). Green chips: squadron events (meetings, ceremonies, courses); their crew is ALL or tags, and a red NO CREW means nobody was chosen.</li><li>Grey day: no flying (reason on the day). Blue outline: today.</li><li>Click a day to open it on the right: add, change or remove flights and ground items. Arrow keys move days, Esc closes.</li></ul><h3>Export…</h3><p>A clean Excel copy of the flights and planned hours for an outside office: one Calendar sheet with each month as a calendar: every flight with its time and planned hours, the day and week totals, the reason on no-flying days and a month total. It prints on landscape A4, one page wide. Pick the period, and untick any flight code to leave it out of the rows and the totals (your choice is remembered). No crew, names or comments go in the file.</p>"],
   cmx: ["Crew Matrix", "<p>The CAT each seat needs on a mission, from the squadron's crew matching matrix. A flight is checked when its flight code's <b>Mission Type</b> is a mission listed here; the flight card, the Planner and the Ops Room then warn when the planned crew fits none of the mission's rows. It only warns.</p><ul><li>Each number is the lowest CAT allowed in that seat (A is best). Sup 1 and Sup 2 are two minimums for the pair, whichever seat holds which.</li><li>Seats nobody is planned in yet are not counted against the crew.</li><li>The matrix lives in the <b>Crew Matrix</b> sheet of the Master Planner file. Edit it there to change a letter, add a row or add a mission; the dashboard follows within 15 seconds.</li></ul>"],

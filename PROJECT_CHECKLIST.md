@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 5 Nov 2026 (z178). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 5 Nov 2026 (z179). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -248,4 +248,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Sort by rank and a Rank column (z156, 4 Nov, Brandon): Sort dialog "Rank, then Cat Status"; Crew Roster shows Rank left of Name (Excel keeps them in one Crew Member cell); the dropdown lists the department's own ranks (awaiting his test)
 - [?] My Lodestar recognises crew whose roster name starts with any Crew Roster rank, WOSE ranks included (z178, 5 Nov; Brandon sets ranks on the Crew Roster page) (awaiting his test)
 - [ ] Rebuild the repo demo xlsx with the fixed builder: not yet (Brandon, 5 Nov)
-- [?] AFP export from the Ops Room (Brandon, 5 Nov): fill the squadron's AFP format (sheet "121") from the Ops Room day and download it. Decided: names as Rank Name (CAT); SXO and OPS O / SDO box line 1 = AM, 2 = PM, 3 = NIGHT; standby P1 = AM SAL, P2 = PM SAL, BU = BU; no MC / CRMO; no alert timing on the standby rows; brief time in the flight REMARKS; IN TIME always 0900H; Prepared by the SDO, Vetted by the OPS O; everything filled automatically. Mock-up `previews/afp_export_mockup.png` (demo data), awaiting "build it"
+- [?] AFP export from the Ops Room (z179, 5 Nov, Brandon): ⇩ Export AFP on the Ops Room fills the squadron AFP format (sheet "121", built into the dashboard, no CO details) for the day on screen and downloads it. Decided: names Rank Name (CAT); SXO and OPS O / SDO box line 1 = AM, 2 = PM, 3 = NIGHT; standby P1 = AM SAL, P2 = PM SAL, BU = BU, no alert timing; no MC / CRMO; brief time in the flight REMARKS; IN TIME always 0900H; Prepared by the SDO, Vetted by the OPS O; Planned = Master Planner, Tasked = Ops Room board; Mission = Mission Type; Simulator = crew planned on SIM; CO name and number typed once (kept in the Ops Room file). Awaiting his test in desktop Excel

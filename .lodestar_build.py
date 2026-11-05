@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STAGE = {".build_planner.py": "build_planner.py", ".build_planner_other_depts.py": "build_planner_other_depts.py",
          ".build_master_planner.py": "build_master_planner.py", ".build_duty_roster.py": "build_duty_roster.py",
          ".build_ops_room.py": "build_ops_room.py", ".seedplan.py": "seedplan.py", ".realdata.py": "realdata.py",
-         ".assemble_dashboard.py": "assemble.py", ".dashboard_source.html": "app.html", ".fflate_umd.js": "package/umd/index.js"}
+         ".assemble_dashboard.py": "assemble.py", ".dashboard_source.html": "app.html", ".fflate_umd.js": "package/umd/index.js", ".afp_template.xlsx": "afp_template.xlsx"}
 OTHER_DEPTS = [("SUP 1", "SUP1"), ("TACCO", "TACCO"), ("Loadmaster", "Loadmaster"), ("Pilot", "Pilot")]
 
 

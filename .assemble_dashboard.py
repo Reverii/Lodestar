@@ -14,6 +14,9 @@ if REL:
     src = re.sub(r'/\*DEV\*/.*?/\*/DEV\*/', '', src, flags=re.S)
     src = re.sub(r'<!--DEV-->.*?<!--/DEV-->', '', src, flags=re.S)
     assert 'DEV_BUILD' not in src and 'devBadge' not in src
+afp = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'afp_template.xlsx')   # z179: the AFP format the Ops Room fills
+assert src.count('/*AFP*/') == 1
+src = src.replace('/*AFP*/', b64(afp) if os.path.exists(afp) else '')
 out = src.replace('/*FFLATE*/', lic + ff).replace('/*TEMPLATE*/', '' if sys.argv[1] == '-' else b64(sys.argv[1]))
 if others: out = out.replace('<script>const TEMPLATE_B64', '<script>const SAMPLES_B64 = ' + json.dumps(others) + ';</script>\n<script>const TEMPLATE_B64', 1)
 open(sys.argv[2], 'w').write(out)

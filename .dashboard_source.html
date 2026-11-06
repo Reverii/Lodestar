@@ -1012,6 +1012,27 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
 .mnGrid td.act{box-shadow:inset 0 0 0 2px #2563eb}
 .mnGrid td textarea{position:absolute;left:0;top:0;width:100%;min-height:100%;box-sizing:border-box;border:2px solid #2563eb;padding:1px 5px;font:inherit;resize:none;outline:none;z-index:5;background:#fff;overflow:hidden}
 .mnFoot{font-size:12px;color:var(--s500);margin-top:6px}
+#mnWrap{position:relative}
+.mnFx{display:flex;align-items:center;gap:2px;flex-wrap:wrap;border:1px solid var(--s300);border-radius:8px;background:#fff;padding:4px 6px;margin:0 0 8px}
+.mnFx .g{display:flex;align-items:center;gap:2px;padding:0 6px;border-right:1px solid var(--s200)}.mnFx .g:last-of-type{border-right:0}
+.mnFx button,.mnFx select{border:1px solid transparent;background:#fff;color:var(--s800);border-radius:5px;height:28px;min-width:28px;padding:0 7px;font-weight:600;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:4px;position:relative}
+.mnFx button:hover:not(:disabled){background:var(--s100)}.mnFx button.on{background:#dbeafe;border-color:#93c5fd}.mnFx select{border-color:var(--s300);font-weight:500;padding:0 4px}
+.mnFx button:disabled,.mnFx select:disabled{opacity:.45;cursor:default}
+.mnSplit{display:inline-flex}.mnSplit button:first-child{border-radius:5px 0 0 5px;padding-right:4px}.mnSplit .mnCar{border-radius:0 5px 5px 0;min-width:16px;padding:0 3px;font-size:9px;color:var(--s500)}
+.mnSw{position:absolute;left:6px;right:5px;bottom:4px;height:4px;border-radius:1px;border:1px solid rgba(0,0,0,.12)}.mnA{font-weight:700;margin-bottom:4px}.mnCaret{font-size:9px;color:var(--s500)}
+.mnHint{font-size:12px;color:var(--s500);margin-left:auto;padding-right:4px}
+.mnPop{display:none;position:absolute;z-index:50;background:#fff;border:1px solid var(--s300);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.18);padding:8px;font-size:12.5px}
+.mnPop .ttl{font-weight:700;color:var(--s600);margin-bottom:6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+.mnPop .pal{display:grid;grid-template-columns:repeat(6,22px);gap:5px}.mnPop .pal i{width:22px;height:22px;border-radius:4px;border:1px solid rgba(0,0,0,.15);display:block;cursor:pointer}.mnPop .pal i:hover{outline:2px solid #2563eb;outline-offset:1px}
+.mnPop .nc{margin-top:8px;padding:4px 6px;border-radius:5px;border:1px solid var(--s200);text-align:center;cursor:pointer}.mnPop .nc:hover{background:var(--s100)}
+.mnPop .bi{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:5px;cursor:pointer;white-space:nowrap}.mnPop .bi:hover{background:var(--s100)}
+.mnPop .bx{width:16px;height:16px;display:inline-block;box-sizing:border-box}.bx.all{border:1px solid #334155;background:linear-gradient(#334155,#334155) center/1px 100% no-repeat,linear-gradient(#334155,#334155) center/100% 1px no-repeat}
+.bx.out{border:1px solid #334155}.bx.thick{border:3px solid #334155}.bx.bottom{border-bottom:2px solid #334155}.bx.none{border:1px dashed #cbd5e1}
+.mnGrid td.bd::before{content:"";position:absolute;left:0;top:0;right:0;bottom:0;border-top:var(--bt,0 none);border-right:var(--br,0 none);border-bottom:var(--bb,0 none);border-left:var(--bl,0 none);pointer-events:none;z-index:1}
+.mnGrid td.fl.sel{background-image:linear-gradient(rgba(37,99,235,.22),rgba(37,99,235,.22))}
+.mnGrid td.un.fl::after{content:"";position:absolute;right:0;top:0;border:5px solid transparent;border-top-color:#eab308;border-right-color:#eab308;pointer-events:none}
+.mnGrid td textarea{color:inherit;text-align:inherit;font-style:inherit}
+.mnGrid.painting td[data-c]{cursor:copy}
 </style>
 </head>
 <body>
@@ -1195,7 +1216,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-05 z179</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z180</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2588,7 +2609,8 @@ window.addEventListener("resize", () => { if ($("v-syl").classList.contains("on"
 // ("B:b,C:bw": b bold, w wrap), AB1 the column widths in px ("A:110,B:300"), AB2 the number of rows shown. The Change Log gets a count, never the text.
 const MN_SHEET = "Misc Notes", MN_NC = 26, MN_R0 = 100, MN_RMAX = 1000, MN_W0 = 110, MN_OPT = { hidden: true, plain: true },
   MN_XCOLS = '<col min="1" max="26" width="16" customWidth="1"/><col min="27" max="28" width="12" hidden="1" customWidth="1"/>';
-const mn = { r: 0, c: 0, ar: 0, ac: 0, ed: null, drag: false };   // active cell, anchor of the picked range, the cell being edited
+const mn = { r: 0, c: 0, ar: 0, ac: 0, ed: null, drag: false, mg: [], lastC: "dc2626", lastF: "fef3c7", paint: null };   // active cell, anchor of the picked range, the cell being edited; merges, last colours, format painter
+const MN_BTNS = ["mnMore", "mnClear", "mnPainter", "mnSize", "mnBold", "mnItal", "mnUnd", "mnStrk", "mnFc", "mnFcK", "mnFl", "mnFlK", "mnBrd", "mnAl", "mnAc", "mnAr", "mnMerge", "mnWrapB"];
 const mnIdx = () => books.length && (!OPS || devFull) && books[0] && !books[0].S.kind ? 0 : -1;   // dev mode opens every file like the Ops Room: the first file is still your department
 const mnCanEdit = () => mnIdx() === 0 && mayEdit(0);
 const mnRef = (r, c) => colL(c + 1) + (r + 1);
@@ -2601,12 +2623,99 @@ function mnCells() {
 const mnTxt = (c, r, k) => { const v = c[mnRef(r, k)]; return v == null ? "" : String(v); };
 const mnFmtRow = (c, r) => { const m = {}; String(c["AA" + (r + 1)] || "").split(",").forEach(x => { const [L, f] = x.split(":"); if (L && f && /^[A-Z]$/.test(L.trim())) m[L.trim()] = f.trim(); }); return m; };
 const mnFmtStr = m => Object.keys(m).filter(L => m[L]).sort().map(L => L + ":" + m[L]).join(",");
+// z180: a cell's format string, tokens in this order: b bold, i italic, u underline, s strikethrough, w wrap, z<pt> font size, c<hex> text colour,
+// f<hex> fill, e<mask> thin and t<mask> thick border sides (1 top, 2 right, 4 bottom, 8 left, as one hex digit), a<l|c|r> alignment,
+// m<rows>x<cols> merged from this cell (the top-left one). Files saved before z180 only hold b and w, which read the same.
+const MN_PAL = ["000000", "475569", "94a3b8", "e2e8f0", "ffffff", "7c3aed", "dc2626", "ea580c", "ca8a04", "16a34a", "2563eb", "1e3a8a", "fee2e2", "ffedd5", "fef3c7", "dcfce7", "dbeafe", "ede9fe"],
+  MN_BC = "1e293b", MN_SIZES = [9, 10, 11, 12, 14, 16, 18, 20], MN_PX = pt => Math.round(pt * 13 / 11);
+function mnFx(s) {
+  const o = {}, re = /z(\d{1,2})|c([0-9a-f]{6})|f([0-9a-f]{6})|e([0-9a-f])|t([0-9a-f])|a([lcr])|m(\d{1,4})x(\d{1,2})|([biusw])/y; s = String(s || "");
+  for (let i = 0; i < s.length;) { re.lastIndex = i; const m = re.exec(s); if (!m) { i++; continue; } i = re.lastIndex;
+    if (m[1]) o.z = +m[1]; else if (m[2]) o.c = m[2]; else if (m[3]) o.f = m[3]; else if (m[4]) o.e = parseInt(m[4], 16); else if (m[5]) o.t = parseInt(m[5], 16);
+    else if (m[6]) o.a = m[6]; else if (m[7]) o.m = [Math.max(1, +m[7]), Math.max(1, +m[8])]; else o[m[9]] = true; }
+  return o;
+}
+const mnFs = o => ["b", "i", "u", "s", "w"].filter(k => o[k]).join("") + (o.z && o.z !== 11 ? "z" + o.z : "") + (o.c ? "c" + o.c : "") + (o.f ? "f" + o.f : "") +
+  (o.e ? "e" + o.e.toString(16) : "") + (o.t ? "t" + o.t.toString(16) : "") + (o.a ? "a" + o.a : "") + (o.m && (o.m[0] > 1 || o.m[1] > 1) ? "m" + o.m[0] + "x" + o.m[1] : "");
+// merged blocks of the sheet: [{ r0, c0, r1, c1 }] read from the m token of their top-left cell
+function mnMergesOf(c) {
+  const out = [];
+  for (const key in c) { const mm = /^AA(\d+)$/.exec(key); if (!mm) continue; const r = +mm[1] - 1, f = mnFmtRow(c, r);
+    for (const L in f) { const o = mnFx(f[L]); if (o.m) { const k = L.charCodeAt(0) - 65; out.push({ r0: r, c0: k, r1: Math.min(MN_RMAX - 1, r + o.m[0] - 1), c1: Math.min(MN_NC - 1, k + o.m[1] - 1) }); } } }
+  return out;
+}
+const mnMergeAt = (r, k) => (mn.mg || []).find(M => r >= M.r0 && r <= M.r1 && k >= M.c0 && k <= M.c1);
+// change formats: fn(get, R, c) edits the objects get(r, k) hands out; the touched rows are written in one step (extra = more cells, e.g. text cleared by Merge)
+function mnFmtEdit(fn, extra) {
+  if (!mnCanEdit()) { readOnlyMn(); return false; }
+  const c = mnCells(), rows = {}, objs = {};
+  const get = (r, k) => { if (r < 0 || k < 0 || k >= MN_NC || r >= MN_RMAX) return {}; const key = r + "," + k;
+    if (!objs[key]) { rows[r] = rows[r] || mnFmtRow(c, r); objs[key] = mnFx(rows[r][colL(k + 1)]); } return objs[key]; };
+  if (fn(get, mnRange(), c) === false) return false;
+  for (const key in objs) { const [r, k] = key.split(",").map(Number); rows[r][colL(k + 1)] = mnFs(objs[key]); }
+  const list = Object.keys(rows).map(r => ["AA" + (+r + 1), mnFmtStr(rows[r])]).concat(extra || []);
+  if (mnPut(list)) { renderMisc(); return true; } return false;
+}
+const mnEach = (R, f) => { for (let r = R.r0; r <= R.r1; r++) for (let k = R.c0; k <= R.c1; k++) f(r, k); };
+function mnSetFlag(flag) { mnFmtEdit((get, R) => { let all = true; mnEach(R, (r, k) => { if (!get(r, k)[flag]) all = false; }); mnEach(R, (r, k) => { get(r, k)[flag] = !all; }); }); }
+function mnSet(key, v, toggle) {   // alignment toggles off when every picked cell has it already; size, colours just set
+  mnFmtEdit((get, R) => { let all = !!toggle; if (toggle) mnEach(R, (r, k) => { if (get(r, k)[key] !== v) all = false; });
+    mnEach(R, (r, k) => { const o = get(r, k); if (all || v == null || v === "" || (key === "z" && v === 11)) delete o[key]; else o[key] = v; }); });
+}
+function mnBorder(kind) {
+  mnFmtEdit((get, R) => {
+    const thin = (r, k, bit) => { const o = get(r, k); o.e = (o.e || 0) | bit; o.t = (o.t || 0) & ~bit; },
+      thick = (r, k, bit) => { const o = get(r, k); o.t = (o.t || 0) | bit; o.e = (o.e || 0) & ~bit; },
+      off = (r, k, bit) => { const o = get(r, k); o.e = (o.e || 0) & ~bit; o.t = (o.t || 0) & ~bit; };
+    if (kind === "all") mnEach(R, (r, k) => [1, 2, 4, 8].forEach(b => thin(r, k, b)));
+    else if (kind === "out" || kind === "thick") { const s = kind === "out" ? thin : thick;
+      for (let k = R.c0; k <= R.c1; k++) { s(R.r0, k, 1); s(R.r1, k, 4); } for (let r = R.r0; r <= R.r1; r++) { s(r, R.c0, 8); s(r, R.c1, 2); } }
+    else if (kind === "bottom") for (let k = R.c0; k <= R.c1; k++) thin(R.r1, k, 4);
+    else { mnEach(R, (r, k) => [1, 2, 4, 8].forEach(b => off(r, k, b)));   // no border: also the neighbours' sides that face the picked cells
+      for (let k = R.c0; k <= R.c1; k++) { if (R.r0 > 0) off(R.r0 - 1, k, 4); off(R.r1 + 1, k, 1); }
+      for (let r = R.r0; r <= R.r1; r++) { if (R.c0 > 0) off(r, R.c0 - 1, 2); off(r, R.c1 + 1, 8); } }
+  });
+}
+function mnMergeToggle() {
+  if (!mnCanEdit()) { readOnlyMn(); return; }
+  const R = mnRange(), hit = (mn.mg || []).filter(M => M.r0 <= R.r1 && M.r1 >= R.r0 && M.c0 <= R.c1 && M.c1 >= R.c0);
+  if (hit.length === 1 && hit[0].r0 === R.r0 && hit[0].c0 === R.c0 && hit[0].r1 === R.r1 && hit[0].c1 === R.c1) {   // the picked block is one merge: unmerge it
+    mnFmtEdit(get => { delete get(R.r0, R.c0).m; }); toast("Cells unmerged.", 1800); return; }
+  if (R.r0 === R.r1 && R.c0 === R.c1) { toast("Pick two or more cells to merge.", 2200); return; }
+  const c = mnCells(), clear = []; mnEach(R, (r, k) => { if ((r !== R.r0 || k !== R.c0) && mnTxt(c, r, k)) clear.push([mnRef(r, k), ""]); });
+  if (clear.length && !confirm("Merging keeps only the text of the top-left cell (" + mnRef(R.r0, R.c0) + ").\nThe text in " + clear.length + " other cell" + (clear.length === 1 ? "" : "s") + " will be removed. Merge anyway?")) return;
+  mnFmtEdit(get => { hit.forEach(M => { delete get(M.r0, M.c0).m; }); const o = get(R.r0, R.c0); o.m = [R.r1 - R.r0 + 1, R.c1 - R.c0 + 1]; o.a = "c"; }, clear);
+  mn.r = mn.ar = R.r0; mn.c = mn.ac = R.c0; mnPaint();
+}
+// how a cell looks: classes and inline style (the border sides of a merged block come from its edge cells)
+function mnLook(c, r, k, M) {
+  const o = mnFx(mnFmtRow(c, r)[colL(k + 1)]), cls = [], st = [];
+  if (o.b) cls.push("b"); if (o.w) cls.push("w");
+  if (o.i) st.push("font-style:italic"); if (o.u || o.s) st.push("text-decoration:" + [o.u ? "underline" : "", o.s ? "line-through" : ""].join(" ").trim());
+  if (o.z && o.z !== 11) st.push("font-size:" + MN_PX(o.z) + "px"); if (o.c) st.push("color:#" + o.c); if (o.f) { st.push("background-color:#" + o.f); cls.push("fl"); }
+  if (o.a) st.push("text-align:" + { l: "left", c: "center", r: "right" }[o.a]);
+  // a shared edge is one line, as in Excel: the right / bottom grid line of this cell shows this cell's side or the neighbour's facing side;
+  // only the top of row 1 and the left of column A have no grid line of their own and are drawn inside the cell
+  const fx = (rr, kk) => rr < 0 || kk < 0 || kk >= MN_NC ? {} : mnFx(mnFmtRow(c, rr)[colL(kk + 1)]), w = (oo, bit) => (oo.t || 0) & bit ? 2 : (oo.e || 0) & bit ? 1 : 0;
+  const r1 = M ? M.r1 : r, k1 = M ? M.c1 : k, oR = M ? fx(M.r0, k1) : o, oB = M ? fx(r1, M.c0) : o;
+  const wr = Math.max(w(oR, 2), w(fx(r, k1 + 1), 8)), wb = Math.max(w(oB, 4), w(fx(r1 + 1, k), 1));
+  if (wr) st.push("border-right:" + wr + "px solid #" + MN_BC); if (wb) st.push("border-bottom:" + wb + "px solid #" + MN_BC);
+  const bd = [["--bt", r === 0 ? w(o, 1) : 0], ["--bl", k === 0 ? w(o, 8) : 0]].filter(x => x[1]);
+  if (bd.length) { cls.push("bd"); bd.forEach(([n, v]) => st.push(n + ":" + v + "px solid #" + MN_BC)); }
+  return { o, cls, st: st.join(";") };
+}
 const mnWidths = c => { const w = {}; String(c.AB1 || "").split(",").forEach(x => { const [L, v] = x.split(":"); if (L && +v) w[L.trim()] = Math.max(30, Math.min(800, Math.round(+v))); }); return w; };
 function mnRows(c) {
   let last = 0; for (const k in c) { const m = /^([A-Z]+)(\d+)$/.exec(k); if (m && m[1].length === 1) last = Math.max(last, +m[2]); }
   return Math.min(MN_RMAX, Math.max(MN_R0, +c.AB2 || 0, last));
 }
-const mnRange = () => ({ r0: Math.min(mn.r, mn.ar), r1: Math.max(mn.r, mn.ar), c0: Math.min(mn.c, mn.ac), c1: Math.max(mn.c, mn.ac) });
+function mnRange() {   // the picked cells, grown to take in every merged block they touch
+  const R = { r0: Math.min(mn.r, mn.ar), r1: Math.max(mn.r, mn.ar), c0: Math.min(mn.c, mn.ac), c1: Math.max(mn.c, mn.ac) };
+  for (let grew = true; grew;) { grew = false;
+    for (const M of mn.mg || []) if (M.r0 <= R.r1 && M.r1 >= R.r0 && M.c0 <= R.c1 && M.c1 >= R.c0 && (M.r0 < R.r0 || M.r1 > R.r1 || M.c0 < R.c0 || M.c1 > R.c1)) {
+      R.r0 = Math.min(R.r0, M.r0); R.r1 = Math.max(R.r1, M.r1); R.c0 = Math.min(R.c0, M.c0); R.c1 = Math.max(R.c1, M.c1); grew = true; } }
+  return R;
+}
 // write cells (list of [ref, value]) into your own file; unchanged ones are skipped. Returns how many changed.
 function mnPut(list) {
   if (!mnCanEdit()) { readOnlyMn(); return 0; }
@@ -2623,22 +2732,33 @@ function renderMisc() {
   if (mnIdx() < 0) { W.innerHTML = "<p class='muted' style='padding:20px'>Miscellaneous Notes belongs to a department planner. Open your own department's file to use it.</p>"; return; }
   const b = books[0], c = mnCells(), wd = mnWidths(c), nr = mnRows(c), ed = mnCanEdit();
   if (!W.querySelector(".mnGrid")) {
+    const sw = (id, kind, tip, face) => "<span class='mnSplit'><button id='" + id + "' title='" + tip + " (click: the colour shown; ▾: pick another)'>" + face + "<span class='mnSw' id='" + id + "Sw'></span></button><button class='mnCar' id='" + id + "K' title='Pick a " + kind + "'>▾</button></span>";
     W.innerHTML = "<div class='mnHead'><h2>Miscellaneous Notes</h2><span class='mnLock' id='mnLock'></span><div class='mnTools'>" +
-      "<button id='mnBold' title='Bold (Ctrl+B) on the picked cells'><b>B</b> Bold</button><button id='mnWrapB' title='Wrap long text inside the picked cells'>Wrap</button>" +
       "<button id='mnMore' title='Show 20 more rows'>+ 20 rows</button><button id='mnClear' title='Empty the whole sheet'>Clear sheet…</button></div></div>" +
-      "<div class='mnBar'><b id='mnAt'>A1</b><input id='mnIn' spellcheck='false' autocomplete='off'></div><div class='mnGrid' tabindex='0'></div><div class='mnFoot' id='mnFoot'></div>";
+      "<div class='mnFx'><div class='g'><button id='mnPainter' title='Format painter: copies the look of the cell you are on; then pick the cells to paint (Escape cancels)'>🖌 Painter</button></div>" +
+      "<div class='g'><select id='mnSize' title='Font size'>" + MN_SIZES.map(n => "<option value='" + n + "'>" + n + "</option>").join("") + "</select></div>" +
+      "<div class='g'><button id='mnBold' title='Bold (Ctrl+B)'><b>B</b></button><button id='mnItal' title='Italic (Ctrl+I)'><i>I</i></button><button id='mnUnd' title='Underline (Ctrl+U)'><u>U</u></button><button id='mnStrk' title='Strikethrough'><s>S</s></button></div>" +
+      "<div class='g'>" + sw("mnFc", "text colour", "Text colour", "<span class='mnA'>A</span>") + sw("mnFl", "fill colour", "Fill colour", "🪣") + "</div>" +
+      "<div class='g'><button id='mnBrd' title='Borders'>▦ Borders <span class='mnCaret'>▾</span></button></div>" +
+      "<div class='g'><button id='mnAl' title='Align left'>⯇ Left</button><button id='mnAc' title='Centre'>≡ Centre</button><button id='mnAr' title='Align right'>Right ⯈</button></div>" +
+      "<div class='g'><button id='mnMerge' title='Merge the picked cells into one, centred (click a merged cell and Merge again to unmerge)'>⇔ Merge</button><button id='mnWrapB' title='Wrap long text inside the picked cells'>↵ Wrap</button></div>" +
+      "<span class='mnHint'>Works on the picked cells</span></div>" +
+      "<div class='mnBar'><b id='mnAt'>A1</b><input id='mnIn' spellcheck='false' autocomplete='off'></div><div class='mnGrid' tabindex='0'></div><div class='mnFoot' id='mnFoot'></div><div class='mnPop' id='mnPop'></div>";
     mnWire(W);
   }
+  mn.mg = mnMergesOf(c);
   mn.r = Math.min(mn.r, nr - 1); mn.ar = Math.min(mn.ar, nr - 1);
   $("mnLock").textContent = "🔒 Only " + b.S.dept + " sees this page. Other departments and the Ops Room don't." + (ed ? "" : " View only.");
-  ["mnBold", "mnWrapB", "mnMore", "mnClear"].forEach(id => $(id).disabled = !ed); $("mnIn").readOnly = !ed;
+  MN_BTNS.forEach(id => $(id).disabled = !ed); $("mnIn").readOnly = !ed;
+  $("mnFcSw").style.background = "#" + mn.lastC; $("mnFlSw").style.background = "#" + mn.lastF;
   const un = new Set(); for (const e of b.dirty.values()) if (e.sheet === MN_SHEET) un.add(e.ref);
   let h = "<colgroup><col style='width:44px'>"; for (let k = 0; k < MN_NC; k++) h += "<col style='width:" + (wd[colL(k + 1)] || MN_W0) + "px'>"; h += "</colgroup>";
   h += "<thead><tr><th class='rn'></th>"; for (let k = 0; k < MN_NC; k++) h += "<th data-hc='" + k + "'>" + colL(k + 1) + "<span class='mnRz' data-rz='" + k + "'></span></th>"; h += "</tr></thead><tbody>";
   for (let r = 0; r < nr; r++) {
-    const f = mnFmtRow(c, r); h += "<tr><td class='rn'>" + (r + 1) + "</td>";
-    for (let k = 0; k < MN_NC; k++) { const L = colL(k + 1), ff = f[L] || "", ref = L + (r + 1), cl = (ff.includes("b") ? " b" : "") + (ff.includes("w") ? " w" : "") + (un.has(ref) ? " un" : "");
-      h += "<td data-r='" + r + "' data-c='" + k + "'" + (cl ? " class='" + cl.trim() + "'" : "") + ">" + esc(mnTxt(c, r, k)) + "</td>"; }
+    h += "<tr><td class='rn'>" + (r + 1) + "</td>";
+    for (let k = 0; k < MN_NC; k++) { const M = mnMergeAt(r, k); if (M && (M.r0 !== r || M.c0 !== k)) continue;   // covered by a merged block
+      const ref = colL(k + 1) + (r + 1), lk = mnLook(c, r, k, M), cl = lk.cls.concat(un.has(ref) ? ["un"] : []).join(" ");
+      h += "<td data-r='" + r + "' data-c='" + k + "'" + (M ? " rowspan='" + (M.r1 - M.r0 + 1) + "' colspan='" + (M.c1 - M.c0 + 1) + "'" : "") + (cl ? " class='" + cl + "'" : "") + (lk.st ? " style='" + lk.st + "'" : "") + ">" + esc(mnTxt(c, r, k)) + "</td>"; }
     h += "</tr>";
   }
   const G = W.querySelector(".mnGrid"), hadFocus = document.activeElement === G || G.contains(document.activeElement);
@@ -2648,7 +2768,7 @@ function renderMisc() {
 }
 function mnFit() { const G = document.querySelector("#mnWrap .mnGrid"); if (!G) return; const top = G.getBoundingClientRect().top; G.style.height = Math.max(200, window.innerHeight - top - 34) + "px"; }
 window.addEventListener("resize", () => { if ($("v-misc").classList.contains("on")) mnFit(); });
-// show the picked cells, the formula bar and the Bold / Wrap state (no redraw of the table)
+// show the picked cells, the formula bar and the toolbar state (no redraw of the table)
 function mnPaint(c, scroll) {
   const G = document.querySelector("#mnWrap .mnGrid"); if (!G) return; c = c || mnCells();
   G.querySelectorAll("td.sel, td.act").forEach(t => t.classList.remove("sel", "act"));
@@ -2657,7 +2777,10 @@ function mnPaint(c, scroll) {
   const a = mnTd(mn.r, mn.c); if (a) { a.classList.add("act"); if (scroll) mnScroll(a); }
   $("mnAt").textContent = many ? mnRef(R.r0, R.c0) + ":" + mnRef(R.r1, R.c1) : mnRef(mn.r, mn.c);
   if (document.activeElement !== $("mnIn")) $("mnIn").value = mnTxt(c, mn.r, mn.c);
-  const f = mnFmtRow(c, mn.r)[colL(mn.c + 1)] || ""; $("mnBold").classList.toggle("on", f.includes("b")); $("mnWrapB").classList.toggle("on", f.includes("w"));
+  const o = mnFx(mnFmtRow(c, mn.r)[colL(mn.c + 1)]);
+  [["mnBold", o.b], ["mnItal", o.i], ["mnUnd", o.u], ["mnStrk", o.s], ["mnWrapB", o.w], ["mnAl", o.a === "l"], ["mnAc", o.a === "c"], ["mnAr", o.a === "r"], ["mnMerge", !!o.m], ["mnPainter", !!mn.paint]]
+    .forEach(([id, on]) => $(id).classList.toggle("on", !!on));
+  $("mnSize").value = String(o.z || 11);
 }
 const mnTd = (r, k) => document.querySelector("#mnWrap td[data-r='" + r + "'][data-c='" + k + "']");
 function mnScroll(td) {   // keep the cell clear of the sticky letters and row numbers
@@ -2666,7 +2789,12 @@ function mnScroll(td) {   // keep the cell clear of the sticky letters and row n
   if (td.offsetLeft - rn < G.scrollLeft) G.scrollLeft = td.offsetLeft - rn; else if (td.offsetLeft + td.offsetWidth > G.scrollLeft + G.clientWidth) G.scrollLeft = td.offsetLeft + td.offsetWidth - G.clientWidth;
 }
 function mnGo(r, k, extend) {
-  const nr = mnRows(mnCells()); mn.r = Math.max(0, Math.min(nr - 1, r)); mn.c = Math.max(0, Math.min(MN_NC - 1, k));
+  const nr = mnRows(mnCells()), cl = () => { r = Math.max(0, Math.min(nr - 1, r)); k = Math.max(0, Math.min(MN_NC - 1, k)); }; cl();
+  const M = !extend && mnMergeAt(r, k);
+  if (M && (M.r0 !== r || M.c0 !== k)) {   // landing inside a merged block: on its top-left cell, or past it when leaving it
+    if (mnMergeAt(mn.r, mn.c) === M) { if (r > mn.r) r = M.r1 + 1; else if (k > mn.c) k = M.c1 + 1; cl(); if (mnMergeAt(r, k) === M) { r = M.r0; k = M.c0; } }
+    else { r = M.r0; k = M.c0; } }
+  mn.r = r; mn.c = k;
   if (!extend) { mn.ar = mn.r; mn.ac = mn.c; } mnPaint(null, true);
 }
 // ---- editing in the cell
@@ -2694,16 +2822,23 @@ function mnClearRange() {
   for (let r = R.r0; r <= R.r1; r++) for (let k = R.c0; k <= R.c1; k++) if (mnTxt(c, r, k)) list.push([mnRef(r, k), ""]);
   if (mnPut(list)) renderMisc();
 }
-function mnFmtToggle(flag) {
-  if (!mnCanEdit()) { readOnlyMn(); return; }
-  const R = mnRange(), c = mnCells(); let all = true;
-  for (let r = R.r0; r <= R.r1 && all; r++) { const f = mnFmtRow(c, r); for (let k = R.c0; k <= R.c1; k++) if (!(f[colL(k + 1)] || "").includes(flag)) { all = false; break; } }
-  const list = [];
-  for (let r = R.r0; r <= R.r1; r++) { const f = mnFmtRow(c, r);
-    for (let k = R.c0; k <= R.c1; k++) { const L = colL(k + 1), x = (f[L] || "").replace(flag, ""); f[L] = all ? x : (flag === "b" ? "b" + x : x + "w"); }
-    list.push(["AA" + (r + 1), mnFmtStr(f)]); }
-  if (mnPut(list)) renderMisc();
+const mnFmtToggle = flag => mnSetFlag(flag);
+// format painter: the look of one cell (not its merge) onto the picked cells
+function mnPaintApply() {
+  const src = mn.paint; mn.paint = null; document.querySelector("#mnWrap .mnGrid").classList.remove("painting");
+  mnFmtEdit((get, R) => mnEach(R, (r, k) => { const o = get(r, k), m = o.m; Object.keys(o).forEach(x => delete o[x]); Object.assign(o, src); if (m) o.m = m; else delete o.m; })) || mnPaint();
 }
+// the colour palette / borders menu under a toolbar button
+function mnPopOpen(btn, kind) {
+  const P = $("mnPop"); if (P.dataset.k === kind && P.style.display === "block") { mnPopClose(); return; }
+  const fill = kind === "f";
+  P.innerHTML = kind === "brd" ? "<div class='ttl'>Borders</div>" + [["all", "All borders"], ["out", "Outside border"], ["thick", "Thick outside border"], ["bottom", "Bottom border"], ["none", "No border"]]
+      .map(([k, t]) => "<div class='bi' data-brd='" + k + "'><b class='bx " + k + "'></b>" + t + "</div>").join("")
+    : "<div class='ttl'>" + (fill ? "Fill colour" : "Text colour") + "</div><div class='pal'>" + MN_PAL.map(x => "<i data-col='" + x + "' title='#" + x + "' style='background:#" + x + "'></i>").join("") + "</div><div class='nc' data-col=''>" + (fill ? "No fill" : "Automatic (black)") + "</div>";
+  P.dataset.k = kind; P.style.display = "block";
+  const W = $("mnWrap").getBoundingClientRect(), B = btn.getBoundingClientRect(); P.style.left = (B.left - W.left) + "px"; P.style.top = (B.bottom - W.top + 4) + "px";
+}
+const mnPopClose = () => { const P = $("mnPop"); if (P) { P.style.display = "none"; P.dataset.k = ""; } };
 const mnTsv = (c, R) => { const out = []; for (let r = R.r0; r <= R.r1; r++) { const row = []; for (let k = R.c0; k <= R.c1; k++) { const t = mnTxt(c, r, k); row.push(/[\t\n"]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t); } out.push(row.join("\t")); } return out.join("\r\n"); };
 // a block copied from Excel: tab between cells, new line between rows, a cell with a line break or tab comes in quotes
 function mnParseTsv(s) {
@@ -2739,7 +2874,7 @@ function mnWire(W) {
     const r = +td.dataset.r, k = +td.dataset.c; mnGo(r, k, e.shiftKey); mn.drag = true;
   });
   G.addEventListener("mouseover", e => { if (!mn.drag) return; const td = e.target.closest("td[data-c]"); if (!td) return; mn.r = +td.dataset.r; mn.c = +td.dataset.c; mnPaint(); });
-  document.addEventListener("mouseup", () => { mn.drag = false; });
+  document.addEventListener("mouseup", () => { const was = mn.drag; mn.drag = false; if (was && mn.paint) mnPaintApply(); });
   G.addEventListener("dblclick", e => { const td = e.target.closest("td[data-c]"); if (!td || mn.ed) return; mnGo(+td.dataset.r, +td.dataset.c); mnEdit(null); });
   G.addEventListener("keydown", e => {
     const k = e.key, ctl = e.ctrlKey || e.metaKey;
@@ -2760,7 +2895,8 @@ function mnWire(W) {
     if (k === "PageDown" || k === "PageUp") { e.preventDefault(); const n = Math.max(1, Math.floor(G.clientHeight / 27) - 1); mnGo(mn.r + (k === "PageDown" ? n : -n), mn.c, e.shiftKey); return; }
     if (k === "F2") { e.preventDefault(); mnEdit(null); return; }
     if (k === "Delete" || k === "Backspace") { e.preventDefault(); if (!mnCanEdit()) { readOnlyMn(); return; } mnClearRange(); return; }
-    if (ctl && k.toLowerCase() === "b") { e.preventDefault(); mnFmtToggle("b"); return; }
+    if (k === "Escape" && mn.paint) { e.preventDefault(); mn.paint = null; G.classList.remove("painting"); mnPaint(); return; }
+    if (ctl && !e.shiftKey && !e.altKey && ["b", "i", "u"].includes(k.toLowerCase())) { e.preventDefault(); mnSetFlag(k.toLowerCase()); return; }
     if (ctl && k.toLowerCase() === "a") { e.preventDefault(); mn.ar = 0; mn.ac = 0; mn.r = mnRows(mnCells()) - 1; mn.c = MN_NC - 1; mnPaint(); return; }
     if (k.length === 1 && !ctl && !e.altKey) { e.preventDefault(); mnEdit(k); }
   });
@@ -2774,36 +2910,75 @@ function mnWire(W) {
     else if (e.key === "Escape") { e.preventDefault(); I.value = mnTxt(mnCells(), mn.r, mn.c); G.focus({ preventScroll: true }); }
   });
   I.addEventListener("change", () => { if (mnCanEdit() && mnPut([[mnRef(mn.r, mn.c), I.value]])) renderMisc(); });
-  $("mnBold").onclick = () => { mnFmtToggle("b"); G.focus({ preventScroll: true }); };
-  $("mnWrapB").onclick = () => { mnFmtToggle("w"); G.focus({ preventScroll: true }); };
+  const back = f => () => { mnPopClose(); f(); G.focus({ preventScroll: true }); };
+  [["mnBold", "b"], ["mnItal", "i"], ["mnUnd", "u"], ["mnStrk", "s"], ["mnWrapB", "w"]].forEach(([id, fl]) => { $(id).onclick = back(() => mnSetFlag(fl)); });
+  [["mnAl", "l"], ["mnAc", "c"], ["mnAr", "r"]].forEach(([id, a]) => { $(id).onclick = back(() => mnSet("a", a, true)); });
+  $("mnSize").onchange = () => { mnSet("z", +$("mnSize").value); G.focus({ preventScroll: true }); };
+  $("mnFc").onclick = back(() => mnSet("c", mn.lastC === "000000" ? "" : mn.lastC)); $("mnFl").onclick = back(() => mnSet("f", mn.lastF));
+  $("mnFcK").onclick = e => { e.stopPropagation(); mnPopOpen($("mnFc"), "c"); }; $("mnFlK").onclick = e => { e.stopPropagation(); mnPopOpen($("mnFl"), "f"); };
+  $("mnBrd").onclick = e => { e.stopPropagation(); mnPopOpen($("mnBrd"), "brd"); };
+  $("mnMerge").onclick = back(mnMergeToggle);
+  $("mnPainter").onclick = () => { mnPopClose(); if (mn.paint) { mn.paint = null; G.classList.remove("painting"); }
+    else { if (!mnCanEdit()) { readOnlyMn(); return; } const o = mnFx(mnFmtRow(mnCells(), mn.r)[colL(mn.c + 1)]); delete o.m; mn.paint = o; G.classList.add("painting"); toast("Now pick the cells to paint. Escape cancels.", 2200); }
+    mnPaint(); G.focus({ preventScroll: true }); };
+  $("mnPop").addEventListener("mousedown", e => e.preventDefault());
+  $("mnPop").addEventListener("click", e => { e.stopPropagation(); const P = $("mnPop"), col = e.target.closest("[data-col]"), bi = e.target.closest("[data-brd]");
+    if (col) { const v = col.dataset.col; if (P.dataset.k === "f") { if (v) mn.lastF = v; mnSet("f", v); } else { if (v) mn.lastC = v; mnSet("c", v === "000000" ? "" : v); } }
+    else if (bi) mnBorder(bi.dataset.brd); else return;
+    mnPopClose(); G.focus({ preventScroll: true }); });
+  document.addEventListener("click", e => { if (!e.target.closest || !e.target.closest("#mnPop")) mnPopClose(); });
   $("mnMore").onclick = () => { const c = mnCells(), n = mnRows(c); if (n >= MN_RMAX) { toast("The sheet already shows " + MN_RMAX + " rows, the most it takes.", 3000); return; } if (mnPut([["AB2", Math.min(MN_RMAX, n + 20)]])) renderMisc(); };
   $("mnClear").onclick = () => {
     const c = mnCells(), list = Object.keys(c).filter(k => /^([A-Z]|AA)\d+$/.test(k) && c[k] !== "").map(k => [k, ""]);
     if (!list.length) { toast("The sheet is already empty.", 2000); return; }
-    if (!confirm("Clear every cell of Miscellaneous Notes (text, bold and wrap)?\n\nColumn widths stay. Undo brings it back until you save; after saving, SharePoint version history still has the old copy.")) return;
+    if (!confirm("Clear every cell of Miscellaneous Notes (text, formatting and merged cells)?\n\nColumn widths stay. Undo brings it back until you save; after saving, SharePoint version history still has the old copy.")) return;
     if (mnPut(list)) { mn.r = mn.c = mn.ar = mn.ac = 0; renderMisc(); toast("Sheet cleared. Save to Excel to keep it.", 2500); }
   };
 }
 // ---- Excel side: bold, wrap and widths as real Excel formats (the hidden sheet still reads well if someone unhides it)
 function mnExcelLook(files, p) {
   if (!p || !files[p]) return;
-  let x = td.decode(files[p]); const c = readCellsOf(files, p, WB.sst || []), wd = mnWidths(c), F = ["", "b", "w", "bw"];
-  let sOf = null, st = files["xl/styles.xml"] ? td.decode(files["xl/styles.xml"]) : "";
-  const fm = st.match(/<fonts\b[^>]*>[\s\S]*?<\/fonts>/), xm = st.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/);
-  if (fm && xm) {
-    const BF = '<font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font>', fonts = fm[0].match(/<font\b[^>]*\/>|<font\b[^>]*>[\s\S]*?<\/font>/g) || [];
-    let fi = fonts.indexOf(BF);
-    if (fi < 0) { fi = fonts.length; st = st.replace(fm[0], fm[0].replace(/<\/fonts>$/, BF + "</fonts>").replace(/count="\d+"/, 'count="' + (fonts.length + 1) + '"')); }
-    const xm2 = st.match(/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/), xfs = xm2[0].match(/<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/g) || [];
-    const want = F.map(f => '<xf numFmtId="0" fontId="' + (f.includes("b") ? fi : 0) + '" fillId="0" borderId="0" xfId="0"' + (f.includes("b") ? ' applyFont="1"' : "") + ' applyAlignment="1"><alignment vertical="top"' + (f.includes("w") ? ' wrapText="1"' : "") + "/></xf>");
-    const add = want.filter(w => !xfs.includes(w));
-    if (add.length) st = st.replace(xm2[0], xm2[0].replace(/<\/cellXfs>$/, add.join("") + "</cellXfs>").replace(/count="\d+"/, 'count="' + (xfs.length + add.length) + '"'));
-    const all = xfs.concat(add); sOf = f => all.indexOf(want[F.indexOf(f)]);
+  let x = td.decode(files[p]); const c = readCellsOf(files, p, WB.sst || []), wd = mnWidths(c);
+  // every formatted cell of A..Z (z180: fonts, fills, borders, alignment, merges; before only bold and wrap)
+  const fmt = {}; for (const key in c) { const mm = /^AA(\d+)$/.exec(key); if (!mm) continue; const f = mnFmtRow(c, +mm[1] - 1); for (const L in f) fmt[L + mm[1]] = mnFx(f[L]); }
+  const merges = mnMergesOf(c);
+  let st = files["xl/styles.xml"] ? td.decode(files["xl/styles.xml"]) : "", sOf = null;
+  // find a style part in its list or add it at the end (exact text match, so a second save adds nothing)
+  const part = (plural, tag, xml) => { const m = st.match(new RegExp("<" + plural + "\\b[^>]*>[\\s\\S]*?</" + plural + ">")); if (!m) return -1;
+    const items = m[0].match(new RegExp("<" + tag + "\\b[^>]*/>|<" + tag + "\\b[^>]*>[\\s\\S]*?</" + tag + ">", "g")) || []; let i = items.indexOf(xml);
+    if (i < 0) { i = items.length; st = st.replace(m[0], m[0].replace(new RegExp("</" + plural + ">$"), xml + "</" + plural + ">").replace(/count="\d+"/, 'count="' + (items.length + 1) + '"')); }
+    return i; };
+  if (/<fonts\b/.test(st) && /<cellXfs\b/.test(st) && /<fills\b/.test(st) && /<borders\b/.test(st)) {
+    const memo = {}, hx = h => "FF" + h.toUpperCase();
+    sOf = o => { const key = mnFs(Object.assign({}, o, { m: null })); if (key in memo) return memo[key];
+      const fo = o.b || o.i || o.u || o.s || o.c || (o.z && o.z !== 11) ? part("fonts", "font", "<font>" + (o.b ? "<b/>" : "") + (o.i ? "<i/>" : "") + (o.s ? "<strike/>" : "") + (o.u ? "<u/>" : "") +
+        '<sz val="' + (o.z || 11) + '"/>' + (o.c ? '<color rgb="' + hx(o.c) + '"/>' : "") + '<name val="Calibri"/><family val="2"/></font>') : 0;
+      const fi = o.f ? part("fills", "fill", '<fill><patternFill patternType="solid"><fgColor rgb="' + hx(o.f) + '"/><bgColor indexed="64"/></patternFill></fill>') : 0;
+      const sd = (n, bit) => (o.t || 0) & bit ? "<" + n + ' style="medium"><color rgb="' + hx(MN_BC) + '"/></' + n + ">" : (o.e || 0) & bit ? "<" + n + ' style="thin"><color rgb="' + hx(MN_BC) + '"/></' + n + ">" : "<" + n + "/>";
+      const bo = o.e || o.t ? part("borders", "border", "<border>" + sd("left", 8) + sd("right", 2) + sd("top", 1) + sd("bottom", 4) + "<diagonal/></border>") : 0;
+      return memo[key] = part("cellXfs", "xf", '<xf numFmtId="0" fontId="' + Math.max(0, fo) + '" fillId="' + Math.max(0, fi) + '" borderId="' + Math.max(0, bo) + '" xfId="0"' + (fo > 0 ? ' applyFont="1"' : "") + (fi > 0 ? ' applyFill="1"' : "") + (bo > 0 ? ' applyBorder="1"' : "") +
+        ' applyAlignment="1"><alignment' + (o.a ? ' horizontal="' + { l: "left", c: "center", r: "right" }[o.a] + '"' : "") + ' vertical="top"' + (o.w ? ' wrapText="1"' : "") + "/></xf>"); };
+  }
+  // sheetData rebuilt: every A..Z cell gets its style, and a formatted empty cell (fill, border, merge) is added so Excel shows it
+  const sd = x.match(/<sheetData\s*\/>|<sheetData>([\s\S]*?)<\/sheetData>/);
+  if (sOf && sd) {
+    const rows = new Map(), colN = L => L.length === 1 ? L.charCodeAt(0) - 64 : (L.charCodeAt(0) - 64) * 26 + L.charCodeAt(1) - 64;
+    for (const rm of (sd[1] || "").matchAll(/<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g)) {
+      const r = +((/\br="(\d+)"/.exec(rm[1]) || [])[1] || 0); if (!r) continue; const cells = new Map();
+      for (const cm of (rm[2] || "").matchAll(/<c\b[^>]*?(?:\/>|>[\s\S]*?<\/c>)/g)) { const ref = (/\br="([A-Z]+)\d+"/.exec(cm[0]) || [])[1]; if (ref) cells.set(ref, cm[0]); }
+      rows.set(r, { attrs: rm[1].replace(/\s+spans="[^"]*"/, ""), cells }); }
+    for (const ref in fmt) { const o = fmt[ref]; if (!(o.f || o.e || o.t)) continue; const m = /^([A-Z])(\d+)$/.exec(ref), r = +m[2];
+      if (!rows.has(r)) rows.set(r, { attrs: ' r="' + r + '"', cells: new Map() }); const R = rows.get(r); if (!R.cells.has(m[1])) R.cells.set(m[1], '<c r="' + ref + '"/>'); }
+    for (const M of merges) { const r = M.r0 + 1, L = colL(M.c0 + 1); if (!rows.has(r)) rows.set(r, { attrs: ' r="' + r + '"', cells: new Map() }); const R = rows.get(r); if (!R.cells.has(L)) R.cells.set(L, '<c r="' + L + r + '"/>'); }
+    let out = "";
+    for (const r of [...rows.keys()].sort((a, b) => a - b)) { const R = rows.get(r), keys = [...R.cells.keys()].sort((a, b) => colN(a) - colN(b));
+      out += "<row" + R.attrs + ">" + keys.map(L => { const cx = R.cells.get(L); if (L.length > 1) return cx; const s = sOf(fmt[L + r] || {});
+        return cx.replace(/^<c\b([^>]*?)(\/?>)/, (m0, at, end) => "<c" + at.replace(/\s+s="\d+"/, "") + ' s="' + s + '"' + end); }).join("") + "</row>"; }
+    x = x.replace(sd[0], "<sheetData>" + out + "</sheetData>");
     files["xl/styles.xml"] = te.encode(st);
   }
-  if (sOf) x = x.replace(/<c r="([A-Z]+)(\d+)"((?:\s+[\w:]+="[^"]*")*)(\s*\/?>)/g, (m0, L, r, attrs, end) => {
-    if (L.length > 1) return m0; const f = mnFmtRow(c, +r - 1)[L] || "", n = (f.includes("b") ? "b" : "") + (f.includes("w") ? "w" : "");
-    return '<c r="' + L + r + '"' + attrs.replace(/\s+s="\d+"/, "") + ' s="' + sOf(n) + '"' + end; });
+  x = x.replace(/<mergeCells\b[^>]*>[\s\S]*?<\/mergeCells>|<mergeCells\b[^>]*\/>/, "");
+  if (merges.length) x = x.replace("</sheetData>", '</sheetData><mergeCells count="' + merges.length + '">' + merges.map(M => '<mergeCell ref="' + mnRef(M.r0, M.c0) + ":" + mnRef(M.r1, M.c1) + '"/>').join("") + "</mergeCells>");
   let cols = ""; for (let k = 1; k <= MN_NC; k++) cols += '<col min="' + k + '" max="' + k + '" width="' + (Math.round((wd[colL(k)] || MN_W0) / 7 * 10) / 10) + '" customWidth="1"/>';
   cols = "<cols>" + cols + '<col min="27" max="28" width="12" hidden="1" customWidth="1"/></cols>';
   x = /<cols>[\s\S]*?<\/cols>/.test(x) ? x.replace(/<cols>[\s\S]*?<\/cols>/, cols) : x.replace(/<sheetData/, cols + "<sheetData");
@@ -6509,7 +6684,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-05 z179 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z180 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7435,7 +7610,8 @@ const HELP = {
   misc: ["Miscellaneous Notes", "<p>Under <b>Planning ▾</b>. A scratch sheet for your department's planners: to-do lists, phone numbers, ideas. Only your department sees it here; other departments and the Ops Room don't. It is saved in a hidden <b>Misc Notes</b> sheet of your own Excel file (anyone who opens the file in Excel and unhides the sheet can still read it, so keep personal data out).</p>" +
     "<ul><li>Click a cell and type. <b>Enter</b> = down, <b>Tab</b> = right, arrows move, <b>Shift</b> + arrows or drag to pick several cells. <b>F2</b> or double-click edits the text in the cell. <b>Alt+Enter</b> = a new line inside the cell.</li>" +
     "<li><b>Delete</b> clears the picked cells. <b>Ctrl+C</b>, <b>Ctrl+X</b>, <b>Ctrl+V</b> copy and paste, also a block copied from Excel.</li>" +
-    "<li><b>Bold</b> (Ctrl+B) and <b>Wrap</b> work on the picked cells. Drag the edge of a column letter to make it wider. <b>+ 20 rows</b> adds rows; <b>Clear sheet…</b> empties it.</li>" +
+    "<li>The toolbar works on the picked cells, as in Excel: <b>font size</b>, <b>B</b> bold (Ctrl+B), <i>I</i> italic (Ctrl+I), <u>U</u> underline (Ctrl+U), <s>S</s> strikethrough, <b>text colour</b> and <b>fill colour</b> (click the button for the colour shown, ▾ to pick another), <b>Borders</b> (all, outside, thick outside, bottom, none), <b>Left / Centre / Right</b>, <b>Merge</b> (merged and centred; Merge on a merged cell unmerges it) and <b>Wrap</b>. <b>🖌 Painter</b> copies the look of the cell you are on: then pick the cells to paint (Escape cancels).</li>" +
+    "<li>Drag the edge of a column letter to make it wider. <b>+ 20 rows</b> adds rows; <b>Clear sheet…</b> empties it (text and formatting).</li>" +
     "<li>Yellow = changed, not saved yet. <b>Save to Excel</b> as usual; Undo works. The Change Log only says how many cells changed, never the text.</li></ul>"],
   syl: ["Syllabus Tracking", "<p>Under <b>Planning ▾</b>. Each of your department's crew as a skill tree: the stages along the top (OCU, CAT D, CAT C, CAT B, CAT A), and under the stage they are working on the <b>Sim track</b> and <b>Flight track</b> side by side, then the <b>Check</b> once both tracks are passed. Click a stage to look at it, and click an item to see its attempts.</p>" +
     "<p><b>Chances are per item</b>: every item has the default number of chances from the Syllabus Settings sheet, unless the item sets its own. Fails before the first pass use up chances; at 0 left the item shows ⛔ out of chances. Nothing is blocked: it is a flag for the chain of command.</p>" +

@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 5 Nov 2026 (z179). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 6 Nov 2026 (z180). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -249,3 +249,5 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] My Lodestar recognises crew whose roster name starts with any Crew Roster rank, WOSE ranks included (z178, 5 Nov; Brandon sets ranks on the Crew Roster page) (awaiting his test)
 - [ ] Rebuild the repo demo xlsx with the fixed builder: not yet (Brandon, 5 Nov)
 - [?] AFP export from the Ops Room (z179, 5 Nov, Brandon): ⇩ Export AFP on the Ops Room fills the squadron AFP format (sheet "121", built into the dashboard, no CO details) for the day on screen and downloads it. Decided: names Rank Name (CAT); SXO and OPS O / SDO box line 1 = AM, 2 = PM, 3 = NIGHT; standby P1 = AM SAL, P2 = PM SAL, BU = BU, no alert timing; no MC / CRMO; brief time in the flight REMARKS; IN TIME always 0900H; Prepared by the SDO, Vetted by the OPS O; Planned = Master Planner, Tasked = Ops Room board; Mission = Mission Type; Simulator = crew planned on SIM; CO name and number typed once (kept in the Ops Room file). Awaiting his test in desktop Excel
+- [?] Misc Notes formatting (z180, 6 Nov, Brandon): format painter, font size, bold / italic / underline / strikethrough, text and fill colour, borders (all, outside, thick outside, bottom, none), align left / centre / right, merge and unmerge, wrap; saved as real Excel formatting in the hidden sheet (awaiting his test)
+- [x] Syllabus (6 Nov, Brandon): SUP 1, SUP 2 and TACCO share the same syllabus; Pilot and Loadmaster start empty (builder; in the fresh intranet set)

@@ -1,3 +1,4 @@
+import os
 import sys, calendar, datetime as dt
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -66,6 +67,7 @@ MTYPE = {"FLT-1.5": "GEN", "FLT-2.0": "GEN", "FLT-3.0": "GEN", "NVG-2.0": "NIGHT
 DAY_STATUS = ["No Flying", "Stand-down", "Maintenance", "Public Holiday"]
 import realdata
 REAL = realdata.ON   # real squadron data from LODESTAR_Data_Input.xlsx
+FRESH = REAL or bool(os.environ.get("LODESTAR_CREWLIST"))   # crew list build (z186): no sample plans, notes, requests or Ops Room rows either
 if REAL:
     CATALOG = [(c["code"], c["desc"], c["crew"]) for c in realdata.FLIGHT_CODES]
     MTYPE = {c["code"]: c["mtype"] or None for c in realdata.FLIGHT_CODES}
@@ -197,7 +199,7 @@ for i in range(NRQ):
     for c in range(1, 7):
         cell = rq.cell(r, c); cell.border = BOX; cell.fill = fill("FFFBEB"); cell.font = f(c == 3, "1D4ED8")
     rq.cell(r, 5).number_format = "dd mmm yyyy"; rq.cell(r, 2).number_format = "@"
-for c, v in enumerate([] if REAL else ["SUP 2", "S2-SAMPLE2", "Declined", "Range is booked 0800-1000, keep 0830", dt.date(YEAR, 10, 2), "Raised Thu, 1 Oct: Can Friday's AM flight start 0900 instead? Ground school runs late"], start=1): rq.cell(6, c, v)
+for c, v in enumerate([] if FRESH else ["SUP 2", "S2-SAMPLE2", "Declined", "Range is booked 0800-1000, keep 0830", dt.date(YEAR, 10, 2), "Raised Thu, 1 Oct: Can Friday's AM flight start 0900 instead? Ground school runs late"], start=1): rq.cell(6, c, v)
 for col, w in zip("ABCDEF", [12, 16, 11, 44, 14, 50]): rq.column_dimensions[col].width = w
 dv = DataValidation(type="list", formula1='"Done,Declined"', allow_blank=True); dv.add(f"C6:C{5 + NRQ}"); rq.add_data_validation(dv)
 rq.freeze_panes = "A6"; rq.sheet_properties.tabColor = "D97706"

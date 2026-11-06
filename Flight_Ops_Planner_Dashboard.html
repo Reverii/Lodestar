@@ -1234,7 +1234,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z185</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z186</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1849,7 +1849,7 @@ function loadWorkbook(buf, name, handle, other) {
   // 6 categories in older files (a note follows after one blank row), up to 9 since the activities list of 2026-10-21
   for (let i = 0; i < MAX_CATS; i++) { const v = str(ac["G" + (6 + i)]); if (!v) break; st.cats.push(v); }
   for (let i = 0; i < 30; i++) { const v = ac["I" + (6 + i)]; if (typeof v === "number") st.hols.push({ d: serialToISO(v), n: str(ac["J" + (6 + i)]) }); }
-  { const j = readCells(MONTHS[0]); if (/^GROUND/i.test(str(j.A24))) { st.g0 = 27; st.gndRow = 24; } }
+  { const j = readCells(MONTHS[0]); if (/^(GROUND|SQUADRON) PROGRAMME/i.test(str(j.A24))) { st.g0 = 27; st.gndRow = 24; } }   // z186: the label is SQUADRON PROGRAMME in files built after z184
   { const z = WB.paths["Dashboard"] ? str(readCells("Dashboard").Z2) : "", zm = /layout\s+(\d+)/i.exec(z); st.rp = zm && +zm[1] >= 3 ? 4 : 3; }   // 4 rows per person from layout 3 (WD), else 3
   st.nx = !!WB.paths[MON_NX];
   for (let mi = 0; mi < NMON; mi++) {
@@ -3357,7 +3357,7 @@ function layoutCheck(st) {
   if (kind === "dept") {
     if (st.cats.length < MAX_CATS) miss.push("the 9 activity categories (has " + st.cats.length + ")");
     if (!st.duty.BDO) miss.push("BDO Plan sheet");
-    if (!st.gndRow) miss.push("GROUND PROGRAMME row on the month tabs");
+    if (!st.gndRow) miss.push("SQUADRON PROGRAMME row on the month tabs");
     if (!(st.rcols && st.rcols.ini)) miss.push("Initials column on the Roster");
     if (!st.hasNotes) miss.push("Cell Notes sheet");
     if (!st.hasCur) miss.push("Currency sheets");
@@ -6793,7 +6793,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z185 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z186 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7314,7 +7314,7 @@ function blkGo0() {
 function mePeople() { const out = []; books.forEach((b, bi) => { if (!isDept(b)) return; b.S.roster.forEach((p, i) => { if (p.name || p.id) out.push({ bi, i, p, dept: b.S.dept }); }); }); return out; }
 // ---------- My Lodestar: a read-only personal home page (spec: docs/superpowers/specs/2026-10-25-my-lodestar-design.md). Never calls put().
 // Who am I: the SharePoint sign-in name is matched to exactly one roster name (rank, case and word order ignored); else a remembered pick; else a list.
-const LODE_RANKS = new Set("maj cpt lta ltc col me1 me2 me3 me4 me5 2lt 1wo 2wo 3wo msg ssg 3sg 2sg 1sg ms1 ms2 ms3 ns".split(" "));   // z178: every rank the Crew Roster offers (RANKS) is skipped too
+const LODE_RANKS = new Set("maj cpt lta ltc col sltc mwo me1 me2 me3 me4 me5 2lt 1wo 2wo 3wo msg ssg 3sg 2sg 1sg ms1 ms2 ms3 ns".split(" "));   // z178: every rank the Crew Roster offers (RANKS) is skipped too
 const lodeKey = name => String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(w => w && !LODE_RANKS.has(w) && !RANKS.includes(w.toUpperCase())).sort();
 const lodeId = p => p.id && !/^nil$/i.test(p.id) ? p.id : p.name;   // NIL = no callsign: known by name
 const lodeFind = (dept, id) => mePeople().find(x => same(x.dept, dept) && same(lodeId(x.p), id)) || null;
@@ -7829,7 +7829,7 @@ const HELP = {
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
-    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b>, <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview), <b>Transfer to SANS / NSMEN / regular crew</b> (they go after the last person of that group, take an empty row there and get that Status; Active for regular crew) and <b>Remove crew…</b> (asks first; clears their roster row, plans, Personnel Info, Currency, comments and AC / Pax tags, and the crew below move up; syllabus results and medical chits stay). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; <b>+ Add rank…</b> at the bottom of the list adds a new one (you pick which rank it comes after, for sorting; it is kept in your file's Ranks sheet, and a rank nobody has can be taken off again there); Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
+    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b>, <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview), <b>Transfer to SANS / NSMEN / regular crew</b> (they go after the last person of that group, take an empty row there and get that Status; Active for regular crew) and <b>Remove crew…</b> (asks first; clears their roster row, plans, Personnel Info, Currency, comments and AC / Pax tags, and the crew below move up; syllabus results and medical chits stay). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; <b>+ Add rank…</b> at the bottom of the list adds a new one (you pick which rank it comes after, for sorting; it is kept in your file's Ranks sheet, and a rank nobody has can be taken off again there); Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: COL, SLTC, LTC, MAJ, CPT, LTA · MWO, 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
@@ -7945,7 +7945,8 @@ function rosterChange(e) {
 // in memory their cell comments and AC / Pax tags (those sheets name the callsign, so the sheets don't change). The two sections never mix: regular
 // crew (rows 1 to 45) and SANS / NSMEN (46 to 75; 46 to 60 in files before layout 5), where SANS and NSMEN are two groups by Status. The moved cells are written "quiet": the Change Log
 // gets one line per action ("Crew Roster: FALCON moved up") instead of hundreds of plan cells.
-const RANKS_BASE = ["LTC", "MAJ", "CPT", "LTA", "1WO", "2WO", "3WO", "MSG", "SSG", "1SG", "2SG", "3SG", "ME3", "ME2", "ME1"];   // one structure per department (Brandon, 4 Nov)
+const RANKS_BASE = ["COL", "SLTC", "LTC", "MAJ", "CPT", "LTA", "MWO", "1WO", "2WO", "3WO", "MSG", "SSG", "1SG", "2SG", "3SG", "ME3", "ME2", "ME1"];   // one structure per department (Brandon, 4 Nov); COL, SLTC, MWO from his crew list (z186)
+const RANKS_OFF = RANKS_BASE.slice(0, 6), RANKS_WOSE = RANKS_BASE.slice(6, 15), RANKS_ME = RANKS_BASE.slice(15);
 // z182: the full rank order = the built-in ranks plus the ranks added on the Crew Roster of every open department file, each after the rank it names
 let RANKS = RANKS_BASE.slice();
 function ranksRefresh() {
@@ -7968,7 +7969,7 @@ const ROS_SORTS = [["cat", "Cat Status, then rank"], ["rank", "Rank, then Cat St
 // the rank at the start of a name ("CPT (NS) Lee Kok Wai" -> CPT + "(NS) Lee Kok Wai"); a first word that is no known rank is part of the name
 const rankParts = n => { const t = String(n || "").trim(), m = /^(\S+)\s+(.*)$/.exec(t); return m && RANKS.includes(m[1].toUpperCase()) ? { rank: m[1].toUpperCase(), rest: m[2] } : RANKS.includes(t.toUpperCase()) ? { rank: t.toUpperCase(), rest: "" } : { rank: "", rest: t }; };
 // the ranks offered on the Crew Roster: the department's own structure (Pilot and TACCO officers, Loadmaster WOSE, SUP MEs), all of them elsewhere
-const rankList = () => { const d = String(S.dept || ""), base = /pilot|tacco/i.test(d) ? RANKS_BASE.slice(0, 4) : /load/i.test(d) ? RANKS_BASE.slice(4, 12) : /sup/i.test(d) ? RANKS_BASE.slice(12) : null;
+const rankList = () => { const d = String(S.dept || ""), base = /pilot|tacco/i.test(d) ? RANKS_OFF : /load/i.test(d) ? RANKS_WOSE : /sup/i.test(d) ? RANKS_ME : null;
   if (!base) return RANKS.slice(); const own = new Set((S.rk || []).map(x => x.rank)); return RANKS.filter(r => base.includes(r) || own.has(r)); };
 const rosCatIx = p => { const k = CREW_CATS.indexOf(String(p.cat || "").toUpperCase()); return k < 0 ? 9 : k; };
 function rosCmp(by) {

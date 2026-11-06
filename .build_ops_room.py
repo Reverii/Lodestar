@@ -1,3 +1,4 @@
+import os
 import sys, datetime as dt
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -62,12 +63,13 @@ for r in range(6, 6 + N):
     fc.cell(r, 28).alignment = Alignment(wrap_text=True, vertical="top"); fc.cell(r, 23).alignment = Alignment(wrap_text=True, vertical="top")
 import realdata
 REAL = realdata.ON   # real squadron data: no sample Ops Room rows
+FRESH = REAL or bool(os.environ.get("LODESTAR_CREWLIST"))   # crew list build (z186): no sample plans, notes, requests or Ops Room rows either
 TAILS = realdata.TAILS if REAL and realdata.TAILS else [str(t) for t in range(710, 719)]
-for k, (cs, tail) in enumerate(() if REAL else (("RICOH 1", "716"), ("RICOH 2", "712"))):
+for k, (cs, tail) in enumerate(() if FRESH else (("RICOH 1", "716"), ("RICOH 2", "712"))):
     r = 6 + k
     for c, v in enumerate([dt.date(YEAR, 10, 1), "AM", "2xFLT-2.0", "0830-1030", 1, k + 1, cs, tail], start=1): fc.cell(r, c, v)
     fc.cell(r, 16, "Area 1"); fc.cell(r, 31, "0730"); fc.cell(r, 27, ("714", "715")[k])
-if not REAL: fc.cell(6, 28, "Oscar 0840-0950\nEcho 0950-1010"); fc.cell(6, 29, "SUP 2: OWL"); fc.cell(6, 30, "OWL"); fc.cell(6, 21, "COBRA"); fc.cell(6, 22, "VIPER"); fc.cell(6, 23, "Formation brief 0730")
+if not FRESH: fc.cell(6, 28, "Oscar 0840-0950\nEcho 0950-1010"); fc.cell(6, 29, "SUP 2: OWL"); fc.cell(6, 30, "OWL"); fc.cell(6, 21, "COBRA"); fc.cell(6, 22, "VIPER"); fc.cell(6, 23, "Formation brief 0730")
 sv = DataValidation(type="list", formula1='"AM,PM,NIGHT"', allow_blank=True); sv.add(f"B6:B{5 + N}"); fc.add_data_validation(sv)
 # the squadron's aircraft (tails 710-718): actual tail (H) and standby tail (AA), picked in the Ops Room
 tv = DataValidation(type="list", formula1='"' + ",".join(TAILS) + '"', allow_blank=True); tv.add(f"H6:H{5 + N}"); tv.add(f"AA6:AA{5 + N}"); fc.add_data_validation(tv)
@@ -84,7 +86,7 @@ for k in range(nd):
     for j in range(2, len(DB_HEADS) + 1): db.cell(6 + k, j).border = BOX
 r = 6 + (dt.date(YEAR, 10, 1) - d0).days
 for j, v in enumerate([None, None, None, None, "CPT Lim", "ME2 Goh", "ME1 Ravi", "CPT Lee", "LTA Ng", "0700", "Oscar 1", "Echo 2", "Nov 3", "Alpha / Kilo", "Wx brief 0700. Range Area 1 NOTAM active 0800-1200."], start=2):
-    if v and not REAL: db.cell(r, j, v)
+    if v and not FRESH: db.cell(r, j, v)
 db.column_dimensions["A"].width = 18
 for j in range(2, len(DB_HEADS) + 1): db.column_dimensions[CL(j)].width = 12
 db.column_dimensions[CL(len(DB_HEADS) - 1)].width = 50; db.column_dimensions[CL(len(DB_HEADS))].width = 13

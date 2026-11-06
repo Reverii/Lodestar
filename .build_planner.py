@@ -142,6 +142,7 @@ header(roster, 5, 1, ["#", "Callsign", "Crew Member (with rank)", "Initials", "C
 import seedplan, realdata
 SAMPLE_CREW = seedplan.SAMPLE_CREW
 REAL = realdata.ON   # real squadron data from LODESTAR_Data_Input.xlsx: no sample plans, notes, requests or syllabus results
+FRESH = REAL or bool(os.environ.get("LODESTAR_CREWLIST"))   # crew list build (z186): no sample plans, notes, requests or Ops Room rows either
 # slot index -> crew tuple: regulars from the top, SANS / NSmen from row 51
 crew = {}
 _reg = [c for c in SAMPLE_CREW.get(DEPT, []) if c[4] not in ("SANS", "NSMEN")]
@@ -165,6 +166,7 @@ for i in range(N):
         ini_ = "".join(w[0] for w in nm_.replace("(NS)", "").split()[1:] if w[0].isalpha()).upper()   # sample initials from the name, skipping the rank
         if REAL: ini_ = _real[i]['ini'] or None
         if seedplan.ATOM_INI: ini_ = nm_   # names are the ATOM initials (no rank), so the initials are the same text
+        if (DEPT, nm_) in seedplan.CREWLIST_INI: ini_ = seedplan.CREWLIST_INI[(DEPT, nm_)]   # crew list: name = rank + initials
         for j, v in enumerate((cs_, nm_, ini_) + tuple(crew[i][2:])):
             roster.cell(r, 2 + j, v if v != "" else None)
         if REAL and _real[i]['rem']: roster.cell(r, 8, _real[i]['rem'])
@@ -172,7 +174,7 @@ for c in range(1, 9):
     roster.cell(SANS_ROW0, c).border = Border(left=thin, right=thin, top=Side(style="thick", color="7E22CE"), bottom=thin)
 roster.cell(SANS_ROW0 - 1, 10, "Regular crew above").font = f(False, SLATE500, 10, italic=True)
 roster.cell(SANS_ROW0, 10, "SANS / NSmen from here").font = f(True, "7E22CE", 9)
-if crew and not REAL:
+if crew and not FRESH:
     roster.cell(6, 8, "Sample crew: replace with your own")
 for col, w in zip("ABCDEFGHIJ", [5, 12, 28, 9, 11, 14, 10, 30, 2, 22]):
     roster.column_dimensions[col].width = w
@@ -223,7 +225,7 @@ dv.add(f"A6:A{5+NOTE_N}"); notes.add_data_validation(dv)
 if not NOFILTER: notes.auto_filter.ref = f"A5:G{5+NOTE_N}"
 notes.sheet_properties.tabColor = "7E22CE"
 name("NoteKey", f"'Cell Notes'!$G$6:$G${5+NOTE_N}")
-if DEPT == "SUP 2" and not REAL:
+if DEPT == "SUP 2" and not FRESH:
     for dd, sh, cs, tx in [(1, "AM", "VIPER", "Instructor for EAGLE"), (2, "NIGHT", "VIPER", "NVG currency check"), (5, "AM", "HAWK", "Lead, brief 0730")]:
         r = 6 + [(1, "AM", "VIPER"), (2, "NIGHT", "VIPER"), (5, "AM", "HAWK")].index((dd, sh, cs))
         notes.cell(r, 1, dt.date(YEAR, 10, dd)); notes.cell(r, 2, sh); notes.cell(r, 3, cs); notes.cell(r, 5, tx)
@@ -263,7 +265,7 @@ for i in range(REQ_N):
     for c in range(1, 8):
         cell = req.cell(r, c); cell.border = BOX; cell.fill = INPUT_FILL; cell.font = INPUT_FONT
     req.cell(r, 2).number_format = "ddd dd mmm yyyy"; req.cell(r, 7).number_format = "dd mmm yyyy"; req.cell(r, 1).number_format = "@"
-if DEPT == "SUP 2" and not REAL:
+if DEPT == "SUP 2" and not FRESH:
     for i, v in enumerate([("S2-SAMPLE1", None, None, None, None, "OWL needs a second sortie for Flight 3 next week, any PM", dt.date(YEAR, 10, 2)),
                            ("S2-SAMPLE2", None, None, None, None, "Can Friday's AM flight start 0900 instead? Ground school runs late", dt.date(YEAR, 10, 1))]):
         for c, x in enumerate(v, start=1):
@@ -303,7 +305,7 @@ if True:
         *[(D(5 + k // 3, 5 + 7 * (k % 3)), "RAPTOR", c, "Pass", "VIPER", "Check passed. Paperwork to the CO" if c.endswith("FLTCHK") else "") for k, c in enumerate(["S2-A-SIM1", "S2-A-SIM2", "S2-A-SIM3", "S2-A-SIMCHK", "S2-A-FLT1", "S2-A-FLT2", "S2-A-FLT3", "S2-A-FLTCHK"])],
         (D(10, 27), "OWL", O + "FLT2", "Planned", "", "", None, "NIGHT"),   # linked to OWL's NIGHT flight (NVG-2.0) on 27 Oct
     ]
-    for i, v in enumerate([] if REAL else SAMPLE):
+    for i, v in enumerate([] if FRESH else SAMPLE):
         for c, x in enumerate(v, start=1):
             if x != "": syl.cell(6 + i, c, x)
     syl.freeze_panes = "A6"
@@ -653,7 +655,7 @@ if HAS_CUR:
         for k in range(CUR_RULES):
             c0 = 4 + 2 * k
             x = cur.cell(r, c0); x.fill = INPUT_FILL; x.font = INPUT_FONT; x.number_format = "dd-mmm-yy"; x.border = BOX; x.alignment = CENTER
-            if k in base.get(i, {}) and not REAL: x.value = dt.date.fromisoformat(base[i][k])
+            if k in base.get(i, {}) and not FRESH: x.value = dt.date.fromisoformat(base[i][k])
             y = cur.cell(r, c0 + 1); y.border = BOX; y.font = f(False, SLATE700, 9); y.alignment = Alignment(horizontal="left", vertical="center", indent=1, shrink_to_fit=True)
         for c in range(1, 4): cur.cell(r, c).border = BOX
         if is_sans(i):
@@ -1277,8 +1279,8 @@ lines = [
     ("Flights: one per Flight-category cell, so flying AM and NIGHT on the same day is 2 flights. Planned flying hours are shown by the dashboard, from each flight's time range on the Master Planner (Excel does not total them).", None),
     ("Gnd Duty, SDO and Leave are counted in days. A day counts once if any of AM, PM or NIGHT has that category, so a 24h SDO filled into all three rows is 1 SDO.", None),
     ("", None),
-    ("NEW YEAR" if REAL else "SAMPLE DATA", "h"),
-    *([] if REAL else [("The crew, October entries and October SDO days are samples. Clear them (select the cells and press Delete) before real use.", None)]),
+    ("NEW YEAR" if FRESH else "SAMPLE DATA", "h"),
+    *([] if FRESH else [("The crew, October entries and October SDO days are samples. Clear them (select the cells and press Delete) before real use.", None)]),
     ("New year: in the dashboard Ops Room, Master Planner menu > Start new year. It archives this year's files and moves every file to the next year (crew, activities, currency dates and open down-chits carry over).", None),
 ]
 for i, (t, kind) in enumerate(lines):

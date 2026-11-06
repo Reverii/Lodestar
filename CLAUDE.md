@@ -96,6 +96,8 @@ python3 .lodestar_build.py excel ../lodestar_rebuild --data input/LODESTAR_Data_
 python3 .lodestar_build.py excel ../lodestar_rebuild --data input/LODESTAR_Data_Input.xlsx --only sup2  # sup2,others,master,duty,ops
 ```
 
+Crew list build (z186): `LODESTAR_CREWLIST=<filled crew list xlsx> LODESTAR_ATOM=<ATOM export> python3 .lodestar_build.py excel <folder>` makes a fresh set with that crew (rank + initials, callsigns, statuses, CAT / role from ATOM), demo codes and empty plans; builder for the list: `templates/.build_crew_input.py <out> [<ATOM export>]`.
+
 Without `--data` the builders produce the demo set (sample crew, demo flights Oct-Nov). The driver refuses to write the
 Excel files into this folder.
 
@@ -113,7 +115,7 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 5`. The dashboard has
   `const LAYOUT = { dept: 5, master: 3, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
   lower or missing = checked sheet by sheet and listed as "older layout". Bump both sides together when cells move.
-- Dashboard version string: `Dashboard version 2026-11-06 z185` (two places in `.dashboard_source.html`: `#wDiag` and
+- Dashboard version string: `Dashboard version 2026-11-07 z186` (two places in `.dashboard_source.html`: `#wDiag` and
   `spDiag`). Bump the `zNN` number on each change you ship so Brandon can tell builds apart.
 
 ## Key cell layout (department file; full detail in the builders and dashboard constants)

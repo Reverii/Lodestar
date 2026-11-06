@@ -241,6 +241,42 @@ def plan(dept):
     _plans[dept] = P
     return P
 
+# Opt-in (env LODESTAR_CREWLIST=<LODESTAR_Crew_Initials_Input.xlsx>, Brandon 7 Nov): the crew from his filled crew list (Department, Initials,
+# ATOM status, Rank, Callsign, Status, Remarks from row 5). Name = "RANK INITIALS", Initials = the ATOM initials, callsign "-" = none,
+# Remarks containing REMOVE = left out. CAT and Role come from the ATOM export when LODESTAR_ATOM is also set (OCU = TRAINEE; an Instructor CAT = Instructor).
+# Empty plans, flights and duty days (a fresh set); the demo flight codes and activities stay. SANS before NSMEN in the bottom section.
+CREWLIST_INI = {}
+if os.environ.get("LODESTAR_CREWLIST"):
+    import openpyxl
+    _ac = {}
+    if os.environ.get("LODESTAR_ATOM"):
+        _sh = {"PILOT": "Pilot", "ACS": "Loadmaster", "TACCO": "TACCO", "SUP1": "SUP 1", "SUP2": "SUP 2"}
+        _wa = openpyxl.load_workbook(os.environ["LODESTAR_ATOM"], read_only=True, data_only=True)
+        for sn, dept in _sh.items():
+            if sn not in _wa.sheetnames: continue
+            for r in _wa[sn].iter_rows(min_row=3, max_col=4, values_only=True):
+                nm = " ".join(str(r[1] or "").split()).upper()
+                if not nm: continue
+                cat = str(r[2] or "").strip().upper(); cat = "TRAINEE" if cat == "OCU" else "CAT " + cat if cat in ("A", "B", "C", "D") else ""
+                role = "Instructor" if str(r[3] or "").strip() else "Senior CAT A" if cat in ("CAT A", "CAT B") else "Junior" if cat else ""
+                _ac[(dept, nm)] = (cat, role)
+    _wl = openpyxl.load_workbook(os.environ["LODESTAR_CREWLIST"], data_only=True)["Crew List"]
+    _by = {d: [] for d in DEPTS}
+    for r in _wl.iter_rows(min_row=5, max_col=7, values_only=True):
+        dep, ini, _ast, rank, cs, st, rem = (" ".join(str(v).split()) if v is not None else "" for v in r)
+        if dep not in _by or not ini or "REMOVE" in rem.upper(): continue
+        cs = "" if cs in ("-", "NIL", "N/A", "NA") else cs.upper()
+        st = {"NSMEN": "NSMEN", "NS": "NSMEN", "SANS": "SANS", "INACTIVE": "Inactive"}.get(st.upper(), "Active")
+        nm = (rank.upper() + " " + ini.upper()).strip()
+        cat, role = _ac.get((dep, ini.upper()), ("", ""))
+        _by[dep].append((cs, nm, cat, role, st)); CREWLIST_INI[(dep, nm)] = ini.upper()
+    SAMPLE_CREW = {d: [c for c in L if c[4] not in ("SANS", "NSMEN")] + [c for c in L if c[4] == "SANS"] + [c for c in L if c[4] == "NSMEN"] for d, L in _by.items()}
+    SDO_CREW, BDO_CREW = [], []
+    STATUS = {k: v for k, v in STATUS.items() if v == "Public Holiday"}
+    FLIGHTS, GROUND, FIXED = [], [], []
+    DUTY = {"SDO": {}, "BDO": {}}
+    def plan(dept): return {}
+
 # real squadron data (LODESTAR_Data_Input.xlsx via LODESTAR_INPUT): the real crew and duty lists, and no sample plans, flights or duty days
 import realdata
 if realdata.ON:

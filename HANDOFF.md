@@ -3,6 +3,13 @@
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
+## z186 (7 Nov, Brandon sent his filled crew list; chose "New files with this data")
+- **New file set built from his crew list** (not in the repo: real crew): `LODESTAR_CREWLIST=<filled LODESTAR_Crew_Initials_Input.xlsx> LODESTAR_ATOM=<ATOM export> python3 .lodestar_build.py excel <folder>`. `.seedplan.py`: crew from the list (Name = "RANK INITIALS", Initials = ATOM initials, callsign "-" = none, Remarks with REMOVE left out; SANS before NSMEN in the bottom section; CAT and Role from ATOM: OCU = TRAINEE, an Instructor CAT = Instructor, else CAT A / B = Senior CAT A, else Junior), empty plans, flights, duty days, no sample notes / requests / Ops Room rows (`FRESH` in the builders), demo flight codes and activities kept, public holidays kept, SDO / BDO duty crew lists empty. 96 people (101 minus 5 REMOVE): Pilot 42, Loadmaster 18, TACCO 14, SUP 2 12, SUP 1 10. Layout 5.
+- **Ranks:** COL, SLTC (officers, above LTC) and MWO (above 1WO) built in (`RANKS_BASE`, `RANKS_OFF` / `RANKS_WOSE` / `RANKS_ME` for the per-department lists).
+- **Bug fixed:** z184 renamed the builder's row 24 label to SQUADRON PROGRAMME, but the dashboard found that row by a label starting with GROUND, so files built after z184 would have been read one row off (crew grid from 26 instead of 27). Now both labels are accepted. No file built between z184 and z186 was handed out.
+- Tests: roster_order 23/23 (rank indices updated), wd_row 19/19 on the new set, alert_fr_rows 7/7, other_depts 10/10, role_tags 15/15.
+- Upload: the DEV dashboard plus all eight new xlsx together (they replace the live set: plans start empty).
+
 ## z185 (6 Nov, Brandon: "make the row smaller ... maintain the total thickness"; "Alert status is decided by master planner, some weeks we are AL90, some weeks we are AL2")
 - Slim rows: SQUADRON PROGRAMME 24 px (two lines, 9.5 px text), ALERT and FLYING RESTRICTION 14 px, DUTY DAYS 16 px. The four rows take about 61 px, less than the two rows before z184 (34 + 30).
 - ALERT row = the **alert state** (AL90, AL2, ...) set by the Master Planner; repeated days lighter, Monday bold again. Tooltip: state, dates, and the P1 / P2 / BU crew in the open plans. "Master Planner not open" on the right when it is not.

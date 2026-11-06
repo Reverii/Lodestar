@@ -97,7 +97,7 @@ test("sort_by_rank_then_cat", async ({ page }) => {
 });
 test("rank_order_officers_wose_mes", async ({ page }) => {
   const r = await page.evaluate(() => ["LTC A", "MAJ B", "CPT C", "LTA D", "1WO E", "3SG F", "ME3 G", "ME1 H", "CPT (NS) I", "MR J"].map(n => rankOf({ name: n })));
-  assert.deepStrictEqual(r, [0, 1, 2, 3, 4, 11, 12, 14, 2, 99]);
+  assert.deepStrictEqual(r, [2, 3, 4, 5, 7, 14, 15, 17, 4, 99]);   // z186: COL and SLTC above LTC, MWO above 1WO
 });
 test("sans_and_nsmen_are_two_groups", async ({ page }) => {
   await openRoster(page);

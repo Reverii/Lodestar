@@ -700,6 +700,7 @@ table.opsseat td.miss{background:#fef2f2}
 .opsmiss{color:var(--red);font-weight:700;font-size:12px}
 .opswarn{color:#b45309;font-weight:700}
 .osyl{display:block;width:max-content;margin:2px auto 0;font-size:10px;font-weight:800;line-height:1.25;padding:0 5px;border-radius:4px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d}.oxt .osyl{display:inline-block;margin:0 0 0 3px}
+tr.roff td{opacity:.55}tr.roff input,tr.roff select{text-decoration:line-through}tr.roff td.n{opacity:1}.offtag{display:inline-block;margin-left:4px;font-style:normal;font-size:9px;font-weight:800;color:#fff;background:#64748b;border-radius:3px;padding:0 4px;vertical-align:middle}
 .onoter{font-weight:700;color:#1e3a8a;background:#eff6ff;border-left:3px solid #2563eb;border-radius:3px;padding:1px 5px;margin-bottom:2px;text-align:left;white-space:normal}tr.cxl .onoter{background:#f1f5f9;color:#64748b;border-left-color:#94a3b8}
 .osylr{font-weight:700;color:#92400e;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:3px;padding:1px 5px;margin-bottom:2px}tr.cxl .osyl,tr.cxl .osylr{background:#f1f5f9;color:#64748b;border-color:#cbd5e1}
 .opsb{font-style:normal;font-size:10px;font-weight:800;border-radius:4px;padding:1px 5px;color:#fff}
@@ -1245,7 +1246,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z188</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z189</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1936,7 +1937,7 @@ function loadWorkbook(buf, name, handle, other) {
   if (st.hasCur) {
     const cr = readCells("Currency Rules"), cb = readCells("Currency");
     for (let k = 0; k < CUR_N; k++) { const r = CUR_ROW0 + k;
-      st.rules.push({ name: str(cr["A" + r]), applies: str(cr["B" + r]), who: str(cr["C" + r]), counts: str(cr["D" + r]), which: str(cr["E" + r]), win: num(cr["F" + r]), min: num(cr["G" + r]), warn: num(cr["H" + r]), note: str(cr["I" + r]) }); }
+      st.rules.push({ name: str(cr["A" + r]), applies: str(cr["B" + r]), who: str(cr["C" + r]), counts: str(cr["D" + r]), which: str(cr["E" + r]), win: num(cr["F" + r]), min: num(cr["G" + r]), warn: num(cr["H" + r]), note: str(cr["I" + r]), off: /^off$/i.test(str(cr["J" + r]).trim()) }); }   // z189: J = Off (switched off, kept)
     for (let i = 0; i < st.n; i++) { const row = []; for (let k = 0; k < CUR_N; k++) { const v = cb[colL(4 + 2 * k) + (CUR_ROW0 + i)]; row.push(typeof v === "number" ? Math.floor(v) : null); } st.curBase.push(row); }
   }
   const added = addBook(st, other, name, handle);
@@ -3103,8 +3104,8 @@ function readMaster(name) {   // (the Crew Matrix sheet is read at the end)
   // layout 3: A Code, B Description, C Crew, D Mission Type, E Syllabus tag. Older files: C Sorties, D Flight Hrs, E Crew, F Mission Type, H Syllabus tag
   const oldFc = /sorties/i.test(str(fc.C5));
   for (let i = 0; i < FC_N; i++) { const r = 6 + i;
-    st.codeAll.push(oldFc ? { row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), sort: num(fc["C" + r]), hrs: num(fc["D" + r]), crew: str(fc["E" + r]), mtype: str(fc["F" + r]), stag: str(fc["H" + r]) }
-      : { row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), crew: str(fc["C" + r]), mtype: str(fc["D" + r]), stag: str(fc["E" + r]) }); }
+    st.codeAll.push(oldFc ? { row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), sort: num(fc["C" + r]), hrs: num(fc["D" + r]), crew: str(fc["E" + r]), mtype: str(fc["F" + r]), stag: str(fc["H" + r]), off: /^off$/i.test(str(fc["I" + r]).trim()) }
+      : { row: r, code: str(fc["A" + r]), desc: str(fc["B" + r]), crew: str(fc["C" + r]), mtype: str(fc["D" + r]), stag: str(fc["E" + r]), off: /^off$/i.test(str(fc["F" + r]).trim()) }); }   // z189: F (older files I) = Off
   st.fcOld = oldFc; st.hasStag = /syllabus/i.test(str(oldFc ? fc.H5 : fc.E5));
   mkCodes(st);
   st.statuses = []; for (let i = 0; i < 12; i++) { const v = str(fc["G" + (6 + i)]); if (v) st.statuses.push(v); }
@@ -3940,7 +3941,7 @@ const CUR_APPLIES = ["All", "Role", "Cat Status", "Status", "Callsigns"], CUR_CO
 const curList = v => String(v || "").split(/[,;\n]+/).map(x => x.trim().toUpperCase()).filter(Boolean);
 const curToday = () => { const t = window.CUR_TODAY ? new Date(window.CUR_TODAY + "T00:00:00") : new Date(); return dateSerial(t.getFullYear(), t.getMonth(), t.getDate() - 1); };
 const serShort = n => { const d = new Date(Date.UTC(1899, 11, 30) + n * 86400000); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + (d.getUTCFullYear() !== S.year ? " " + d.getUTCFullYear() : ""); };
-const ruleOn = R => R && R.name && R.win > 0;
+const ruleOn = R => R && R.name && R.win > 0 && !R.off;   // z189: a rule switched off (Currency Rules J = Off) is kept but never checked
 function ruleApplies(R, p) {
   const m = (R.applies || "All").toLowerCase(), L = curList(R.who);
   if (m === "all" || !m) return true;
@@ -4299,7 +4300,7 @@ function renderMp() {
     else p += "<input " + key + " data-f='code' class='cbx" + (f.code ? " set" : "") + "' list='fcList' value='" + esc(cur.mpNew && cur.mpNew.row === f.row ? cur.mpNew.code : f.code) + "' placeholder='Flight code…' title='Pick a code or type a new one' autocomplete='off'>" + (cur.mpNew && cur.mpNew.row === f.row ? ncPanel(P, cur.mpNew) : "") + "<input " + key + " data-f='time' value='" + esc(normTime(f.time)) + "' placeholder='Time, e.g. 0830H-1030H' title='The start time sets the shift: before 1200 AM, before 1800 PM, then NIGHT'>" + (P.fcOld ? "" : "<input " + key + " data-f='sort' class='sorb' type='number' min='1' max='9' value='" + (flSort(f) > 1 ? flSort(f) : "") + "' placeholder='Sorties (1)' title='How many sorties this flight is split into (a running change is 2 or 3). Blank = 1.'>") + facts + tags + "<input " + key + " data-f='note' class='nt' value='" + esc(f.note) + "' placeholder='Comment'>";
     p += "</div></div>";
   }
-  if (!lock) p += "<datalist id='fcList'>" + P.codes.map(k => "<option value='" + esc(k.code) + "'>" + esc(k.crew || "all crew") + "</option>").join("") + "</datalist><datalist id='mtList'>" + [...new Set(P.codes.map(k => k.mtype).filter(Boolean))].map(m => "<option value='" + esc(m) + "'>").join("") + "</datalist>";
+  if (!lock) p += "<datalist id='fcList'>" + P.codes.filter(k => !k.off).map(k => "<option value='" + esc(k.code) + "'>" + esc(k.crew || "all crew") + "</option>").join("") + "</datalist><datalist id='mtList'>" + [...new Set(P.codes.map(k => k.mtype).filter(Boolean))].map(m => "<option value='" + esc(m) + "'>").join("") + "</datalist>";
   if (!lock && !sOff) p += "<button class='addb' data-add='" + sd + "'>+ Add flight</button><div class='hint'>The time sets the shift: before 1200 AM, before 1800 PM, then NIGHT. Type a new flight code to create it. Crew comes from the flight code (faded chips); click one to change it for this flight.</div>";
   // ground programme for the office (also on no-flying days)
   if (P.hasGr) {
@@ -4641,6 +4642,7 @@ $("mpWrap").addEventListener("change", e => {
   if (k === "code") {
     const S = books[mpIdx()].S, hit = S.codes.find(c => codeKey(c.code) === codeKey(v));
     if (v && !hit) { cur.mpNew = { row: +el.dataset.row, code: v, crew: [], mtype: "", desc: "" }; renderMp(); return; }
+    if (hit && hit.off) { toast(hit.code + " is switched off on Flight Codes. Switch it on there (right-click its row) to use it again.", 5000); renderMp(); return; }   // z189
     cur.mpNew = null;
     withBook(mpIdx(), () => { const f = flByRow(+el.dataset.row); if (f) { f.code = hit ? hit.code : ""; put("Flights", FL_COLS.code + f.row, f.code); } });
     renderMp(); renderPlanner(); return;
@@ -4664,7 +4666,7 @@ function renderCodes() {
   C.forEach(k => addT(k.stag)); tagOpts.sort((x, y) => x.toLowerCase() < y.toLowerCase() ? -1 : 1);
   const stagSel = i => "<select data-fc='" + i + "' data-f='stag'" + (str(C[i].stag) ? "" : " style='color:var(--s400)'") + (ed ? "" : " disabled") + "><option value=''>none</option>" + tagOpts.map(t => "<option" + (same(t, C[i].stag) ? " selected" : "") + ">" + esc(t) + "</option>").join("") + "</select>";
   let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only syllabus items whose Track or Description contains this (a comma list = any)'>Syllabus tag</th>" : "") + "</tr>";
-  for (let i = 0; i < show; i++) h += "<tr><td class='n'>" + (i + 1) + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td>" + (P.hasStag ? "<td>" + stagSel(i) + "</td>" : "") + "</tr>";
+  for (let i = 0; i < show; i++) h += "<tr data-fr='" + i + "'" + (C[i].off ? " class='roff' title='Switched off: not offered for new flights; flights already planned keep it. Right-click to switch it on.'" : "") + "><td class='n'>" + (i + 1) + (C[i].off ? "<i class='offtag'>OFF</i>" : "") + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td>" + (P.hasStag ? "<td>" + stagSel(i) + "</td>" : "") + "</tr>";
   $("codeTable").innerHTML = h;
   const gap = C.findIndex(k => !k.code), last = lastFilled(C, k => k.code), seen = {}, dups = [];
   C.forEach(k => { if (!k.code) return; const u = k.code.toUpperCase(); if (seen[u]) dups.push(k.code); seen[u] = 1; });
@@ -4683,6 +4685,40 @@ $("codeTable").addEventListener("change", e => {
     k[f] = v; put("Flight Codes", COL[f] + k.row, v == null ? "" : v); mkCodes(S);
   });
   renderCodes(); renderMp(); renderActs(); renderPlanner();
+});
+// z189: right-click a flight code: Switch off / on (kept; not offered for new flights, planned flights keep it and still count) and Remove
+// (only when no flight of the plan year uses it: Master Planner Flights or Ops Add; the codes below move up a row so the list has no gap)
+function fcUses(code) {
+  const P = books[mpIdx()].S, ob = books.find(b => b.S.kind === "ops"), n = P.fl.filter(f => f.code && codeKey(f.code) === codeKey(code)).length;
+  return n + (ob && ob.S.oa ? ob.S.oa.filter(f => f.code && codeKey(f.code) === codeKey(code)).length : 0);
+}
+function fcOffCol() { return books[mpIdx()].S.fcOld ? "I" : "F"; }
+function fcOff(i, off) {
+  withBook(mpIdx(), () => { const k = S.codeAll[i], L = fcOffCol(), note = "Flight Codes: " + k.code + (off ? " switched off" : " switched on"); k.off = off;
+    if (off && !str(readCells("Flight Codes")[L + "5"])) rosQuiet("Flight Codes", L + "5", "Off", note);   // a heading over the column the first time
+    rosQuiet("Flight Codes", L + k.row, off ? "Off" : "", note); mkCodes(S);
+    toast(k.code + (off ? " switched off. Flights already planned keep it; it is not offered for new flights." : " switched on."), 4000); });
+  renderCodes(); renderMp(); renderCmx();
+}
+function fcRemove(i) {
+  const bi = mpIdx(), P = books[bi].S, k = P.codeAll[i], n = fcUses(k.code);
+  if (n) { alert(k.code + " is used by " + n + " flight" + (n === 1 ? "" : "s") + " this year, so it can't be removed. Switch it off instead: it stays on those flights and is not offered for new ones."); return; }
+  if (!confirm("Remove the flight code " + k.code + "?\n\nNo flight uses it. The codes below it move up one row. Departments keep their own copy in Activities, as with any code you stop using.")) return;
+  withBook(bi, () => {
+    const COL = S.fcOld ? { code: "A", desc: "B", sort: "C", hrs: "D", crew: "E", mtype: "F", stag: "H", off: "I" } : { code: "A", desc: "B", crew: "C", mtype: "D", stag: "E", off: "F" }, F = Object.keys(COL), note = "Flight Codes: " + k.code + " removed";
+    const last = lastFilled(S.codeAll, x => x.code || x.desc);
+    for (let j = i; j <= last; j++) { const nx = S.codeAll[j + 1] || {}, row = S.codeAll[j].row;
+      F.forEach(f => { const v = j + 1 <= last ? (f === "off" ? (nx.off ? "Off" : "") : nx[f]) : ""; rosQuiet("Flight Codes", COL[f] + row, v == null ? "" : v, note); });
+      Object.assign(S.codeAll[j], j + 1 <= last ? { code: nx.code || "", desc: nx.desc || "", crew: nx.crew || "", mtype: nx.mtype || "", stag: nx.stag || "", sort: nx.sort, hrs: nx.hrs, off: !!nx.off } : { code: "", desc: "", crew: "", mtype: "", stag: "", sort: null, hrs: null, off: false }); }
+    mkCodes(S);
+  });
+  renderCodes(); renderMp(); renderCmx(); renderPlanner();
+}
+$("codeTable").addEventListener("contextmenu", e => {
+  const tr = e.target.closest("tr[data-fr]"); if (!tr || !mpEditable()) return;
+  const i = +tr.dataset.fr, k = books[mpIdx()].S.codeAll[i]; if (!k || !k.code) return; e.preventDefault();
+  const n = fcUses(k.code);
+  opsCtxOpen(e.clientX, e.clientY, [[k.off ? "Switch on" : "Switch off (keep it)", () => fcOff(i, !k.off)], [n ? "✕ Remove (used by " + n + " flight" + (n === 1 ? "" : "s") + ")" : "✕ Remove…", n ? null : () => fcRemove(i)]], k.code);
 });
 // ---------- department Activities vs the Master Planner's flight codes
 const flCatName = st => st.cats[CAT_FLIGHT] || "Flight";
@@ -4756,10 +4792,30 @@ function renderCur() {
   const inp = (k, f, w, ph) => "<input data-ru='" + k + "' data-f='" + f + "' value='" + esc(R[k][f] == null ? "" : R[k][f]) + "'" + (w ? " style='width:" + w + "'" : "") + (ph ? " placeholder='" + ph + "'" : "") + (ed ? "" : " disabled") + ">";
   let t = "<tr><th>#</th><th>Rule</th><th>Applies to</th><th>Who</th><th>Counts</th><th>Which</th><th>Within (days)</th><th>At least</th><th>Warn (days before)</th><th>Notes</th></tr>";
   const show = Math.min(CUR_N, Math.max(R.reduce((m, r, k) => r.name || r.win ? k + 1 : m, 0) + 2, 4));
-  for (let k = 0; k < show; k++) t += "<tr><td class='n'>" + (k + 1) + "</td><td>" + inp(k, "name", "", "e.g. General flying") + "</td><td>" + sel(k, "applies", CUR_APPLIES) + "</td><td>" + inp(k, "who", "", R[k].applies && !/^all$/i.test(R[k].applies) ? "e.g. Instructor" : "") + "</td><td>" + sel(k, "counts", CUR_COUNTS) + "</td><td>" + inp(k, "which", "", /mission/i.test(R[k].counts) ? "e.g. MSN" : /codes/i.test(R[k].counts) ? "e.g. NVG-2.0" : "") + "</td><td>" + inp(k, "win", "70px", "45") + "</td><td>" + inp(k, "min", "60px", "1") + "</td><td>" + inp(k, "warn", "70px", "7") + "</td><td>" + inp(k, "note") + "</td></tr>";
+  for (let k = 0; k < show; k++) t += "<tr data-rr='" + k + "'" + (R[k].off ? " class='roff' title='Switched off: kept, but not checked. Right-click to switch it on.'" : "") + "><td class='n'>" + (k + 1) + (R[k].off ? "<i class='offtag'>OFF</i>" : "") + "</td><td>" + inp(k, "name", "", "e.g. General flying") + "</td><td>" + sel(k, "applies", CUR_APPLIES) + "</td><td>" + inp(k, "who", "", R[k].applies && !/^all$/i.test(R[k].applies) ? "e.g. Instructor" : "") + "</td><td>" + sel(k, "counts", CUR_COUNTS) + "</td><td>" + inp(k, "which", "", /mission/i.test(R[k].counts) ? "e.g. MSN" : /codes/i.test(R[k].counts) ? "e.g. NVG-2.0" : "") + "</td><td>" + inp(k, "win", "70px", "45") + "</td><td>" + inp(k, "min", "60px", "1") + "</td><td>" + inp(k, "warn", "70px", "7") + "</td><td>" + inp(k, "note") + "</td></tr>";
   $("ruleTable").innerHTML = t;
 }
-const RULE_COL = { name: "A", applies: "B", who: "C", counts: "D", which: "E", win: "F", min: "G", warn: "H", note: "I" };
+const RULE_COL = { name: "A", applies: "B", who: "C", counts: "D", which: "E", win: "F", min: "G", warn: "H", note: "I", off: "J" };
+// z189: right-click a rule row: Switch off / Switch on (kept, not checked) and Remove (clears the row in place; the rules below keep their row,
+// since each rule's Before / Status pair on the Currency sheet is a fixed column), with that rule's "before the planner" dates
+const ruleUsed = R => !!(R && (R.name || R.applies || R.who || R.counts || R.which || R.win != null || R.min != null || R.warn != null || R.note));
+function ruleOff(k, off) {
+  const R = S.rules[k]; R.off = off; rosQuiet("Currency Rules", "J" + (CUR_ROW0 + k), off ? "Off" : "", "Currency Rules: " + (R.name || "rule " + (k + 1)) + (off ? " switched off" : " switched on"));
+  renderCur(); renderPlanner(); toast((R.name || "Rule " + (k + 1)) + (off ? " switched off. It is kept and can be switched on again." : " switched on."), 3500);
+}
+function ruleRemove(k) {
+  const R = S.rules[k], nm = R.name || "rule " + (k + 1); if (!confirm("Remove the rule \"" + nm + "\"?\n\nIts settings and everyone's \"before the planner\" date for it are cleared. Switch it off instead to keep them.")) return;
+  const note = "Currency Rules: " + nm + " removed";
+  Object.values(RULE_COL).forEach(L => rosQuiet("Currency Rules", L + (CUR_ROW0 + k), "", note));
+  S.curBase.forEach((row, i) => { if (row[k] != null) { row[k] = null; rosQuiet("Currency", colL(4 + 2 * k) + (CUR_ROW0 + i), "", note); } });
+  S.rules[k] = { name: "", applies: "", who: "", counts: "", which: "", win: null, min: null, warn: null, note: "", off: false };
+  renderCur(); renderPlanner();
+}
+$("ruleTable").addEventListener("contextmenu", e => {
+  const tr = e.target.closest("tr[data-rr]"); if (!tr || readOnly() || !mayEdit(cur.b)) return;
+  const k = +tr.dataset.rr, R = S.rules[k]; if (!ruleUsed(R)) return; e.preventDefault();
+  opsCtxOpen(e.clientX, e.clientY, [[R.off ? "Switch on" : "Switch off (keep it)", () => ruleOff(k, !R.off)], ["✕ Remove…", () => ruleRemove(k)]], R.name || "Rule " + (k + 1));
+});
 $("ruleTable").addEventListener("change", e => {
   const el = e.target, k = +el.dataset.ru, f = el.dataset.f; if (isNaN(k) || !f || readOnly()) return;
   let v = el.value.trim(); if (["win", "min", "warn"].includes(f)) { v = v === "" ? null : Math.max(0, Math.round(+v) || 0); }
@@ -6454,7 +6510,7 @@ function cmCreate() {   // the Crew Matrix sheet, filled with the squadron's def
 }
 function renderCmx() {
   const el = $("cmxWrap"); if (!el) return;
-  const R = CM_RULES(), mb = masterBook(), codes = mb ? mb.S.codeAll.filter(k => k.code && k.mtype) : [], seen = [...new Set(R.rows.map(r => cmNorm(r.m)))];
+  const R = CM_RULES(), mb = masterBook(), codes = mb ? mb.S.codeAll.filter(k => k.code && k.mtype && !k.off) : [], seen = [...new Set(R.rows.map(r => cmNorm(r.m)))];
   const src = R.src === "sheet" ? "Read from the <b>Crew Matrix</b> sheet of the Master Planner file." : "Using the squadron's built-in matrix: the Master Planner file has no Crew Matrix sheet yet.";
   const rows = R.rows.map((r, k) => "<tr" + (k && cmNorm(R.rows[k - 1].m) !== cmNorm(r.m) ? " class='msep'" : "") + "><td><b>" + esc(r.m) + "</b></td><td>" + esc(r.sh || "Any") + "</td>" + ["ac", "pilot", "lm", "tacco", "s1", "s2"].map(q => "<td class='c'>" + esc(r[q]) + "</td>").join("") + "<td class='muted'>" + esc(r.note) + "</td></tr>").join("");
   const used = seen.map(m => { const L = codes.filter(k => cmNorm(k.mtype) === m).map(k => k.code); return "<b>" + esc(R.rows.find(r => cmNorm(r.m) === m).m) + "</b>: " + (L.length ? esc(L.join(", ")) : "<span style='color:#b45309'>no flight code has this Mission Type yet</span>"); });
@@ -6838,7 +6894,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z188 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z189 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7876,7 +7932,7 @@ const HELP = {
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
     "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b>, <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview), <b>Transfer to SANS / NSMEN / regular crew</b> (they go after the last person of that group, take an empty row there and get that Status; Active for regular crew) and <b>Remove crew…</b> (asks first; clears their roster row, plans, Personnel Info, Currency, comments and AC / Pax tags, and the crew below move up; syllabus results and medical chits stay). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; <b>+ Add rank…</b> at the bottom of the list adds a new one (you pick which rank it comes after, for sorting; it is kept in your file's Ranks sheet, and a rank nobody has can be taken off again there); Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: COL, SLTC, LTC, MAJ, CPT, LTA · MWO, 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
-  cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
+  cur: ["Currency", "<p<b>Rules table:</b> right-click a rule to <b>switch it off</b> (kept, greyed with OFF, not checked anywhere; Excel's own Currency sheet still works it out) or <b>remove</b> it (clears that row and its before-the-planner dates; the other rules stay where they are).</p><p>><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
     "<ul><li>Red = expired (before today), amber = expires within the due window (14 days, you can change it), a hatched box = not recorded, a dash = not held. The data is as of the date shown. A banner turns amber after 7 days and red after 30.</li><li><b>Names to fix</b> lists what does not match (a name in ATOM with no Initials on a roster, the same Initials twice, a different CAT, roster people not in ATOM). Fix them on the Crew Roster. For an ATOM name with no match, the list suggests the likely person (a word of the ATOM name is their surname, the other letters start their other names; only people with no Initials yet): <b>Use as Initials</b> writes it in their Crew Roster row, or pick someone else first; <b>Use all suggestions</b> fills every one. Only files you can edit; check them, then Save to Excel.</li><li><b>Planner:</b> the day a Day or Night currency expires is marked in that person's row (the Captain ones as a lighter outline), and a flight planned after it shows a red corner and \"NOT CURRENT\". These only warn. The Ops Room shows no currency marks. IRT is only highlighted: the day it expires is marked in all three rows of the Planner, and nothing alerts.</li><li><b>Hours:</b> the Planner's Flown Hrs and My Lodestar show ATOM's clocked hours for the month the export belongs to.</li><li><b>Mission currencies:</b> purple = expires within the due window; an expired one is shown quietly in grey (\"exp 3 Sep\") and is not counted as a problem; a blank box = that department does not need it. In the Planner the day one expires is marked in purple on the person's <b>WD row</b>; nothing alerts. My Lodestar has a Mission currencies card. ATOM's dates are used as they are: a planned flight does not move them, only the next export does.</li></ul><p>Below it, the older per-rule currency checks stay as they were. <b>Past flights check:</b> a past planned flight counts as flown for these rules, so any flight in the last 45 days that the Ops Room has not closed (Flown with ATD and ATA, or Cancelled) is listed under the note and underlined amber in the Planner. It starts from the first flight the Ops Room closed.</p>"],  acts: ["Activities", "<p>The activity list for the cell picker. <b>Flights programme</b> is filled in from the Master Planner when you save; <b>Ground programme</b> codes are yours to edit. Categories decide the colours and what each total counts. Public holidays are listed on the right.</p>"],
   ops: ["Ops Room", "<p>The day's flights from the Master Planner with each seat filled from the department plans. For the SDO / AOS on duty and the projector.</p>" +
@@ -7886,7 +7942,7 @@ const HELP = {
   mp: ["Master Planning", "<p>The Master Planner's calendar: every flight and squadron event, which all departments copy. Only the Master Planner (its own file) can edit; everyone else sees it locked.</p>" +
     "<ul><li>Chips: time + code in shift colours, crew tags (P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2; on a flight, none = the flight code's crew). Green chips: squadron events (meetings, ceremonies, courses); their crew is ALL or tags, and a red NO CREW means nobody was chosen.</li><li>Grey day: no flying (reason on the day). Blue outline: today.</li><li>Click a day to open it on the right: add, change or remove flights and ground items. Arrow keys move days, Esc closes.</li></ul><h3>Export…</h3><p>A clean Excel copy of the flights and planned hours for an outside office: one Calendar sheet with each month as a calendar: every flight with its time and planned hours, the day and week totals, the reason on no-flying days and a month total. It prints on landscape A4, one page wide. Pick the period, and untick any flight code to leave it out of the rows and the totals (your choice is remembered). No crew, names or comments go in the file.</p>"],
   cmx: ["Crew Matrix", "<p>The CAT each seat needs on a mission, from the squadron's crew matching matrix. A flight is checked when its flight code's <b>Mission Type</b> is a mission listed here; the flight card, the Planner and the Ops Room then warn when the planned crew fits none of the mission's rows. It only warns.</p><ul><li>Each number is the lowest CAT allowed in that seat (A is best). Sup 1 and Sup 2 are two minimums for the pair, whichever seat holds which.</li><li>Seats nobody is planned in yet are not counted against the crew.</li><li>The matrix lives in the <b>Crew Matrix</b> sheet of the Master Planner file. Edit it there to change a letter, add a row or add a mission; the dashboard follows within 15 seconds.</li></ul>"],
-  codes: ["Flight Codes", "<p>The one list of flight codes: code, description, default crew, Mission Type and syllabus tag. Set by the Master Planner. Planned hours come from each flight's time range on the calendar, and sorties are typed on the flight. Each department gets new and changed codes in its Activities list by itself the next time it saves.</p>"],
+  codes: ["Flight Codes", "<p>The one list of flight codes: code, description, default crew, Mission Type and syllabus tag. Set by the Master Planner. Right-click a code to <b>switch it off</b> (kept, greyed with OFF: not offered for new flights, flights already planned keep it and still count) or <b>remove</b> it (only when no flight this year uses it; the codes below move up). Planned hours come from each flight's time range on the calendar, and sorties are typed on the flight. Each department gets new and changed codes in its Activities list by itself the next time it saves.</p>"],
   sdo: ["Duty Planner", "<p>BDO (Base Duty Officer) and SDO (Squadron Duty Orderly). Switch duty at the top. The Duty Roster gives each day to one department; each department copies its days into its own file.</p>" +
     "<ul><li>Coloured tag = the department on duty that day. Amber day: a department's file doesn't match the roster yet. Red day: more than one department.</li><li>Duty crew list: who may do each duty. Blue outline: today. Red: public holiday.</li></ul>"]
 };

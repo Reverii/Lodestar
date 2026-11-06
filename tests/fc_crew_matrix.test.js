@@ -52,6 +52,32 @@ test("departments_see_it_read_only", async ({ page }) => {
   assert.ok(r);
 }, DEPT);
 
+const PIL = { mine: "Flight_Ops_Planner_Pilot", today: "2026-10-14", fresh: true };
+// z196: P1 on 14 Oct for the most senior pilot (in memory); returns the card's grid key
+const sbSetup = page => page.evaluate(() => { const mi = 9, d = 13, M = S.m[mi]; cur.m = mi;
+  S.roster.forEach((p, i) => { for (let s = 0; s < 4; s++) { const g = M.grid[gridRow(i, s)]; if (g && isSb(String(g[d] || "").trim())) g[d] = ""; } });
+  const i = S.roster.findIndex(p => p.id && !/inactive/i.test(p.status || "")); for (let s = 0; s < 3; s++) M.grid[gridRow(i, s)][d] = ""; M.grid[gridRow(i, 0)][d] = "P1";
+  renderPlanner(); return { i, r: gridRow(i, 0), d, id: S.roster[i].id }; });
+
+test("standby_rows_pick_a_mission_saved_in_K_L", async ({ page }) => {
+  await open(page);
+  const n = await page.evaluate(() => [...document.querySelectorAll("#codeTable select[data-sb]")].map(x => x.dataset.sb).join(","));
+  assert.strictEqual(n, "P1,P2,BU");
+  assert.strictEqual(await page.evaluate(() => cmSbMission("P2")), "MAS OPS");
+  await page.selectOption("#codeTable select[data-sb='P2']", "MAS TRG");
+  await page.selectOption("#codeTable select[data-sb='BU']", "-");
+  const c = await fc(page), m = await page.evaluate(() => [cmSbMission("P1"), cmSbMission("P2"), cmSbMission("BU")]);
+  assert.deepStrictEqual([c.K5, c.L5, c.K6, c.K7, c.K8, c.L7, c.L8], ["Standby", "Crew Matrix", "P1", "P2", "BU", "MAS TRG", "-"]);
+  assert.deepStrictEqual(m, ["MAS OPS", "MAS TRG", ""]);
+}, MP);
+
+test("standby_cell_card_shows_the_standby_crew_and_check", async ({ page }) => {
+  const x = await sbSetup(page);
+  const r = await page.evaluate(x => { const k = "g:" + x.r + ":" + x.d, el = cellEl(k); if (!el) return { err: "no cell " + k }; openCard(k); const c = document.getElementById("cellCard"); return { shown: c.style.display, t: c.textContent, w: c.offsetWidth, you: !!c.querySelector(".cseats .you") }; }, x);
+  assert.strictEqual(r.shown, "block", JSON.stringify(r)); assert.ok(/Crew on this standby \(P1/.test(r.t), r.t); assert.ok(r.you, "the person is highlighted"); assert.ok(/crew matrix/i.test(r.t), r.t);
+  assert.ok(r.w >= 500, "card is wider: " + r.w);
+}, PIL);
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0, S = null;
   for (const t of tests) {

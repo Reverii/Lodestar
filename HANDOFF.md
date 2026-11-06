@@ -1,4 +1,10 @@
-# LODESTAR handoff (updated 2026-11-07, after z195; next-session notes below)
+# LODESTAR handoff (updated 2026-11-07, after z196; next-session notes below)
+
+## z196: wider flight card, standby card, standby crew matrix on Flight Codes (Brandon, 7 Nov)
+- **Flight card** 520 px (was 400; `cardPlace` w too); seat columns `minmax(0,1fr)` and long initials wrap instead of squeezing.
+- **P1 / P2 / BU cells** open the card with "Crew on this standby (P1)" (`cardSbHtml`): the Ops Room standby row the person sits in (1 Set / 2 Set, AC tag, Ops Room picks, `opsSbList`), seats AC..SUP 2, "also on" extras, the crew matrix result (`cmRow`). Without the shared files open it says so.
+- **Flight Codes** ends with a "Standby duty" block: P1, P2, BU as fixed rows (they stay ground duties in the departments: as real flight codes they would count as flights and hours, and the code sync would clash with the department ground code), only the Crew Matrix dropdown: Auto (MAS OPS) / any matrix mission / Not checked. Stored in the Flight Codes sheet **K5:L8** (K5 "Standby", L5 "Crew Matrix", K6..K8 P1 P2 BU, L the mission, blank = MAS OPS, "-" = not checked); `st.sbCmx`, `cmSbMission(code)` replaces the fixed `CM_SB_MISSION` in `cmRow` (the 1 Set row uses P1's). Crew Matrix page text and "codes using each mission" include the standby codes. No layout change.
+- Tests: fc_crew_matrix 8/8 (2 new). crew_matrix 24, crew_matrix_edit 7, standby_ac 5, standby_intel 5, flight_card 17, ops_notes 7, my_lodestar 67, disable_remove 7. Screens `previews/standby_card_real.png`, `flight_card_wide_real.png`, `fc_standby_rows_real.png`.
 
 ## z195: Flight Codes "Crew Matrix" column (Brandon: "add another column to reference which crew matrix to use")
 - Master Planner > Flight Codes has a **Crew Matrix** column between Mission Type and Syllabus tag: a dropdown of the missions on the Crew Matrix page, plus **Auto** (blank: the mission named like the code's Mission Type, the old behaviour; shows which one it matched, or "none") and **Not checked** (stored "-").

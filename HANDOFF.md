@@ -11,7 +11,7 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 ## Planned, not built: AC tag on standby P1 / P2 / BU (7 Nov, Brandon: "pilot plan - P1, P2, BU should have a AC & pilot system also"; wait for "build it")
 - **Now:** `popRoleDraw` (~line 6578) shows the AC / Pax buttons only when the cell holds a flight code (`isFlightCode`). Ops Room standby rows (`opsDay`, "standby rows" ~line 5599) seat pilots by a guess: two pilots, the one with the higher `ROLE_RANK` then `CAT_RANK` is the Captain; an Ops Room pick (`o.seat`) wins.
 - **Planned:** in the Pilot file, a P1 / P2 / BU cell (any of `OPS_SB`, not the WD row) gets **None / AC** in the popup (no Pax: standby has no passengers), stored in Role Tags like a flight tag (same key shape: date, shift, callsign, code). Ops Room standby: if one of the pilots on that code and shift is tagged AC, they take the AC seat and the other takes Pilot; the 1 Set P1/P2 row uses P1's tag (else P2's); two AC tags = the first in roster order, the other as Pilot; no tag = the guess as now; the Ops Room's own seat pick still wins. Planner grid shows the same AC mark as on flights. Cell picker / flight card wording unchanged.
-- **Open (ask Brandon):** list the AC first in the AFP standby PILOT column (rows 18 / 20 / 22)?
+- **AFP:** the standby PILOT column (rows 18 / 20 / 22) follows the Ops Room seats, AC first (Brandon, 7 Nov: "AFP just needs to reflect the ops room data").
 - Dashboard only, no layout change. Tests: tag on P1 seats the AC on the Ops Room standby row; 1 Set; no tag keeps the guess; Ops Room pick wins.
 
 ## Planned, not built: Crew Matrix editable on the dashboard (7 Nov, Brandon: "this should be editable"; wait for "build it")
@@ -36,7 +36,7 @@ Brandon: a planner cell comment is sometimes a note to another planner (planning
 - **Storage:** Cell Notes sheet, same row as the planner note, **column H** (spare; A date, B shift, C callsign, D/F/G formulas, E planner note). The reader (`st.notes`, ~line 1883) currently skips a row without E: a row with only H must be kept (new map, e.g. `st.opsNotes`); clearing both clears the row (`A B C E H`). Remove crew (`rosRemove`), roster moves (`rosApply`), Start new year (`rollClear`, cols 1..6 -> 1..8) must carry H too. No layout change, no rebuild (Excel's purple outline still follows E only).
 - **Ops Room:** `opsCrewOn` crew objects get the Ops Room line (e.g. `c.opsNote`); a new `opsNoteLines(r)` puts one blue line per person ("✎/name in CAT colour · text") at the top of the flight's Remarks (seated crew, auto extras, additional crew, standby rows), like `opsSylLines`. The planner note is no longer drawn under the name in the seat (`opsCrewCell` `.ocn`), and the seat / extra-crew tooltips drop "Comment:".
 - **Master Planner flight comment out of the Ops Room:** Remarks hint text (`opsTxt(r, "rem", ed, x.f.note ...)`, ~line 5791), view-only Remarks, AFP REMARKS (`afpData`, `o.rem || x.f.note`). Keep the note on Ops Add flights (`x.f.oa`), which the Ops Room typed itself.
-- **Open (ask Brandon):** do the Ops Room lines go on the AFP REMARKS too?
+- **AFP:** the Ops Room lines go on the AFP REMARKS too, planner notes never (Brandon, 7 Nov: "AFP just needs to reflect the ops room data").
 - Wording: "Planner note" in the card, help (?) text and the planner page notes; tests to add (card saves H, Ops Room shows the line and not the planner note, MP comment gone, AFP).
 
 ## z187 (7 Nov, Brandon: "add a +role function"; "we are now in Beta build, update the lodestar logo")

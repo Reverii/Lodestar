@@ -1,7 +1,11 @@
-# LODESTAR handoff (updated 2026-11-05, after z178; next-session notes below)
+# LODESTAR handoff (updated 2026-11-06, after z179; next-session notes below)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
+
+## 6 Nov: Admin page on hold; new work is dashboard-only
+- **Admin / Maintenance page: ⏸ on hold** (Brandon: "not needed right now since I am still dev"). Decisions so far are on the checklist line (separate `LODESTAR_Admin.html` in a restricted subfolder, Wipe data option b with the keep / clear split, no backup zip / Settings sheet / reload notice / helper sheets). The design was stopped after part 1; resume from there if he reopens it.
+- **Working rule (Brandon, 6 Nov): new features and revisions ship as the dashboard only.** The Excel cells stay where they are. If a feature needs new storage, use a dashboard-created sheet or an unused cell the dashboard writes itself (no layout stamp bump, no rebuild). If something would need a builder change (an Excel dropdown, formula or moved cell), say so and ask first.
 
 ## z179 (5 Nov, Brandon: "1 yes, 2 mission type, 3 SIM, 4 yes"): AFP export from the Ops Room
 **⇩ Export AFP** on the Ops Room bar (anyone who sees the Ops Room; nothing in the files changes except the CO details) opens a dialog (what will be filled, CO name / contact no., what is still missing: no callsign, no tail, no SDO / OPS O) and downloads `121 SQN AFP 14 Oct 2026.xlsx`.

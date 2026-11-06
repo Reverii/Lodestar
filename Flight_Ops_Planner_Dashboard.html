@@ -731,6 +731,10 @@ td.gndlab{background:#15803d!important;color:#fff;font-weight:800;font-size:11px
 tr.sdorow td{height:30px}
 tr.sdorow td.c{cursor:default;font-size:11.5px}
 tr.sdorow td.c.ok{background:#dcfce7;color:#166534}tr.sdorow td.c.bad{background:#dc2626;color:#fff}
+tr.alrow td{height:30px}tr.alrow td.c{cursor:default;font-size:10px;font-weight:700;color:#92400e;background:#fffbeb;line-height:1.15;white-space:normal;overflow:hidden}tr.alrow td.c.on{background:#fef3c7}tr.alrow td.c.oth{color:#b45309;font-weight:400;font-style:italic}
+td.allab{background:#d97706!important;color:#fff;font-weight:800;font-size:11px;padding:0 8px!important}
+tr.frrow td{height:30px}tr.frrow td.c{cursor:default;font-size:10px;font-weight:700;color:#991b1b;background:#fff;line-height:1.15;white-space:normal;overflow:hidden;word-break:break-word}tr.frrow td.c.on{background:#fee2e2}
+td.frlab{background:#b91c1c!important;color:#fff;font-weight:800;font-size:11px;padding:0 8px!important}
 td.sdolab{background:#be123c!important;color:#fff;font-weight:800;font-size:11px;padding:0 8px!important}
 td.c.hasnote{position:relative;line-height:1.1}td.c.hasnote::after{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 7px 7px 0;border-color:transparent #9333ea transparent transparent}
 td.c .cw{font-size:8.5px;font-weight:800;line-height:11px;overflow:hidden;text-overflow:clip;white-space:nowrap;letter-spacing:0}td.c .cw.bad{color:#b91c1c}td.c .cw.rest{color:#c2410c}td.c .cw.due{color:#b45309}
@@ -1229,7 +1233,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z183</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z184</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3514,7 +3518,7 @@ function logWhat(b, sheet, ref, val, old) {
     const D = (pre, post, head) => ({ what: pre + ", " + dn + " " + mon + (post ? " " + post : ""), pre, post, dn, mon, row, day: true });
     if (row >= G0) { const i = rowPerson(row - G0), p = st.roster[i]; return D(p ? p.id || p.name || "Row " + row : "Row " + row, LOG_SHIFTS[rowShift(row - G0)]); }
     if (row >= MASTER_ROW0 && row < MASTER_ROW0 + 18) return { skip: true };   // MASTER rows are copies of the Master Planner (or Ops Add); the source is logged in its own file
-    return D(st.gndRow && row === st.gndRow ? "Ground programme" : "Duty days", "");
+    return D(st.gndRow && row === st.gndRow ? "Squadron programme" : "Duty days", "");
   }
   const c = cellsAt(b, old, sheet), head = str(c[colL(col) + "5"]) || str(c[colL(col) + "4"]);
   if (sheet === "Syllabus Log") { const v = L => { const e = val.get(sheet + "!" + L + row); return e && e.val !== "" && e.val != null ? e.val : c[L + row]; };   // a cleared row is named by what it held
@@ -4793,13 +4797,30 @@ function renderPlanner() {
     h += "</tr>";
   }
   if (S.gndRow) {
-    h += "<tr class='gndrow'><td class='gndlab' colspan=2 style='position:sticky;left:0;z-index:3'>GROUND PROGRAMME</td><td class='stk3 sh' style='background:#dcfce7;color:#166534'>GND</td>";
+    h += "<tr class='gndrow'><td class='gndlab' colspan=2 style='position:sticky;left:0;z-index:3'>SQUADRON PROGRAMME</td><td class='stk3 sh' style='background:#dcfce7;color:#166534'>SQN</td>";
     for (let d = 0; d < dim; d++) {
       const v = M.gnd[d] || "", md = mset.has("g:" + d), w = md ? deptGround(mb.S, mi, d, S.dept) : "";
       h += "<td class='c" + (v ? " on" : "") + (md ? " mpdiff" : "") + (canEdit ? " ed" : "") + "' data-g='" + d + "' title='" + esc([v.split("; ").join("\n"), md ? "Master Planner: " + (w || "nothing for " + S.dept) : "", canEdit ? "Click to change" : ""].filter(Boolean).join("\n")) + "'>" + esc(v) + "</td>";
     }
     h += "<td colspan=" + NT + " style='font-size:11px;color:#166534;text-align:center;background:#f0fdf4'>From the Master Planner</td></tr>";
   }
+  // z184: ALERT (standby crew on P1 / P2 / BU in every open department's plan) and FLYING RESTRICTION (the Ops Room's Flying Restrictions sheet); shown only, nothing is saved
+  h += "<tr class='alrow'><td class='allab' colspan=2 style='position:sticky;left:0;z-index:3'>ALERT</td><td class='stk3 sh' style='background:#fef3c7;color:#92400e'>ALERT</td>";
+  for (let d = 0; d < dim; d++) {
+    const sb = opsCrewOn(y, mi, d).sb[2], own = sb.filter(c => same(c.dept, S.dept));
+    const lines = OPS_SB.map(code => { const L = own.filter(c => same(c.code, code)); return L.length ? code + " " + L.map(c => c.id).join(", ") : ""; }).filter(Boolean);
+    const all = OPS_SB.map(code => { const L = sb.filter(c => same(c.code, code)); return L.length ? code + ": " + L.map(c => c.id + " (" + c.dept + ")").join(", ") : ""; }).filter(Boolean);
+    const oth = !lines.length && sb.length;
+    h += "<td class='c" + (lines.length ? " on" : oth ? " oth" : "") + "' title='" + esc(all.length ? "Alert crew, squadron:\n" + all.join("\n") : "Nobody on alert (P1 / P2 / BU) in the open department plans") + "'>" + (lines.length ? lines.map(esc).join("<br>") : oth ? "other depts" : "") + "</td>";
+  }
+  h += "<td colspan=" + NT + " style='font-size:11px;color:#92400e;text-align:center;background:#fffbeb'>P1 / P2 / BU from the plans</td></tr>";
+  const obk = opsBook();
+  h += "<tr class='frrow'><td class='frlab' colspan=2 style='position:sticky;left:0;z-index:3'>FLYING RESTRICTION</td><td class='stk3 sh' style='background:#fee2e2;color:#991b1b'>FR</td>";
+  for (let d = 0; d < dim; d++) {
+    const fr = obk ? frFor(isoOf(y, mi, d)) : [];
+    h += "<td class='c" + (fr.length ? " on" : "") + "' title='" + esc(fr.length ? fr.map(e => "⚠ " + e.text + " (" + frRange(e) + ")").join("\n") : obk ? "No flying restriction" : "The Ops Room file is not open, so restrictions can't be shown") + "'>" + esc(fr.map(e => e.text).join("; ")) + "</td>";
+  }
+  h += "<td colspan=" + NT + " style='font-size:11px;color:#991b1b;text-align:center;background:#fef2f2'>" + (obk ? "From the Ops Room" : "Ops Room file not open") + "</td></tr>";
   const hasB = hasPlan(S, "BDO");
   h += "<tr class='sdorow'><td class='sdolab' colspan=2 style='position:sticky;left:0;z-index:3'>" + (hasB ? "DUTY DAYS" : "SDO DAYS") + "</td><td class='stk3 sh' style='background:#ffe4e6;color:#881337'>" + (hasB ? "DUTY" : "SDO") + "</td>";
   for (let d = 0; d < dim; d++) { const x = st.day[d]; h += "<td class='c" + (x.sdoDay ? (x.miss.length ? " bad" : " ok") : "") + "' title='" + esc(x.sdoDay ? (x.miss.length ? x.duty + " day, but nobody is planned on " + x.miss.join(" or ") : x.duty + " day, covered") : "Not a duty day for " + S.dept) + "'>" + x.duty + "</td>"; }
@@ -6719,7 +6740,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z183 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z184 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7731,7 +7752,7 @@ devUi();
 /*/DEV*/
 const HELP = {
   plan: ["Planner", "<p>Your department's month: one row per person per shift (AM, PM, NIGHT). Right-click a cell (or select it and press Enter) to pick an activity. Type to search the list; Delete clears; Ctrl+C / Ctrl+V copy a cell.</p>" +
-    "<h3>Rows at the top</h3><ul><li><b>MASTER</b>: the flights planned for your department, copied from the Master Planner. Click the blue label to fold or open it.</li><li><b>GROUND PROGRAMME</b>: the day's ground events.</li><li><b>DUTY DAYS</b>: days your department has BDO / SDO from the Duty Roster (red if nobody is on it).</li></ul>" +
+    "<h3>Rows at the top</h3><ul><li><b>MASTER</b>: the flights planned for your department, copied from the Master Planner. Click the blue label to fold or open it.</li><li><b>SQUADRON PROGRAMME</b>: the day's squadron events.</li><li><b>ALERT</b>: your crew on P1, P2 or BU that day (point at a day to see the whole squadron's alert crew from the open plans).</li><li><b>FLYING RESTRICTION</b>: restrictions typed in the Ops Room, on every day they cover.</li><li><b>DUTY DAYS</b>: days your department has BDO / SDO from the Duty Roster (red if nobody is on it).</li></ul>" +
     "<h3>Colours and marks</h3><ul><li>Activity colours follow the categories in the legend (Flight, Sim, Ground Duty, Squadron Duty, Leave, Off, Admin, Medical, Oversea Duty).</li>" +
     "<li>" + sw("#dcfce7", "#166534", "3 ✓") + " shift covered, " + sw("#fef3c7", "#92400e", "! 2") + " short of crew, " + sw("#fee2e2", "#991b1b", "⚠ 1") + " flights but nobody flying, " + sw("#e2e8f0", "#475569", "NO FLY") + " no-flying day.</li>" +
     "<li>Amber outline: differs from the Master Planner. Purple corner: the cell has a comment. Red dashed outline: on a duty they aren't on the crew list for.</li>" +
@@ -7805,7 +7826,7 @@ $("plan").addEventListener("click", e => { const m2 = e.target.closest(".m2add")
   if (e.target.closest("i.curb:not(.rest)")) { document.querySelector("nav.tabs button[data-v='cur']").click(); return; }
   const gc = e.target.closest("td[data-g]");
   if (gc) { if (!S.gndRow || (!mayEdit(cur.b))) return; const d = +gc.dataset.g, M = S.m[cur.m];
-    const v = prompt("Ground programme for " + (d + 1) + " " + monLab(cur.m, S.year) + " (separate items with ;)", M.gnd[d] || ""); if (v == null) return;
+    const v = prompt("Squadron programme for " + (d + 1) + " " + monLab(cur.m, S.year) + " (separate items with ;)", M.gnd[d] || ""); if (v == null) return;
     M.gnd[d] = v.trim(); put(monSheet(cur.m), colL(DAY_COL0 + d) + S.gndRow, M.gnd[d]); renderPlanner(); return; } const t = e.target.closest("td[data-k]"); if (!t) return; if (popKey) closePop(); closeCard(); select(t.dataset.k); openCard(t.dataset.k); });   // left click selects and shows the flight card; the picker is on right click (or Enter / typing)
 $("plan").addEventListener("contextmenu", e => { const t = e.target.closest("td[data-k]"); if (!t) return; e.preventDefault(); closeCard(); select(t.dataset.k); if (!mayEdit(cur.b)) return; openPop(t.dataset.k); });
 $("popSearch").addEventListener("input", drawPop);

@@ -856,7 +856,7 @@ for m, mon in enumerate(MONTHS13, start=1):
     # SDO row: this department's SDO days (from the SDO Plan calendar)
     if HAS_GND:   # ground programme for the office: copied from the Master Planner by the dashboard, or typed in
         ws.merge_cells(start_row=GND_ROW, start_column=1, end_row=GND_ROW, end_column=2)
-        lab = ws.cell(GND_ROW, 1, "GROUND PROGRAMME  (from Master Planner)"); lab.font = f(True, "FFFFFF", 9); lab.fill = fill("15803D"); lab.alignment = LEFT
+        lab = ws.cell(GND_ROW, 1, "SQUADRON PROGRAMME  (from Master Planner)"); lab.font = f(True, "FFFFFF", 9); lab.fill = fill("15803D"); lab.alignment = LEFT
         ws.cell(GND_ROW, 2).fill = fill("15803D")
         sc = ws.cell(GND_ROW, 3, "GND"); sc.font = Font(name="Consolas", bold=True, color="166534", size=9); sc.fill = fill("DCFCE7"); sc.alignment = CENTER
         for c in range(1, LASTC + 1):

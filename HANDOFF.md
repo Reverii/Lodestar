@@ -3,6 +3,14 @@
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
+## z184 (6 Nov, Brandon): Squadron programme, ALERT and FLYING RESTRICTION rows on the Planner
+- Planner top rows now: MASTER, **SQUADRON PROGRAMME** (was GROUND PROGRAMME; chip SQN), **ALERT**, **FLYING RESTRICTION**, DUTY DAYS.
+- ALERT: this department's crew on P1 / P2 / BU that day ("P1 VIPER", one line per code), from the plans (`opsCrewOn(...).sb[2]`); the tooltip lists the whole squadron's alert crew from every open department file; "other depts" in grey italics when only other departments have someone.
+- FLYING RESTRICTION: the Ops Room's Flying Restrictions sheet (`frFor`), the text on every day from From to To, tooltip with the range; "Ops Room file not open" on the right when it is not open.
+- Dashboard only: both rows are shown, nothing is saved, no Excel cells move, no layout stamp bump. The Excel month tabs do not have these two rows. `.build_planner.py` label of row 24 renamed to SQUADRON PROGRAMME (reaches files only when they are rebuilt; the dashboard does not read that label). Other "Ground programme" wording (Ops Room card, AFP) unchanged.
+- Test `node tests/alert_fr_rows.test.js` (5/5, `--shot` writes `previews/alert_fr_rows.png`). flying_restriction 11/11, other_depts 10/10, role_tags 15/15, wd_row 18/19 (same failure before the change: the repo files are layout 4).
+- Upload: the DEV dashboard only.
+
 ## z183 (6 Nov, Brandon: "extend the row, currently is capped at 15" = SANS / NSMEN; 30 rows; plans already typed): department layout 5 and Upgrade department files
 - **Builder:** `N = 75` crew slots (45 regular + 30 SANS / NSmen, Roster rows 51-80; month-tab grid 300 rows, totals below it moved down), stamp **`LODESTAR dept layout 5`**. Nothing else moved: slots 1 to 60 keep their rows in every sheet. Shared files unchanged.
 - **Dashboard:** `LAYOUT.dept = 5`; the crew-slot count is per file (`st.n`: 75 from a layout-5 stamp, else 60; `N_OLD` / `N_NEW`; the global `N` is gone). Layout-4 files still open and work (15 SANS / NSMEN rows); their "older layout" line now points to the upgrade.

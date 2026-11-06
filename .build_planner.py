@@ -381,6 +381,7 @@ CAT A,Flight,4,S2-A-FLTCHK,MAS Tact Flight Check,Flight
 """.strip().splitlines()]}
 SYL_RENAME = {"CAT C": "CAT D", "CAT B": "CAT C", "CAT A": "CAT B"}   # 3 Nov: the real list was written with stages named after the CAT they lead to; codes stay as they are
 SYL_REAL = {k: [[SYL_RENAME.get(r[0], r[0])] + r[1:] for r in v] for k, v in SYL_REAL.items()}
+SYL_REAL["SUP 1"] = SYL_REAL["TACCO"] = SYL_REAL["SUP 2"]   # Brandon, 6 Nov: SUP 1, SUP 2 and TACCO have the same syllabus (codes unchanged)
 SYL_NPER = {"OCU": 4, "CAT D": 3, "CAT C": 3, "CAT B": 2, "CAT A": 2}
 SYL_SC = {"OCU": "O", "CAT D": "D", "CAT C": "C", "CAT B": "B", "CAT A": "A"}
 if DEPT in SYL_DEPTS:

@@ -1,4 +1,4 @@
-// Screenshots for the Master Planner guide (demo data only). Run: node guide/make_shots.js (build the dashboard first).
+// Screenshots for the Master Planner part of the guide (LODESTAR_Guide.html) (demo data only). Run: node guide/make_shots.js (build the dashboard first).
 // 03_day_panel.png was trimmed by hand afterwards (empty strip at the bottom).
 const { chromium } = require("playwright");
 const { boot } = require("../tests/lode_lib");
@@ -47,9 +47,6 @@ const HIDE = "#devBadge{display:none!important} *{animation:none!important;trans
   await p.evaluate(() => document.querySelector("nav.tabs button[data-v='codes']").click()); await shot(p, "09_flight_codes");
   // 10. crew matrix
   await p.evaluate(() => document.querySelector("nav.tabs button[data-v='cmx']").click()); await shot(p, "10_crew_matrix");
-  // 11. requests inbox (one sample request from a department, in memory only)
-  await p.evaluate(() => { const b = books.find(b => b.S.dept === "TACCO"); b.S.hasReq = true; b.S.req = [{ id: "R1", row: 5, raised: "2026-10-13", note: "Need a second NVG sortie on 22 Oct for two TACCO trainees." }]; cur.rqShow = true; });
-  await mp(p, 9, null); await wait(400); { const bb = await p.locator("#mpReq").boundingBox(); await p.screenshot({ path: OUT + "11_requests.png", clip: { x: bb.x, y: bb.y, width: 520, height: bb.height } }); }
   // 12. top bar
   await shot(p, "12_top_bar", "header");
   // 13. menu open

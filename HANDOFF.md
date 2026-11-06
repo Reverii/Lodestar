@@ -1,7 +1,15 @@
-# LODESTAR handoff (updated 2026-11-06, after z180; next-session notes below)
+# LODESTAR handoff (updated 2026-11-06, after z181; next-session notes below)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
+
+## z181 (6 Nov, Brandon: "remove crew function on the right click", "transfer to NSMEN or SANS function"): Crew Roster remove and transfer
+Right-click a person on the Crew Roster (editors only) now also has:
+- **⇄ Transfer to SANS / NSMEN / regular crew** (only the groups the person is not in; only in files with the SANS / NSMEN part). The person goes right after the last person of the new group in row order (SANS with no SANS yet: the top of the SANS / NSMEN part; NSMEN with none: after the last SANS; regular: after the last filled regular row), takes an empty row of that part (the first one after the spot, else the last one before it; full part = a message), and the rows they left close up. Status becomes SANS / NSMEN, or Active for regular crew. Their plans on every month tab, Personnel Info, Currency, comments and AC / Pax tags move with them (all through `rosApply`, one layout of the whole roster from `rosLay(i, to)`).
+- **✕ Remove crew…** asks first (the message suggests Status Inactive to keep history), then clears their roster row, plans for every month, Personnel Info and Currency rows, and their Cell Notes and Role Tags rows (`rosRemove`); the crew below move up one row with their plans. Syllabus results and medical chits stay on their sheets (they name the callsign).
+- Change Log: one line per action ("Crew Roster: FALCON removed (with their plans; crew below moved up)", "... transferred to NSMEN (with their plans)"); the status cell and cleared notes / tags are written quietly (`rosQuiet`). Undo works (one step).
+- Page note and help (?) text updated. Dashboard only, no Excel layout change; upload the DEV dashboard.
+- Tests: roster_order 20/20 (4 new). changelog 8/8, my_lodestar 67/67, other_depts 10/10, misc_notes 25/25, excel_safe pass; ops_room 59/60 (the known stale `sample_ops_room_can_pick_a_seat`). Screenshot `previews/roster_remove_transfer_real.png`.
 
 ## z180 (6 Nov, Brandon: "basic excel function like colors, draw border etc", then "build it"): Misc Notes formatting toolbar
 Mock-up `previews/misc_notes_format_mockup_{fill,borders}.png` (script `previews/misc_notes_format_mockup.js`), real `previews/misc_notes_format_real.png` (previews/ is git-ignored).

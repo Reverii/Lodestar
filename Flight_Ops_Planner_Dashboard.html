@@ -1158,7 +1158,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <section class="view" id="v-syl"><div id="sylWrap"></div></section>
   <section class="view" id="v-misc"><div id="mnWrap"></div></section>
   <section class="view" id="v-roster">
-    <div class="note">Add crew in the next empty row, or <b>right-click a person</b> to insert a row above or below them, move them up or down, or sort the list: their plans move with them. Regular crew at the top, SANS and NSMEN in their own groups (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE pink. To remove someone, set Status to Inactive. Don't clear a person's row to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
+    <div class="note">Add crew in the next empty row, or <b>right-click a person</b> to insert a row above or below them, move them up or down, sort the list, transfer them to SANS, NSMEN or the regular crew, or remove them: their plans move with them. Regular crew at the top, SANS and NSMEN in their own groups (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE pink. To keep someone's plans and history, set Status to Inactive; <b>Remove crew…</b> clears their row and plans and closes the gap. Don't clear a person's row by hand to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
     <div class="card"><table class="edit" id="rosterTable"></table></div>
   </section>
   <section class="view" id="v-acts">
@@ -1216,7 +1216,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z180</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z181</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -6685,7 +6685,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z180 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z181 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7623,7 +7623,7 @@ const HELP = {
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
-    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b> and <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
+    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b>, <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview), <b>Transfer to SANS / NSMEN / regular crew</b> (they go after the last person of that group, take an empty row there and get that Status; Active for regular crew) and <b>Remove crew…</b> (asks first; clears their roster row, plans, Personnel Info, Currency, comments and AC / Pax tags, and the crew below move up; syllabus results and medical chits stay). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
@@ -7836,6 +7836,55 @@ function rosSortDo(sec, by, inactLast) {
   const n = rosApply(sec[0], order, new Set(), null, "Crew Roster: " + nm + " sorted by " + lab + " (crew moved with their plans)");
   renderAll(); toast(n ? "Sorted by " + lab + ": " + n + " crew moved, with their plans." + saveHint() + " Ctrl+Z undoes it." : "Already in that order.", 4000);
 }
+// z181: Remove crew, and Transfer between regular crew, SANS and NSMEN. The whole roster is laid out again: the person leaves their part and the
+// rows under them close up (one empty row at the end of that part); a transfer puts them after the last person of the new group and takes an empty
+// row of that part. Plans, Personnel Info and Currency move with everyone through rosApply. Returns { order, clear, at } or { err }.
+function rosLay(i, to) {   // to: "" = remove, "REG", "SANS", "NSMEN"
+  const CLR = -1, reg = [], san = []; for (let j = 0; j < N; j++) (j < REG_N || !S.catCol ? reg : san).push(j);
+  const src = reg.includes(i) ? reg : san, dst = !to ? null : to === "REG" ? reg : san;
+  src.splice(src.indexOf(i), 1); if (dst !== src) src.push(CLR);
+  if (dst) {
+    const P = j => j === CLR ? null : S.roster[j], isG = g => j => { const p = P(j); return !!p && !rosEmpty(p) && (g === "REG" ? true : sansGrp(p) === g); };
+    const lastOf = f => { for (let k = dst.length - 1; k >= 0; k--) if (f(dst[k])) return k + 1; return -1; };
+    let pos = to === "REG" ? lastOf(isG("REG")) : to === "SANS" ? lastOf(isG("SANS")) : Math.max(lastOf(isG("NSMEN")), lastOf(isG("SANS")));
+    if (pos < 0) pos = 0;
+    if (dst !== src) {   // take an empty row of the new part: the first one after the spot, else the last one before it
+      const free = k => { const j = dst[k]; return j === CLR || (rosEmpty(S.roster[j]) && !sansGrp(S.roster[j])); };
+      let f = -1; for (let k = pos; k < dst.length; k++) if (free(k)) { f = k; break; }
+      if (f < 0) for (let k = pos - 1; k >= 0; k--) if (free(k)) { f = k; break; }
+      if (f < 0) return { err: "No empty row left in " + (to === "REG" ? "the regular crew" : "the SANS / NSMEN part") + " (" + dst.length + " rows). Remove someone there first." };
+      dst.splice(f, 1); if (f < pos) pos--;
+    }
+    dst.splice(pos, 0, i);
+  }
+  const order = [], clear = new Set(); let at = -1;
+  reg.concat(san).forEach((j, k) => { order.push(j === CLR ? k : j); if (j === CLR) clear.add(k); if (j === i) at = k; });
+  return { order, clear, at };
+}
+// a quiet write (the Change Log gets the action's one line instead of the cell)
+function rosQuiet(sheet, ref, val, note) { put(sheet, ref, val); const e = dirty.get(sheet + "!" + ref); if (e) e.quiet = note; }
+function rosRemove(i) {
+  if (readOnly()) return;
+  const p = S.roster[i], who = rosWho(p), full = p.id ? p.id + (p.name ? " · " + p.name : "") : p.name;
+  if (!confirm("Remove " + full + " from the Crew Roster?\n\nThis clears their roster row, their plans for every month, their Personnel Info and Currency rows, and their cell comments and AC / Pax tags. The crew below them move up one row, with their plans.\nSyllabus results and medical chits stay on their sheets.\n\nTo keep their plans and history, set Status to Inactive instead.\n\nUndo (Ctrl+Z) brings them back until you save; after saving, SharePoint version history still has the old copy.")) return;
+  const L = rosLay(i, ""), note = "Crew Roster: " + who + " removed (with their plans; crew below moved up)";
+  // their comments and AC / Pax tags: clear the sheet rows too (rosApply only drops them from memory)
+  const mine = m => [...(m || new Map()).entries()].filter(([k]) => rowPerson(+k.split(":")[1]) === i);
+  if (S.hasNotes) mine(S.noteRow).forEach(([k, row]) => { ["A", "B", "C", "E"].forEach(c => rosQuiet("Cell Notes", c + row, "", note)); S.notes.delete(k); S.noteRow.delete(k); S.noteUsed.delete(row); });
+  if (WB.paths[ROLE_SHEET]) mine(S.roleRow).forEach(([k, row]) => { ["A", "B", "C", "D", "E"].forEach(c => rosQuiet(ROLE_SHEET, c + row, "", note)); S.roleTags.delete(k); S.roleSor.delete(k); S.roleRow.delete(k); S.roleUsed.delete(row); });
+  const n = rosApply(0, L.order, L.clear, null, note);
+  renderAll(); toast(who + " removed from the Crew Roster." + (n ? " " + n + " crew moved up one row, with their plans." : "") + saveHint() + " Ctrl+Z undoes it.", 6000);
+}
+const ROS_TO = { REG: "regular crew", SANS: "SANS", NSMEN: "NSMEN" };
+function rosTransfer(i, to) {
+  if (readOnly() || !S.catCol) return;
+  const p = S.roster[i], who = rosWho(p), L = rosLay(i, to);
+  if (L.err) { toast(L.err, 5000); return; }
+  const st = to === "REG" ? "Active" : to, note = "Crew Roster: " + who + " transferred to " + ROS_TO[to] + " (with their plans)";
+  rosApply(0, L.order, L.clear, null, note);
+  if (!same(S.roster[L.at].status, st)) { S.roster[L.at].status = st; rosQuiet("Roster", rosterCols(S).status + (ROSTER_ROW0 + L.at), st, note); }
+  renderAll(); toast(who + " transferred to " + ROS_TO[to] + " (Status " + st + "), with their plans." + saveHint() + " Ctrl+Z undoes it.", 5000);
+}
 // the Sort dialog: a preview of now and after
 let rosDlgSec = null;
 function rosSortOpen(sec) {
@@ -7867,6 +7916,8 @@ $("rosterTable").addEventListener("contextmenu", e => {
   if (full) items.push(["⤒  Insert crew above", () => rosInsert(i, false)], ["⤓  Insert crew below", () => rosInsert(i, true)],
     ["▲  Move up", rosNeighbour(i, -1) >= 0 ? () => rosMove(i, -1) : null], ["▼  Move down", rosNeighbour(i, 1) >= 0 ? () => rosMove(i, 1) : null]);
   items.push([san ? "⇅  Sort SANS / NSMEN…" : "⇅  Sort regular crew…", () => rosSortOpen(sec)]);
+  if (full && S.catCol) { const g = rosGrp(i); ["SANS", "NSMEN", "REG"].forEach(t => { if (t !== g) items.push(["⇄  Transfer to " + ROS_TO[t], () => rosTransfer(i, t)]); }); }
+  if (full) items.push(["✕  Remove crew…", () => rosRemove(i)]);
   opsCtxOpen(e.clientX, e.clientY, items, full ? (p.id ? p.id + (p.name ? " · " + p.name : "") : p.name) : "");
 });
 $("mpNote").addEventListener("click", e => {

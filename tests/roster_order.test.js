@@ -127,6 +127,65 @@ test("undo_puts_the_order_back", async ({ page }) => {
   assert.deepStrictEqual(await ids(page, 6), ["VIPER", "HAWK", "RAPTOR", "FALCON", "EAGLE", "OWL"]);
   assert.strictEqual(await page.evaluate(() => books[cur.b].dirty.size), 0);
 });
+// ---- z181: Remove crew, Transfer to SANS / NSMEN / regular crew
+const menuText = async (page, i, txt) => { await menu(page, i); const k = await page.evaluate(t => [...document.querySelectorAll("#opsCtx button")].findIndex(b => b.textContent.includes(t)), txt);
+  assert.ok(k >= 0, "menu item " + txt); await page.click("#opsCtx button[data-k='" + k + "']"); };
+const sanIds = page => page.evaluate(() => S.roster.slice(REG_N).filter(p => !rosEmpty(p)).map(p => p.id + ":" + p.status));
+test("remove_crew_asks_and_closes_the_gap", async ({ page }) => {
+  await openRoster(page);
+  const pe = await plan(page, 4);
+  await page.evaluate(() => { withBook(cur.b, () => setNote(9, gridRow(3, 1), 6, "FALCON note")); put("Personnel Info", "F9", "S1234567A"); });
+  await page.evaluate(() => { window.confirm = m => (window._cm = m, false); }); await menuText(page, 3, "Remove crew");
+  assert.deepStrictEqual(await ids(page, 4), ["VIPER", "HAWK", "RAPTOR", "FALCON"], "cancel keeps them");
+  await page.evaluate(() => { window.confirm = m => (window._cm = m, true); }); await menuText(page, 3, "Remove crew"); const msg = await page.evaluate(() => window._cm);
+  assert.ok(/Remove FALCON/.test(msg) && /Inactive/.test(msg), msg);
+  assert.deepStrictEqual(await ids(page, 7), ["VIPER", "HAWK", "RAPTOR", "EAGLE", "OWL", "", ""]);
+  assert.strictEqual(await plan(page, 3), pe, "EAGLE's plans moved up with them");
+  const r = await page.evaluate(() => [S.notes.size && [...S.notes.values()].includes("FALCON note"), cellsNow("Personnel Info").F9 || "", [...books[cur.b].dirty.values()].filter(e => e.sheet === "Cell Notes" && e.ref.startsWith("E")).map(e => e.val)]);
+  assert.deepStrictEqual(r, [false, "", [""]], "comment and Personnel Info gone, Cell Notes row cleared");
+  const L = await page.evaluate(() => logLines(books[cur.b], new Map(books[cur.b].dirty)).map(x => x[4]));
+  assert.deepStrictEqual(L, ["Crew Roster: FALCON removed (with their plans; crew below moved up)"]);
+  await roundTrip(page);
+  assert.deepStrictEqual(await ids(page, 5), ["VIPER", "HAWK", "RAPTOR", "EAGLE", "OWL"], "saved");
+});
+test("transfer_regular_to_nsmen_and_back", async ({ page }) => {
+  await openRoster(page);
+  const pf = await plan(page, 3), before = await sanIds(page);
+  await menuText(page, 3, "Transfer to NSMEN");
+  assert.deepStrictEqual(await ids(page, 6), ["VIPER", "HAWK", "RAPTOR", "EAGLE", "OWL", ""]);
+  const after = await sanIds(page);
+  assert.deepStrictEqual(after, before.concat(["FALCON:NSMEN"]), "after the last NSMEN");
+  const j = await page.evaluate(() => S.roster.findIndex(p => p.id === "FALCON"));
+  assert.strictEqual(await plan(page, j), pf, "plans went with them");
+  const L = await page.evaluate(() => logLines(books[cur.b], new Map(books[cur.b].dirty)).map(x => x[4]));
+  assert.deepStrictEqual(L, ["Crew Roster: FALCON transferred to NSMEN (with their plans)"]);
+  await roundTrip(page);
+  assert.deepStrictEqual(await sanIds(page), after, "saved");
+  await menuText(page, j, "Transfer to regular crew");
+  assert.deepStrictEqual(await ids(page, 6), ["VIPER", "HAWK", "RAPTOR", "EAGLE", "OWL", "FALCON"]);
+  assert.strictEqual(await page.evaluate(() => S.roster[5].status), "Active");
+  assert.strictEqual(await plan(page, 5), pf);
+  assert.deepStrictEqual(await sanIds(page), before);
+});
+test("transfer_to_sans_then_sans_to_nsmen", async ({ page }) => {
+  await openRoster(page);
+  await menuText(page, 0, "Transfer to SANS");
+  const s = await sanIds(page), k = s.indexOf("VIPER:SANS");
+  assert.ok(k > 0 && s[k - 1] === "KESTREL:SANS", "right after the last SANS: " + s.join(" "));
+  assert.deepStrictEqual(await page.evaluate(() => [...document.querySelectorAll("#opsCtx")].length), 0);
+  const j = await page.evaluate(() => S.roster.findIndex(p => p.id === "VIPER"));
+  const items = await (async () => { await menu(page, j); return page.evaluate(() => [...document.querySelectorAll("#opsCtx button")].map(b => b.textContent.trim())); })();
+  assert.ok(!items.some(t => /Transfer to SANS/.test(t)) && items.some(t => /Transfer to NSMEN/.test(t)) && items.some(t => /Transfer to regular/.test(t)), items.join(" / "));
+  await page.keyboard.press("Escape"); await page.evaluate(() => { const m = document.getElementById("opsCtx"); if (m) m.remove(); });
+  await menuText(page, j, "Transfer to NSMEN");
+  const s2 = await sanIds(page); assert.strictEqual(s2[s2.length - 1], "VIPER:NSMEN", s2.join(" "));
+});
+test("undo_brings_a_removed_person_back", async ({ page }) => {
+  await openRoster(page);
+  await page.evaluate(() => { window.confirm = () => true; }); await menuText(page, 3, "Remove crew"); await page.waitForTimeout(300);
+  await page.evaluate(() => undo());
+  assert.deepStrictEqual(await ids(page, 6), ["VIPER", "HAWK", "RAPTOR", "FALCON", "EAGLE", "OWL"]);
+});
 test("view_only_has_no_menu", async ({ page }) => {
   await page.evaluate(() => { books[cur.b].noEdit = true; document.querySelector("nav.tabs button[data-v='roster']").click(); });
   await page.click("#rosterTable tr[data-ri='3'] td.n", { button: "right" });

@@ -724,18 +724,19 @@ table.opsfc td.ok{color:var(--green);font-weight:700}table.opsfc td.short{color:
 .dept{display:inline-block;padding:2px 6px;border-radius:4px;font-weight:800;font-size:11.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .d0{background:#dbeafe;color:#1e3a8a}.d1{background:#fecdd3;color:#881337}.d2{background:#d1fae5;color:#065f46}.d3{background:#fef3c7;color:#78350f}
 .d4{background:#ede9fe;color:#5b21b6}.d5{background:#cffafe;color:#164e63}.d6{background:#fce7f3;color:#9d174d}.d7{background:#e0e7ff;color:#3730a3}.dx{background:var(--s200);color:var(--s700)}
-tr.gndrow td{height:34px}
-tr.gndrow td.c{font-size:10px;font-weight:700;color:#166534;background:#f0fdf4;line-height:1.15;white-space:normal;overflow:hidden;cursor:default}
+tr.gndrow td{height:24px;padding-top:1px!important;padding-bottom:1px!important}
+tr.gndrow td.c{font-size:9.5px;font-weight:700;color:#166534;background:#f0fdf4;line-height:1.15;white-space:normal;overflow:hidden;cursor:default}
 tr.gndrow td.c.on{background:#dcfce7}tr.gndrow td.c.ed{cursor:pointer}tr.gndrow td.c.ed:hover{box-shadow:inset 0 0 0 2px #16a34a}
 td.gndlab{background:#15803d!important;color:#fff;font-weight:800;font-size:11px;padding:0 8px!important}
-tr.sdorow td{height:30px}
-tr.sdorow td.c{cursor:default;font-size:11.5px}
+tr.sdorow td{height:16px;padding-top:0!important;padding-bottom:0!important}
+tr.sdorow td.c{cursor:default;font-size:10.5px}
 tr.sdorow td.c.ok{background:#dcfce7;color:#166534}tr.sdorow td.c.bad{background:#dc2626;color:#fff}
-tr.alrow td{height:30px}tr.alrow td.c{cursor:default;font-size:10px;font-weight:700;color:#92400e;background:#fffbeb;line-height:1.15;white-space:normal;overflow:hidden}tr.alrow td.c.on{background:#fef3c7}tr.alrow td.c.oth{color:#b45309;font-weight:400;font-style:italic}
-td.allab{background:#d97706!important;color:#fff;font-weight:800;font-size:11px;padding:0 8px!important}
-tr.frrow td{height:30px}tr.frrow td.c{cursor:default;font-size:10px;font-weight:700;color:#991b1b;background:#fff;line-height:1.15;white-space:normal;overflow:hidden;word-break:break-word}tr.frrow td.c.on{background:#fee2e2}
-td.frlab{background:#b91c1c!important;color:#fff;font-weight:800;font-size:11px;padding:0 8px!important}
-td.sdolab{background:#be123c!important;color:#fff;font-weight:800;font-size:11px;padding:0 8px!important}
+div.alf{display:flex;gap:4px;align-items:center;margin-top:4px;font-size:11px}div.alf input{font:inherit;padding:3px 4px;border:1px solid var(--s300,#cbd5e1);border-radius:4px;min-width:0}div.alf #alLevel{width:70px;font-weight:700}div.alf input[type=date]{flex:1}span.alq{cursor:pointer;border:1px solid #f59e0b;color:#92400e;border-radius:10px;padding:1px 7px}span.alq:hover{background:#fef3c7}div.alf .btn{margin-left:auto;padding:3px 8px;font-size:11px}
+tr.alrow td,tr.frrow td{height:14px;padding-top:0!important;padding-bottom:0!important;font-size:10px!important;line-height:14px}tr.alrow td.c{cursor:default;font-weight:800;color:#92400e;background:#fffbeb;white-space:nowrap;overflow:hidden}tr.alrow td.c.on{background:#fde68a}tr.alrow td.c.cont{color:#b45309;font-weight:600}
+td.allab{background:#d97706!important;color:#fff;font-weight:800;font-size:10px;padding:0 8px!important}
+tr.frrow td.c{cursor:default;font-weight:700;color:#991b1b;background:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}tr.frrow td.c.on{background:#fee2e2}
+td.frlab{background:#b91c1c!important;color:#fff;font-weight:800;font-size:10px;padding:0 8px!important}
+td.sdolab{background:#be123c!important;color:#fff;font-weight:800;font-size:10px;padding:0 8px!important}
 td.c.hasnote{position:relative;line-height:1.1}td.c.hasnote::after{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 7px 7px 0;border-color:transparent #9333ea transparent transparent}
 td.c .cw{font-size:8.5px;font-weight:800;line-height:11px;overflow:hidden;text-overflow:clip;white-space:nowrap;letter-spacing:0}td.c .cw.bad{color:#b91c1c}td.c .cw.rest{color:#c2410c}td.c .cw.due{color:#b45309}
 td.c .cn{font-size:9.5px;font-weight:600;font-style:italic;color:#7e22ce;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1233,7 +1234,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z184</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z185</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2290,6 +2291,42 @@ document.addEventListener("click", e => {
   const row = +t.dataset.frr; if (!opsEditable()) return;
   if (t.dataset.fre) frOpen("", row); else if (t.dataset.frx && confirm("Remove this flying restriction?")) { frClear(row); frRefresh(); }
 });
+// ---------- Alert state (z185): the Alert States sheet of the Master Planner file (made by the dashboard on the first save)
+// A From, B To, C Level (AL90, AL2, ...), D Added by, E Saved. A day takes the entry with the latest From that covers it (a later week overrides a long one).
+const AL_SHEET = "Alert States", AL_ROW0 = 2, AL_N = 300, AL_HEAD = ["From", "To", "Level", "Added by", "Saved"], AL_LEVELS = ["AL2", "AL90"],
+  AL_COLS = '<col min="1" max="2" width="12" customWidth="1"/><col min="3" max="3" width="12" customWidth="1"/><col min="4" max="4" width="22" customWidth="1"/><col min="5" max="5" width="17" customWidth="1"/>';
+const alFor = iso => { const mi = mpIdx(), L = mi >= 0 && books[mi].S.al ? books[mi].S.al.filter(e => e.from <= iso && iso <= e.to) : []; return L.sort((a, b) => a.from < b.from ? 1 : a.from > b.from ? -1 : b.row - a.row)[0] || null; };
+const isoMonday = iso => opsAddDays(iso, -((new Date(iso + "T00:00:00Z").getUTCDay() + 6) % 7));
+function alSave(f) {
+  const bi = mpIdx(); if (bi < 0 || !mpEditable()) return false;
+  const level = String(f.level || "").trim().toUpperCase().replace(/\s+/g, ""), from = f.from, to = f.to || f.from;
+  if (!level) { toast("Type the alert state, e.g. AL90.", 4000); return false; }
+  if (!from || to < from) { toast("Check the dates.", 4000); return false; }
+  let ok = true;
+  withBook(bi, () => {
+    sheetEnsure(WB, AL_SHEET, AL_HEAD, AL_COLS);
+    let e = f.row ? S.al.find(x => x.row === f.row) : S.al.find(x => x.from === from && x.to === to);   // the same dates again: change that entry
+    if (!e) { let row = AL_ROW0; while (S.alUsed.has(row) && row < AL_ROW0 + AL_N) row++;
+      if (row >= AL_ROW0 + AL_N) { toast("The Alert States sheet is full. Clear old rows in Excel to make room.", 5000); ok = false; return; }
+      e = { row }; S.al.push(e); S.alUsed.add(row); }
+    Object.assign(e, { from, to, level, by: SP.user ? SP.user.Title : "" });
+    const A = ymd(from, S.year), B = ymd(to, S.year);
+    put(AL_SHEET, "A" + e.row, dateSerial(A.y, A.mi, A.d)); put(AL_SHEET, "B" + e.row, dateSerial(B.y, B.mi, B.d)); put(AL_SHEET, "C" + e.row, level);
+    put(AL_SHEET, "D" + e.row, e.by); put(AL_SHEET, "E" + e.row, new Date().toISOString().slice(0, 16).replace("T", " "));
+  });
+  return ok;
+}
+function alClear(row) {
+  const bi = mpIdx(); if (bi < 0 || !mpEditable()) return;
+  withBook(bi, () => { const e = S.al.find(x => x.row === row); if (!e) return; "ABCDE".split("").forEach(L => put(AL_SHEET, L + e.row, "")); S.al = S.al.filter(x => x !== e); S.alUsed.delete(e.row); });
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-alset],[data-alx],[data-alq]"); if (!t || !mpEditable()) return;
+  if (t.dataset.alq) { const f = $("alFrom"), to = $("alTo"); if (!f || !f.value) return; const m = isoMonday(f.value); if (t.dataset.alq === "w") { f.value = m; to.value = opsAddDays(m, 6); } else if (t.dataset.alq === "d") to.value = f.value; else if (t.dataset.alq === "2") { f.value = m; to.value = opsAddDays(m, 13); } return; }
+  if (t.dataset.alx) { if (!confirm("Remove this alert state?")) return; alClear(+t.dataset.alx); }
+  else if (!alSave({ level: $("alLevel").value, from: $("alFrom").value, to: $("alTo").value })) return;
+  renderMp(); renderPlanner();
+});
 // the Master Planner: a list of flights (Flights sheet, rows 6..1005: A date, B shift, C code, D time, E crew, F comment), any number per shift,
 // plus a Day Status sheet (one row per date of the year from row 6, status in C). The month tabs are a view built by Excel formulas.
 const FL_ROW0 = 6, FL_N = 1000, GR_ROW0 = 6, GR_N = 500;
@@ -3068,6 +3105,13 @@ function readMaster(name) {   // (the Crew Matrix sheet is read at the end)
   if (st.hasRep) { const q = readCells("Requests");
     for (let r = RQ_ROW0; r < RQ_ROW0 + RQ_N; r++) { const dp = str(q["A" + r]), id = str(q["B" + r]); if (dp || id || str(q["C" + r])) st.repUsed.add(r);
       if (dp && id) st.rep.set(dp.toUpperCase() + "|" + id.toUpperCase(), { row: r, st: str(q["C" + r]), reply: str(q["D" + r]), on: typeof q["E" + r] === "number" ? serialToISO(q["E" + r]) : "" }); } }
+  // Alert States sheet (z185, made by the dashboard on the first save): rows 2.. (A from, B to, C level, D added by, E saved)
+  st.al = []; st.alUsed = new Set();
+  if (WB.paths[AL_SHEET]) { const c = readCells(AL_SHEET);
+    for (let r = AL_ROW0; r < AL_ROW0 + AL_N; r++) { const a = c["A" + r], b = c["B" + r], level = str(c["C" + r]);
+      if (a != null || level) st.alUsed.add(r);
+      if (typeof a !== "number" || !level) continue; const from = serialToISO(a), to = typeof b === "number" && b >= a ? serialToISO(b) : from;
+      st.al.push({ row: r, from, to, level, by: str(c["D" + r]) }); } }
   st.cm = WB.paths[CM_SHEET] ? cmParse(readCells(CM_SHEET)) : null;   // the Crew Matrix sheet, when the Master Planner file has one
   return st;
 }
@@ -3456,6 +3500,7 @@ function buildXlsx() {
   if (bySheet[ROLE_SHEET]) sheetEnsure(WB, ROLE_SHEET, ROLE_HEAD, ROLE_COLS);
   if (bySheet[GRR_SHEET]) sheetEnsure(WB, GRR_SHEET, GRR_HEAD, GRR_COLS);
   if (bySheet[FR_SHEET]) sheetEnsure(WB, FR_SHEET, FR_HEAD, FR_COLS);
+  if (bySheet[AL_SHEET]) sheetEnsure(WB, AL_SHEET, AL_HEAD, AL_COLS);
   if (bySheet[AFP_SHEET]) sheetEnsure(WB, AFP_SHEET, AFP_HEAD, AFP_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   if (bySheet[MN_SHEET]) sheetEnsure(WB, MN_SHEET, [], MN_XCOLS, MN_OPT);
@@ -4241,6 +4286,14 @@ function renderMp() {
     }
     if (!lock) p += "<datalist id='grList'>" + P.grList.map(x => "<option value='" + esc(x) + "'>").join("") + "</datalist><button class='addb gaddb' data-gadd='" + sd + "'>+ Add squadron event</button>";
   }
+  {   // z185: the week's alert state (AL90, AL2, ...), shown on every department's Planner ALERT row
+    const iso = isoOf(y, mi, sd), al = alFor(iso), mon = isoMonday(iso);
+    p += "<div class='lbl' style='margin-top:16px;color:#b45309'>Alert state</div>";
+    p += al ? "<div class='fri' style='border-color:#f59e0b;background:#fffbeb'><div class='fm' style='color:#92400e'>" + esc(al.level) + "</div><div class='fd'>" + esc(al.from === al.to ? fmtDay(al.from) : fmtDay(al.from) + " to " + fmtDay(al.to)) + (al.by ? " · set by " + esc(al.by) : "") + (lock ? "" : " <button data-alx='" + al.row + "' title='Remove'>✕</button>") + "</div></div>" : "<div class='empty' style='padding:6px 4px'>No alert state set.</div>";
+    if (!lock) p += "<div class='alf'><input id='alLevel' list='alList' placeholder='e.g. AL90' value='" + esc(al ? al.level : "") + "'><input type='date' id='alFrom' value='" + mon + "'><span>to</span><input type='date' id='alTo' value='" + opsAddDays(mon, 6) + "'></div>" +
+      "<div class='alf'><span class='alq' data-alq='w'>This week</span><span class='alq' data-alq='2'>2 weeks</span><span class='alq' data-alq='d'>One day</span><button class='btn primary' data-alset='1'>Set alert state</button></div>" +
+      "<datalist id='alList'>" + [...new Set(AL_LEVELS.concat(P.al.map(e => e.level)))].map(x => "<option value='" + esc(x) + "'>").join("") + "</datalist>";
+  }
   {
     const iso = isoOf(y, mi, sd), FL = frFor(iso), fed = opsEditable();
     p += "<div class='lbl' style='margin-top:16px;color:#b91c1c'>Flying restriction</div>";
@@ -4802,29 +4855,29 @@ function renderPlanner() {
       const v = M.gnd[d] || "", md = mset.has("g:" + d), w = md ? deptGround(mb.S, mi, d, S.dept) : "";
       h += "<td class='c" + (v ? " on" : "") + (md ? " mpdiff" : "") + (canEdit ? " ed" : "") + "' data-g='" + d + "' title='" + esc([v.split("; ").join("\n"), md ? "Master Planner: " + (w || "nothing for " + S.dept) : "", canEdit ? "Click to change" : ""].filter(Boolean).join("\n")) + "'>" + esc(v) + "</td>";
     }
-    h += "<td colspan=" + NT + " style='font-size:11px;color:#166534;text-align:center;background:#f0fdf4'>From the Master Planner</td></tr>";
+    h += "<td colspan=" + NT + " style='font-size:10px;color:#166534;text-align:center;background:#f0fdf4'>From the Master Planner</td></tr>";
   }
-  // z184: ALERT (standby crew on P1 / P2 / BU in every open department's plan) and FLYING RESTRICTION (the Ops Room's Flying Restrictions sheet); shown only, nothing is saved
+  // z184: ALERT and FLYING RESTRICTION rows, shown only. z185: ALERT = the alert state the Master Planner set (Alert States sheet, e.g. AL90 / AL2);
+  // the tooltip adds the crew on P1 / P2 / BU from the open plans. FLYING RESTRICTION = the Ops Room's Flying Restrictions sheet
   h += "<tr class='alrow'><td class='allab' colspan=2 style='position:sticky;left:0;z-index:3'>ALERT</td><td class='stk3 sh' style='background:#fef3c7;color:#92400e'>ALERT</td>";
   for (let d = 0; d < dim; d++) {
-    const sb = opsCrewOn(y, mi, d).sb[2], own = sb.filter(c => same(c.dept, S.dept));
-    const lines = OPS_SB.map(code => { const L = own.filter(c => same(c.code, code)); return L.length ? code + " " + L.map(c => c.id).join(", ") : ""; }).filter(Boolean);
-    const all = OPS_SB.map(code => { const L = sb.filter(c => same(c.code, code)); return L.length ? code + ": " + L.map(c => c.id + " (" + c.dept + ")").join(", ") : ""; }).filter(Boolean);
-    const oth = !lines.length && sb.length;
-    h += "<td class='c" + (lines.length ? " on" : oth ? " oth" : "") + "' title='" + esc(all.length ? "Alert crew, squadron:\n" + all.join("\n") : "Nobody on alert (P1 / P2 / BU) in the open department plans") + "'>" + (lines.length ? lines.map(esc).join("<br>") : oth ? "other depts" : "") + "</td>";
+    const iso = isoOf(y, mi, d), al = alFor(iso), prev = d > 0 ? alFor(isoOf(y, mi, d - 1)) : null, cont = al && prev && same(prev.level, al.level) && new Date(y, mi, d + 1).getDay() !== 1;   // the same state as the day before: lighter, except on a Monday
+    const sb = opsCrewOn(y, mi, d).sb[2], all = OPS_SB.map(code => { const L = sb.filter(c => same(c.code, code)); return L.length ? code + ": " + L.map(c => c.id + " (" + c.dept + ")").join(", ") : ""; }).filter(Boolean);
+    const tip = [al ? "Alert state " + al.level + " (" + (al.from === al.to ? fmtDay(al.from) : fmtDay(al.from) + " to " + fmtDay(al.to)) + "), set by the Master Planner" : mpIdx() < 0 ? "The Master Planner file is not open" : "No alert state set by the Master Planner", all.length ? "Alert crew in the plans:\n" + all.join("\n") : ""].filter(Boolean).join("\n");
+    h += "<td class='c" + (al ? " on" : "") + (cont ? " cont" : "") + "' title='" + esc(tip) + "'>" + (al ? esc(al.level) : "") + "</td>";
   }
-  h += "<td colspan=" + NT + " style='font-size:11px;color:#92400e;text-align:center;background:#fffbeb'>P1 / P2 / BU from the plans</td></tr>";
+  h += "<td colspan=" + NT + " style='font-size:10px;color:#92400e;text-align:center;background:#fffbeb'>" + (mpIdx() < 0 ? "Master Planner not open" : "From the Master Planner") + "</td></tr>";
   const obk = opsBook();
   h += "<tr class='frrow'><td class='frlab' colspan=2 style='position:sticky;left:0;z-index:3'>FLYING RESTRICTION</td><td class='stk3 sh' style='background:#fee2e2;color:#991b1b'>FR</td>";
   for (let d = 0; d < dim; d++) {
     const fr = obk ? frFor(isoOf(y, mi, d)) : [];
     h += "<td class='c" + (fr.length ? " on" : "") + "' title='" + esc(fr.length ? fr.map(e => "⚠ " + e.text + " (" + frRange(e) + ")").join("\n") : obk ? "No flying restriction" : "The Ops Room file is not open, so restrictions can't be shown") + "'>" + esc(fr.map(e => e.text).join("; ")) + "</td>";
   }
-  h += "<td colspan=" + NT + " style='font-size:11px;color:#991b1b;text-align:center;background:#fef2f2'>" + (obk ? "From the Ops Room" : "Ops Room file not open") + "</td></tr>";
+  h += "<td colspan=" + NT + " style='font-size:10px;color:#991b1b;text-align:center;background:#fef2f2'>" + (obk ? "From the Ops Room" : "Ops Room file not open") + "</td></tr>";
   const hasB = hasPlan(S, "BDO");
   h += "<tr class='sdorow'><td class='sdolab' colspan=2 style='position:sticky;left:0;z-index:3'>" + (hasB ? "DUTY DAYS" : "SDO DAYS") + "</td><td class='stk3 sh' style='background:#ffe4e6;color:#881337'>" + (hasB ? "DUTY" : "SDO") + "</td>";
   for (let d = 0; d < dim; d++) { const x = st.day[d]; h += "<td class='c" + (x.sdoDay ? (x.miss.length ? " bad" : " ok") : "") + "' title='" + esc(x.sdoDay ? (x.miss.length ? x.duty + " day, but nobody is planned on " + x.miss.join(" or ") : x.duty + " day, covered") : "Not a duty day for " + S.dept) + "'>" + x.duty + "</td>"; }
-  h += "<td colspan=" + NT + " style='font-size:11px;color:#881337;text-align:center;background:#fff1f2'>From the Duty Planner</td></tr>";
+  h += "<td colspan=" + NT + " style='font-size:10px;color:#881337;text-align:center;background:#fff1f2'>From the Duty Planner</td></tr>";
   h += "<tr class='sep'><td colspan='" + (dim + 3 + NT) + "'></td></tr>";
   h += "<tr class='crewhd'><td class='stk1'>Callsign</td><td class='stk2'>Crew Member</td><td class='stk3'>Shift</td>";
   for (let d = 0; d < dim; d++) h += "<td class='" + thc(d) + "'>" + String(d + 1).padStart(2, "0") + "</td>";
@@ -6740,7 +6793,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z184 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z185 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7752,7 +7805,7 @@ devUi();
 /*/DEV*/
 const HELP = {
   plan: ["Planner", "<p>Your department's month: one row per person per shift (AM, PM, NIGHT). Right-click a cell (or select it and press Enter) to pick an activity. Type to search the list; Delete clears; Ctrl+C / Ctrl+V copy a cell.</p>" +
-    "<h3>Rows at the top</h3><ul><li><b>MASTER</b>: the flights planned for your department, copied from the Master Planner. Click the blue label to fold or open it.</li><li><b>SQUADRON PROGRAMME</b>: the day's squadron events.</li><li><b>ALERT</b>: your crew on P1, P2 or BU that day (point at a day to see the whole squadron's alert crew from the open plans).</li><li><b>FLYING RESTRICTION</b>: restrictions typed in the Ops Room, on every day they cover.</li><li><b>DUTY DAYS</b>: days your department has BDO / SDO from the Duty Roster (red if nobody is on it).</li></ul>" +
+    "<h3>Rows at the top</h3><ul><li><b>MASTER</b>: the flights planned for your department, copied from the Master Planner. Click the blue label to fold or open it.</li><li><b>SQUADRON PROGRAMME</b>: the day's squadron events.</li><li><b>ALERT</b>: the squadron's alert state (AL90, AL2, ...) set by the Master Planner for each week; point at a day to also see the crew on P1, P2 or BU in the open plans.</li><li><b>FLYING RESTRICTION</b>: restrictions typed in the Ops Room, on every day they cover.</li><li><b>DUTY DAYS</b>: days your department has BDO / SDO from the Duty Roster (red if nobody is on it).</li></ul>" +
     "<h3>Colours and marks</h3><ul><li>Activity colours follow the categories in the legend (Flight, Sim, Ground Duty, Squadron Duty, Leave, Off, Admin, Medical, Oversea Duty).</li>" +
     "<li>" + sw("#dcfce7", "#166534", "3 ✓") + " shift covered, " + sw("#fef3c7", "#92400e", "! 2") + " short of crew, " + sw("#fee2e2", "#991b1b", "⚠ 1") + " flights but nobody flying, " + sw("#e2e8f0", "#475569", "NO FLY") + " no-flying day.</li>" +
     "<li>Amber outline: differs from the Master Planner. Purple corner: the cell has a comment. Red dashed outline: on a duty they aren't on the crew list for.</li>" +

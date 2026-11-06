@@ -3,6 +3,13 @@
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
+## z185 (6 Nov, Brandon: "make the row smaller ... maintain the total thickness"; "Alert status is decided by master planner, some weeks we are AL90, some weeks we are AL2")
+- Slim rows: SQUADRON PROGRAMME 24 px (two lines, 9.5 px text), ALERT and FLYING RESTRICTION 14 px, DUTY DAYS 16 px. The four rows take about 61 px, less than the two rows before z184 (34 + 30).
+- ALERT row = the **alert state** (AL90, AL2, ...) set by the Master Planner; repeated days lighter, Monday bold again. Tooltip: state, dates, and the P1 / P2 / BU crew in the open plans. "Master Planner not open" on the right when it is not.
+- Master Planner day panel: new **Alert state** section (current state with ✕, level box with AL2 / AL90 suggestions, From / To defaulting to the selected day's week Mon..Sun, quick This week / 2 weeks / One day, Set alert state). Only the Master Planner (or dev mode) can set it.
+- Saved in a new dashboard-made sheet `Alert States` in `Master_Planner.xlsx` (A From, B To, C Level, D Added by, E Saved; rows 2..301). A day takes the entry with the latest From covering it (one day set inside a week overrides it); setting the same dates again changes that entry. No layout change. Not yet in Wipe data / Start new year (old rows just stay).
+- Test `node tests/alert_fr_rows.test.js` 7/7.
+
 ## z184 (6 Nov, Brandon): Squadron programme, ALERT and FLYING RESTRICTION rows on the Planner
 - Planner top rows now: MASTER, **SQUADRON PROGRAMME** (was GROUND PROGRAMME; chip SQN), **ALERT**, **FLYING RESTRICTION**, DUTY DAYS.
 - ALERT: this department's crew on P1 / P2 / BU that day ("P1 VIPER", one line per code), from the plans (`opsCrewOn(...).sb[2]`); the tooltip lists the whole squadron's alert crew from every open department file; "other depts" in grey italics when only other departments have someone.

@@ -1,35 +1,71 @@
-// Planner ALERT and FLYING RESTRICTION rows, SQUADRON PROGRAMME label (z184). Build first: python3 .lodestar_build.py dashboard
+// Planner rows (z184 / z185): SQUADRON PROGRAMME label, ALERT row = the alert state the Master Planner sets (Alert States sheet),
+// FLYING RESTRICTION row from the Ops Room, and the slim rows. Build first: python3 .lodestar_build.py dashboard
 // Run: node tests/alert_fr_rows.test.js [--shot]
 const assert = require("assert");
 const path = require("path");
 const { boot } = require("./lode_lib");
+const tests = [];
+const test = (name, fn, opts) => tests.push({ name, fn, opts });
+const planNov = page => page.evaluate(() => { useBook(Math.max(books.findIndex(b => b.S.dept === "SUP 2"), books.findIndex(b => isDept(b)))); cur.m = 10; renderControls(); document.querySelector("nav.tabs button[data-v='plan']").click(); renderPlanner(); });
+const alertRow = page => page.evaluate(() => [...document.querySelectorAll("tr.alrow td.c")].map(c => c.textContent));
+
+test("squadron_programme_label_and_row_order", async ({ page }) => {
+  await planNov(page);
+  assert.strictEqual(await page.textContent("tr.gndrow td.gndlab"), "SQUADRON PROGRAMME");
+  assert.deepStrictEqual(await page.evaluate(() => [...document.querySelectorAll("tr.gndrow, tr.alrow, tr.frrow, tr.sdorow")].map(r => r.className)), ["gndrow", "alrow", "frrow", "sdorow"]);
+});
+test("rows_are_slim", async ({ page }) => {
+  await planNov(page);
+  const h = await page.evaluate(() => ["gndrow", "alrow", "frrow", "sdorow"].map(c => document.querySelector("tr." + c).getBoundingClientRect().height));
+  const tot = h.reduce((a, b) => a + b, 0); console.log("     row heights " + h.map(x => x.toFixed(1)).join(" + ") + " = " + tot.toFixed(1));
+  assert.ok(tot <= 80, "the four rows take " + tot + " px");
+});
+test("alert_state_set_from_the_master_planner_shows_on_the_planner", async ({ page }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = 10; cur.mpDay = 4; renderMp(); });   // Thu 5 Nov
+  assert.strictEqual(await page.inputValue("#alFrom"), "2026-11-02"); assert.strictEqual(await page.inputValue("#alTo"), "2026-11-08");
+  await page.fill("#alLevel", "al90"); await page.click("[data-alset]");
+  assert.ok(/AL90/.test(await page.textContent("#mpSide")));
+  await page.evaluate(() => { cur.mpDay = 9; renderMp(); });   // Tue 10 Nov: the next week
+  await page.fill("#alLevel", "AL2"); await page.click("[data-alset]");
+  await planNov(page);
+  const r = await alertRow(page);
+  assert.deepStrictEqual(r.slice(0, 16), ["", "AL90", "AL90", "AL90", "AL90", "AL90", "AL90", "AL90", "AL2", "AL2", "AL2", "AL2", "AL2", "AL2", "AL2", ""]);
+  const x = await page.evaluate(() => withBook(mpIdx(), () => { const out = buildXlsx(), t = td.decode(out.files[WB.paths[AL_SHEET]]); return t.includes("AL90") && t.includes("AL2") && t.includes("Level"); }));
+  assert.ok(x, "saved in the Alert States sheet");
+}, { mine: "Master_Planner", fresh: true });
+test("a_shorter_entry_overrides_and_remove_works", async ({ page }) => {
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = 10; cur.mpDay = 4; renderMp(); });
+  await page.fill("#alLevel", "AL90"); await page.click("[data-alset]");
+  await page.click("[data-alq='d']"); await page.fill("#alFrom", "2026-11-05"); await page.fill("#alTo", "2026-11-05"); await page.fill("#alLevel", "AL2"); await page.click("[data-alset]");
+  await planNov(page); let r = await alertRow(page); assert.deepStrictEqual(r.slice(1, 8), ["AL90", "AL90", "AL90", "AL2", "AL90", "AL90", "AL90"]);
+  await page.evaluate(() => { window.confirm = () => true; document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpDay = 4; renderMp(); });
+  await page.click("[data-alx]"); await planNov(page); r = await alertRow(page); assert.strictEqual(r[4], "AL90");
+}, { mine: "Master_Planner", fresh: true });
+test("department_view_cannot_set_it", async ({ page }) => {
+  await page.evaluate(() => { books[mpIdx()].S.al = [{ row: 2, from: "2026-11-02", to: "2026-11-08", level: "AL90", by: "" }]; document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = 10; cur.mpDay = 4; renderMp(); });
+  assert.strictEqual(await page.locator("#alLevel").count(), 0); assert.ok(/AL90/.test(await page.textContent("#mpSide")));
+  assert.strictEqual(await page.evaluate(() => alSave({ level: "AL2", from: "2026-11-05" })), false);
+  await planNov(page); assert.strictEqual((await alertRow(page))[5], "AL90");
+}, { mine: "Flight_Ops_Planner_SUP2", fresh: true });
+test("restriction_row_covers_its_days", async ({ page }) => {
+  await page.evaluate(() => { books[opsIdx()].S.fr = [{ row: 2, from: "2026-11-05", to: "2026-11-07", text: "Eastern area closed", by: "" }]; });
+  await planNov(page);
+  const r = await page.evaluate(() => [...document.querySelectorAll("tr.frrow td.c")].map(c => c.classList.contains("on")));
+  assert.deepStrictEqual([3, 4, 5, 6, 7].map(i => r[i]), [false, true, true, true, false]);
+  assert.ok(/Eastern area closed/.test(await page.textContent("tr.frrow td.c.on")));
+});
+test("shot", async ({ page }) => {
+  if (!process.argv.includes("--shot")) return;
+  await page.evaluate(() => { books[mpIdx()].S.al = [{ row: 2, from: "2026-11-02", to: "2026-11-08", level: "AL90", by: "" }, { row: 3, from: "2026-11-09", to: "2026-11-15", level: "AL2", by: "" }]; books[opsIdx()].S.fr = [{ row: 2, from: "2026-11-05", to: "2026-11-07", text: "Eastern area closed", by: "" }]; });
+  await planNov(page); await page.screenshot({ path: path.join(__dirname, "..", "previews", "alert_fr_rows.png") });
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = 10; cur.mpDay = 4; renderMp(); });
+}, { mine: "Flight_Ops_Planner_SUP2", today: "2026-11-06" });
 (async () => {
-  const { page, errs, close } = await boot({ mine: "Flight_Ops_Planner_SUP2", today: "2026-11-06" });
-  let pass = 0, fail = 0;
-  const t = async (name, fn) => { try { await fn(); pass++; console.log("ok   " + name); } catch (e) { fail++; console.log("FAIL " + name + ": " + e.message); } };
-  // put two SUP 2 people on P1 / BU on 6 Nov and a restriction over 5..7 Nov, then show November
-  await page.evaluate(() => {
-    const A = actIndex(); ["P1", "BU"].forEach(c => { if (!A.get(c)) S.acts.push({ code: c, desc: "Standby", cat: S.cats[CAT_GD] }); });
-    const M = S.m[10], ids = S.roster.map((p, i) => [p, i]).filter(([p]) => p.id).slice(0, 2);
-    M.grid[gridRow(ids[0][1], 0)][5] = "P1"; M.grid[gridRow(ids[1][1], 0)][5] = "BU"; window.__ids = ids.map(x => x[0].id);
-    const ob = books[opsIdx()]; ob.S.fr = [{ row: 2, from: "2026-11-05", to: "2026-11-07", text: "Eastern area closed", by: "" }];
-    cur.m = 10; renderControls(); document.querySelector("nav.tabs button[data-v='plan']").click(); renderPlanner();
-  });
-  await t("squadron_programme_label", async () => { const x = await page.textContent("tr.gndrow td.gndlab"); assert.strictEqual(x, "SQUADRON PROGRAMME"); });
-  await t("alert_row_shows_own_standby_crew", async () => {
-    const r = await page.evaluate(() => { const c = [...document.querySelectorAll("tr.alrow td.c")]; return { n: c.length, d6: c[5].innerText, d5: c[4].innerText, tip: c[5].title, ids: window.__ids }; });
-    assert.strictEqual(r.n, 30); assert.ok(r.d6.includes("P1 " + r.ids[0]) && r.d6.includes("BU " + r.ids[1]), JSON.stringify(r)); assert.ok(/SUP 2/.test(r.tip), r.tip);
-  });
-  await t("restriction_row_covers_its_days", async () => {
-    const r = await page.evaluate(() => [...document.querySelectorAll("tr.frrow td.c")].map(c => c.classList.contains("on")));
-    assert.deepStrictEqual([3, 4, 5, 6, 7].map(i => r[i]), [false, true, true, true, false]);
-    assert.ok(/Eastern area closed/.test(await page.textContent("tr.frrow td.c.on")));
-  });
-  await t("rows_sit_between_programme_and_duty_days", async () => {
-    const o = await page.evaluate(() => [...document.querySelectorAll("tr.gndrow, tr.alrow, tr.frrow, tr.sdorow")].map(r => r.className));
-    assert.deepStrictEqual(o, ["gndrow", "alrow", "frrow", "sdorow"]);
-  });
-  await t("no_page_errors", async () => { assert.deepStrictEqual(errs.filter(e => !/DIALOG/.test(e)), []); });
-  if (process.argv.includes("--shot")) { await page.evaluate(() => document.querySelector("tr.gndrow").scrollIntoView({ block: "center" })); await page.screenshot({ path: path.join(__dirname, "..", "previews", "alert_fr_rows.png") }); }
-  console.log(pass + " passed, " + fail + " failed"); await close(); process.exit(fail ? 1 : 0);
+  const only = process.argv.slice(2).find(a => !a.startsWith("--")); let pass = 0, fail = 0;
+  for (const t of tests) { if (only && !t.name.includes(only)) continue;
+    const o = Object.assign({ today: "2026-11-06" }, t.opts || {}); const b = await boot(o);
+    if (o.mine === "Master_Planner") await b.page.evaluate(() => { devFull = true; });
+    try { await t.fn(b); const e = b.errs.filter(x => !/DIALOG/.test(x)); assert.deepStrictEqual(e, []); pass++; console.log("ok   " + t.name); } catch (e) { fail++; console.log("FAIL " + t.name + ": " + e.message); }
+    await b.close(); }
+  console.log(pass + "/" + (pass + fail) + " pass"); process.exit(fail ? 1 : 0);
 })();

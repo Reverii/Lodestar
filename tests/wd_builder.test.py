@@ -17,7 +17,9 @@ def check(name, ok, detail=""):
 
 G0 = 27
 oct_ = wb["Oct"]
-check("stamp_is_layout_4", str(wb["Dashboard"]["Z2"].value).endswith("layout 4"), wb["Dashboard"]["Z2"].value)
+check("stamp_is_layout_5", str(wb["Dashboard"]["Z2"].value).endswith("layout 5"), wb["Dashboard"]["Z2"].value)
+ro = wb["Roster"]
+check("roster_has_30_sans_nsmen_rows", ro.max_row == 80 and oct_.cell(G0 + 4 * 75 - 1, 3).value == "WD", (ro.max_row, oct_.cell(G0 + 4 * 75 - 1, 3).value))
 check("four_rows_per_person", oct_.cell(G0 + 4, 3).value == "AM" and oct_.cell(G0 + 7, 3).value == "WD" and oct_.cell(G0 + 3, 3).value == "WD", [oct_.cell(G0 + k, 3).value for k in range(8)])
 wd = oct_.cell(G0 + 3, 3)
 check("wd_label_is_teal", wd.fill.fgColor.rgb.endswith("CCFBF1") and wd.font.color.rgb.endswith("115E59"), (wd.fill.fgColor.rgb, wd.font.color.rgb))

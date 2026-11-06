@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 6 Nov 2026 (z182). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 6 Nov 2026 (z183). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -150,7 +150,7 @@ Last updated: 6 Nov 2026 (z182). Tell Claude in this thread when something chang
 - [x] SUP 1 and Loadmaster rebuilt on the current template (checked 24 Oct: all 5 department files are on the same template)
 - [x] Bring SUP 1 and Loadmaster up to the current SUP 2 template (checked 24 Oct: all 5 department files are on the same template)
 - [x] Build TACCO and Pilot from the SUP 2 template (22 Oct; SUP 1 and Loadmaster rebuilt too)
-- [ ] Data migration: a way to move data already typed into an old-layout file into the new template, so scale-up or later layout changes don't lose work
+- [~] Data migration: a way to move data already typed into an old-layout file into the new template. Built for layout 4 -> 5 (z183, Upgrade department files…); a later layout change needs its own rules
 - [x] Ready to scale: Brandon said go on 22 Oct
 - Scaled up again 26 Oct (z91): all 5 department files are on the SUP 2 template; new changes go to every department
 
@@ -253,4 +253,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [x] Syllabus (6 Nov, Brandon): SUP 1, SUP 2 and TACCO share the same syllabus; Pilot and Loadmaster start empty (builder; in the fresh intranet set)
 - [?] Crew Roster: Remove crew and Transfer to SANS / NSMEN / regular crew on the right-click menu (z181, 6 Nov, Brandon): plans, Personnel Info and Currency go with the person; Remove asks first and the crew below move up (awaiting his test)
 - [?] Add a rank (z182, 6 Nov, Brandon): + Add rank… at the bottom of the Crew Roster Rank dropdown, you pick which rank it comes after; kept in the file's Ranks sheet (awaiting his test)
-- [ ] More SANS / NSMEN rows (Brandon, 6 Nov): 30 instead of 15 (75 people per department file), new department layout 5, plus an Upgrade file step that copies the typed data from the old file (his intranet files already hold typed plans)
+- [?] More SANS / NSMEN rows (z183, 6 Nov, Brandon): 30 instead of 15 (75 people per department file), department layout 5, and Upgrade department files… on the start screen (dev) that copies everything typed in the old file into a new empty one (awaiting his upgrade of the intranet files)

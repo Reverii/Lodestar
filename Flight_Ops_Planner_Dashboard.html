@@ -3344,7 +3344,7 @@ function renderLayout() {
   let h = "<button class='x' id='layX' title='Hide until another file is opened'>×</button>";
   if (nw.length) h += "⚠ " + nw.map(nm).join(", ") + (nw.length > 1 ? " were" : " was") + " made for a newer version of this dashboard (" + nw.map(b => "layout " + b.S.lay.stamp + ", this dashboard knows " + b.S.lay.exp).join("; ") + "). Get the latest dashboard HTML before you save to " + (nw.length > 1 ? "them" : "it") + ", or Save could write to the wrong cells. ";
   if (old.length) h += "<details><summary>" + old.length + (old.length > 1 ? " files use" : " file uses") + " an older layout</summary> (they open fine; the parts listed are switched off for them)<ul>" +
-    old.map(b => "<li>" + nm(b) + ": " + (b.S.lay.miss.length ? "missing " + b.S.lay.miss.map(esc).join(", ") : "layout " + b.S.lay.stamp + ", this dashboard expects " + b.S.lay.exp) + "</li>").join("") + "</ul></details>";
+    old.map(b => "<li>" + nm(b) + ": " + (b.S.lay.miss.length ? "missing " + b.S.lay.miss.map(esc).join(", ") : "layout " + b.S.lay.stamp + ", this dashboard expects " + b.S.lay.exp + (b.S.lay.kind === "dept" && b.S.lay.stamp === 4 ? ": it works, with room for 15 SANS / NSMEN; Upgrade department files… on the start screen copies it into a file with room for 30" : "")) + "</li>").join("") + "</ul></details>";
   el.className = "on" + (nw.length ? " new" : ""); el.innerHTML = h;
   $("layX").onclick = () => { layHidden = key; el.className = ""; };
 }

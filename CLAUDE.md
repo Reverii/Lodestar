@@ -48,12 +48,12 @@ existing macro-heavy ops tool (Oracle).
 | File | What |
 |---|---|
 | `Flight_Ops_Planner_SUP2.xlsx` | SUP 2 planner, the master template (newest layout, Syllabus sheets, Jan (next year) tab) |
-| `Flight_Ops_Planner_{SUP1,TACCO,Loadmaster,Pilot}.xlsx` | other departments, same layout as SUP 2 (dept layout 4). Since 2 Nov the repo's eight xlsx are a fresh demo set, not Brandon's real-data files |
+| `Flight_Ops_Planner_{SUP1,TACCO,Loadmaster,Pilot}.xlsx` | other departments, same layout as SUP 2. The repo's eight xlsx are still dept layout 4 (15 SANS / NSMEN rows); the builder makes layout 5 (30) since z183. Since 2 Nov the repo's eight xlsx are a fresh demo set, not Brandon's real-data files |
 | `Master_Planner.xlsx`, `Duty_Roster.xlsx`, `Ops_Room.xlsx` | shared files |
 | `Flight_Ops_Planner_Dashboard.html` | **the dev build Brandon uses** (about 0.8 MB since z159: no demo files inside; the GitHub Pages copy is built with them, `dashboard --demo --out`) |
 | `release/Flight_Ops_Planner_Dashboard.html` | release build (dev code stripped). Not for Brandon yet |
 | `input/LODESTAR_Data_Input.xlsx` | Brandon's filled real-data workbook (Crew, Flight Codes, Activities, Lists, Public Holidays) |
-| `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, `node tests/atom.test.js` (ATOM currency, synthetic exports from `tests/make_atom_fixture.py`), `node tests/planner_filter.test.js`, `node tests/mp_export.test.js`, `node tests/ops_room.test.js` (Ops Room board, about 40 checks), `node tests/master_calendar.test.js` (Master Planner calendar chips), `node tests/dept_select.test.js` (the SharePoint department screen, stubbed SharePoint), `node tests/other_depts.test.js` (other departments open by themselves, View only), `node tests/role_tags.test.js` (AC and Pax tags, planner grid and Ops Room), `node tests/syllabus_stages.test.js` (syllabus stages and instructor selection; needs a set built after z153 via `LODE_FILES`), `node tests/syllabus_edit.test.js` (the syllabus editor, z154), `node tests/roster_order.test.js` (Crew Roster insert / move / sort, SANS and NSMEN groups, z155; remove and transfer, z181; add rank, z182), `node tests/misc_notes.test.js` (Miscellaneous Notes page, z162), `node tests/daily_view_fix.test.js` (broken Daily View formulas repaired on save, z167), `node tests/bdo_person.test.js` (BDO as a person, z177; needs a set built after z177 via `LODE_FILES`), `node tests/afp_export.test.js` (Ops Room AFP export, z179), `node tests/wd_row.test.js` (WD fourth row, zoom, crew divider; needs a layout-3 set: `LODE_FILES=<folder from the excel build>`), `python3 tests/wd_builder.test.py` (builder checks on a fresh SUP 2 file), needs the dashboard built first; the ATOM file takes several minutes); `LODE_FILES=<folder>` points them at another set of xlsx files |
+| `tests/` | Node + Playwright checks (`node tests/my_lodestar.test.js`, `node tests/atom.test.js` (ATOM currency, synthetic exports from `tests/make_atom_fixture.py`), `node tests/planner_filter.test.js`, `node tests/mp_export.test.js`, `node tests/ops_room.test.js` (Ops Room board, about 40 checks), `node tests/master_calendar.test.js` (Master Planner calendar chips), `node tests/dept_select.test.js` (the SharePoint department screen, stubbed SharePoint), `node tests/other_depts.test.js` (other departments open by themselves, View only), `node tests/role_tags.test.js` (AC and Pax tags, planner grid and Ops Room), `node tests/syllabus_stages.test.js` (syllabus stages and instructor selection; needs a set built after z153 via `LODE_FILES`), `node tests/syllabus_edit.test.js` (the syllabus editor, z154), `node tests/roster_order.test.js` (Crew Roster insert / move / sort, SANS and NSMEN groups, z155; remove and transfer, z181; add rank, z182), `node tests/misc_notes.test.js` (Miscellaneous Notes page, z162), `node tests/daily_view_fix.test.js` (broken Daily View formulas repaired on save, z167), `node tests/bdo_person.test.js` (BDO as a person, z177; needs a set built after z177 via `LODE_FILES`), `node tests/afp_export.test.js` (Ops Room AFP export, z179), `node tests/upgrade.test.js` (Upgrade department files layout 4 -> 5, z183; needs `LODE_NEW=<layout-5 set>`), `node tests/wd_row.test.js` (WD fourth row, zoom, crew divider; needs a layout-3 set: `LODE_FILES=<folder from the excel build>`), `python3 tests/wd_builder.test.py` (builder checks on a fresh SUP 2 file), needs the dashboard built first; the ATOM file takes several minutes); `LODE_FILES=<folder>` points them at another set of xlsx files |
 | `docs/superpowers/` | design specs and implementation plans (My Lodestar) |
 | `specs/SUP2_syllabus_items.csv` | real SUP 2 syllabus (47 items); embedded in `.build_planner.py` as `SYL_REAL` |
 | `briefing/` | the web briefing (index.html + demo-data screenshots, 19 slides; no ATOM screenshot: it showed real currency dates). Published by the Pages workflow at `/briefing/` |
@@ -110,10 +110,10 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 
 ## Layout stamps and version
 
-- Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 4`. The dashboard has
-  `const LAYOUT = { dept: 4, master: 3, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
+- Each builder writes a stamp on the file's Dashboard sheet `Z2`, e.g. `LODESTAR dept layout 5`. The dashboard has
+  `const LAYOUT = { dept: 5, master: 3, roster: 2, ops: 2 }`. A file with a higher stamp warns "newer than the dashboard";
   lower or missing = checked sheet by sheet and listed as "older layout". Bump both sides together when cells move.
-- Dashboard version string: `Dashboard version 2026-11-06 z182` (two places in `.dashboard_source.html`: `#wDiag` and
+- Dashboard version string: `Dashboard version 2026-11-06 z183` (two places in `.dashboard_source.html`: `#wDiag` and
   `spDiag`). Bump the `zNN` number on each change you ship so Brandon can tell builds apart.
 
 ## Key cell layout (department file; full detail in the builders and dashboard constants)
@@ -121,7 +121,7 @@ verification copies), `NOCHART`, `NOCOMMENT`, `STATICNAMES`, `SMALLFREEZE`, `WEB
 - `Dashboard!A5` plan year (name `PlanYear`; every date follows it), `B5` month, `G5` this department, `Z2` layout stamp.
 - Month tabs Jan..Dec + `Jan (next year)` (SUP 2): MASTER rows from row 6, slot j (= shift*2 + slot) code on row 6+3j,
   time +1, comment +2; row 24 GROUND PROGRAMME; duty days row; crew grid from row 27 (26 in files without ground
-  programme), 4 rows per person from layout 3 (AM/PM/NIGHT and WD, the whole-day row for ground and admin items; 3 rows in older files, the dashboard reads both through `gridRow(i, s)`), days in D:AH, totals from AI. Col A = callsign on every crew row (autofilter).
+  programme), 75 people from layout 5 (45 regular + 30 SANS / NSmen; 60 before, the dashboard keeps it per file as `st.n`), 4 rows per person from layout 3 (AM/PM/NIGHT and WD, the whole-day row for ground and admin items; 3 rows in older files, the dashboard reads both through `gridRow(i, s)`), days in D:AH, totals from AI. Col A = callsign on every crew row (autofilter).
 - SDO / BDO Plan: month mi block at column 1+8*(mi%3), title row 6+16*floor(mi/3), week w on title row+3+2w (Mon..Sun);
   13th block (next Jan) at A70-G85. Identical cells in Duty_Roster.
 - Roster columns are found from header row 5 (Callsign | Name | Initials | Cat Status | Role | Status | Remarks).

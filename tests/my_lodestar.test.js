@@ -252,11 +252,11 @@ test("today_panel_shows_flight_details", async ({ page }) => {
   const t = await shown(page, "2026-10-14");
   for (const w of ["FLT-1.5", "0800", "0930", "NOT CLOSED", "SUP 2", "TUNA"]) assert.ok(t.toUpperCase().includes(w.toUpperCase()), w + " in: " + t);
 });
-test("next_days_table_rows", async ({ page }) => {
+test("no_next_7_days_month_under_today", async ({ page }) => {   // z193: the 7-day list is gone; My month sits in the left column under Today
   await page.evaluate(() => { SP.user = { Title: "Sarah Lim" }; });
   await shown(page);
-  const rows = await page.evaluate(() => [...document.querySelectorAll("#lodeWeek tr.d")].map(r => r.cells[0].innerText.replace(/\s+/g, " ").trim()));
-  assert.deepStrictEqual(rows, ["Tue 27 Oct", "Wed 28 Oct", "Thu 29 Oct", "Fri 30 Oct", "Sat 31 Oct", "Sun 1 Nov", "Mon 2 Nov"]);
+  const r = await page.evaluate(() => { const cal = document.getElementById("lodeCal"), col = cal && cal.closest(".lodecol"); return { week: !!document.getElementById("lodeWeek"), left: !!col && col === document.querySelector(".lodegrid .lodecol"), days: cal ? cal.querySelectorAll(".cd[data-day]").length : 0 }; });
+  assert.ok(!r.week, "no Next 7 days"); assert.ok(r.left, "calendar in the left column"); assert.ok(r.days >= 28);
 });
 test("prev_next_day_moves_focus", async ({ page }) => {
   await shown(page);
@@ -264,7 +264,7 @@ test("prev_next_day_moves_focus", async ({ page }) => {
   await page.click("#lodePrev"); await page.click("#lodePrev"); assert.ok(/Sunday 25 Oct 2026/.test(await page.innerText("#v-lode")));
 });
 test("fits_1280x720_without_scroll", async ({ page }) => {
-  await shown(page);   // the top of the page (cards, Today, Next 7 days) fits one screen; the My month calendar sits below it and is reached by scrolling
+  await shown(page);   // the page without the My month calendar fits one screen
   const r = await page.evaluate(() => { const v = document.getElementById("v-lode"); document.getElementById("lodeCal").style.display = "none"; return { over: v.scrollHeight - v.clientHeight, page: document.documentElement.scrollHeight }; });
   assert.ok(r.over <= 1 && r.page <= 720, JSON.stringify(r));
 });
@@ -369,7 +369,7 @@ test("help_text_present", async ({ page }) => {
   await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='lode']").click(); });
   await page.click("#helpBtn");
   const t = await page.innerText("#helpBody");
-  assert.ok(/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));
+  assert.ok(/My month/i.test(t) && !/next 7 days/i.test(t) && /View as/i.test(t), t.slice(0, 200));   // z193: no Next 7 days
 });
 test("version_is_stamped", async ({ page }) => {   // any current zNN: the number moves with every build
   const r = await page.evaluate(() => { spDiag("x"); return document.getElementById("wDiag").textContent; });

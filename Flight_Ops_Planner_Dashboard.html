@@ -430,7 +430,7 @@ table.allday .free{color:var(--s400);font-size:11.5px}
 #cellCard .you{background:#dbeafe;border-radius:4px}#cellCard .cnone{color:#94a3b8;font-weight:400}#cellCard .cpax{font-size:9px;font-weight:800;color:#166534;background:#dcfce7;border-radius:3px;padding:0 3px;margin-left:2px}
 #cellCard input{width:100%;margin:2px 0 4px;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px;font:inherit}#cellCard input.cops{border-color:#93c5fd;background:#eff6ff}#cellCard .cdet.cops{background:#eff6ff;color:#1e3a8a}
 #cellCard .clab.cnl{display:flex;justify-content:space-between;align-items:baseline;gap:8px}#cellCard .clab.cnl small{text-transform:none;letter-spacing:0;font-weight:500;color:#94a3b8;font-size:10.5px}#cellCard .clab.pn{color:#7e22ce}#cellCard .clab.op{color:#1d4ed8}
-.cmxt{border-collapse:collapse;width:100%;table-layout:fixed}.cmxt col.cm{width:150px}.cmxt col.cs{width:80px}.cmxt col.cq{width:92px}.cmxt th.c{text-align:center}.cmxt th{font-size:10px;letter-spacing:.5px;color:var(--s500);text-align:left;padding:5px 8px;background:var(--s50);border-bottom:1px solid var(--s200)}.cmxt td{padding:4px 8px;border-bottom:1px solid var(--s100)}.cmxt td.c{text-align:center;font-weight:800}.cmxt tr.msep td{border-top:2px solid var(--s300)}
+.cmxt{border-collapse:collapse;width:100%;table-layout:fixed}.cmed td{padding:2px 4px!important}.cmed input,.cmed select{width:100%;border:1px solid transparent;border-radius:4px;padding:3px 5px;font:inherit;background:transparent}.cmed td:first-child input{font-weight:800}.cmed input:hover,.cmed select:hover,.cmed input:focus,.cmed select:focus{border-color:var(--s300);background:#fff}.cmed td.c select{text-align:center;font-weight:800;text-align-last:center}.cmed tr.cmbad td{background:#fef2f2}.cmbadm{color:#b91c1c;font-size:11px;font-weight:700;padding:0 5px}.cmed td:first-child{position:relative}.cmed td:first-child .offtag{position:absolute;right:6px;top:8px}.cmxt col.cm{width:150px}.cmxt col.cs{width:80px}.cmxt col.cq{width:92px}.cmxt th.c{text-align:center}.cmxt th{font-size:10px;letter-spacing:.5px;color:var(--s500);text-align:left;padding:5px 8px;background:var(--s50);border-bottom:1px solid var(--s200)}.cmxt td{padding:4px 8px;border-bottom:1px solid var(--s100)}.cmxt td.c{text-align:center;font-weight:800}.cmxt tr.msep td{border-top:2px solid var(--s300)}
 .cmxcat{padding:6px 0 8px;color:var(--s700)}.cmxcat b{background:var(--s100);border-radius:4px;padding:1px 8px;margin:0 2px}.cmxerr{margin-top:8px;padding:7px 12px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:6px;font-size:12px}.cmxinfo{margin-top:8px;padding:7px 12px;background:#f0f9ff;color:#075985;border-radius:6px;font-size:12px}.cmxcodes{margin-top:8px;font-size:12px;color:var(--s700)}
 #cellCard .ccat{display:block;font-style:normal;font-size:9.5px;font-weight:700;color:#64748b;line-height:1}
 #cellCard .cmx{border-radius:6px;padding:5px 8px;margin-top:6px;font-size:12px;font-weight:700}#cellCard .cmx small{display:block;font-weight:500;margin-top:1px}#cellCard .cmx.ok{background:#dcfce7;color:#166534}#cellCard .cmx.no{background:#fee2e2;color:#991b1b}
@@ -1246,7 +1246,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z189</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z190</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -6487,10 +6487,12 @@ const CM_RULES = () => { const mb = masterBook(); return mb && mb.S.cm ? mb.S.cm
 const CM_SHEET = "Crew Matrix", CM_ROW0 = 2, CM_N = 200, CM_HEAD = ["Mission", "Shift", "AC", "Co-pilot", "LM", "TACCO", "Sup 1", "Sup 2", "Notes", "", "CAT order, best first"],
   CM_COLS = '<col min="1" max="1" width="14" customWidth="1"/><col min="2" max="8" width="9" customWidth="1"/><col min="9" max="9" width="34" customWidth="1"/><col min="11" max="11" width="24" customWidth="1"/>', CM_KEYS = ["m", "sh", "ac", "pilot", "lm", "tacco", "s1", "s2", "note"];
 function cmParse(c) {
-  const cats = [...new Set(str(c.K2).toUpperCase().split(/[^A-Z]+/).filter(Boolean))], out = { cats: cats.length ? cats : CM_DEFAULT.cats.slice(), rows: [], errors: [], src: "sheet" };
+  const cats = [...new Set(str(c.K2).toUpperCase().split(/[^A-Z]+/).filter(Boolean))], out = { cats: cats.length ? cats : CM_DEFAULT.cats.slice(), rows: [], errors: [], src: "sheet", all: [] };
   for (let r = CM_ROW0; r < CM_ROW0 + CM_N; r++) {
-    const x = { row: r }; CM_KEYS.forEach((k, j) => { x[k] = str(c[String.fromCharCode(65 + j) + r]).trim(); });
+    const x = { row: r }; CM_KEYS.forEach((k, j) => { x[k] = str(c[String.fromCharCode(65 + j) + r]).trim(); }); x.off = /^off$/i.test(str(c["J" + r]).trim());
     if (!CM_KEYS.some(k => x[k])) continue;
+    out.all.push(Object.assign({}, x));   // z190: every typed row, as typed, for the editor (bad ones too)
+    if (x.off) continue;   // z190: switched off (J = Off): kept, not used by the check
     const bad = !x.m ? "no Mission" : x.sh && !/^(day|night)$/i.test(x.sh) ? "Shift is \"" + x.sh + "\" (use Day, Night or leave it blank)" : (() => { const e = ["ac", "pilot", "lm", "tacco", "s1", "s2"].find(k => x[k] && !out.cats.includes(x[k].toUpperCase())); return e ? "CAT \"" + x[e] + "\" is not in the CAT order" : ""; })();
     if (bad) { out.errors.push("Row " + r + " left out: " + bad + "."); continue; }
     if (!["ac", "pilot", "lm", "tacco", "s1", "s2"].some(k => x[k])) { out.errors.push("Row " + r + " left out: no seat has a CAT."); continue; }
@@ -6508,8 +6510,64 @@ function cmCreate() {   // the Crew Matrix sheet, filled with the squadron's def
   });
   cmMemo.clear(); renderCmx(); renderPlanner(); toast("Crew Matrix sheet made in the Master Planner file. Save it, then edit it in Excel.", 6000);
 }
+// ---------- z190: the Crew Matrix edited on the page (whoever can edit the Master Planner file). The rows are kept as a list in sheet order;
+// every action rewrites the changed cells of the Crew Matrix sheet (A..I as before, J = Off) and K2 (CAT order), one Change Log line per action.
+// The first edit makes the sheet from the built-in matrix. Rows that can't be used (no mission, no CAT, a CAT not in the order) are kept and shown red.
+const CM_SEATS = ["ac", "pilot", "lm", "tacco", "s1", "s2"];
+const cmEdOk = () => { const bi = mpIdx(); return bi >= 0 && mayEdit(bi); };
+function cmList() { const mb = masterBook(); return mb && mb.S.cm ? mb.S.cm.all.map(r => Object.assign({}, r)) : CM_DEFAULT.rows.map(r => Object.assign({ off: false }, r)); }
+function cmProb(x, cats) {   // why a row is left out of the check ("" = fine)
+  if (x.off) return "";
+  if (!x.m) return "No mission";
+  const e = CM_SEATS.find(k => x[k] && !cats.includes(String(x[k]).toUpperCase())); if (e) return "CAT \"" + x[e] + "\" is not in the CAT order";
+  if (!CM_SEATS.some(k => x[k])) return "No seat has a CAT";
+  return "";
+}
+function cmWrite(list, cats, note) {   // list in sheet order -> the Crew Matrix sheet (only cells that change)
+  const bi = mpIdx(); if (bi < 0 || !mayEdit(bi)) return;
+  withBook(bi, () => {
+    const made = !WB.paths[CM_SHEET]; if (made) sheetEnsure(WB, CM_SHEET, CM_HEAD, CM_COLS);
+    const now = cellsNow(CM_SHEET) || {}, want = {};
+    const last = Math.max(list.length, ...(S.cm ? S.cm.all.map(r => r.row - CM_ROW0 + 1) : [0]));
+    for (let j = 0; j < Math.min(CM_N, last); j++) { const x = list[j], row = CM_ROW0 + j;
+      CM_KEYS.forEach((k, c) => { want[String.fromCharCode(65 + c) + row] = x ? (CM_SEATS.includes(k) ? String(x[k] || "").toUpperCase() : x[k] || "") : ""; });
+      want["J" + row] = x && x.off ? "Off" : ""; }
+    want.K2 = cats.join(", "); if (made && !str(now.J1)) want.J1 = "Off";
+    Object.keys(want).forEach(ref => { if (str(now[ref]) !== str(want[ref])) rosQuiet(CM_SHEET, ref, want[ref], note); });
+    S.cm = cmParse(Object.assign({}, now, want));
+  });
+  cmMemo.clear(); renderCmx(); renderPlanner(); if ($("v-ops") && $("v-ops").classList.contains("on")) renderOps();
+}
+function cmSet(j, f, v) {
+  const R = CM_RULES(), L = cmList(); if (!L[j]) return;
+  if (f === "sh") v = /^day$/i.test(v) ? "Day" : /^night$/i.test(v) ? "Night" : "";
+  else if (CM_SEATS.includes(f)) v = v === "-" ? "" : v.toUpperCase();
+  else v = String(v || "").replace(/\s+/g, " ").trim();
+  const was = L[j][f] || ""; if (was === v) return; L[j][f] = v;
+  cmWrite(L, R.cats, "Crew Matrix: " + (L[j].m || "row " + (j + 1)) + " " + ({ m: "mission", sh: "shift", note: "notes" }[f] || CM_SEAT_LAB[f === "s1" || f === "s2" ? "sup" : f] || f) + " changed");
+}
+function cmAct(j, what) {
+  const R = CM_RULES(), L = cmList(), x = L[j]; if (!x && what !== "addm") return; let note = "";
+  if (what === "up" && j > 0) { [L[j - 1], L[j]] = [L[j], L[j - 1]]; note = "row moved up"; }
+  else if (what === "down" && j < L.length - 1) { [L[j + 1], L[j]] = [L[j], L[j + 1]]; note = "row moved down"; }
+  else if (what === "dup") { L.splice(j + 1, 0, Object.assign({}, x, { off: false })); note = "row added (a copy)"; }
+  else if (what === "off") { x.off = !x.off; note = x.off ? "row switched off" : "row switched on"; }
+  else if (what === "del") { if (!confirm("Remove this " + (x.m || "") + " row from the crew matrix?")) return; L.splice(j, 1); note = "row removed"; }
+  else if (what === "addm") { if (L.length >= CM_N) { toast("The Crew Matrix sheet is full (" + CM_N + " rows).", 4000); return; } L.push({ m: "NEW MISSION", sh: "", ac: "", pilot: "", lm: "", tacco: "", s1: "", s2: "", note: "", off: false }); note = "mission added"; cur.cmFocus = L.length - 1; }
+  else return;
+  cmWrite(L, R.cats, "Crew Matrix: " + ((x && x.m) || "new") + " " + note);
+}
+function cmCats(v) {   // the CAT order, best first ("A, B, C, D")
+  const R = CM_RULES(), cats = [...new Set(String(v || "").toUpperCase().split(/[^A-Z]+/).filter(Boolean))];
+  if (!cats.length) { toast("The CAT order needs at least one CAT.", 4000); renderCmx(); return; }
+  const L = cmList(), used = [...new Set(L.flatMap(x => CM_SEATS.map(k => String(x[k] || "").toUpperCase()).filter(Boolean)))], gone = used.filter(c => !cats.includes(c));
+  if (gone.length) { toast("CAT " + gone.join(", ") + " is still used in a row. Change those rows first.", 5000); renderCmx(); return; }
+  if (cats.join(",") === R.cats.join(",")) return;
+  cmWrite(L, cats, "Crew Matrix: CAT order " + cats.join(", "));
+}
 function renderCmx() {
   const el = $("cmxWrap"); if (!el) return;
+  if (cmEdOk()) { renderCmxEd(el); return; }
   const R = CM_RULES(), mb = masterBook(), codes = mb ? mb.S.codeAll.filter(k => k.code && k.mtype && !k.off) : [], seen = [...new Set(R.rows.map(r => cmNorm(r.m)))];
   const src = R.src === "sheet" ? "Read from the <b>Crew Matrix</b> sheet of the Master Planner file." : "Using the squadron's built-in matrix: the Master Planner file has no Crew Matrix sheet yet.";
   const rows = R.rows.map((r, k) => "<tr" + (k && cmNorm(R.rows[k - 1].m) !== cmNorm(r.m) ? " class='msep'" : "") + "><td><b>" + esc(r.m) + "</b></td><td>" + esc(r.sh || "Any") + "</td>" + ["ac", "pilot", "lm", "tacco", "s1", "s2"].map(q => "<td class='c'>" + esc(r[q]) + "</td>").join("") + "<td class='muted'>" + esc(r.note) + "</td></tr>").join("");
@@ -6524,6 +6582,37 @@ function renderCmx() {
       "<div style='margin-top:10px'>" + (mb ? "<button class='btn pri' id='cmxMake'" + (mayEdit(books.indexOf(mb)) ? "" : " disabled title='You cannot edit the Master Planner file'") + ">Make the Crew Matrix sheet in the Master Planner file</button> <span class='muted'>so you can change the matrix in Excel (then Save)</span>" : "<span class='muted'>Open the Master Planner file to make the sheet.</span>") + "</div>") + "</div>";
   const b = $("cmxMake"); if (b) b.onclick = cmCreate;
 }
+function renderCmxEd(el) {
+  const R = CM_RULES(), L = cmList(), mb = masterBook(), codes = mb ? mb.S.codeAll.filter(k => k.code && k.mtype && !k.off) : [];
+  const mts = [...new Set(codes.map(k => k.mtype).concat(L.map(x => x.m)).filter(Boolean))];
+  const seatSel = (j, k, v) => "<select data-cmj='" + j + "' data-f='" + k + "'><option>-</option>" + R.cats.map(c => "<option" + (cmCat(v) === c ? " selected" : "") + ">" + c + "</option>").join("") + (v && !R.cats.includes(String(v).toUpperCase()) ? "<option selected>" + esc(v) + "</option>" : "") + "</select>";
+  const shSel = (j, v) => "<select data-cmj='" + j + "' data-f='sh'>" + ["Any", "Day", "Night"].map(o => "<option" + ((o === "Any" ? !v : same(o, v)) ? " selected" : "") + ">" + o + "</option>").join("") + "</select>";
+  const rows = L.map((x, j) => { const pr = cmProb(x, R.cats);
+    return "<tr data-cmr='" + j + "' class='" + [j && cmNorm(L[j - 1].m) !== cmNorm(x.m) ? "msep" : "", x.off ? "roff" : "", pr ? "cmbad" : ""].join(" ") + "'" + (pr ? " title='" + esc(pr + ": left out of the check until fixed") + "'" : x.off ? " title='Switched off: kept, not used by the check. Right-click to switch it on.'" : "") + ">" +
+      "<td><input data-cmj='" + j + "' data-f='m' list='cmMt' value='" + esc(x.m) + "' placeholder='Mission'>" + (x.off ? "<i class='offtag'>OFF</i>" : "") + "</td><td>" + shSel(j, x.sh) + "</td>" + CM_SEATS.map(k => "<td class='c'>" + seatSel(j, k, x[k]) + "</td>").join("") +
+      "<td><input data-cmj='" + j + "' data-f='note' value='" + esc(x.note) + "' placeholder=''>" + (pr ? "<div class='cmbadm'>" + esc(pr) + "</div>" : "") + "</td></tr>"; }).join("");
+  const used = [...new Set(L.filter(x => x.m && !x.off).map(x => cmNorm(x.m)))].map(m => { const C = codes.filter(k => cmNorm(k.mtype) === m).map(k => k.code); return "<b>" + esc(L.find(x => cmNorm(x.m) === m).m) + "</b>: " + (C.length ? esc(C.join(", ")) : "<span style='color:#b45309'>no flight code has this Mission Type yet</span>"); });
+  el.innerHTML = "<div class='card'><h2>Crew matrix <small class='muted'>the CAT each seat needs on a mission</small></h2><div class='muted' style='margin-bottom:8px'>" + (R.src === "sheet" ? "Saved in the <b>Crew Matrix</b> sheet of the Master Planner file." : "The squadron's built-in matrix. Your first change makes the <b>Crew Matrix</b> sheet in the Master Planner file.") + " Change a cell to edit it; right-click a row to move, copy, switch off or remove it. A flight is checked when its flight code's <b>Mission Type</b> is one of the missions below. It only warns; nothing is blocked. Save to Excel to keep the changes.</div>" +
+    "<div class='cmxcat'>CAT order, best first: <input id='cmCats' value='" + esc(R.cats.join(", ")) + "' style='width:120px' title='Comma separated, best first'> &nbsp;·&nbsp; a trainee, or a person with no CAT, counts below the last one. A crew passes when it fits <u>any one row</u> of its mission. A seat nobody is planned in yet is not counted against it.</div>" +
+    "<datalist id='cmMt'>" + mts.map(m => "<option value='" + esc(m) + "'>").join("") + "</datalist>" +
+    "<div style='overflow:auto'><table class='cmxt cmed'><colgroup><col class='cm'><col class='cs'><col class='cq'><col class='cq'><col class='cq'><col class='cq'><col class='cq'><col class='cq'><col></colgroup><tr><th>MISSION</th><th>SHIFT</th><th class='c'>AC</th><th class='c'>CO-PILOT</th><th class='c'>LM</th><th class='c'>TACCO</th><th class='c'>SUP 1</th><th class='c'>SUP 2</th><th>NOTES</th></tr>" + (rows || "<tr><td colspan=9 class='muted' style='padding:12px'>No rows: nothing is checked.</td></tr>") + "</table></div>" +
+    "<div style='margin-top:8px'><button class='btn' id='cmAddM'>+ Add mission</button> <span class='muted'>To add another way to crew a mission, right-click one of its rows and pick <b>Add a row below</b>.</span></div>" +
+    "<div class='cmxinfo'>Each letter is the lowest CAT allowed in that seat; - means no requirement. <b>Sup 1 and Sup 2</b> are two minimums for the pair: B and C means one is B or better and the other C or better, whichever seat holds which. The Captain is the pilot tagged AC; every other pilot is a co-pilot. Standby (P1, P2, BU) is checked as <b>MAS OPS</b>.</div>" +
+    (used.length ? "<div class='cmxcodes'>Flight codes using each mission: " + used.join(" · ") + "</div>" : "") + "</div>";
+  if (cur.cmFocus != null) { const f = el.querySelector("tr[data-cmr='" + cur.cmFocus + "'] input[data-f='m']"); cur.cmFocus = null; if (f) { f.focus(); f.select(); } }
+}
+$("cmxWrap") && $("cmxWrap").addEventListener("change", e => {
+  const t = e.target; if (!cmEdOk()) return;
+  if (t.id === "cmCats") { cmCats(t.value); return; }
+  if (t.dataset.cmj != null) cmSet(+t.dataset.cmj, t.dataset.f, t.value);
+});
+$("cmxWrap") && $("cmxWrap").addEventListener("click", e => { if (e.target.id === "cmAddM" && cmEdOk()) cmAct(-1, "addm"); });
+$("cmxWrap") && $("cmxWrap").addEventListener("contextmenu", e => {
+  const tr = e.target.closest("tr[data-cmr]"); if (!tr || !cmEdOk()) return; e.preventDefault();
+  const j = +tr.dataset.cmr, L = cmList(), x = L[j];
+  opsCtxOpen(e.clientX, e.clientY, [["Move up", j > 0 ? () => cmAct(j, "up") : null], ["Move down", j < L.length - 1 ? () => cmAct(j, "down") : null], ["Add a row below (a copy)", () => cmAct(j, "dup")],
+    [x.off ? "Switch on" : "Switch off (keep it)", () => cmAct(j, "off")], ["✕ Remove…", () => cmAct(j, "del")]], (x.m || "New mission") + (x.sh ? " · " + x.sh : ""));
+});
 const cmNorm = v => String(v || "").toUpperCase().replace(/\s+/g, " ").trim();
 const cmCat = c => { const m = /^\s*(?:CAT\s*)?([A-Za-z])\s*$/i.exec(String(c || "")); return m ? m[1].toUpperCase() : ""; };   // "CAT B" -> "B"; TRAINEE or blank -> ""
 function cmCheck(mission, shift, G, R) {   // G = { ac: [cat], pilot: [cat], lm: [cat], tacco: [cat], sup: [cat] } (planned people only); null = this mission is not in the matrix
@@ -6894,7 +6983,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z189 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z190 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7941,7 +8030,7 @@ const HELP = {
     "<h3>Tools</h3><ul><li>Click a seat to change it, mark MC / CRMO, or swap Captain and Co-Pilot. Click a text cell to type.</li><li><b>+ Ops Add</b>: an ad hoc flight for the day. It isn't put on the Master Planner; departments see it on their MASTER rows (OPS ADD), and crew you seat on it get it on their plan. Remove it from its status pill.</li><li><b>⇩ Export AFP</b>: fills the squadron AFP format for the day on screen and downloads it (Excel). Names read Rank Name (CAT); cancelled flights are left out; the brief time goes in the remarks. SXO, OPS O and SDO: line 1 of the box is AM, line 2 PM, line 3 NIGHT (one line = the whole day). Standby P1 is AM SAL, P2 PM SAL. Prepared by is the SDO, Vetted by the OPS O. The CO's name and number are typed once in the dialog.</li><li>A- / A+ sizes the board; Projector hides the menus.</li><li>Save writes every file you changed: the Ops Room file, and a department's file when you up-chit someone from it.</li></ul>"],
   mp: ["Master Planning", "<p>The Master Planner's calendar: every flight and squadron event, which all departments copy. Only the Master Planner (its own file) can edit; everyone else sees it locked.</p>" +
     "<ul><li>Chips: time + code in shift colours, crew tags (P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2; on a flight, none = the flight code's crew). Green chips: squadron events (meetings, ceremonies, courses); their crew is ALL or tags, and a red NO CREW means nobody was chosen.</li><li>Grey day: no flying (reason on the day). Blue outline: today.</li><li>Click a day to open it on the right: add, change or remove flights and ground items. Arrow keys move days, Esc closes.</li></ul><h3>Export…</h3><p>A clean Excel copy of the flights and planned hours for an outside office: one Calendar sheet with each month as a calendar: every flight with its time and planned hours, the day and week totals, the reason on no-flying days and a month total. It prints on landscape A4, one page wide. Pick the period, and untick any flight code to leave it out of the rows and the totals (your choice is remembered). No crew, names or comments go in the file.</p>"],
-  cmx: ["Crew Matrix", "<p>The CAT each seat needs on a mission, from the squadron's crew matching matrix. A flight is checked when its flight code's <b>Mission Type</b> is a mission listed here; the flight card, the Planner and the Ops Room then warn when the planned crew fits none of the mission's rows. It only warns.</p><ul><li>Each number is the lowest CAT allowed in that seat (A is best). Sup 1 and Sup 2 are two minimums for the pair, whichever seat holds which.</li><li>Seats nobody is planned in yet are not counted against the crew.</li><li>The matrix lives in the <b>Crew Matrix</b> sheet of the Master Planner file. Edit it there to change a letter, add a row or add a mission; the dashboard follows within 15 seconds.</li></ul>"],
+  cmx: ["Crew Matrix", "<pWhoever can edit the Master Planner file edits the matrix here: change a cell, <b>+ Add mission</b>, or right-click a row to move it, add a copy below, switch it off (kept, not checked) or remove it. The CAT order is the box above the table. Rows that can't be used are red with the reason. Standby (P1, P2, BU) is checked as MAS OPS. </p><p>>The CAT each seat needs on a mission, from the squadron's crew matching matrix. A flight is checked when its flight code's <b>Mission Type</b> is a mission listed here; the flight card, the Planner and the Ops Room then warn when the planned crew fits none of the mission's rows. It only warns.</p><ul><li>Each number is the lowest CAT allowed in that seat (A is best). Sup 1 and Sup 2 are two minimums for the pair, whichever seat holds which.</li><li>Seats nobody is planned in yet are not counted against the crew.</li><li>The matrix lives in the <b>Crew Matrix</b> sheet of the Master Planner file. Edit it there to change a letter, add a row or add a mission; the dashboard follows within 15 seconds.</li></ul>"],
   codes: ["Flight Codes", "<p>The one list of flight codes: code, description, default crew, Mission Type and syllabus tag. Set by the Master Planner. Right-click a code to <b>switch it off</b> (kept, greyed with OFF: not offered for new flights, flights already planned keep it and still count) or <b>remove</b> it (only when no flight this year uses it; the codes below move up). Planned hours come from each flight's time range on the calendar, and sorties are typed on the flight. Each department gets new and changed codes in its Activities list by itself the next time it saves.</p>"],
   sdo: ["Duty Planner", "<p>BDO (Base Duty Officer) and SDO (Squadron Duty Orderly). Switch duty at the top. The Duty Roster gives each day to one department; each department copies its days into its own file.</p>" +
     "<ul><li>Coloured tag = the department on duty that day. Amber day: a department's file doesn't match the roster yet. Red day: more than one department.</li><li>Duty crew list: who may do each duty. Blue outline: today. Red: public holiday.</li></ul>"]

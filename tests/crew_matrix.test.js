@@ -112,7 +112,7 @@ test("page_shows_the_default_and_offers_the_sheet", async ({ page, errs }) => {
   assert.deepStrictEqual(errs, []);
 });
 test("make_the_sheet_and_save_it", async ({ page, errs }) => {
-  const r = await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cmx']").click(); document.getElementById("cmxMake").click();
+  const r = await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='cmx']").click(); cmSet(0, "note", "made by the first edit");   // z190: the first edit makes the sheet (no Make button)
     const bi = books.findIndex(b => b.S.kind === "master"), mb = books[bi], z = withBook(bi, () => fflate.unzipSync(buildXlsx().bytes)), td = new TextDecoder();
     const wb = td.decode(z["xl/workbook.xml"]), sheets = Object.keys(z).filter(k => /worksheets\/sheet\d+\.xml$/.test(k)).map(k => td.decode(z[k])), hit = sheets.find(x => x.includes("MAS TACT") && x.includes("Sup 1"));
     return { src: mb.S.cm.src, n: mb.S.cm.rows.length, wb: wb.includes("Crew Matrix"), hit: !!hit, btn: !!document.getElementById("cmxMake"), t: document.getElementById("cmxWrap").innerText }; });

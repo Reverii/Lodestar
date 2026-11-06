@@ -16,9 +16,9 @@ test("row_helpers_exist", async ({ page }) => {
 const go = page => page.evaluate(() => { document.querySelector("nav.tabs button[data-v='plan']").click(); cur.m = 9; renderPlanner(); });
 const FIXTURE = require("path").join(__dirname, "fixtures", "SUP2_layout2.xlsx");   // a layout-2 SUP 2 file (three rows per person)
 
-test("rows_per_is_four_and_stamp_four", async ({ page }) => {
+test("rows_per_is_four_and_stamp_five", async ({ page }) => {
   const r = await page.evaluate(() => ({ rp: ROWS_PER, srp: books[0].S.rp, lay: LAYOUT.dept, older: books.filter(b => !b.S.kind).map(b => b.S.lay.older) }));
-  assert.strictEqual(r.rp, 4); assert.strictEqual(r.srp, 4); assert.strictEqual(r.lay, 4); assert.ok(r.older.every(x => x === false), "no layout warning on the fresh set: " + r.older.join());
+  assert.strictEqual(r.rp, 4); assert.strictEqual(r.srp, 4); assert.strictEqual(r.lay, 5); assert.ok(r.older.every(x => x === false), "no layout warning on the fresh set: " + r.older.join());
 });
 test("wd_row_renders_teal", async ({ page }) => {
   await go(page);
@@ -59,7 +59,7 @@ test("pasted_flight_in_wd_not_counted", async ({ page }) => {
 test("older_layout_still_opens", async ({ page }) => {
   await page.setInputFiles("#fileInput", FIXTURE); await page.waitForFunction(() => typeof books !== "undefined" && books.length >= 1);
   await go(page);
-  const r = await page.evaluate(() => ({ rp: books[0].S.rp, older: books[0].S.lay.older, rows: S.m[9].grid.length, n: N, g: gridRow(1, 2), wd: document.querySelectorAll("#plan td.shWD").length, am: document.querySelectorAll("#plan td.shAM").length }));
+  const r = await page.evaluate(() => ({ rp: books[0].S.rp, older: books[0].S.lay.older, rows: S.m[9].grid.length, n: S.n, g: gridRow(1, 2), wd: document.querySelectorAll("#plan td.shWD").length, am: document.querySelectorAll("#plan td.shAM").length }));
   assert.strictEqual(r.rp, 3); assert.strictEqual(r.older, true); assert.strictEqual(r.rows, r.n * 3); assert.strictEqual(r.g, 5); assert.strictEqual(r.wd, 0); assert.ok(r.am > 0);
 }, { blank: true });
 

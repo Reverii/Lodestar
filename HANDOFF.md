@@ -3,6 +3,11 @@
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
 
+## Session end (7 Nov): where things stand
+- Shipped this session: z184 to z187 (Squadron programme / ALERT / FLYING RESTRICTION rows, alert state AL90 / AL2 set by the Master Planner, crew list from ATOM and a fresh eight-file set built from Brandon's filled list, ranks COL / SLTC / MWO, + Add role, BETA tag).
+- Brandon has: the z186 zip (eight new xlsx with his crew, empty plans, plus the dashboard) and the z187 dashboard. Awaiting his upload and test.
+- Open: offered to fix the stale `sample_ops_room_can_pick_a_seat` check (open the folder files when there is no sample button); no answer yet. Alert States and Roles sheets are not in Wipe data / Start new year yet. Asked whether "Beta" also means switching to the release build (dev tools stripped) and whether the logo files / deck need a BETA mark; no answer yet.
+
 ## z187 (7 Nov, Brandon: "add a +role function"; "we are now in Beta build, update the lodestar logo")
 - **+ Add role…** at the bottom of the Crew Roster Role dropdown (like + Add rank): role name, "Comes after" (order for sorting by role and for the Captain seat in the Ops Room), and "Counts as an instructor (Syllabus Tracking)". Saved in a new dashboard-made `Roles` sheet in the department file (A Role, B Comes after, C Counts as instructor = Yes; rows 2..31). The dialog lists the added roles with a ✕ (disabled while someone has the role). Code: `RL_SHEET`, `st.rl`, `rolesRefresh` (`ROLES_ALL`, `INS_ROLES`, every open department file), `roleList`, `isInsRole` (replaces the `/instructor/i` checks on a person's role), `ROLE_RANK` now follows `ROLES_ALL`, `rlOpen` / `rlAdd` / `rlRemove`. No layout change. The Excel Role dropdown still lists the three built-in roles (typing another role in Excel is allowed).
 - **BETA:** an amber BETA tag next to the LODESTAR wordmark in the header (both builds); the red DEV tag is no longer shown (dev mode itself is unchanged, still the dev build). The logo files in `logo/` and the deck are unchanged.

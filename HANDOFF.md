@@ -1,4 +1,7 @@
-# LODESTAR handoff (updated 2026-11-07, after z193; next-session notes below)
+# LODESTAR handoff (updated 2026-11-07, after z194; next-session notes below)
+
+## z194: help (?) button centred
+The tab bar's button padding (6px 12px) also hit the 26 px round `#helpBtn`, pushing the "?" off-centre. `#helpBtn` now has padding 0, flex centring and a fixed 26 px size. Dashboard only.
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.

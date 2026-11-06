@@ -428,7 +428,8 @@ table.allday .free{color:var(--s400);font-size:11.5px}
 #cellCard .cseats{border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}#cellCard .cseats>div{display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
 #cellCard .csh{background:#1e293b;color:#fff;font-size:10.5px;font-weight:700;padding:4px 0}#cellCard .csn{padding:5px 0 0;font-weight:800;font-size:13px}#cellCard .csn:last-child{padding-bottom:5px}
 #cellCard .you{background:#dbeafe;border-radius:4px}#cellCard .cnone{color:#94a3b8;font-weight:400}#cellCard .cpax{font-size:9px;font-weight:800;color:#166534;background:#dcfce7;border-radius:3px;padding:0 3px;margin-left:2px}
-#cellCard input{width:100%;margin:2px 0 4px;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px;font:inherit}
+#cellCard input{width:100%;margin:2px 0 4px;padding:6px 8px;border:1px solid #d8b4fe;border-radius:6px;font:inherit}#cellCard input.cops{border-color:#93c5fd;background:#eff6ff}#cellCard .cdet.cops{background:#eff6ff;color:#1e3a8a}
+#cellCard .clab.cnl{display:flex;justify-content:space-between;align-items:baseline;gap:8px}#cellCard .clab.cnl small{text-transform:none;letter-spacing:0;font-weight:500;color:#94a3b8;font-size:10.5px}#cellCard .clab.pn{color:#7e22ce}#cellCard .clab.op{color:#1d4ed8}
 .cmxt{border-collapse:collapse;width:100%;table-layout:fixed}.cmxt col.cm{width:150px}.cmxt col.cs{width:80px}.cmxt col.cq{width:92px}.cmxt th.c{text-align:center}.cmxt th{font-size:10px;letter-spacing:.5px;color:var(--s500);text-align:left;padding:5px 8px;background:var(--s50);border-bottom:1px solid var(--s200)}.cmxt td{padding:4px 8px;border-bottom:1px solid var(--s100)}.cmxt td.c{text-align:center;font-weight:800}.cmxt tr.msep td{border-top:2px solid var(--s300)}
 .cmxcat{padding:6px 0 8px;color:var(--s700)}.cmxcat b{background:var(--s100);border-radius:4px;padding:1px 8px;margin:0 2px}.cmxerr{margin-top:8px;padding:7px 12px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:6px;font-size:12px}.cmxinfo{margin-top:8px;padding:7px 12px;background:#f0f9ff;color:#075985;border-radius:6px;font-size:12px}.cmxcodes{margin-top:8px;font-size:12px;color:var(--s700)}
 #cellCard .ccat{display:block;font-style:normal;font-size:9.5px;font-weight:700;color:#64748b;line-height:1}
@@ -699,6 +700,7 @@ table.opsseat td.miss{background:#fef2f2}
 .opsmiss{color:var(--red);font-weight:700;font-size:12px}
 .opswarn{color:#b45309;font-weight:700}
 .osyl{display:block;width:max-content;margin:2px auto 0;font-size:10px;font-weight:800;line-height:1.25;padding:0 5px;border-radius:4px;background:#fef3c7;color:#92400e;border:1px solid #fcd34d}.oxt .osyl{display:inline-block;margin:0 0 0 3px}
+.onoter{font-weight:700;color:#1e3a8a;background:#eff6ff;border-left:3px solid #2563eb;border-radius:3px;padding:1px 5px;margin-bottom:2px;text-align:left;white-space:normal}tr.cxl .onoter{background:#f1f5f9;color:#64748b;border-left-color:#94a3b8}
 .osylr{font-weight:700;color:#92400e;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:3px;padding:1px 5px;margin-bottom:2px}tr.cxl .osyl,tr.cxl .osylr{background:#f1f5f9;color:#64748b;border-color:#cbd5e1}
 .opsb{font-style:normal;font-size:10px;font-weight:800;border-radius:4px;padding:1px 5px;color:#fff}
 .opsb.mc{background:#1d4ed8}.opsb.crmo{background:#7c3aed}.opsb.pax{background:#16a34a}
@@ -746,7 +748,7 @@ td.allab{background:#d97706!important;color:#fff;font-weight:800;font-size:10px;
 tr.frrow td.c{cursor:default;font-weight:700;color:#991b1b;background:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0}tr.frrow td.c.on{background:#fee2e2}
 td.frlab{background:#b91c1c!important;color:#fff;font-weight:800;font-size:10px;padding:0 8px!important}
 td.sdolab{background:#be123c!important;color:#fff;font-weight:800;font-size:10px;padding:0 8px!important}
-td.c.hasnote{position:relative;line-height:1.1}td.c.hasnote::after{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 7px 7px 0;border-color:transparent #9333ea transparent transparent}
+td.c.hasops{position:relative;line-height:1.1;background-image:linear-gradient(135deg,#2563eb 0,#2563eb 5px,transparent 5.5px)}td.c.hasnote{position:relative;line-height:1.1}td.c.hasnote::after{content:"";position:absolute;top:0;right:0;border-style:solid;border-width:0 7px 7px 0;border-color:transparent #9333ea transparent transparent}
 td.c .cw{font-size:8.5px;font-weight:800;line-height:11px;overflow:hidden;text-overflow:clip;white-space:nowrap;letter-spacing:0}td.c .cw.bad{color:#b91c1c}td.c .cw.rest{color:#c2410c}td.c .cw.due{color:#b45309}
 td.c .cn{font-size:9.5px;font-weight:600;font-style:italic;color:#7e22ce;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 td.c.sdoday{box-shadow:inset 2px 0 0 #f43f5e,inset -2px 0 0 #f43f5e}
@@ -1243,7 +1245,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z187</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z188</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1880,19 +1882,19 @@ function loadWorkbook(buf, name, handle, other) {
     const gnd = []; for (let d = 0; d < 31; d++) gnd.push(st.gndRow ? str(c[colL(DAY_COL0 + d) + st.gndRow]) : "");
     st.m.push({ master, mtime, mnote, grid, gnd });
   }
-  // Cell Notes sheet: a comment on a crew cell, one per row (A date, B shift, C callsign or name, E comment)
-  st.notes = new Map(); st.noteRow = new Map(); st.noteUsed = new Set(); st.hasNotes = !!WB.paths["Cell Notes"];
+  // Cell Notes sheet: a comment on a crew cell, one per row (A date, B shift, C callsign or name, E planner note, H line for the Ops Room Remarks (z188))
+  st.notes = new Map(); st.opsNotes = new Map(); st.noteRow = new Map(); st.noteUsed = new Set(); st.hasNotes = !!WB.paths["Cell Notes"];
   if (st.hasNotes) {
     const c = readCells("Cell Notes");
     for (let r = NOTE_ROW0; r < NOTE_ROW0 + NOTE_N; r++) {
-      const a = c["A" + r], who = str(c["C" + r]), tx = str(c["E" + r]), si = SHIFTS.indexOf(str(c["B" + r]).toUpperCase());
-      if (a != null || who || tx) st.noteUsed.add(r);
-      if (typeof a !== "number" || si < 0 || !who || !tx) continue;
+      const a = c["A" + r], who = str(c["C" + r]), tx = str(c["E" + r]), ox = str(c["H" + r]), si = SHIFTS.indexOf(str(c["B" + r]).toUpperCase());
+      if (a != null || who || tx || ox) st.noteUsed.add(r);
+      if (typeof a !== "number" || si < 0 || !who || !(tx || ox)) continue;
       const iso = serialToISO(a), D = ymd(iso, st.year); if (D.y !== st.year) continue;
       const ci = st.roster.findIndex(p => p.id && same(p.id, who)) >= 0 ? st.roster.findIndex(p => p.id && same(p.id, who)) : st.roster.findIndex(p => p.name && same(p.name, who));
       if (ci < 0) continue;
       const k = D.mi + ":" + (gridRow(ci, si, st)) + ":" + D.d;
-      st.notes.set(k, tx); st.noteRow.set(k, r);
+      if (tx) st.notes.set(k, tx); if (ox) st.opsNotes.set(k, ox); st.noteRow.set(k, r);
     }
   }
   // z187: roles added on the Crew Roster (dashboard-made sheet "Roles": A role, B the role it comes after, C Yes = counts as an instructor; rows 2..31)
@@ -1941,12 +1943,16 @@ function loadWorkbook(buf, name, handle, other) {
   return added;
 }
 const NOTE_ROW0 = 6, NOTE_N = 1500;
-// set or clear the comment on crew cell g:r:d of month mi (current book)
-function setNote(mi, r, d, tx) {
+// set or clear a note on crew cell g:r:d of month mi (current book): ops = false the planner note (column E, planners only),
+// ops = true the line for the Ops Room Remarks (column H, z188). The row is cleared when both are empty.
+function setNote(mi, r, d, tx, ops) {
   if (!S.hasNotes) return;
-  const k = mi + ":" + r + ":" + d, old = S.notes.get(k) || ""; tx = tx.trim(); if (tx === old) return false;
+  if (!S.opsNotes) S.opsNotes = new Map();
+  const k = mi + ":" + r + ":" + d, MAP = ops ? S.opsNotes : S.notes, other = ops ? S.notes : S.opsNotes, COL = ops ? "H" : "E", old = MAP.get(k) || ""; tx = tx.trim(); if (tx === old) return false;
   let row = S.noteRow.get(k);
-  if (!tx) { if (row) { ["A", "B", "C", "E"].forEach(L => put("Cell Notes", L + row, "")); S.notes.delete(k); S.noteRow.delete(k); S.noteUsed.delete(row); } return true; }
+  if (!tx) { MAP.delete(k); if (!row) return true;
+    if (other.get(k)) { put("Cell Notes", COL + row, ""); return true; }
+    ["A", "B", "C", "E", "H"].forEach(L => put("Cell Notes", L + row, "")); S.noteRow.delete(k); S.noteUsed.delete(row); return true; }
   if (!row) {
     row = NOTE_ROW0; while (S.noteUsed.has(row) && row < NOTE_ROW0 + NOTE_N) row++;
     if (row >= NOTE_ROW0 + NOTE_N) { alert("The Cell Notes sheet is full. Clear old rows in Excel to make room."); return false; }
@@ -1954,7 +1960,7 @@ function setNote(mi, r, d, tx) {
     put("Cell Notes", "A" + row, dateSerial(S.year, mi, d)); put("Cell Notes", "B" + row, ROW_LABELS[rowShift(r)]); put("Cell Notes", "C" + row, p.id || p.name);
     S.noteUsed.add(row); S.noteRow.set(k, row);
   }
-  put("Cell Notes", "E" + row, tx); S.notes.set(k, tx); return true;
+  put("Cell Notes", COL + row, tx); MAP.set(k, tx); return true;
 }
 // ---------- role tags (AC / Pax): a planner's tag on a crew flight cell, kept in the department file's own Role Tags sheet
 const RL_SHEET = "Roles", RL_ROW0 = 2, RL_N = 30, RL_HEAD = ["Role", "Comes after", "Counts as instructor"], RL_COLS = '<col min="1" max="2" width="22" customWidth="1"/><col min="3" max="3" width="20" customWidth="1"/>';
@@ -2123,7 +2129,9 @@ function afpSims(D) {
   books.forEach((b, bi) => { if (!isDept(b) || b.S.year !== D.y) return;
     withBook(bi, () => { const A = actIndex(), M = S.m[D.mi]; if (!M) return;
       S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < rp(S); s++) { const g = M.grid[gridRow(i, s)], v = g && g[D.d], a = v && A.get(String(v).toUpperCase()); if (!a || a.ci !== CAT_SIM) continue;
-        const note = (S.notes && S.notes.get(D.mi + ":" + gridRow(i, s) + ":" + D.d)) || "", tm = normTime(note), when = tm !== note || /\d{3,4}H/.test(tm) ? tm : ["AM", "PM", "NIGHT", "WD"][s];
+        // z188: the time from the cell's Ops Room line, else its planner note, and only when the text is just a time (no planner text reaches the AFP)
+        const nk = D.mi + ":" + gridRow(i, s) + ":" + D.d, isTm = t => !!t && /\d{3,4}/.test(t) && /^[\d\sH:.\-–—]*(to[\d\sH:.\-–—]*)?$/i.test(t);
+        const note = [(S.opsNotes && S.opsNotes.get(nk)) || "", (S.notes && S.notes.get(nk)) || ""].map(t => t.trim()).find(isTm) || "", when = note ? normTime(note) : ["AM", "PM", "NIGHT", "WD"][s];
         const key = a.code.toUpperCase() + "|" + when; if (!by.has(key)) by.set(key, { loc: a.code, when, s, who: [] }); by.get(key).who.push(afpName(p)); } }); }); });
   return [...by.values()].sort((x, y) => x.s - y.s || (x.loc < y.loc ? -1 : 1));
 }
@@ -2134,14 +2142,15 @@ function afpData(iso) {
   const fl = D.rows.filter(r => opsOutcome(r, iso) !== "cxl").map((r, n) => {
     const o = r.o || {}, x = r.x, cs = D.crew[x.s] || [], seat = {}, pax = [];
     [...new Set(OPS_SEATS.map(z => z[1]))].forEach(dep => { const q = afpSeat(r, dep, cs); seat[dep] = q.out.map(afpName); pax.push(...q.pax); });
-    const rem = [o.brf ? "BRF " + normTime(o.brf) : "", o.rem || x.f.note || "", o.oth ? "Others: " + o.oth : "", pax.length ? "PAX: " + pax.map(c => c.name || c.id).join(", ") : ""].filter(Boolean);
+    // z188: the AFP shows what the Ops Room shows: the Ops Room lines from the plans, the Ops Room remark (an Ops Add's own comment), never the Master Planner comment or planner notes
+    const rem = [o.brf ? "BRF " + normTime(o.brf) : "", ...opsNoteList(r, D).map(c => opsName(c) + ": " + c.opsNote), o.rem || (x.f.oa ? x.f.note || "" : ""), o.oth ? "Others: " + o.oth : "", pax.length ? "PAX: " + pax.map(c => c.name || c.id).join(", ") : ""].filter(Boolean);
     return { sn: n + 1, etd: normTime(r.etd || ""), eta: normTime(r.eta || ""), cs: [o.cs || "", x.ac > 1 ? sorName(r.a, x.ac).toUpperCase() : ""].filter(Boolean).join("\n"),
       seat, mission: mt(x.code), area: [o.ao, o.at].filter(Boolean).join("\n"), rem: rem.join("\n"), tail: o.tail || "" };
   });
   let ps = 0, ph = 0; for (let s = 0; s < 3; s++) mpShift(P, D.mi, D.d, s).forEach(f => { if (!f.code) return; ps += flSort(f); ph += mpFlHrs(P, f).h || 0; });
   const tk = D.rows.filter(r => opsOutcome(r, iso) !== "cxl"), th = tk.reduce((n, r) => n + (r.pdur || 0), 0);
   const sb = opsSbList(D, D.sb).map(r => { const o = r.o || {}, seat = {}; [...new Set(OPS_SEATS.map(z => z[1]))].forEach(dep => { const q = afpSeat(r, dep, D.crew.sb[2] || []); seat[dep] = q.out.concat(q.pax).map(afpName); });
-    return { code: r.lab || r.x.code, tail: o.tail || "", seat, brf: o.brf ? normTime(o.brf) : "", rem: o.rem || "" }; });
+    return { code: r.lab || r.x.code, tail: o.tail || "", seat, brf: o.brf ? normTime(o.brf) : "", rem: [...opsNoteList(r, D).map(c => opsName(c) + ": " + c.opsNote), o.rem || ""].filter(Boolean).join("\n") }; });
   const GSH = ["AM", "PM", "NIGHT", "WD"];
   const gr = opsGround(D).map(g => ({ time: g.grp === 0 ? (mpRange(afpText(g.when), 0) || afpText(g.when)) : g.grp === 3 ? g.until.replace(/^until /, "TILL ").toUpperCase() : GSH[g.sh] || "", act: g.act + (g.desc && !same(g.desc, g.act) ? " (" + g.desc + ")" : ""), who: afpText(g.who), venue: afpText(g.note) }));
   const sxo = afpDuty(iso, "SXO"), opso = afpDuty(iso, "OPS O"), sdo = afpDuty(iso, "SDO");
@@ -4940,9 +4949,10 @@ function renderPlanner() {
         if (a && a.ci === CAT_FLIGHT) { const fl = [0, 1].map(k => { const j = s * 2 + k; return M.master[j][d] ? M.master[j][d] + (M.mtime[j][d] ? " " + normTime(M.mtime[j][d]) : "") + (M.mnote[j][d] ? " (" + M.mnote[j][d] + ")" : "") : ""; }).filter(Boolean); tip = fl.length ? SHIFTS[s] + " programme: " + fl.join(", ") : "No " + SHIFTS[s] + " flight on the master programme"; }
         const sd = st.day[d].miss.length > 0;
         if (sd) tip = (tip ? tip + "\n" : "") + st.day[d].miss.join(" and ") + " day with nobody on it yet";
-        const cn = S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d);
+        const cn = S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d), co = S.opsNotes && S.opsNotes.get(mi + ":" + (gridRow(i, s)) + ":" + d);
         const det = [];   // the cell's own facts for the flight card (no day-level lines)
-        if (cn) { tip = "Comment: " + cn + (tip ? "\n" + tip : ""); det.push("Comment: " + cn); }
+        if (co) { tip = "For the Ops Room: " + co + (tip ? "\n" + tip : ""); det.push("For the Ops Room: " + co); }
+        if (cn) { tip = "Planner note: " + cn + (tip ? "\n" + tip : ""); det.push("Planner note: " + cn); }
         const sy = SYC.get((gridRow(i, s)) + ":" + d);
         if (sy) { const sl = "Syllabus: " + sy.code + " " + (sy.res === "Planned" ? "planned" : sy.res === "Pass" ? "passed" : sy.res === "Fail" ? "failed" : "logged") + (sy.by ? " (" + sy.by + ")" : ""); tip = sl + (tip ? "\n" + tip : ""); det.push(sl); }
         const cx = a && a.ci === CAT_FLIGHT ? cxlOf(S, p.id, mi, d, s) : null; if (cx) { tip = "Cancelled in the Ops Room: " + cx + (tip ? "\n" + tip : ""); det.unshift("Cancelled in the Ops Room: " + cx); }
@@ -4977,7 +4987,7 @@ function renderPlanner() {
         if (am && am.alert) { W.push(["⚠ NOT CURRENT", "bad"]); l1cls += " atomw"; tip = am.alert.lines.join("\n") + "\nFrom ATOM, data as of " + atomAsOf(atomCurrent()) + (tip ? "\n" + tip : ""); }
         if (a && CN.has(i)) { const t = dateSerial(y, mi, d); CN.get(i).forEach(([n, k]) => { const R = S.rules[k], key = i + ":" + k; if (n === t && !cnDone.has(key) && ruleMatch(R, a, v)) { cnDone.add(key); W.push(["⚠ NOT CURRENT", "bad"]); tip = (tip ? tip + "\n" : "") + "Not current for " + R.name + " when this flight is planned (" + curIssues(CC, i).filter(x => x.startsWith(R.name)).join("; ") + ")"; } }); }
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) tip = (tip ? tip + "\n" : "") + "Currency: " + CL.get(i).get(d).map(w => w[2]).join("; ");
-        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (gridRow(i, s)) + ":" + d + "' data-cd='" + esc(det.join("\n")) + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, gridRow(i, s), d) + l1 + mlab + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
+        h += "<td class='" + dc(d) + " " + catClass(v, A) + (sd ? " sdoday" : "") + (cn ? " hasnote" : "") + (co ? " hasops" : "") + (sy ? " hassyl" : "") + (ol ? " offlist" : "") + (rest ? " rest" : "") + (cx ? " cxl" : "") + (dn ? (dnf ? " dnf" : " dnd") : "") + l1cls + "' data-k='g:" + (gridRow(i, s)) + ":" + d + "' data-cd='" + esc(det.join("\n")) + "' title='" + esc(tip) + "'>" + esc(v) + roleChip(mi, gridRow(i, s), d) + l1 + mlab + [...new Set(W.map(w => w[1] + "|" + w[0]))].slice(0, 2).map(x => "<div class='cw " + x.split("|")[0] + "'>" + esc(x.split("|")[1]) + "</div>").join("") + (sy ? "<div class='sytag " + (sy.res === "Pass" ? "ok" : sy.res === "Fail" ? "no" : "") + "'>" + (sy.res === "Pass" ? "✓ " : sy.res === "Fail" ? "✕ " : "") + esc(sylTag(sy.code)) + "</div>" : "") + (cn ? "<div class='cn'>" + esc(cn) + "</div>" : "") + "</td>";
       }
       if (s === 0) h += "<td class='tot' rowspan=" + RPB + ">" + (t.fl || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.hrs ? t.hrs.toFixed(1) : "-") + "</td>" + (FLN ? (() => { const ah = atomHours(cur.b, i, mi); if (ah) return "<td class='tot flown' rowspan=" + RPB + " title='" + esc("Clocked this month, from ATOM, as of " + ah.asOf) + "'>" + ah.h.toFixed(1) + "</td>"; const v = FLN.get([S.dept, p.id, mi].join("|").toUpperCase()); return "<td class='tot flown' rowspan=" + RPB + " title='" + esc(v ? v.n + " flight" + (v.n > 1 ? "s" : "") + " closed in the Ops Room (ATD to ATA)" : opsIdx() < 0 ? "Open the Ops Room file to see flown hours" : "No flights closed in the Ops Room yet") + "'>" + (v ? v.h.toFixed(1) : "-") + "</td>"; })() : "") + "<td class='tot' rowspan=" + RPB + ">" + (t.gd || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.sdo || "-") + "</td><td class='tot' rowspan=" + RPB + ">" + (t.lv || "-") + "</td>";
       h += "</tr>";
@@ -5043,7 +5053,7 @@ function markFind() {
   let names = 0;
   document.querySelectorAll("#plan td[data-k]").forEach(td => {
     const p = keyParts(td.dataset.k);
-    const ok = p.t === "m" ? has(M.master[p.r][p.d]) || has(M.mtime[p.r][p.d]) || has(M.mnote[p.r][p.d]) : has(M.grid[p.r][p.d]) || has(S.notes && S.notes.get(cur.m + ":" + p.r + ":" + p.d));
+    const ok = p.t === "m" ? has(M.master[p.r][p.d]) || has(M.mtime[p.r][p.d]) || has(M.mnote[p.r][p.d]) : has(M.grid[p.r][p.d]) || has(S.notes && S.notes.get(cur.m + ":" + p.r + ":" + p.d)) || has(S.opsNotes && S.opsNotes.get(cur.m + ":" + p.r + ":" + p.d));
     if (ok) { td.classList.add("hit"); cur.hits.push(td.dataset.k); }
   });
   document.querySelectorAll("#plan td[data-g]").forEach(td => { if (has(M.gnd[+td.dataset.g])) td.classList.add("hit"); });
@@ -5467,7 +5477,7 @@ function opsCrewOn(y, mi, d) {
       S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < SHIFT_ROWS; s++) { const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][d]; const a = v && A.get(String(v).toUpperCase());
         // standby crew (P1 / P2 / BU) belong to no shift: whichever shift the plan marks, they go in one whole-day list (kept in slot 2 so saved Ops Room rows still match)
         const sbk = a && a.ci !== CAT_FLIGHT && isSb(a.code) ? 2 : -1; if (sbk >= 0 && out.sb[2].some(c => c.dept === S.dept && c.i === i && same(c.code, v))) continue;
-        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: a.ci === CAT_FLIGHT ? roleOf(S, mi, gridRow(i, s), d) : "", sor: a.ci === CAT_FLIGHT ? sorOf(S, mi, gridRow(i, s), d) : null, note: (S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "" }); } }); });
+        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: a.ci === CAT_FLIGHT ? roleOf(S, mi, gridRow(i, s), d) : "", sor: a.ci === CAT_FLIGHT ? sorOf(S, mi, gridRow(i, s), d) : null, note: (S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "", opsNote: (S.opsNotes && S.opsNotes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "" }); } }); });
   });
   return out;
 }
@@ -5638,9 +5648,20 @@ function opsSylLines(r) {
   OPS_SEATS.forEach((z, k) => { if (k === 0) return; const dep = z[1]; (opsXtraR(r)[dep] || []).forEach(id => { const y = opsSyl(dep, id, cur.opsDay, r.x.s); if (y) out.push([opsName(opsPerson(dep, id, [])) || id, y.desc]); }); });
   return out.map(([n, d]) => "<div class='osylr'>🎓 " + esc(n) + " · " + esc(d) + "</div>").join("");
 }
+// z188: each person's "For the Ops Room" line (set on the planner's flight card) at the top of the flight's Remarks, one blue line per person.
+// Planner notes (the other box) never reach the Ops Room; the Master Planner flight comment is not shown here either.
+function opsNoteList(r, D) {
+  const out = [], seen = new Set(), add = c => { if (!c || !c.opsNote) return; const k = c.dept + "|" + c.id; if (seen.has(k)) return; seen.add(k); out.push(c); };
+  D = D || opsDay(cur.opsDay); const cs = D ? (r.x.sb ? D.crew.sb[2] : D.crew[r.x.s]) || [] : [];
+  OPS_SEATS.forEach((z, k) => { if (r.x.need[k]) add(r.seats[k]); });
+  Object.values(r.auto || {}).flat().forEach(add); (r.extra || []).forEach(add);
+  OPS_SEATS.forEach((z, k) => { if (k === 0) return; const dep = z[1]; (opsXtraR(r)[dep] || []).forEach(id => add(opsPerson(dep, id, cs))); });
+  return out;
+}
+const opsNoteLines = r => opsNoteList(r).map(c => "<div class='onoter' title='" + esc("From the " + c.dept + " plan (" + c.id + (c.name ? " · " + c.name : "") + ")").replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b> · " + esc(c.opsNote) + "</div>").join("");
 function opsXtraHtml(r, k) {
   const dep = OPS_SEATS[k][1], L = (opsXtraR(r)[dep] || []), AU = (r.auto && r.auto[dep]) || [];
-  const au = k === 0 ? "" : AU.map(c => "<div class='oxt' title='" + esc("Also planned on " + c.code + ": " + c.id + (c.name ? " · " + c.name : "") + " (" + dep + ")" + (c.note ? "\nComment: " + c.note : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" + opsSylTag(dep, c.id, r) + "</div>").join("");
+  const au = k === 0 ? "" : AU.map(c => "<div class='oxt' title='" + esc("Also planned on " + c.code + ": " + c.id + (c.name ? " · " + c.name : "") + " (" + dep + ")" + (c.opsNote ? "\nFor the Ops Room: " + c.opsNote : "")).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" + opsSylTag(dep, c.id, r) + "</div>").join("");
   if (!L.length || k === 0) return au;   // Pilot extras show once, under the Pilot (co-pilot) seat, not the Aircraft Captain
   const D = opsDay(cur.opsDay);
   return L.map(id => { const p = opsPerson(dep, id, D.crew[r.x.s]), dw = downOn(dep, id, D.iso);
@@ -5652,9 +5673,9 @@ function opsCrewCell(r, k, ed) {
   if (!c) return "<td class='oc miss'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc((deptOpen(dep) ? "Nobody planned from " + dep : dep + " file not open") + (r.urg ? ". The flight is due soon." : "") + (ed ? "\nClick to pick someone." : "")) + "'><span class='seatp" + (r.urg ? " urg" : "") + (deptOpen(dep) ? "" : " nf") + "'>" + (deptOpen(dep) ? "+" : "?") + "</span>" + opsXtraHtml(r, k) + "</td>";
   const mc = r.o && same(r.o.mc, c.id), cr = r.o && same(r.o.crmo, c.id), off = c.code && !sameCode(c.code, r.x.code);
   const dw = downOn(c.dept, c.id, opsDay(cur.opsDay).iso);
-  const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.note ? "\nComment: " + c.note : "") + (c.set ? "\nSet in the Ops Room" : "");
+  const tip = (dw ? "⚠ DOWN-CHITTED since " + fmtDay(dw.since) + ": not cleared to fly. Click to up-chit or change the seat.\n" : "") + c.id + (c.name ? " · " + c.name : "") + " (" + c.dept + ")" + (c.code ? "\nPlanned: " + c.code : "") + (c.opsNote ? "\nFor the Ops Room: " + c.opsNote : "") + (c.set ? "\nSet in the Ops Room" : "");
   return "<td class='oc" + (off ? " off" : "") + (dw ? " odown" : "") + "'" + (ed ? " data-oc='" + k + "'" : "") + " title='" + esc(tip).replace(/'/g, "&#39;") + "'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b>" +
-    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (rowPax(r, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (c.note ? "<div class='ocn'>" + esc(c.note) + "</div>" : "") + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
+    (dw ? "<i class='opsb down'>DOWN</i>" : "") + (mc ? "<i class='opsb mc'>MC</i>" : "") + (cr ? "<i class='opsb crmo'>CRMO</i>" : "") + (rowPax(r, c.id) ? "<i class='opsb pax'>PAX</i>" : "") + opsSylTag(c.dept, c.id, r) + (off ? "<div class='ocw'>" + esc(c.code) + "</div>" : "") + opsXtraHtml(r, k) + "</td>";
 }
 function opsTail(r, ed, one) {
   // shown as plain text: the actual tail in bold, the standby tail small under it; click the cell to pick from the fleet
@@ -5768,7 +5789,7 @@ function opsTable(D, rows, ed) {
     return "<tr class='sbh'><td colspan='" + NC + "'>Standby Duty<span class='sbsets' title='1 Set: one crew covers P1 and P2. 2 Set: separate P1 and P2 crews.'>" + btn(1) + btn(2) + "</span></td></tr>" + L.map((r, j) => {
       const ex = r.extra.length ? "<div class='ocn'>also: " + r.extra.map(c => esc(opsName(c)) + " (" + esc(c.dept) + ")").join(", ") + "</div>" : "";
       return "<tr class='sb' data-ok='" + esc(r.key) + "'><td class='ocs sbc'><b>" + esc(r.lab || r.x.code) + "</b>" + ex + "</td>" + opsTail(r, ed, true) + "<td class='osort'></td>" + OPS_SEATS.map((z, k) => opsCrewCell(r, k, ed)).join("") +
-        (j ? "" : opsTxt(Object.assign({}, r, { o: Object.assign({}, r.o, { alert: A.map(z => z.o && z.o.alert).filter(Boolean).join("\n") }) }), "alert", ed, "Alert status", "oalert").replace("<td ", "<td colspan='4' rowspan='" + L.length + "' ").replace(/<\/td>$/, (ed ? "<button class='alAdd' title='Add an alert time'>+</button>" : "") + "</td>") + "<td class='osbx' colspan='3' rowspan='" + L.length + "'></td>") + opsTxt(r, "rem", ed, "", "orem") + "</tr>"; }).join(""); };
+        (j ? "" : opsTxt(Object.assign({}, r, { o: Object.assign({}, r.o, { alert: A.map(z => z.o && z.o.alert).filter(Boolean).join("\n") }) }), "alert", ed, "Alert status", "oalert").replace("<td ", "<td colspan='4' rowspan='" + L.length + "' ").replace(/<\/td>$/, (ed ? "<button class='alAdd' title='Add an alert time'>+</button>" : "") + "</td>") + "<td class='osbx' colspan='3' rowspan='" + L.length + "'></td>") + opsTxt(r, "rem", ed, "", "orem").replace(/^(<td[^>]*>)/, "$1" + opsNoteLines(r)) + "</tr>"; }).join(""); };
   const band = s => { const F = D.flights.filter(z => z.s === s), nS = D.rows.filter(r => r.x.s === s).length; return "<tr class='band s" + s + "'><td colspan='" + NC + "'>" + SHIFTS[s] + "<small>" + (F.length ? F.length + " flight" + (F.length === 1 ? "" : "s") + " · " + nS + " sortie" + (nS === 1 ? "" : "s") : "No flights · standby only") + "</small></td></tr>"; };
   const closeTo = s => "";   // standby is a whole-day block, drawn once after the last shift
   rows.forEach(r => {
@@ -5779,7 +5800,7 @@ function opsTable(D, rows, ed) {
     r.urg = due;
     const pill = "<span class='ost " + (edge === "oa" ? "plan oa" : edge) + "'" + (ed ? " data-ost='1'" : "") + " title='" + esc(oc === "cxl" ? "Cancelled: " + (r.o.why || "no reason") : oc === "flown" ? "Flown (ATD and ATA filled)" : edge === "open" ? (oc === "open" ? "Day is over" : "Past its ETA") + ": fill ATD / ATA, or cancel it" : x.f.oa ? "Ops Add: planned in the Ops Room, not on the Master Planner" : due ? "Due: ETD " + r.etd : "Planned") + "'>" +
       { flown: "FLOWN", cxl: "CANCELLED", open: "NOT CLOSED", due: "DUE " + normTime(r.etd || ""), oa: "OPS ADD" + (ed ? " ▾" : ""), plan: "PLANNED" + (ed ? " ▾" : "") }[edge] + "</span>";
-    const cs = r.o && r.o.cs || "";
+    const cs = r.o && r.o.cs || "", oaNote = x.f.oa ? x.f.note || "" : "";   // z188: the Master Planner flight comment is not shown in the Ops Room; an Ops Add's own comment is
     h += "<tr class='f " + st + (fi % 2 ? " alt" : "") + (x !== lastX ? " fstart" : "") + (oc === "cxl" ? " cxl" : "") + "' data-ok='" + esc(r.key) + "'>" +
       "<td class='ocs l e-" + edge + (ed ? " oe" : "") + "'" + (ed ? " data-ef='cs' data-ph='Callsign'" : "") + ">" + (cs ? "<div class='ocsn'>" + esc(cs) + "</div>" : "<div class='ocsn ph' title='No callsign yet" + (ed ? ": click to type one" : "") + "'>" + esc(x.code) + "</div>") + pill + "</td>" +
       opsTail(r, ed) + "<td class='osort' title='" + esc((x.f.oa ? "Ops Add: not on the Master Planner\n" : "") + (x.desc || "")) + "'><b>" + esc(x.code) + "</b>" + (x.ac > 1 ? "<div class='ocn'>" + sorName(r.a, x.ac) + "</div>" : "") + (() => { const mx = cmRow(r); return mx && !mx.ok ? "<div><span class='mxm' title='" + esc(cmText(mx)) + "'>CREW MATRIX ✕</span></div>" : ""; })() + "</td>" +
@@ -5788,7 +5809,7 @@ function opsTable(D, rows, ed) {
       opsTxt(r, "brf", ed, "", "otm obrf") + opsTxt(r, "etd", ed, r.etd0, "otm") + opsTxt(r, "eta", ed, r.eta0, "otm") +
       (oc === "cxl" ? "<td class='otm'></td><td class='otm'></td>" : opsTxt(r, "atd", ed, "–", "otm oatd") + opsTxt(r, "ata", ed, "–", "otm oatd")) +
       opsHrs(r, oc) +
-      ((oc === "cxl" ? opsTxt(r, "rem", ed, x.f.note || "", "orem").replace(/(<td[^>]*>)/, "$1<b class='cxlw'>Cancelled: " + esc(r.o.why || "no reason") + "</b> ") : ed ? opsTxt(r, "rem", ed, x.f.note || "", "orem") : "<td class='orem'>" + esc([r.o && r.o.rem, x.f.note].filter(Boolean).join(" · ")) + "</td>").replace(/<\/td>$/, r.o && r.o.oth ? "<div class='ocn'>Others: " + esc(r.o.oth) + "</div></td>" : "</td>")).replace(/^(<td[^>]*>)/, "$1" + opsSylLines(r)) + "</tr>";
+      ((oc === "cxl" ? opsTxt(r, "rem", ed, oaNote, "orem").replace(/(<td[^>]*>)/, "$1<b class='cxlw'>Cancelled: " + esc(r.o.why || "no reason") + "</b> ") : ed ? opsTxt(r, "rem", ed, oaNote, "orem") : "<td class='orem'>" + esc([r.o && r.o.rem, oaNote].filter(Boolean).join(" · ")) + "</td>").replace(/<\/td>$/, r.o && r.o.oth ? "<div class='ocn'>Others: " + esc(r.o.oth) + "</div></td>" : "</td>")).replace(/^(<td[^>]*>)/, "$1" + opsSylLines(r) + opsNoteLines(r)) + "</tr>";
     lastS = x.s; lastX = x;
   });
   h += sbRows(2);
@@ -5835,7 +5856,7 @@ function opsDeptRef(D) {
         for (;;) { let nv; if (e + 1 < daysIn(D.y, em)) nv = S.m[em].grid[gridRow(i, s)][e + 1]; else { const N = S.m[em + 1]; if (!N || !N.grid || !N.grid[gridRow(i, s)]) break; nv = N.grid[gridRow(i, s)][0]; }
           const na = nv && A.get(String(nv).toUpperCase()); if (!na || na.code.toUpperCase() !== a.code.toUpperCase()) break; if (e + 1 < daysIn(D.y, em)) e++; else { em++; e = 0; } }
         const key = s + "|" + a.code.toUpperCase() + "|" + em + ":" + e; if (!items.has(key)) items.set(key, { act: a.code, sh: ["AM", "PM", "NIGHT", "WD"][s], until: em > D.mi || e > D.d ? "till " + fmt(em, e) : "", people: [] });
-        const cn = S.notes && S.notes.get(D.mi + ":" + (gridRow(i, s)) + ":" + D.d); items.get(key).people.push({ ini: p.ini || p.id, note: cn || "" });
+        const cn = S.opsNotes && S.opsNotes.get(D.mi + ":" + (gridRow(i, s)) + ":" + D.d); items.get(key).people.push({ ini: p.ini || p.id, note: cn || "" });   // z188: only the line meant for the Ops Room
       } });
     });
     if (items.size) res.push({ dept: b.S.dept, items: [...items.values()] });
@@ -5941,7 +5962,7 @@ function opsOpenPop(key, k, keep) {
   let h = "<div class='pt'>" + esc(OPS_SEATS[k][0]) + " · " + esc((r.o && r.o.cs) || r.x.code) + " <span class='muted'>" + esc(SHIFTS[r.x.s] + " " + normTime(r.x.f.time || "")) + "</span><button class='x' data-pc='1'>×</button></div>";
   const dwn = c && downOn(c.dept, c.id, D.iso);
   if (dwn) h += "<div class='pp' style='background:#fee2e2;color:#991b1b'><b>⚠ Down-chitted since " + esc(fmtDay(dwn.since)) + "</b>: not cleared to fly." + ((OPS || opsEditable() || dwn.bi === 0) ? " <button class='upc' data-upchit='" + dwn.bi + "|" + dwn.i + "|" + D.iso + "'>Up-chit…</button>" : " Pick someone else below.") + "</div>";
-  if (c) h += "<div class='pp'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b> " + esc(c.id) + " · " + esc(c.name) + "<div class='muted'>" + esc(c.dept + (c.code ? " · planned " + c.code : "") + (c.set ? " · set in the Ops Room" : " · picked from the plan")) + "</div>" + (c.note ? "<div class='ocn' style='font-size:12px'>" + esc(c.note) + "</div>" : "") + "</div>";
+  if (c) h += "<div class='pp'><b class='" + opsCatCls(c) + "'>" + esc(opsName(c)) + "</b> " + esc(c.id) + " · " + esc(c.name) + "<div class='muted'>" + esc(c.dept + (c.code ? " · planned " + c.code : "") + (c.set ? " · set in the Ops Room" : " · picked from the plan")) + "</div>" + (c.opsNote ? "<div class='onoter' style='font-size:12px'>" + esc(c.opsNote) + "</div>" : "") + "</div>";
   h += "<label>Crew<select id='opsPick'><option value=''>" + (c && !c.set ? "Auto (from the plan): " + esc(c.id) : "Auto (from the plan)") + "</option><optgroup label='" + (r.x.sb ? "On standby today" : "Flying this shift") + "'>" +
     list.map(p => "<option value='" + esc(p.id) + "'" + (c && c.set && same(c.id, p.id) ? " selected" : "") + ">" + esc(opsName(p) + " · " + p.id + " " + p.name + (p.code && !sameCode(p.code, r.x.code) ? " (" + p.code + ")" : "") + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>").join("") + "</optgroup>" +
     "<optgroup label='Others in the " + esc(dep) + " roster'>" + rest.map(p => "<option value='" + esc(p.id) + "'>" + esc(opsName(p) + " · " + p.id + " " + p.name + (downOn(dep, p.id, D.iso) ? "  · DOWN" : "")) + "</option>").join("") + "</optgroup></select></label>";
@@ -6502,18 +6523,21 @@ function openCard(k) {
       "<div class='cdet'>" + esc("Time: " + (t || "not set") + (n ? "\nComment: " + n : "\nNo comment")) + "</div><div class='cleg'>Set by the Master Planner. Esc or click away to close</div>";
     cardKey = k; c.style.display = "block"; cardPlace(el, c); return true; }
   const A = actIndex(), M0 = S.m[cur.m], v = String(M0.grid[p.r][p.d] || ""), a = v && A.get(v.toUpperCase()), wd = isWdRow(p.r);
-  const note = (S.notes && S.notes.get(cur.m + ":" + p.r + ":" + p.d)) || "", canNote = !!S.hasNotes && mayEdit(cur.b), flight = !!a && a.ci === CAT_FLIGHT && !wd;
-  if (!v && !note && !canNote) return false;   // nothing to show on an empty cell, unless the planner can add a comment
+  const note = (S.notes && S.notes.get(cur.m + ":" + p.r + ":" + p.d)) || "", onote = (S.opsNotes && S.opsNotes.get(cur.m + ":" + p.r + ":" + p.d)) || "", canNote = !!S.hasNotes && mayEdit(cur.b), flight = !!a && a.ci === CAT_FLIGHT && !wd;
+  if (!v && !note && !onote && !canNote) return false;   // nothing to show on an empty cell, unless the planner can add a comment
   const s = rowShift(p.r), me = rowPerson(p.r), ac = v && S.acts.find(x => same(x.code, v));
-  const lines = (el.dataset.cd || "").split("\n").filter(x => x && !/^Comment:/.test(x));   // the comment has its own box below
+  const lines = (el.dataset.cd || "").split("\n").filter(x => x && !/^(Comment|Planner note|For the Ops Room):/.test(x));   // the notes have their own boxes below
   let det = lines;
   if (flight) {   // this flight's own MASTER line (time and comment), matched on code in the cell's shift: not the whole day's programme
     const ml = [0, 1].map(j => s * 2 + j).filter(j => sameCode(M0.master[j][p.d], v)).map(j => (normTime(M0.mtime[j][p.d]) || "no time yet") + (M0.mnote[j][p.d] ? " (" + M0.mnote[j][p.d] + ")" : ""));
     det = [ml.length ? "Planned: " + ml.join("; ") : "Not on the Master programme for this shift"].concat(lines); }
   let h = "<h4>" + esc(v || "No activity") + " <span>· " + esc(p.d + 1 + " " + monLab(cur.m, S.year) + " · " + (wd ? "Whole day" : SHIFTS[s])) + "</span></h4>" + (ac && ac.desc ? "<div class='csub'>" + esc(ac.desc) + "</div>" : "") +
     (det.length ? "<div class='cdet'>" + esc(det.join("\n")) + "</div>" : "");
-  if (canNote) h += "<div class='clab' style='color:#7e22ce'>Comment for this cell</div><input id='ccIn' data-orig='" + esc(note) + "' value='" + esc(note) + "' placeholder='e.g. Instructor for OWL (Enter saves, Esc cancels)'>";
-  else if (note) h += "<div class='clab' style='color:#7e22ce'>Comment</div><div class='cdet'>" + esc(note) + "</div>";
+  // z188: two notes per cell. Planner note = planners only (never in the Ops Room or the AFP); For the Ops Room = a line in that flight's Ops Room Remarks
+  const nlab = (cls, t, sub) => "<div class='clab cnl " + cls + "'>" + t + "<small>" + sub + "</small></div>";
+  if (canNote) h += nlab("pn", "Planner note", "planners only, never in the Ops Room") + "<input id='ccIn' data-orig='" + esc(note) + "' value='" + esc(note) + "' placeholder='e.g. Swap with HAWK if the sim moves (Enter saves, Esc cancels)'>" +
+    nlab("op", "For the Ops Room", "shows in this flight's Remarks") + "<input id='ccOps' class='cops' data-orig='" + esc(onote) + "' value='" + esc(onote) + "' placeholder='e.g. Back by 1500H for the course'>";
+  else { if (note) h += nlab("pn", "Planner note", "planners only") + "<div class='cdet'>" + esc(note) + "</div>"; if (onote) h += nlab("op", "For the Ops Room", "in this flight's Remarks") + "<div class='cdet cops'>" + esc(onote) + "</div>"; }
   if (flight) {
     h += cardSeatsHtml(cur.m, p.d, s, v, S.dept, me); }
   cardKey = k; c.innerHTML = h + "<div class='cleg'>Esc or click away to close</div>"; c.style.display = "block";
@@ -6525,9 +6549,9 @@ function cardPlace(el, c) {   // beside the cell (right, else left), kept on scr
   const x = br + 4 + w <= vw ? br + 4 : Math.max(8, bl - w - 4), y = Math.min(Math.max(8, bt), Math.max(8, vh - ch - 8));
   c.style.left = (x + window.scrollX / z) + "px"; c.style.top = (y + window.scrollY / z) + "px";
 }
-$("cellCard").addEventListener("change", e => { if (e.target.id !== "ccIn" || !cardKey) return; const k = cardKey, p = keyParts(k);
-  if (setNote(cur.m, p.r, p.d, e.target.value)) { e.target.dataset.orig = e.target.value.trim(); renderPlanner(); renderOverview(); select(k); } });
-$("cellCard").addEventListener("keydown", e => { if (e.target.id !== "ccIn") return;
+$("cellCard").addEventListener("change", e => { if ((e.target.id !== "ccIn" && e.target.id !== "ccOps") || !cardKey) return; const k = cardKey, p = keyParts(k);
+  if (setNote(cur.m, p.r, p.d, e.target.value, e.target.id === "ccOps")) { e.target.dataset.orig = e.target.value.trim(); renderPlanner(); renderOverview(); select(k); } });
+$("cellCard").addEventListener("keydown", e => { if (e.target.id !== "ccIn" && e.target.id !== "ccOps") return;
   if (e.key === "Enter") { e.preventDefault(); e.target.blur(); } else if (e.key === "Escape") { e.target.value = e.target.dataset.orig; closeCard(); } });
 function openPop(k, initial) {
   if (k.startsWith("m:")) { toast(MASTER_LOCK_MSG); return; }   // the MASTER rows are locked
@@ -6813,7 +6837,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z187 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z188 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7122,7 +7146,7 @@ function rollBook(bi, y, opsCarry) {
       nxN += dutyCarry("SDO Plan") + dutyCarry("BDO Plan");
       // cell notes on next January stay (their dates are already in the new year)
       const nxNotes = new Set([...(st.noteRow || new Map())].filter(([k]) => k.startsWith(NX_MI + ":")).map(([, r]) => r));
-      edit("Cell Notes", x => rollClear(x, keepRows(rows(NOTE_ROW0, NOTE_ROW0 + NOTE_N - 1, 1, 6), nxNotes)));
+      edit("Cell Notes", x => rollClear(x, keepRows(rows(NOTE_ROW0, NOTE_ROW0 + NOTE_N - 1, 1, 8), nxNotes)));   // z188: H = the Ops Room line
       edit("Requests", x => rollClear(x, rows(REQ_ROW0, REQ_ROW0 + REQ_N - 1, 1, 30)));
       if (WB.paths["Daily View"]) set("Daily View", "A5", dateSerial(y + 1, 0, 0));
       // open down-chits at 31 Dec go on as manual down-chits (no up-chit date) from 1 Jan
@@ -7828,7 +7852,7 @@ const HELP = {
     "<h3>Rows at the top</h3><ul><li><b>MASTER</b>: the flights planned for your department, copied from the Master Planner. Click the blue label to fold or open it.</li><li><b>SQUADRON PROGRAMME</b>: the day's squadron events.</li><li><b>ALERT</b>: the squadron's alert state (AL90, AL2, ...) set by the Master Planner for each week; point at a day to also see the crew on P1, P2 or BU in the open plans.</li><li><b>FLYING RESTRICTION</b>: restrictions typed in the Ops Room, on every day they cover.</li><li><b>DUTY DAYS</b>: days your department has BDO / SDO from the Duty Roster (red if nobody is on it).</li></ul>" +
     "<h3>Colours and marks</h3><ul><li>Activity colours follow the categories in the legend (Flight, Sim, Ground Duty, Squadron Duty, Leave, Off, Admin, Medical, Oversea Duty).</li>" +
     "<li>" + sw("#dcfce7", "#166534", "3 ✓") + " shift covered, " + sw("#fef3c7", "#92400e", "! 2") + " short of crew, " + sw("#fee2e2", "#991b1b", "⚠ 1") + " flights but nobody flying, " + sw("#e2e8f0", "#475569", "NO FLY") + " no-flying day.</li>" +
-    "<li>Amber outline: differs from the Master Planner. Purple corner: the cell has a comment. Red dashed outline: on a duty they aren't on the crew list for.</li>" +
+    "<li>Amber outline: differs from the Master Planner. Purple corner (top right): a <b>planner note</b>, for planners only (never shown in the Ops Room). Blue corner (top left): a line <b>for the Ops Room</b>, shown in that flight's Ops Room Remarks and on the AFP. Click a cell to type either one on its card. Red dashed outline: on a duty they aren't on the crew list for.</li>" +
     "<li>" + sw("#ea580c", "#fff", "REST") + " flying 5+ days in a row. " + "Currency (from ATOM): the day a currency expires is marked in the row, and a flight after it shows a red corner. See the Currency tab help.</li>" +
     "<li>" + sw("#991b1b", "#fff", "DOWN") + " down-chitted after MC: not cleared to fly. Striped red cells are the down-chit days; a flight on them gets a red box. Click DOWN (or Up-chit… in the cell list) to up-chit.</li>" +
     "<li>Struck-through flight: cancelled in the Ops Room. Blue column: today. Weekends dark, public holidays red.</li></ul>" +
@@ -8054,7 +8078,7 @@ function rosApply(start, order, clear, init, note) {
   const o2n = new Map(); moved.forEach(j => { const o = src(j); if (o != null) o2n.set(o, j); });
   const rekey = m => { if (!m) return m; const out = new Map(); for (const [k, v] of m) { const [mi, r, d] = k.split(":").map(Number), p = rowPerson(r);
     if (o2n.has(p)) out.set(mi + ":" + gridRow(o2n.get(p), rowShift(r)) + ":" + d, v); else if (!moved.includes(p)) out.set(k, v); } return out; };
-  S.notes = rekey(S.notes); S.noteRow = rekey(S.noteRow); S.roleTags = rekey(S.roleTags); S.roleRow = rekey(S.roleRow); if (S.roleSor) S.roleSor = rekey(S.roleSor);
+  S.notes = rekey(S.notes); if (S.opsNotes) S.opsNotes = rekey(S.opsNotes); S.noteRow = rekey(S.noteRow); S.roleTags = rekey(S.roleTags); S.roleRow = rekey(S.roleRow); if (S.roleSor) S.roleSor = rekey(S.roleSor);
   if (W.length) { put(W[0].sheet, W[0].ref, W[0].val); W.forEach(w => dirty.set(w.sheet + "!" + w.ref, { sheet: w.sheet, ref: w.ref, val: w.val, quiet: note })); }
   CHIT_GEN++; OPS_CXL_CACHE = null; updateSave(); autoKick();
   return moved.filter(j => src(j) != null && !rosEmpty(S.roster[j])).length;
@@ -8125,7 +8149,7 @@ function rosRemove(i) {
   const L = rosLay(i, ""), note = "Crew Roster: " + who + " removed (with their plans; crew below moved up)";
   // their comments and AC / Pax tags: clear the sheet rows too (rosApply only drops them from memory)
   const mine = m => [...(m || new Map()).entries()].filter(([k]) => rowPerson(+k.split(":")[1]) === i);
-  if (S.hasNotes) mine(S.noteRow).forEach(([k, row]) => { ["A", "B", "C", "E"].forEach(c => rosQuiet("Cell Notes", c + row, "", note)); S.notes.delete(k); S.noteRow.delete(k); S.noteUsed.delete(row); });
+  if (S.hasNotes) mine(S.noteRow).forEach(([k, row]) => { ["A", "B", "C", "E", "H"].forEach(c => rosQuiet("Cell Notes", c + row, "", note)); S.notes.delete(k); if (S.opsNotes) S.opsNotes.delete(k); S.noteRow.delete(k); S.noteUsed.delete(row); });
   if (WB.paths[ROLE_SHEET]) mine(S.roleRow).forEach(([k, row]) => { ["A", "B", "C", "D", "E"].forEach(c => rosQuiet(ROLE_SHEET, c + row, "", note)); S.roleTags.delete(k); S.roleSor.delete(k); S.roleRow.delete(k); S.roleUsed.delete(row); });
   const n = rosApply(0, L.order, L.clear, null, note);
   renderAll(); toast(who + " removed from the Crew Roster." + (n ? " " + n + " crew moved up one row, with their plans." : "") + saveHint() + " Ctrl+Z undoes it.", 6000);

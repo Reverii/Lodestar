@@ -8,6 +8,10 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Brandon has: the z186 zip (eight new xlsx with his crew, empty plans, plus the dashboard) and the z187 dashboard. Awaiting his upload and test.
 - Open: offered to fix the stale `sample_ops_room_can_pick_a_seat` check (open the folder files when there is no sample button); no answer yet. Alert States and Roles sheets are not in Wipe data / Start new year yet. Asked whether "Beta" also means switching to the release build (dev tools stripped) and whether the logo files / deck need a BETA mark; no answer yet.
 
+## Planned, not built: My Lodestar without Next 7 days (7 Nov, Brandon: "the 7 day outlook seems redundant since we already had the monthly calendar"; wait for "build it")
+- Remove the Next 7 days table under Today (the `lodeDay` week list in the Today card); keep the Today block (flight card facts, crew, duty, "Next: BDO Wed 11 Nov"); move My month up directly under it, so at 1280x720 more of the month shows without scrolling (on Brandon's wider screen the whole month already fits). Clicking a day in My month still shows that day in Today; Prev / Next day and Today as now. Right column (What changed, Month so far) and the four cards unchanged. Check `my_lodestar.test.js` for checks on the 7-day list (Next 7 days items open the flight card: keep that path for My month only).
+- Colours stay: Brandon's screenshots look washed out because he uses HDR mode, not because the greys are too light.
+
 ## Planned, not built: Ops Room standby rows reorganised (7 Nov, Brandon: "lets reorganise this", mock-up "looks good"; wait for "build it")
 Mock-up `previews/standby_layout_mockup_{now,now_zoom,new,new_zoom}.png` (script `previews/standby_layout_mockup.js`).
 - **Now** (`sbRows` in `opsTable`, ~line 5765): after the seats, row 1 has the alert cell (`opsTxt(..., "alert", ...)`, colspan 4 over AO / Brief / ETD / ETA, rowspan = standby rows) with a floating round + (`.alAdd`), then an empty `td.osbx` colspan 3 (ATD / ATA / Hours); every row ends with its Remarks. People type "BRF: 0845H" into Remarks.

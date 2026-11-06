@@ -1,4 +1,10 @@
-# LODESTAR handoff (updated 2026-11-07, after z194; next-session notes below)
+# LODESTAR handoff (updated 2026-11-07, after z195; next-session notes below)
+
+## z195: Flight Codes "Crew Matrix" column (Brandon: "add another column to reference which crew matrix to use")
+- Master Planner > Flight Codes has a **Crew Matrix** column between Mission Type and Syllabus tag: a dropdown of the missions on the Crew Matrix page, plus **Auto** (blank: the mission named like the code's Mission Type, the old behaviour; shows which one it matched, or "none") and **Not checked** (stored "-").
+- Stored in the Flight Codes sheet **column H** (the empty spacer column; older-layout files: J), heading "Crew Matrix" written in H5 the first time. No layout change, no rebuild. Remove (z189) moves H up with the other columns.
+- `cmOfCode(k)` / `cmAuto(k)` feed `cmMission(code)`, so the flight card, Planner cells and Ops Room follow at once; the Crew Matrix page's "Flight codes using each mission" line uses the same lookup. A typed mission that is not on the matrix shows red (not checked).
+- Test `node tests/fc_crew_matrix.test.js` (6). crew_matrix 24, crew_matrix_edit 7, disable_remove 7, standby_ac 5, code_sync 17, flight_card 17 pass. Screen `previews/fc_crew_matrix_real.png`.
 
 ## z194: help (?) button centred
 The tab bar's button padding (6px 12px) also hit the 26 px round `#helpBtn`, pushing the "?" off-centre. `#helpBtn` now has padding 0, flex centring and a fixed 26 px size. Dashboard only.

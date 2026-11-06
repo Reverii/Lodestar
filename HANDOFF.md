@@ -8,6 +8,14 @@ Written when the project moved from claude.ai project threads to Claude Code. Ru
 - Brandon has: the z186 zip (eight new xlsx with his crew, empty plans, plus the dashboard) and the z187 dashboard. Awaiting his upload and test.
 - Open: offered to fix the stale `sample_ops_room_can_pick_a_seat` check (open the folder files when there is no sample button); no answer yet. Alert States and Roles sheets are not in Wipe data / Start new year yet. Asked whether "Beta" also means switching to the release build (dev tools stripped) and whether the logo files / deck need a BETA mark; no answer yet.
 
+## Planned, not built: Crew Matrix editable on the dashboard (7 Nov, Brandon: "this should be editable"; wait for "build it")
+Today the Crew Matrix page (`renderCmx`-area, ~line 6435) is read-only: the built-in `CM_DEFAULT` until "Make the Crew Matrix sheet in the Master Planner file" (`cmCreate`), then edited in Excel only (`cmParse`: row 1 heads, rows 2..201 A Mission, B Shift Day / Night / blank, C AC, D Co-pilot, E LM, F TACCO, G Sup 1, H Sup 2, I Notes; K2 CAT order).
+- **Edit table** for editors of the Master Planner file (`mayEdit` of the master book; read-only view unchanged for everyone else): Mission (type or pick from the flight codes' Mission Types, `mtList`), Shift dropdown Any / Day / Night, one CAT dropdown per seat (the CAT order + "-" = no requirement), Notes. Rows grouped by mission as now.
+- **Actions:** + Add row (under a mission, copies the last row of that mission), + Add mission; right-click a row: Move up / Move down, Duplicate, Disable / Enable (kept, greyed, not used by the check), Remove (confirm). CAT order chips editable (add / remove / reorder; a CAT still used in a row can't be removed).
+- **Storage:** the existing Crew Matrix sheet; the first edit creates it from `CM_DEFAULT` (`cmCreate` logic), so the separate button goes. Off mark in spare **column J**. Edits through `put` (autosave, Undo, Change Log "Crew Matrix: MAS TRG row added" etc.). Rows written in display order; a removed row clears in place or the block is rewritten (rewrite is simpler: the sheet has no formulas).
+- Validation as `cmParse` already does (no mission, no CAT in any seat): show the row red and say why, still save it so nothing typed is lost; it is left out of the check until fixed.
+- The flight card, Planner and Ops Room warnings follow at once (`cmMemo.clear()`). No layout change, no rebuild.
+
 ## Planned, not built: Disable / Remove on Currency Rules and Flight Codes (7 Nov, Brandon; wait for "build it")
 Brandon: right-click a line on the Currency tab Rules table and on the Master Planner Flight codes table to remove it or disable it; **disable = keep the line but switch it off**.
 - **Menu:** right-click a row (editors only), `opsCtxOpen` like the Crew Roster: **Disable** / **Enable**, **✕ Remove…** (confirm). A disabled row is grey, struck through, with an OFF tag; it can still be edited.

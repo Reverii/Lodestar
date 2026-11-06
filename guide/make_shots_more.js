@@ -66,6 +66,10 @@ const ONLY = process.argv[2] || "";
     // Ops Add and AFP dialogs
     await p.click("#opsAddBtn"); await wait(500); await shot(p, "55_ops_add", "#oaPop .box"); await p.evaluate(() => { $("oaPop").style.display = "none"; });
     await p.evaluate(() => afpOpen()); await wait(500); await shot(p, "56_afp", "#afpPop .box"); await p.evaluate(() => { $("afpPop").style.display = "none"; });
+    // ground programme: one Ops row added in memory (not saved), the card, then the row dialog with the department reference
+    await p.evaluate(() => { grrSave(opsDay(cur.opsDay).iso, grrNewKey(), "manual", { time: "1400H-1600H", act: "Dinghy drill", note: "Pool", who: "ALL" }); renderOps(); }); await wait(500);
+    await p.hover("#opsSide .card.gp tbody tr >> nth=0"); await wait(400); { const cb = await box(p, "#opsSide .card.gp"), tb = await box(p, "#opsSide .card.gp table"); await p.screenshot({ path: OUT + "57_ground_card.png", clip: { x: cb.x, y: cb.y, width: cb.width, height: tb.y + tb.height - cb.y + 14 } }); console.log("shot 57_ground_card"); }
+    await p.click("#grAddBtn"); await wait(500); await shot(p, "58_ground_row", "#grPop .box"); await p.click("#grCancel");
     console.log(S.errs.join("\n")); await S.close();
   }
 })();

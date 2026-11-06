@@ -786,16 +786,18 @@ table.t td { border-bottom: 1px solid var(--line); padding: 5px 8px; vertical-al
     <div><span>5.5</span>Standby duty</div>
     <div><span>5.6</span>Ops Add</div>
     <div><span>5.7</span>The cards under the board</div>
-    <div><span>5.8</span>Flying restrictions</div>
-    <div><span>5.9</span>Export AFP</div>
-    <div><span>5.10</span>ATOM export</div>
-    <div><span>5.11</span>Questions and problems</div>
+    <div><span>5.8</span>Ground programme</div>
+    <div><span>5.9</span>Flying restrictions</div>
+    <div><span>5.10</span>Export AFP</div>
+    <div><span>5.11</span>ATOM export</div>
+    <div><span>5.12</span>Questions and problems</div>
   </div>
   <h2 style="margin-top:18px"><span class="n">QS</span>Quick start</h2>
   <ol class="qs">
     <li><b>Open the dashboard</b> and pick <span class="ui">Ops Room</span> on the department screen. Every file opens and the board shows today.</li>
     <li><b>Check the seats.</b> They fill themselves from the department plans. Click a seat to change it or mark MC / CRMO.</li>
     <li><b>Type the day's details</b>: tails, Brief Timing, the duty strip (Safety, Prefect, Security, Intel, DOB, Codes) and Remarks.</li>
+    <li><b>Check the ground programme</b>: add the day's other ground activities with <span class="ui">+ Ops row</span>, and fix any NO PERSONNEL rows.</li>
     <li><b>Close every flight</b>: type ATD and ATA when it flew, or cancel it from its status pill with a reason.</li>
     <li><b>Once a day</b>, add the ATOM export and press <b>Publish to everyone</b>.</li>
     <li>Press <span class="ui">⇩ Export AFP</span> when the AFP is needed.</li>
@@ -885,16 +887,52 @@ table.t td { border-bottom: 1px solid var(--line); padding: 5px 8px; vertical-al
     <tr><td>Remarks</td><td>Notes for the day: weather, NOTAMs, changes, reminders.</td></tr>
     <tr><td>Leave and MC</td><td>Who is on leave, off or on MC today, from the plans. Right-click to add.</td></tr>
     <tr><td>Down-chit</td><td>Who is not cleared to fly. Click a name to up-chit them. Right-click to add a down-chit. Up-chitting saves into that person's department file as well.</td></tr>
-    <tr><td>Ground programme</td><td>The day's squadron events and department ground items. <b>+ Ops row</b> adds a line; the pencil changes a line and ✕ hides it. <b>NO PERSONNEL</b> means nobody was chosen to attend.</td></tr>
+    <tr><td>Ground programme</td><td>The day's squadron events and the Ops Room's own rows. See section 5.8.</td></tr>
     <tr><td>Area &amp; Codes</td><td>The day's areas, shown when they are filled in.</td></tr>
   </table>
 </section>
 
 <section class="sec">
-  <h2><span class="n">5.8</span>Flying restrictions</h2>
+  <h2><span class="n">5.8</span>Ground programme</h2>
+  <p>The <b>Ground programme</b> card under the board is the day's list of ground activities: it goes on the AFP and on the screen in the Ops Room. The Ops Room manages it.</p>
+  <figure><img src="img/57_ground_card.png" alt="" style="max-width:85%"><figcaption>The Ground programme card. Point at a row to show ✎ (change) and ✕ (hide or delete).</figcaption></figure>
+  <h3>Where the rows come from</h3>
+  <table class="t">
+    <tr><th style="width:28%">Row</th><th>Where it comes from</th></tr>
+    <tr><td>Squadron events</td><td>Planned by the Master Planner (meetings, lectures, ceremonies). They show by themselves, with the event's time, place and who attends. <b>NO PERSONNEL</b> means the Master Planner did not choose who attends.</td></tr>
+    <tr><td>Ops rows</td><td>Added here by the Ops Room with <span class="ui">+ Ops row</span>, for anything else the squadron should see: a dinghy drill, a visit, a course.</td></tr>
+  </table>
+  <p>The rows are in time order: clock times first, then AM, PM and NIGHT, then whole day, then items running on to a later day.</p>
+  <h3>Add a row</h3>
+  <div class="two">
+    <figure><img src="img/58_ground_row.png" alt=""><figcaption>Adding a row. The box at the top lists the departments' own ground items for the day, for reference.</figcaption></figure>
+    <div>
+      <ol>
+        <li>Press <span class="ui">+ Ops row</span>.</li>
+        <li><b>Time:</b> type a time or range (1400-1600 is saved as 1400H-1600H), or press <b>AM</b>, <b>PM</b>, <b>NIGHT</b> or <b>WD</b> (whole day).</li>
+        <li>For something that runs over several days, pick the last day in <b>TILL</b>. The row then shows on every day up to that date.</li>
+        <li>Type the <b>Activity</b> and the <b>Location</b>.</li>
+        <li>Tick <b>ALL (everyone)</b>, or tick the people by department.</li>
+        <li>Press <span class="ui">Save</span>. A row needs a time, an activity and the personnel.</li>
+      </ol>
+      <p>The <b>From the department plans</b> box shows what the departments have planned for the day (for example a person on Outstation). It is there to help you fill the row; it is not added by itself.</p>
+    </div>
+  </div>
+  <h3>Change, hide and delete</h3>
+  <ul>
+    <li><b>✎</b> changes a row. On a squadron event, only the fields you change are kept for this day; the rest still follow the Master Planner. The Master Planner's own event is not changed.</li>
+    <li><b>✕</b> on a squadron event <b>hides</b> it for this day only. <b>hidden (1)</b> under the table lists the hidden rows, with <b>Unhide</b>.</li>
+    <li><b>✕</b> on an Ops row <b>deletes</b> it.</li>
+    <li>If the Master Planner later changes or removes an event you had changed, your row stays and is marked <b>was linked</b>. Check it, then change or delete it.</li>
+  </ul>
+  <div class="box tip"><h4>Saved in the Ops Room file</h4><p>Ops rows and changes are kept in the Ops Room file, so everyone sees them within about 15 seconds. They go on the AFP export (section 5.10).</p></div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">5.9</span>Flying restrictions</h2>
   <p><span class="ui">+ Restriction</span> adds a short notice for a range of dates, for example "No low flying in Area Echo". It shows as a red banner on the board, on the departments' FLYING RESTRICTION row and on the Master Planner calendar. On the banner, ✎ changes it and ✕ removes it.</p>
 
-  <h2 style="margin-top:14px"><span class="n">5.9</span>Export AFP</h2>
+  <h2 style="margin-top:14px"><span class="n">5.10</span>Export AFP</h2>
   <figure class="half"><img src="img/56_afp.png" alt=""><figcaption>The Export AFP dialog, with the items still missing.</figcaption></figure>
   <p><span class="ui">⇩ Export AFP</span> fills the squadron AFP format for the day on screen and downloads it as an Excel file.</p>
   <ul>
@@ -907,7 +945,7 @@ table.t td { border-bottom: 1px solid var(--line); padding: 5px 8px; vertical-al
 </section>
 
 <section class="sec">
-  <h2><span class="n">5.10</span>ATOM export</h2>
+  <h2><span class="n">5.11</span>ATOM export</h2>
   <p>The Ops Room shares the day's ATOM currency data with the whole squadron:</p>
   <ol>
     <li>Export the currency report from ATOM as usual.</li>
@@ -916,7 +954,7 @@ table.t td { border-bottom: 1px solid var(--line); padding: 5px 8px; vertical-al
   </ol>
   <p>Only the currency dates, the month's clocked hours and the mission currencies are kept, matched by initials. No names are stored. A banner turns amber when the data is 7 days old and red after 30, so do this once a day.</p>
 
-  <h2 style="margin-top:14px"><span class="n">5.11</span>Questions and problems</h2>
+  <h2 style="margin-top:14px"><span class="n">5.12</span>Questions and problems</h2>
   <table class="t">
     <tr><th style="width:38%">Problem</th><th>What to do</th></tr>
     <tr><td>"Not open, so their seats can't be filled: SUP 2".</td><td>That department's file did not open. Press ⟳ Refresh. If it stays, check the file is in the Program folder.</td></tr>

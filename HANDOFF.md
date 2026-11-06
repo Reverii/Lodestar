@@ -1,7 +1,14 @@
-# LODESTAR handoff (updated 2026-11-06, after z181; next-session notes below)
+# LODESTAR handoff (updated 2026-11-06, after z182; next-session notes below)
 
 Written when the project moved from claude.ai project threads to Claude Code. Rules and build commands are in
 `CLAUDE.md`; this file is the state of play.
+
+## z182 (6 Nov, Brandon: "i need a way to add rank"): Add a rank on the Crew Roster
+- The Rank dropdown ends with **+ Add rank…** (editors only). The dialog takes the rank (one word, up to 8 characters, upper case; no duplicates, (NS) refused) and **Comes after (for sorting)** (any rank in the full order, or First). Opened from a person's row, the new rank is also given to them (their Crew Member cell becomes "ME4 Rachel Goh").
+- **Stored** in a dashboard-made sheet `Ranks` of the department file (A rank, B the rank it comes after, blank = first; rows 2..41; `RK_*`, parsed as `S.rk`). No Excel layout change.
+- **Order:** `RANKS` is now computed (`ranksRefresh`, run in `renderAll`): `RANKS_BASE` plus the added ranks of every open department file, each after its anchor; several after the same anchor keep the order they were added in. `rankList` = the department's built-in structure plus its own added ranks. Sorting by rank, `rankParts` and My Lodestar's name matching (`lodeKey`) know them.
+- The dialog lists the ranks added in this file with ✕ to take one off (disabled while someone on the roster has it; ranks placed after it move up to its place). Change Log: one line "Ranks: ME4 added (first)".
+- Tests: roster_order 23/23 (3 new; `FULL=1` prints the whole assertion message). my_lodestar 67/67, changelog 8/8, other_depts 10/10, misc_notes 25/25, excel_safe, syllabus_edit 12/12. Screenshot `previews/add_rank_real.png`. Dashboard only.
 
 ## z181 (6 Nov, Brandon: "remove crew function on the right click", "transfer to NSMEN or SANS function"): Crew Roster remove and transfer
 Right-click a person on the Crew Roster (editors only) now also has:

@@ -79,7 +79,7 @@ test("sort_by_cat_then_rank", async ({ page }) => {
 test("rank_column_writes_one_crew_member_cell", async ({ page }) => {
   await openRoster(page);
   assert.deepStrictEqual(await page.evaluate(() => [document.querySelector("#rosterTable select[data-r='1'][data-f='rank']").value, document.querySelector("#rosterTable input[data-r='1'][data-f='name']").value]), ["CPT", "Sarah Lim"]);
-  assert.deepStrictEqual(await page.evaluate(() => [...document.querySelectorAll("#rosterTable select[data-r='1'][data-f='rank'] option")].map(o => o.value)), ["", "CPT", "ME3", "ME2", "ME1"], "SUP 2 offers the ME ranks (and the rank the name already has)");
+  assert.deepStrictEqual(await page.evaluate(() => [...document.querySelectorAll("#rosterTable select[data-r='1'][data-f='rank'] option")].map(o => o.value)), ["", "CPT", "ME3", "ME2", "ME1", "+add"], "SUP 2 offers the ME ranks (and the rank the name already has)");
   await page.selectOption("#rosterTable select[data-r='1'][data-f='rank']", "ME3");
   const nm = await page.$("#rosterTable input[data-r='2'][data-f='name']"); await nm.fill("Kumaravel Suresh"); await nm.press("Tab");
   const r = await page.evaluate(() => [S.roster[1].name, S.roster[2].name, dirty.get("Roster!" + rosterCols(S).name + "7").val, dirty.get("Roster!" + rosterCols(S).name + "8").val]);
@@ -186,6 +186,44 @@ test("undo_brings_a_removed_person_back", async ({ page }) => {
   await page.evaluate(() => undo());
   assert.deepStrictEqual(await ids(page, 6), ["VIPER", "HAWK", "RAPTOR", "FALCON", "EAGLE", "OWL"]);
 });
+// ---- z182: Add a rank
+const pickAdd = (page, i) => page.selectOption("#rosterTable select[data-r='" + i + "'][data-f='rank']", "+add");
+test("add_rank_from_the_dropdown_gives_it_to_the_person", async ({ page }) => {
+  await openRoster(page);   // SUP 2: ME ranks; FALCON is row 3
+  await pickAdd(page, 3);
+  assert.ok(await page.evaluate(() => $("rkDlg").style.display === "flex"));
+  await page.fill("#rkName", "me4"); await page.selectOption("#rkAfter", "");   // first, above everything
+  await page.click("#rkGo");
+  const r = await page.evaluate(() => [S.roster[3].name, rankParts(S.roster[3].name).rank, RANKS[0], rankList().includes("ME4"), $("rkDlg").style.display]);
+  assert.deepStrictEqual(r, ["ME4 Rachel Goh", "ME4", "ME4", true, "none"]);
+  assert.ok(await page.evaluate(() => [...document.querySelectorAll("#rosterTable select[data-r='3'][data-f='rank'] option")].some(o => o.selected && o.textContent === "ME4")));
+  const L = await page.evaluate(() => logLines(books[cur.b], new Map(books[cur.b].dirty)).map(x => x[4]).filter(t => /Ranks/.test(t)));
+  assert.deepStrictEqual(L, ["Ranks: ME4 added (first)"]);
+  await roundTrip(page);
+  const r2 = await page.evaluate(() => [S.rk.map(x => x.rank + ">" + x.after).join(), RANKS.indexOf("ME4"), rankParts(S.roster[3].name).rank, lodeKey("ME4 Rachel Goh").join(" ")]);
+  assert.deepStrictEqual(r2, ["ME4>", 0, "ME4", "goh rachel"]);
+});
+test("added_rank_sorts_after_its_rank_and_checks_input", async ({ page }) => {
+  await openRoster(page);
+  await page.evaluate(() => rkOpen(-1));
+  await page.fill("#rkName", "ME3"); await page.click("#rkGo");
+  assert.ok(/already/.test(await page.evaluate(() => $("rkErr").textContent)));
+  await page.fill("#rkName", "two words"); await page.click("#rkGo");   // the box takes 8 characters ("two word"), the space is taken out: TWOWORD
+  await page.evaluate(() => rkOpen(-1)); await page.fill("#rkName", "ME2A"); await page.selectOption("#rkAfter", "ME2"); await page.click("#rkGo");
+  await page.evaluate(() => rkOpen(-1)); await page.fill("#rkName", "ME2B"); await page.selectOption("#rkAfter", "ME2"); await page.click("#rkGo");
+  const o = await page.evaluate(() => RANKS.slice(RANKS.indexOf("ME3")));
+  assert.deepStrictEqual(o.slice(0, 4), ["ME3", "ME2", "ME2A", "ME2B"], o.join(" "));
+  // a rank nobody has can be taken off; the one in use can't
+  await page.evaluate(() => { S.roster[3].name = "ME2A Rachel Goh"; rkOpen(-1); });
+  assert.strictEqual(await page.evaluate(() => document.querySelector("#rkList button[data-rkx='ME2A']").disabled), true);
+  await page.click("#rkList button[data-rkx='ME2B']");
+  assert.deepStrictEqual(await page.evaluate(() => [RANKS.includes("ME2B"), S.rk.map(x => x.rank).join()]), [false, "TWOWORD,ME2A"]);
+});
+test("add_rank_not_offered_view_only", async ({ page }) => {
+  assert.strictEqual(await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='roster']").click(); return !!document.querySelector("#rosterTable option[value='+add']"); }), true);
+  await page.evaluate(() => { books[cur.b].noEdit = true; renderRoster(); });
+  assert.strictEqual(await page.evaluate(() => !!document.querySelector("#rosterTable option[value='+add']")), false);
+});
 test("view_only_has_no_menu", async ({ page }) => {
   await page.evaluate(() => { books[cur.b].noEdit = true; document.querySelector("nav.tabs button[data-v='roster']").click(); });
   await page.click("#rosterTable tr[data-ri='3'] td.n", { button: "right" });
@@ -199,7 +237,7 @@ test("view_only_has_no_menu", async ({ page }) => {
     if (only && !t.name.includes(only)) continue;
     ran++; let S = null;
     try { S = await boot(Object.assign({ today: "2026-10-26" }, t.opts)); await t.fn(S); if (S.errs.length) throw new Error("page errors: " + S.errs.join(" | ").slice(0, 300)); pass++; console.log("ok   " + t.name); }
-    catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 300)); }
+    catch (e) { console.log("FAIL " + t.name + ": " + (process.env.FULL ? String(e.message) : String(e.message).split("\n")[0].slice(0, 300))); }
     if (S) await S.close();
   }
   console.log(pass + "/" + ran + " pass");

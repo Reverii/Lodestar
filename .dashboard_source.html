@@ -484,6 +484,14 @@ header.top .btn.ur{padding:6px 9px;font-size:15px;line-height:1}
 .rsli .k{color:var(--s400);font-size:11px}.rsli span:nth-child(3){font-weight:700}.rsli .c{font-size:11px;font-weight:700;text-align:right}.rsli.mv{background:#f0fdf4;border-color:#bbf7d0}.rsli.ia{opacity:.55}
 #rosSortInfo{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--s100);font-size:12.5px;color:var(--s700);line-height:1.4}
 #rosSort .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+#rkDlg{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:110}
+#rkDlg .box{background:#fff;border-radius:12px;padding:18px 20px;width:520px;max-width:96%;max-height:92vh;overflow:auto}#rkDlg h2{margin:0 0 2px}
+#rkDlg .row{display:flex;gap:14px;margin-top:12px;align-items:flex-end}#rkDlg label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase}
+#rkDlg input,#rkDlg select{padding:7px 8px;border:1px solid var(--s300);border-radius:6px;font-size:14px;font-weight:600;color:var(--s900)}#rkDlg input{width:110px;text-transform:uppercase}#rkDlg select{min-width:220px}
+#rkErr{color:#b91c1c;font-size:12.5px;font-weight:600;margin-top:8px;min-height:16px}
+#rkList{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--s100);font-size:12.5px;color:var(--s700);line-height:1.6}#rkList .rki{display:inline-flex;align-items:center;gap:4px;margin-right:10px}
+#rkList button{border:0;background:none;color:#b91c1c;cursor:pointer;font-size:13px;padding:0 2px}#rkList button:disabled{color:var(--s300);cursor:default}
+#rkDlg .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
 #opsCtx .ctxhd{font-size:11px;font-weight:700;color:var(--s500);padding:6px 12px 4px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}#opsCtx button:disabled{color:var(--s300);cursor:default;background:none}
 tr.nsSep td{background:#5b21b6!important}
 #blkPop{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:110}
@@ -1216,7 +1224,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z181</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z182</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1283,6 +1291,12 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <div class="btns"><button class="btn" id="rollCancel">Cancel</button><button class="btn primary" id="rollGo">Start</button></div>
 </div></div>
 <div id="helpPop"><div class="box"><h2><span id="helpTitle">Help</span><button class="btn" id="helpX">Close</button></h2><div id="helpBody"></div><div class="muted" style="font-size:11px;margin-top:10px">LODESTAR · built by MARTELL</div></div></div>
+<div id="rkDlg"><div class="box">
+  <h2>Add a rank</h2><div class="muted" style="font-size:12px" id="rkSub"></div>
+  <div class="row"><label>Rank<input id="rkName" maxlength="8" placeholder="e.g. 2LT" autocomplete="off"></label><label>Comes after (for sorting)<select id="rkAfter"></select></label></div>
+  <div id="rkErr"></div><div id="rkList"></div>
+  <div class="btns"><button class="btn" id="rkCancel" style="background:var(--s200);color:var(--s800)">Cancel</button><button class="btn primary" id="rkGo">Add rank</button></div>
+</div></div>
 <div id="rosSort"><div class="box">
   <h2 id="rosSortTitle">Sort regular crew</h2><div class="muted" style="font-size:12px" id="rosSortSub"></div>
   <div class="row"><label>Sort by<select id="rosSortBy"></select></label><label class="ck"><input type="checkbox" id="rosSortInact" checked> Inactive crew at the end</label></div>
@@ -1845,6 +1859,9 @@ function loadWorkbook(buf, name, handle, other) {
       st.notes.set(k, tx); st.noteRow.set(k, r);
     }
   }
+  // z182: ranks added on the Crew Roster (dashboard-made sheet "Ranks": A rank, B the rank it comes after, blank = first; rows 2..41)
+  st.rk = [];
+  if (WB.paths[RK_SHEET]) { const c = readCells(RK_SHEET); for (let r = RK_ROW0; r < RK_ROW0 + RK_N; r++) { const k = str(c["A" + r]).toUpperCase().replace(/\s+/g, ""); if (k) st.rk.push({ rank: k, after: str(c["B" + r]).toUpperCase().replace(/\s+/g, ""), row: r }); } }
   // Role Tags sheet (made by the dashboard on the first tag): AC / Pax on a crew flight cell, header row 1, rows 2.. (A date, B shift, C callsign or name, D tag)
   st.roleTags = new Map(); st.roleRow = new Map(); st.roleUsed = new Set(); st.roleSor = new Map();   // z175: E "Flights" = Crew / Pax / Not on per flight of a running change ("P,C")
   if (WB.paths[ROLE_SHEET]) {
@@ -1901,6 +1918,7 @@ function setNote(mi, r, d, tx) {
   put("Cell Notes", "E" + row, tx); S.notes.set(k, tx); return true;
 }
 // ---------- role tags (AC / Pax): a planner's tag on a crew flight cell, kept in the department file's own Role Tags sheet
+const RK_SHEET = "Ranks", RK_ROW0 = 2, RK_N = 40, RK_HEAD = ["Rank", "Comes after"], RK_COLS = '<col min="1" max="2" width="16" customWidth="1"/>';
 const ROLE_SHEET = "Role Tags", ROLE_ROW0 = 2, ROLE_N = 1500, ROLE_COLS = '<col min="1" max="1" width="12" customWidth="1"/><col min="2" max="5" width="14" customWidth="1"/>', ROLE_HEAD = ["Date", "Shift", "Callsign", "Tag", "Flights"];
 // a code is a flight when Activities holds it in the Flight category, or (no Activities row at all) when the Master Planner lists it or a MASTER row of this file carries it
 const isFlightCode = (st, code) => { const a = st.acts.find(x => x.code && same(x.code, code)); if (a) return !!st.cats[CAT_FLIGHT] && same(a.cat, st.cats[CAT_FLIGHT]);
@@ -3421,6 +3439,7 @@ function buildXlsx() {
   if (bySheet[AFP_SHEET]) sheetEnsure(WB, AFP_SHEET, AFP_HEAD, AFP_COLS);
   if (bySheet[ATOM_SHEET]) sheetEnsure(WB, ATOM_SHEET, [ATOM_SHEET_TITLE], ATOM_SHEET_COLS);   // our copy may have been replaced by a newer one without the sheet
   if (bySheet[MN_SHEET]) sheetEnsure(WB, MN_SHEET, [], MN_XCOLS, MN_OPT);
+  if (bySheet[RK_SHEET]) sheetEnsure(WB, RK_SHEET, RK_HEAD, RK_COLS);
   const files = Object.assign({}, WB.files);
   for (const [sheet, list] of Object.entries(bySheet)) {
     const p = WB.paths[sheet]; if (!p || !files[p]) continue; let x = td.decode(files[p]);
@@ -4651,7 +4670,7 @@ $("curTable").addEventListener("change", e => {
   renderCur(); renderPlanner();
 });
 ["curBaseEd", "curOnlyBad"].forEach(id => $(id).addEventListener("change", renderCur));
-function renderAll() { renderBooks(); renderControls(); renderPlanner(); renderCur(); renderCodes(); renderCmx(); renderMp(); renderOverview(); renderSdo(); renderOps(); renderRoster(); renderActs(); if ($("v-lode").classList.contains("on")) renderLode(); renderLog(); renderSyl(); renderMisc(); updateSave(); }
+function renderAll() { ranksRefresh(); renderBooks(); renderControls(); renderPlanner(); renderCur(); renderCodes(); renderCmx(); renderMp(); renderOverview(); renderSdo(); renderOps(); renderRoster(); renderActs(); if ($("v-lode").classList.contains("on")) renderLode(); renderLog(); renderSyl(); renderMisc(); updateSave(); }
 function renderControls() {
   $("rollBtn").style.display = OPS ? "" : "none";
   $("year").value = S.year;
@@ -6159,7 +6178,7 @@ function renderRoster() {
     return "<tr data-ri='" + i + "'" + (grp ? " data-grp='" + grp + "'" : "") + " class='" + (p.status.toLowerCase() === "inactive" ? "inactive" : "") + (ns ? " sans" : "") + "'><td class='n'>" + (no || i + 1) + "</td>" +
       "<td><input data-r='" + i + "' data-f='id' value='" + esc(p.id) + "'" + (dup ? " style='background:#fee2e2' title='Duplicate callsign'" : "") + (grp && rosEmpty(p) ? " placeholder='next " + grp + "'" : "") + "></td>" +
       (() => { const rp2 = rankParts(p.name), list = rankList(), opts = (rp2.rank && !list.includes(rp2.rank) ? [rp2.rank] : []).concat(list);
-        return "<td><select data-r='" + i + "' data-f='rank' class='" + catCls(p.cat) + "'><option></option>" + opts.map(r => "<option" + (r === rp2.rank ? " selected" : "") + ">" + r + "</option>").join("") + "</select></td>" +
+        return "<td><select data-r='" + i + "' data-f='rank' class='" + catCls(p.cat) + "'><option></option>" + opts.map(r => "<option" + (r === rp2.rank ? " selected" : "") + ">" + r + "</option>").join("") + (mayEdit(cur.b) ? "<option value='+add'>+ Add rank…</option>" : "") + "</select></td>" +
           "<td><input data-r='" + i + "' data-f='name' value='" + esc(rp2.rest) + "' class='" + catCls(p.cat) + "'" + (grp && rosEmpty(p) ? " placeholder='Name'" : "") + "></td>"; })() +
       (S.rcols && S.rcols.ini ? "<td><input data-r='" + i + "' data-f='ini' value='" + esc(p.ini) + "'></td>" : "") +
       (nw ? "<td><select data-r='" + i + "' data-f='cat' class='" + catCls(p.cat) + "'>" + opt(CREW_CATS, p.cat) + "</select></td>" : "") +
@@ -6684,7 +6703,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z181 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z182 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7206,7 +7225,7 @@ function mePeople() { const out = []; books.forEach((b, bi) => { if (!isDept(b))
 // ---------- My Lodestar: a read-only personal home page (spec: docs/superpowers/specs/2026-10-25-my-lodestar-design.md). Never calls put().
 // Who am I: the SharePoint sign-in name is matched to exactly one roster name (rank, case and word order ignored); else a remembered pick; else a list.
 const LODE_RANKS = new Set("maj cpt lta ltc col me1 me2 me3 me4 me5 2lt 1wo 2wo 3wo msg ssg 3sg 2sg 1sg ms1 ms2 ms3 ns".split(" "));   // z178: every rank the Crew Roster offers (RANKS) is skipped too
-const lodeKey = name => String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(w => w && !LODE_RANKS.has(w)).sort();
+const lodeKey = name => String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(w => w && !LODE_RANKS.has(w) && !RANKS.includes(w.toUpperCase())).sort();
 const lodeId = p => p.id && !/^nil$/i.test(p.id) ? p.id : p.name;   // NIL = no callsign: known by name
 const lodeFind = (dept, id) => mePeople().find(x => same(x.dept, dept) && same(lodeId(x.p), id)) || null;
 // z168: a SharePoint name often carries more than the name (the appointment at the back, "Brandon Tan OPS O 121 SQN"). When no roster
@@ -7622,7 +7641,7 @@ const HELP = {
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>Next 7 days:</b> your plan by AM, PM and NIGHT.</li><li><b>My month:</b> the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
-    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b>, <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview), <b>Transfer to SANS / NSMEN / regular crew</b> (they go after the last person of that group, take an empty row there and get that Status; Active for regular crew) and <b>Remove crew…</b> (asks first; clears their roster row, plans, Personnel Info, Currency, comments and AC / Pax tags, and the crew below move up; syllabus results and medical chits stay). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
+    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b>, <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview), <b>Transfer to SANS / NSMEN / regular crew</b> (they go after the last person of that group, take an empty row there and get that Status; Active for regular crew) and <b>Remove crew…</b> (asks first; clears their roster row, plans, Personnel Info, Currency, comments and AC / Pax tags, and the crew below move up; syllabus results and medical chits stay). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; <b>+ Add rank…</b> at the bottom of the list adds a new one (you pick which rank it comes after, for sorting; it is kept in your file's Ranks sheet, and a rank nobody has can be taken off again there); Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +
@@ -7723,6 +7742,7 @@ function rosterChange(e) {
   if (readOnly()) { renderRoster(); return; }
   const el = e.target, i = +el.dataset.r; let f = el.dataset.f; if (isNaN(i)) return;
   let v = el.value.trim();
+  if (f === "rank" && v === "+add") { renderRoster(); rkOpen(i); return; }
   // z156: Rank and Name are shown apart but stay one cell (Crew Member) in Excel: "CPT Sarah Lim"
   if (f === "rank" || f === "name") { const cur0 = rankParts(S.roster[i].name), typed = f === "name" ? rankParts(v) : null;
     const rk = f === "rank" ? v : typed.rank || cur0.rank, rest = f === "rank" ? cur0.rest : typed.rank ? typed.rest : v;
@@ -7737,7 +7757,19 @@ function rosterChange(e) {
 // in memory their cell comments and AC / Pax tags (those sheets name the callsign, so the sheets don't change). The two sections never mix: regular
 // crew (rows 1 to 45) and SANS / NSMEN (46 to 60), where SANS and NSMEN are two groups by Status. The moved cells are written "quiet": the Change Log
 // gets one line per action ("Crew Roster: FALCON moved up") instead of hundreds of plan cells.
-const RANKS = ["LTC", "MAJ", "CPT", "LTA", "1WO", "2WO", "3WO", "MSG", "SSG", "1SG", "2SG", "3SG", "ME3", "ME2", "ME1"];   // one structure per department (Brandon, 4 Nov)
+const RANKS_BASE = ["LTC", "MAJ", "CPT", "LTA", "1WO", "2WO", "3WO", "MSG", "SSG", "1SG", "2SG", "3SG", "ME3", "ME2", "ME1"];   // one structure per department (Brandon, 4 Nov)
+// z182: the full rank order = the built-in ranks plus the ranks added on the Crew Roster of every open department file, each after the rank it names
+let RANKS = RANKS_BASE.slice();
+function ranksRefresh() {
+  const out = RANKS_BASE.slice(), add = [];
+  books.forEach(b => (b.S && b.S.rk || []).forEach(x => { if (!out.includes(x.rank) && !add.some(y => y.rank === x.rank)) add.push(x); }));
+  const placed = new Map();   // rank -> the rank it was put after
+  let left = add, guard = 0;
+  while (left.length && guard++ < 50) left = left.filter(x => { const a = x.after && x.after !== x.rank ? x.after : ""; let k = a ? out.indexOf(a) : -1; if (a && k < 0) return true;
+    k++; while (k < out.length && placed.get(out[k]) === a) k++;   // after the ranks already added behind the same one, so they keep the order they were added in
+    out.splice(k, 0, x.rank); placed.set(x.rank, a); return false; });
+  left.forEach(x => out.push(x.rank)); RANKS = out;
+}
 const rankOf = p => { const k = RANKS.indexOf(String(p.name || "").replace(/\(NS\)/ig, " ").trim().split(/\s+/)[0].toUpperCase()); return k < 0 ? 99 : k; };
 const nameNoRank = p => { const w = String(p.name || "").replace(/\(NS\)/ig, " ").trim().split(/\s+/); return (rankOf(p) < 99 ? w.slice(1) : w).join(" "); };
 const sansGrp = p => /^sans$/i.test(p.status || "") ? "SANS" : /^nsmen$/i.test(p.status || "") ? "NSMEN" : "";
@@ -7748,7 +7780,8 @@ const ROS_SORTS = [["cat", "Cat Status, then rank"], ["rank", "Rank, then Cat St
 // the rank at the start of a name ("CPT (NS) Lee Kok Wai" -> CPT + "(NS) Lee Kok Wai"); a first word that is no known rank is part of the name
 const rankParts = n => { const t = String(n || "").trim(), m = /^(\S+)\s+(.*)$/.exec(t); return m && RANKS.includes(m[1].toUpperCase()) ? { rank: m[1].toUpperCase(), rest: m[2] } : RANKS.includes(t.toUpperCase()) ? { rank: t.toUpperCase(), rest: "" } : { rank: "", rest: t }; };
 // the ranks offered on the Crew Roster: the department's own structure (Pilot and TACCO officers, Loadmaster WOSE, SUP MEs), all of them elsewhere
-const rankList = () => { const d = String(S.dept || ""); return /pilot|tacco/i.test(d) ? RANKS.slice(0, 4) : /load/i.test(d) ? RANKS.slice(4, 12) : /sup/i.test(d) ? RANKS.slice(12) : RANKS.slice(); };
+const rankList = () => { const d = String(S.dept || ""), base = /pilot|tacco/i.test(d) ? RANKS_BASE.slice(0, 4) : /load/i.test(d) ? RANKS_BASE.slice(4, 12) : /sup/i.test(d) ? RANKS_BASE.slice(12) : null;
+  if (!base) return RANKS.slice(); const own = new Set((S.rk || []).map(x => x.rank)); return RANKS.filter(r => base.includes(r) || own.has(r)); };
 const rosCatIx = p => { const k = CREW_CATS.indexOf(String(p.cat || "").toUpperCase()); return k < 0 ? 9 : k; };
 function rosCmp(by) {
   const nm = (a, b) => nameNoRank(a).localeCompare(nameNoRank(b)) || String(a.id).localeCompare(String(b.id));
@@ -7884,6 +7917,51 @@ function rosTransfer(i, to) {
   if (!same(S.roster[L.at].status, st)) { S.roster[L.at].status = st; rosQuiet("Roster", rosterCols(S).status + (ROSTER_ROW0 + L.at), st, note); }
   renderAll(); toast(who + " transferred to " + ROS_TO[to] + " (Status " + st + "), with their plans." + saveHint() + " Ctrl+Z undoes it.", 5000);
 }
+// z182: Add a rank (Rank dropdown "+ Add rank…"): kept in the department file's own "Ranks" sheet (made by the dashboard), so the dropdown,
+// sorting by rank and My Lodestar's name matching know it. A rank nobody on this roster uses can be taken off again.
+let rkFor = -1;
+const rkNote = (t) => "Ranks: " + t;
+function rkOpen(i) {
+  if (readOnly()) return;
+  rkFor = i == null ? -1 : i; const p = rkFor >= 0 ? S.roster[rkFor] : null;
+  $("rkSub").textContent = "Adds a rank to the Rank list of " + (S.dept || "this file") + "'s Crew Roster" + (p && rankParts(p.name).rest ? " and gives it to " + rosWho(p) : "") + ". It is saved in this file with Save to Excel.";
+  $("rkAfter").innerHTML = "<option value=''>First (above " + esc(RANKS[0]) + ")</option>" + RANKS.map(r => "<option" + (r === rankList().slice(-1)[0] ? " selected" : "") + ">" + esc(r) + "</option>").join("");
+  $("rkName").value = ""; $("rkErr").textContent = ""; rkListDraw();
+  $("rkDlg").style.display = "flex"; setTimeout(() => $("rkName").focus(), 0);
+}
+function rkListDraw() {
+  const used = new Set(S.roster.map(p => rankParts(p.name).rank).filter(Boolean));
+  $("rkList").innerHTML = (S.rk || []).length ? "<b>Ranks added in this file:</b> " + S.rk.map(x => "<span class='rki'>" + esc(x.rank) + " <span class='muted'>(after " + esc(x.after || "none, first") + ")</span><button data-rkx='" + esc(x.rank) + "'" + (used.has(x.rank) ? " disabled title='Someone on the Crew Roster has this rank'" : " title='Take this rank off the list'") + ">✕</button></span>").join("") :
+    "Built-in ranks: " + RANKS_BASE.join(", ") + ". The rank goes at the start of the name in Excel (Crew Member), e.g. 2LT Daniel Tan.";
+}
+function rkAdd() {
+  const k = $("rkName").value.trim().toUpperCase().replace(/\s+/g, ""), after = $("rkAfter").value;
+  const err = t => { $("rkErr").textContent = t; $("rkName").focus(); };
+  if (!k) return err("Type the rank first.");
+  if (!/^[A-Z0-9()\-]{1,8}$/.test(k)) return err("A rank is one word of letters and numbers, up to 8 characters (e.g. 2LT, ME4).");
+  if (k === "NS" || k === "(NS)") return err("(NS) is not a rank: type it in the name, e.g. CPT (NS) Lee Kok Wai.");
+  if (RANKS.includes(k)) return err(k + " is already on the list.");
+  const used = new Set((S.rk || []).map(x => x.row)); let r = RK_ROW0; while (used.has(r) && r < RK_ROW0 + RK_N) r++;
+  if (r >= RK_ROW0 + RK_N) return err("This file already has " + RK_N + " added ranks.");
+  const note = rkNote(k + " added" + (after ? " (after " + after + ")" : " (first)"));
+  rosQuiet(RK_SHEET, "A" + r, k, note); rosQuiet(RK_SHEET, "B" + r, after, note);
+  S.rk.push({ rank: k, after, row: r }); ranksRefresh();
+  const i = rkFor; $("rkDlg").style.display = "none";
+  if (i >= 0 && S.roster[i]) { const rest = rankParts(S.roster[i].name).rest;
+    if (rest) { const v = k + " " + rest; S.roster[i].name = v; put("Roster", rosterCols(S).name + (ROSTER_ROW0 + i), v); } }
+  renderAll(); toast(k + " added to the Rank list" + (i >= 0 && S.roster[i] && rankParts(S.roster[i].name).rank === k ? " and given to " + rosWho(S.roster[i]) : "") + "." + saveHint(), 4000);
+}
+function rkRemove(k) {
+  const x = (S.rk || []).find(y => y.rank === k); if (!x || readOnly()) return;
+  const note = rkNote(k + " taken off the list");
+  rosQuiet(RK_SHEET, "A" + x.row, "", note); rosQuiet(RK_SHEET, "B" + x.row, "", note);
+  S.rk = S.rk.filter(y => y !== x); S.rk.forEach(y => { if (y.after === k) { y.after = x.after; rosQuiet(RK_SHEET, "B" + y.row, x.after, note); } });   // ranks placed after it move up to its place
+  ranksRefresh(); rkOpen(rkFor); renderRoster();
+}
+$("rkCancel").addEventListener("click", () => { $("rkDlg").style.display = "none"; });
+$("rkGo").addEventListener("click", rkAdd);
+$("rkName").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); rkAdd(); } else if (e.key === "Escape") $("rkDlg").style.display = "none"; });
+$("rkList").addEventListener("click", e => { const b = e.target.closest("button[data-rkx]"); if (b && !b.disabled) rkRemove(b.dataset.rkx); });
 // the Sort dialog: a preview of now and after
 let rosDlgSec = null;
 function rosSortOpen(sec) {
@@ -7901,7 +7979,7 @@ function rosSortPrev() {
   const mv = after.filter((j, k) => now[k] !== j).length;
   $("rosSortSub").textContent = "Puts the " + now.length + " " + (san ? "SANS / NSMEN" : "regular crew") + " in a new order on the Crew Roster, the Planner, the Ops Room and in Excel." + (san ? " SANS first, then NSMEN." : " SANS / NSMEN keep their own order at the bottom.");
   $("rosSortCols").innerHTML = "<div><h4>Now</h4>" + now.map((j, k) => li(j, k)).join("") + "</div><div class='arr'>→</div><div><h4>After sorting</h4>" + after.map((j, k) => li(j, k, now[k] !== j)).join("") + "</div>";
-  $("rosSortInfo").innerHTML = "Rank is read from the start of the name ((NS) is skipped): LTC, MAJ, CPT, LTA · 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1. Any other rank comes after them; the same rank goes by name.<br>Each person's plans for every month, Personnel Info and Currency rows move with them. <b>" + mv + " crew move</b> (green).";
+  $("rosSortInfo").innerHTML = "Rank is read from the start of the name ((NS) is skipped): " + esc(RANKS.join(", ")) + ". Any other rank comes after them; the same rank goes by name.<br>Each person's plans for every month, Personnel Info and Currency rows move with them. <b>" + mv + " crew move</b> (green).";
   $("rosSortGo").textContent = mv ? "Sort " + now.length + " crew" : "Already in this order"; $("rosSortGo").disabled = !mv;
 }
 $("rosSortBy").addEventListener("change", rosSortPrev); $("rosSortInact").addEventListener("change", rosSortPrev);

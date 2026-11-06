@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 6 Nov 2026 (z181). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 6 Nov 2026 (z182). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -252,3 +252,5 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Misc Notes formatting (z180, 6 Nov, Brandon): format painter, font size, bold / italic / underline / strikethrough, text and fill colour, borders (all, outside, thick outside, bottom, none), align left / centre / right, merge and unmerge, wrap; saved as real Excel formatting in the hidden sheet (awaiting his test)
 - [x] Syllabus (6 Nov, Brandon): SUP 1, SUP 2 and TACCO share the same syllabus; Pilot and Loadmaster start empty (builder; in the fresh intranet set)
 - [?] Crew Roster: Remove crew and Transfer to SANS / NSMEN / regular crew on the right-click menu (z181, 6 Nov, Brandon): plans, Personnel Info and Currency go with the person; Remove asks first and the crew below move up (awaiting his test)
+- [?] Add a rank (z182, 6 Nov, Brandon): + Add rank… at the bottom of the Crew Roster Rank dropdown, you pick which rank it comes after; kept in the file's Ranks sheet (awaiting his test)
+- [ ] More SANS / NSMEN rows (Brandon, 6 Nov): 30 instead of 15 (75 people per department file), new department layout 5, plus an Upgrade file step that copies the typed data from the old file (his intranet files already hold typed plans)

@@ -230,6 +230,33 @@ test("view_only_has_no_menu", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => !!document.getElementById("opsCtx")), false);
 });
 
+// ---- z187: Add a role
+test("add_role_from_the_dropdown_gives_it_and_round_trips", async ({ page }) => {
+  await openRoster(page);
+  await page.selectOption("#rosterTable select[data-r='3'][data-f='role']", "+add");
+  assert.ok(await page.evaluate(() => $("rlDlg").style.display === "flex"));
+  await page.fill("#rlName", "Examiner"); await page.selectOption("#rlAfter", ""); await page.check("#rlIns"); await page.click("#rlGo");
+  const r = await page.evaluate(() => [S.roster[3].role, ROLES_ALL[0], ROLE_RANK("Examiner"), ROLE_RANK("Instructor"), isInsRole("Examiner"), roleList().includes("Examiner"), $("rlDlg").style.display]);
+  assert.deepStrictEqual(r, ["Examiner", "Examiner", 0, 1, true, true, "none"]);
+  assert.ok(await page.evaluate(() => [...document.querySelectorAll("#rosterTable select[data-r='3'][data-f='role'] option")].some(o => o.selected && o.textContent === "Examiner")));
+  await page.evaluate(() => rlOpen(-1)); await page.fill("#rlName", "Mission Planner"); await page.selectOption("#rlAfter", "Senior CAT A"); await page.click("#rlGo");
+  assert.deepStrictEqual(await page.evaluate(() => [ROLES_ALL.join(","), isInsRole("Mission Planner")]), ["Examiner,Instructor,Senior CAT A,Mission Planner,Junior", false]);
+  await page.evaluate(() => rlOpen(-1)); await page.fill("#rlName", "junior"); await page.click("#rlGo");
+  assert.ok(/already/.test(await page.evaluate(() => $("rlErr").textContent)));
+  await page.evaluate(() => { $("rlDlg").style.display = "none"; });
+  await roundTrip(page);
+  const r2 = await page.evaluate(() => [S.rl.map(x => x.role + ">" + x.after + (x.ins ? "*" : "")).join("|"), S.roster[3].role, ROLES_ALL.join(","), isInsRole("Examiner")]);
+  assert.deepStrictEqual(r2, ["Examiner>*|Mission Planner>Senior CAT A", "Examiner", "Examiner,Instructor,Senior CAT A,Mission Planner,Junior", true]);
+});
+test("added_role_can_be_removed_only_when_unused", async ({ page }) => {
+  await openRoster(page);
+  await page.evaluate(() => rlOpen(3)); await page.fill("#rlName", "Examiner"); await page.click("#rlGo");
+  await page.evaluate(() => rlOpen(-1)); await page.fill("#rlName", "Spare"); await page.click("#rlGo");
+  await page.evaluate(() => rlOpen(-1));
+  assert.deepStrictEqual(await page.evaluate(() => [...document.querySelectorAll("#rlList button[data-rlx]")].map(b => b.dataset.rlx + ":" + b.disabled)), ["Examiner:true", "Spare:false"]);
+  await page.click("#rlList button[data-rlx='Spare']");
+  assert.deepStrictEqual(await page.evaluate(() => [S.rl.map(x => x.role).join(), ROLES_ALL.includes("Spare")]), ["Examiner", false]);
+});
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

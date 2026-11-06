@@ -484,6 +484,11 @@ header.top .btn.ur{padding:6px 9px;font-size:15px;line-height:1}
 .rsli .k{color:var(--s400);font-size:11px}.rsli span:nth-child(3){font-weight:700}.rsli .c{font-size:11px;font-weight:700;text-align:right}.rsli.mv{background:#f0fdf4;border-color:#bbf7d0}.rsli.ia{opacity:.55}
 #rosSortInfo{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--s100);font-size:12.5px;color:var(--s700);line-height:1.4}
 #rosSort .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+/*DEV*/#upgDlg{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:120}
+#upgDlg .box{background:#fff;border-radius:12px;padding:18px 20px;width:640px;max-width:96%;max-height:92vh;overflow:auto}#upgDlg h2{margin:0 0 6px}
+#upgDlg .row{margin-top:12px}#upgDlg label{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase}#upgDlg input{font-size:13px;text-transform:none}
+#upgOut{margin-top:12px;font-size:12.5px;line-height:1.5}#upgOut .ok{color:#166534}#upgOut .bad{color:#b91c1c;font-weight:600}#upgOut ul{margin:2px 0 6px 18px;padding:0}
+#upgDlg .btns{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}/*/DEV*/
 #rkDlg{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:110}
 #rkDlg .box{background:#fff;border-radius:12px;padding:18px 20px;width:520px;max-width:96%;max-height:92vh;overflow:auto}#rkDlg h2{margin:0 0 2px}
 #rkDlg .row{display:flex;gap:14px;margin-top:12px;align-items:flex-end}#rkDlg label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--s500);text-transform:uppercase}
@@ -1221,10 +1226,10 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
       <button class="btn" id="wOps" title="For the SDO and AOS on duty: every department's planner, the Master Planner, the Duty Roster and the Ops Room file, to run the day's flights">Ops Room</button>
       <button class="btn" id="wSample">Try with the built-in sample</button>
     </div>
-    <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button>
+    <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z182</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-06 z183</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1291,6 +1296,14 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <div class="btns"><button class="btn" id="rollCancel">Cancel</button><button class="btn primary" id="rollGo">Start</button></div>
 </div></div>
 <div id="helpPop"><div class="box"><h2><span id="helpTitle">Help</span><button class="btn" id="helpX">Close</button></h2><div id="helpBody"></div><div class="muted" style="font-size:11px;margin-top:10px">LODESTAR · built by MARTELL</div></div></div>
+<!--DEV--><div id="upgDlg"><div class="box">
+  <h2>Upgrade department files to 30 SANS / NSMEN rows</h2>
+  <div class="muted" style="font-size:12.5px;line-height:1.45">Copies everything typed in your current department files (crew roster, plans for every month, comments, tags, Personnel Info, currency, syllabus, chits, requests, Activities, Misc Notes, Change Log and the rest) into the new empty files, which have room for 30 SANS / NSMEN instead of 15. Your current files are only read, never changed. Each upgraded file downloads under your file's own name: put it in the SharePoint folder in place of the old one.</div>
+  <div class="row"><label>1. Your current department files (one or more)<input type="file" id="upgOld" accept=".xlsx" multiple></label></div>
+  <div class="row"><label>2. The new empty files (same departments)<input type="file" id="upgNew" accept=".xlsx" multiple></label></div>
+  <div id="upgOut"></div>
+  <div class="btns"><button class="btn" id="upgClose" style="background:var(--s200);color:var(--s800)">Close</button><button class="btn primary" id="upgRun">Upgrade and download</button></div>
+</div></div><!--/DEV-->
 <div id="rkDlg"><div class="box">
   <h2>Add a rank</h2><div class="muted" style="font-size:12px" id="rkSub"></div>
   <div class="row"><label>Rank<input id="rkName" maxlength="8" placeholder="e.g. 2LT" autocomplete="off"></label><label>Comes after (for sorting)<select id="rkAfter"></select></label></div>
@@ -1339,8 +1352,9 @@ const ymdB = iso => ymd(iso, books.length ? books[0].S.year : null);   // all op
 // month <select> options: Jan..Dec, then next January when the file has it
 const monOpts = (sel, y, nx, withY) => MONTHS_FULL.map((m, i) => "<option value='" + i + "'" + (i === sel ? " selected" : "") + ">" + m + (withY ? " " + y : "") + "</option>").join("") +
   (nx ? "<option value='" + NX_MI + "'" + (sel === NX_MI ? " selected" : "") + " class='nxo'>January " + (y + 1) + " (next year)</option>" : "");
-const N = 60, NA = 60, SHIFTS = ["AM","PM","NIGHT"];
-const REG_N = 45;   // roster rows 6-50 regular crew, 51-65 SANS / NSmen (files with a Cat Status column)
+const NA = 60, SHIFTS = ["AM","PM","NIGHT"];
+const N_OLD = 60, N_NEW = 75;   // crew slots per department file: 75 from dept layout 5 (z183: 30 SANS / NSmen rows), 60 before; each file keeps its own (st.n)
+const REG_N = 45;   // roster rows 6-50 regular crew, then SANS / NSmen: 51-80 from layout 5, 51-65 before (files with a Cat Status column)
 const CREW_CATS = ["CAT A", "CAT B", "CAT C", "CAT D", "TRAINEE"], CREW_ROLES = ["Instructor", "Senior CAT A", "Junior"];
 const catCls = c => ({ "CAT A": "catA", "CAT B": "catB", "CAT C": "catC", "CAT D": "catD", TRAINEE: "catT" })[String(c || "").toUpperCase()] || "";
 const isSans = p => /^(SANS|NSMEN)$/i.test(p.status || "");
@@ -1813,11 +1827,12 @@ function loadWorkbook(buf, name, handle, other) {
   if (missing.length) throw new Error("This doesn't look like the planner workbook, or it's an older version (missing sheets: " + missing.join(", ") + "). Use the Excel that came with this dashboard.");
   const st = { year: null, dept: "", roster: [], acts: [], cats: [], hols: [], m: [], sdo: {} };
   const dash = readCells("Dashboard"); st.year = num(dash.A5) || new Date().getFullYear();
+  { const lz = /dept\s+layout\s+(\d+)/i.exec(str(dash.Z2)); st.n = lz && +lz[1] >= 5 ? N_NEW : N_OLD; }
   st.dept = str(dash.G5) || name.replace(/\.xlsx$/i, "");
   const ro = readCells("Roster");
   st.rcols = findRosterCols(ro); st.catCol = !!(st.rcols && st.rcols.cat); const rc = rosterCols(st);
   const restCol = [..."IJKLMN"].find(c => /in a row/i.test(str(ro[c + "5"])));   // days flying in a row at 31 Dec of last year (Start new year)
-  for (let i = 0; i < N; i++) { const r = ROSTER_ROW0 + i; st.roster.push({ id: str(ro[rc.id + r]), name: str(ro[rc.name + r]), cat: rc.cat ? str(ro[rc.cat + r]) : "", ini: rc.ini ? str(ro[rc.ini + r]) : "", role: str(ro[rc.role + r]), status: str(ro[rc.status + r]), remarks: str(ro[rc.remarks + r]) }); }
+  for (let i = 0; i < st.n; i++) { const r = ROSTER_ROW0 + i; st.roster.push({ id: str(ro[rc.id + r]), name: str(ro[rc.name + r]), cat: rc.cat ? str(ro[rc.cat + r]) : "", ini: rc.ini ? str(ro[rc.ini + r]) : "", role: str(ro[rc.role + r]), status: str(ro[rc.status + r]), remarks: str(ro[rc.remarks + r]) }); }
   if (restCol) st.roster.forEach((p, i) => { p.restIn = num(ro[restCol + (ROSTER_ROW0 + i)]) || 0; });
   const sp = readCells("SDO Plan"); for (const ref in sp) if (typeof sp[ref] === "string") st.sdo[ref] = str(sp[ref]);
   st.duty = { SDO: st.sdo };
@@ -1841,7 +1856,7 @@ function loadWorkbook(buf, name, handle, other) {
       for (let d = 0; d < 31; d++) { const L = colL(DAY_COL0 + d); row.push(str(c[L + mRow(r)])); trow.push(timeStr(c[L + tRow(r)])); nrow.push(str(c[L + nRow(r)])); }
       master.push(row); mtime.push(trow); mnote.push(nrow);
     }
-    for (let r = 0; r < N * st.rp; r++) { const row = []; for (let d = 0; d < 31; d++) row.push(str(c[colL(DAY_COL0 + d) + (g0(st) + r)])); grid.push(row); }
+    for (let r = 0; r < st.n * st.rp; r++) { const row = []; for (let d = 0; d < 31; d++) row.push(str(c[colL(DAY_COL0 + d) + (g0(st) + r)])); grid.push(row); }
     const gnd = []; for (let d = 0; d < 31; d++) gnd.push(st.gndRow ? str(c[colL(DAY_COL0 + d) + st.gndRow]) : "");
     st.m.push({ master, mtime, mnote, grid, gnd });
   }
@@ -1896,7 +1911,7 @@ function loadWorkbook(buf, name, handle, other) {
     const cr = readCells("Currency Rules"), cb = readCells("Currency");
     for (let k = 0; k < CUR_N; k++) { const r = CUR_ROW0 + k;
       st.rules.push({ name: str(cr["A" + r]), applies: str(cr["B" + r]), who: str(cr["C" + r]), counts: str(cr["D" + r]), which: str(cr["E" + r]), win: num(cr["F" + r]), min: num(cr["G" + r]), warn: num(cr["H" + r]), note: str(cr["I" + r]) }); }
-    for (let i = 0; i < N; i++) { const row = []; for (let k = 0; k < CUR_N; k++) { const v = cb[colL(4 + 2 * k) + (CUR_ROW0 + i)]; row.push(typeof v === "number" ? Math.floor(v) : null); } st.curBase.push(row); }
+    for (let i = 0; i < st.n; i++) { const row = []; for (let k = 0; k < CUR_N; k++) { const v = cb[colL(4 + 2 * k) + (CUR_ROW0 + i)]; row.push(typeof v === "number" ? Math.floor(v) : null); } st.curBase.push(row); }
   }
   const added = addBook(st, other, name, handle);
   if (!other) setTimeout(landLode, 0);   // the first file you open lands on My Lodestar (not in Ops Room mode)
@@ -3287,7 +3302,7 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-upch
 // ---------- layout check: each file kind has a layout number, stamped by the builder on its Dashboard sheet (Z2, "LODESTAR dept layout 1").
 // A higher stamp than this dashboard knows = the file is newer (saving could write to the wrong cells). Files without a stamp (or with a lower one)
 // are checked by the sheets and rows this dashboard uses; anything missing is listed as "older layout".
-const LAYOUT = { dept: 4, master: 3, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
+const LAYOUT = { dept: 5, master: 3, roster: 2, ops: 2 };   // 2: the next-January look-ahead (rows and a sheet added, none moved); dept 3: a 4th WD row per person (every crew block moved)
 function layoutCheck(st) {
   const kind = st.kind || "dept", z = WB.paths["Dashboard"] ? str(readCells("Dashboard").Z2) : "", m = /(\w+)\s+layout\s+(\d+)/i.exec(z), miss = [];
   const stamp = m ? +m[2] : null;
@@ -4022,7 +4037,7 @@ function monthStats(mi, A) {
   const hasB = hasPlan(S, "BDO");
   for (let d = 0; d < 31; d++) { const ref = sdoRef(y, mi, d), b = d < dim && hasB && !!plan(S, "BDO")[ref], sd = d < dim && !!S.sdo[ref];
     day.push({ sdoDay: b || sd, isB: b, isS: sd, duty: b && sd ? "BDO+SDO" : b ? "BDO" : sd ? "SDO" : "", nB: 0, nS: 0, fl: [0, 0, 0], hrs: 0, sdo: 0, gd: 0, lv: 0, off: 0, planned: [0, 0, 0], filled: [false, false, false], status: [null, null, null], sor: [{}, {}, {}], gap: [[], [], []] }); }
-  for (let i = 0; i < N; i++) {
+  for (let i = 0; i < S.n; i++) {
     const t = { fl: 0, hrs: 0, gd: 0, sdo: 0, lv: 0 };
     for (let d = 0; d < 31; d++) {
       const cats = new Set(); let duty = false;
@@ -6188,14 +6203,14 @@ function renderRoster() {
       "<td><input data-r='" + i + "' data-f='remarks' value='" + esc(p.remarks) + "'></td></tr>";
   };
   if (!nw) {
-    const show = Math.min(N, Math.max(lastFilled(S.roster, filled) + 6, 10));
+    const show = Math.min(S.n, Math.max(lastFilled(S.roster, filled) + 6, 10));
     for (let i = 0; i < show; i++) h += row(i);
   } else {
     const reg = S.roster.slice(0, REG_N), ns = S.roster.slice(REG_N);
-    const showR = Math.min(REG_N, Math.max(lastFilled(reg, filled) + 4, 8)), showN = Math.min(N - REG_N, Math.max(lastFilled(ns, filled) + 3, 3));
+    const showR = Math.min(REG_N, Math.max(lastFilled(reg, filled) + 4, 8)), showN = Math.min(S.n - REG_N, Math.max(lastFilled(ns, filled) + 3, 3));
     for (let i = 0; i < showR; i++) h += row(i);
     // SANS and NSMEN as two groups (by Status, z155), each with one empty row to add the next person; anyone else in this part (Inactive) after them
-    const idx = []; for (let i = REG_N; i < N; i++) idx.push(i);
+    const idx = []; for (let i = REG_N; i < S.n; i++) idx.push(i);
     const free = idx.filter(i => rosEmpty(S.roster[i]) && !sansGrp(S.roster[i]));
     let no = REG_N;
     const grp = (g, label, cls) => { const mem = idx.filter(i => sansGrp(S.roster[i]) === g), nx = free.shift();
@@ -6704,7 +6719,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z182 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-06 z183 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7605,6 +7620,104 @@ $("devGo").onclick = () => devOpen();
 $("devPick").onclick = () => devOpen(true);
 $("devAuto").onchange = e => devSet("auto", e.target.checked ? "1" : "0");
 $("devMine").onchange = e => devSet("mine", e.target.value);
+// ---------- z183: Upgrade a department file to layout 5 (75 crew slots: 30 SANS / NSmen rows instead of 15). The old file is only read. Every typed
+// (non-formula) value is copied into a new empty layout-5 file of the same department at the same cell: crew slots 1 to 60 keep their rows, slots 61 to
+// 75 are new rows after them, so only what sits below the crew area moved (month-tab totals, which are formulas). Cells the new file has but the old
+// one doesn't (its demo content) are cleared; formula cells of the new file are never written. Sheets the dashboard made in the old file (Change Log,
+// Role Tags, Misc Notes, Ranks...) are made in the new one. Returns { bytes, sheets, cells, made } or throws a plain-English Error.
+const UPG_G0 = 27;   // first crew grid row on the month tabs (files with the ground programme row)
+function upgDeptFile(oldBuf, newBuf) {
+  const O = fflate.unzipSync(new Uint8Array(oldBuf)), F = fflate.unzipSync(new Uint8Array(newBuf)), Op = sheetPaths(O), Fp = sheetPaths(F), Os = parseSST(O), Fs = parseSST(F);
+  const need = ["Dashboard", "Roster", "Activities", "Jan"];
+  if (need.some(n => !Op[n])) throw new Error("is not a department planner file.");
+  if (need.some(n => !Fp[n])) throw new Error("the new file is not a department planner file.");
+  const od = readCellsOf(O, Op.Dashboard, Os), fd = readCellsOf(F, Fp.Dashboard, Fs), stamp = d => { const m = /dept\s+layout\s+(\d+)/i.exec(str(d.Z2)); return m ? +m[1] : 0; };
+  if (stamp(od) >= 5) throw new Error("is already layout " + stamp(od) + " (30 SANS / NSMEN rows): nothing to upgrade.");
+  if (stamp(od) !== 4) throw new Error("is layout " + (stamp(od) || "unknown") + "; the upgrade works from layout 4 files only.");
+  if (stamp(fd) !== 5) throw new Error("the new file is not a layout 5 file (it says " + (str(fd.Z2) || "nothing") + ").");
+  const key = v => str(v).toUpperCase().replace(/\s+/g, "");
+  if (key(od.G5) !== key(fd.G5)) throw new Error("is " + str(od.G5) + ", but the new file is " + str(fd.G5) + ".");
+  const nO = N_OLD, nN = N_NEW, mons = MONTHS.concat([MON_NX]), dCol = c => c >= DAY_COL0 && c <= DAY_COL0 + 30;
+  // which cells of a sheet are copied: [first row, last row in the old file, last row in the new file, column test]
+  const zone = name => {
+    if (name === "Guide" || name === "Daily View") return null;
+    if (name === "Dashboard") return { refs: new Set(["A5", "B5", "G5"]) };
+    if (mons.includes(name)) return { r0: MASTER_ROW0, rO: UPG_G0 + ROWS_PER * nO - 1, rN: UPG_G0 + ROWS_PER * nN - 1, col: dCol };
+    if (name === "Roster" || name === "Personnel Info") return { r0: ROSTER_ROW0, rO: ROSTER_ROW0 + nO - 1, rN: ROSTER_ROW0 + nN - 1 };
+    if (name === "Currency") return { r0: CUR_ROW0, rO: CUR_ROW0 + nO - 1, rN: CUR_ROW0 + nN - 1 };
+    return { r0: 6, rO: 1e9, rN: 1e9 };
+  };
+  const split = ref => { const m = /^([A-Z]+)(\d+)$/.exec(ref); return [colN(m[1]), +m[2]]; };
+  const inZ = (z, ref, last) => { if (z.refs) return z.refs.has(ref); const [c, r] = split(ref); return r >= z.r0 && r <= last && (!z.col || z.col(c)); };
+  const fRefs = x => { const out = new Set(); for (const m of x.matchAll(/<c r="([A-Z]+\d+)"[^>]*>(?:(?!<\/c>)[\s\S])*?<f[\s>]/g)) out.add(m[1]); return out; };
+  // write many cells into one sheet: each row is found once, then patched on its own
+  const writeAll = (x, list) => {
+    const byRow = new Map(); list.forEach(([ref, v]) => { const r = split(ref)[1]; if (!byRow.has(r)) byRow.set(r, []); byRow.get(r).push([ref, v]); });
+    const head = x.indexOf("<sheetData"), tail = x.indexOf("</sheetData>"); if (head < 0 || tail < 0) { list.forEach(([ref, v]) => x = setCell(x, ref, v)); return x; }
+    let body = x.slice(head, tail); const miss = [];
+    body = body.replace(/<row r="(\d+)"[^>]*?(?:\/>|>[\s\S]*?<\/row>)/g, (row, rn) => { const L = byRow.get(+rn); if (!L) return row; byRow.delete(+rn);
+      if (/\/>$/.test(row) && !/<\/row>$/.test(row)) row = row.replace(/\s*\/>$/, "></row>");
+      L.forEach(([ref, v]) => row = setCell(row, ref, v)); return row; });
+    x = x.slice(0, head) + body + x.slice(tail);
+    for (const L of byRow.values()) L.forEach(([ref, v]) => x = setCell(x, ref, v));   // rows the new file doesn't have yet
+    return x;
+  };
+  const files = Object.assign({}, F), out = { sheets: 0, cells: 0, made: [] };
+  const W = { files, paths: Object.assign({}, Fp) };
+  const oWb = td.decode(O["xl/workbook.xml"]);
+  for (const name of Object.keys(Op)) {
+    const z = zone(name); if (!z) continue;
+    const oc = readCellsOf(O, Op[name], Os);
+    if (!W.paths[name]) {   // a sheet the dashboard made in the old file: make it here and copy all of it
+      const hid = new RegExp('<sheet\\b[^>]*name="' + name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/&/g, "&amp;") + '"[^>]*state="hidden"').test(oWb);
+      sheetEnsure(W, name, [], '<col min="1" max="1" width="14" customWidth="1"/>', { hidden: hid, plain: true }); out.made.push(name);
+      const list = Object.entries(oc), rows = new Map(); list.forEach(([ref, v]) => { const [c, r] = split(ref); if (!rows.has(r)) rows.set(r, []); rows.get(r).push([c, ref, v]); });
+      const sd = [...rows.keys()].sort((a, b) => a - b).map(r => '<row r="' + r + '">' + rows.get(r).sort((a, b) => a[0] - b[0]).map(([c, ref, v]) => cellXml(ref, "", v)).join("") + "</row>").join("");
+      if (list.length) { const q = W.paths[name]; files[q] = te.encode(td.decode(files[q]).replace(/<sheetData>[\s\S]*<\/sheetData>|<sheetData\/>/, "<sheetData>" + sd + "</sheetData>")); out.cells += list.length; out.sheets++; }
+      continue;
+    }
+    const p = W.paths[name]; let x = td.decode(files[p]); const nc = readCellsOf(files, p, Fs), fx = fRefs(x), list = [];
+    const refs = new Set(Object.keys(oc).filter(r => inZ(z, r, z.rO)).concat(Object.keys(nc).filter(r => inZ(z, r, z.rN))));
+    for (const ref of refs) { if (fx.has(ref)) continue; const ov = inZ(z, ref, z.rO) && oc[ref] != null ? oc[ref] : "", nv = nc[ref] != null ? nc[ref] : "";
+      if (ov !== nv) list.push([ref, ov]); }
+    if (list.length) { files[p] = te.encode(writeAll(x, list)); out.cells += list.length; out.sheets++; }
+  }
+  // un-hide the rows of everyone named on the roster (Excel's filter hides empty crew slots)
+  const ro = readCellsOf(files, W.paths.Roster, Fs), rc = rosterCols({ rcols: findRosterCols(ro) }), named = [];
+  for (let i = 0; i < nN; i++) if (str(ro[rc.name + (ROSTER_ROW0 + i)])) named.push(i);
+  const unhide = {}; named.forEach(i => { mons.forEach(m => (unhide[m] = unhide[m] || []).push(...Array.from({ length: ROWS_PER }, (_, q) => UPG_G0 + ROWS_PER * i + q)));
+    (unhide.Dashboard = unhide.Dashboard || []).push(DASH_CREW_ROW0 + i); (unhide["Daily View"] = unhide["Daily View"] || []).push(DAILY_ROW0 + i); (unhide.Currency = unhide.Currency || []).push(CUR_ROW0 + i); });
+  for (const [sh, rows] of Object.entries(unhide)) { const p = W.paths[sh]; if (!p) continue; const want = new Set(rows);
+    files[p] = te.encode(td.decode(files[p]).replace(/<row r="(\d+)"([^>]*?)\shidden="(?:1|true)"/g, (m0, r, rest) => want.has(+r) ? '<row r="' + r + '"' + rest : m0)); }
+  if (W.paths[MN_SHEET]) { const keep = WB; WB = { sst: [] }; try { mnExcelLook(files, W.paths[MN_SHEET]); } finally { WB = keep; } }   // Misc Notes: its Excel look from the format column
+  let w = td.decode(files["xl/workbook.xml"]);
+  if (/<calcPr\b/.test(w)) w = /fullCalcOnLoad=/.test(w) ? w.replace(/fullCalcOnLoad="[^"]*"/, 'fullCalcOnLoad="1"') : w.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"');
+  else w = w.replace(/(<extLst>|<\/workbook>)/, '<calcPr fullCalcOnLoad="1"/>$1');
+  files["xl/workbook.xml"] = te.encode(w);
+  out.named = named.length; out.dept = str(od.G5);
+  out.bytes = fflate.zipSync(files, { level: 6 });
+  return out;
+}
+const upgRead = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => no(r.error); r.readAsArrayBuffer(f); });
+async function upgRun() {
+  const olds = [...$("upgOld").files], news = [...$("upgNew").files], el = $("upgOut");
+  if (!olds.length || !news.length) { el.innerHTML = "<div class='bad'>Pick your current files (1) and the new empty files (2) first.</div>"; return; }
+  el.innerHTML = "Working…"; const lines = [];
+  const nb = []; for (const f of news) { try { const b = await upgRead(f), F = fflate.unzipSync(new Uint8Array(b)), p = sheetPaths(F); nb.push({ f, b, dept: p.Dashboard ? str(readCellsOf(F, p.Dashboard, parseSST(F)).G5) : "" }); } catch (e) { lines.push("<div class='bad'>" + esc(f.name) + ": not an Excel file.</div>"); } }
+  for (const f of olds) {
+    try {
+      const b = await upgRead(f), O = fflate.unzipSync(new Uint8Array(b)), op = sheetPaths(O), dept = op.Dashboard ? str(readCellsOf(O, op.Dashboard, parseSST(O)).G5) : "";
+      const m = nb.find(x => x.dept.toUpperCase().replace(/\s+/g, "") === dept.toUpperCase().replace(/\s+/g, ""));
+      if (!m) throw new Error("is " + (dept || "not a department file") + ", and none of the new files is.");
+      const r = upgDeptFile(b, m.b); rollDl(f.name, r.bytes);
+      lines.push("<div class='ok'>✓ <b>" + esc(f.name) + "</b> (" + esc(r.dept) + "): " + r.named + " crew, " + r.cells + " cells copied" + (r.made.length ? ", sheets made: " + r.made.map(esc).join(", ") : "") + ". Downloaded.</div>");
+    } catch (e) { lines.push("<div class='bad'>✗ " + esc(f.name) + " " + esc(e.message || String(e)) + "</div>"); }
+  }
+  el.innerHTML = lines.join("") + "<div class='muted' style='margin-top:6px'>Next: replace the old files in the SharePoint folder with the downloaded ones (same names), together with this dashboard. Open one and check its Crew Roster and a month of plans before you delete anything.</div>";
+}
+$("upgGo").onclick = () => { $("upgOut").innerHTML = ""; $("upgDlg").style.display = "flex"; };
+$("upgClose").onclick = () => { $("upgDlg").style.display = "none"; };
+$("upgRun").onclick = () => upgRun();
 // ---------- page zoom: the whole UI except the Ops Room, which has its own size buttons. A level a person picks is remembered in their browser;
 // until then the planner opens at 85% and everything else at 100%.
 const ZOOMS = [100, 90, 85, 80, 75];
@@ -7756,7 +7869,7 @@ function rosterChange(e) {
 // ---------- Crew Roster order (z155): insert a row, move a person, sort a section. A person's data on roster row i moves with them: the Roster row,
 // their plan rows on every month tab (days D:AH; columns A to C are formulas), the typed Personnel Info cells and the Currency cells of that row, and
 // in memory their cell comments and AC / Pax tags (those sheets name the callsign, so the sheets don't change). The two sections never mix: regular
-// crew (rows 1 to 45) and SANS / NSMEN (46 to 60), where SANS and NSMEN are two groups by Status. The moved cells are written "quiet": the Change Log
+// crew (rows 1 to 45) and SANS / NSMEN (46 to 75; 46 to 60 in files before layout 5), where SANS and NSMEN are two groups by Status. The moved cells are written "quiet": the Change Log
 // gets one line per action ("Crew Roster: FALCON moved up") instead of hundreds of plan cells.
 const RANKS_BASE = ["LTC", "MAJ", "CPT", "LTA", "1WO", "2WO", "3WO", "MSG", "SSG", "1SG", "2SG", "3SG", "ME3", "ME2", "ME1"];   // one structure per department (Brandon, 4 Nov)
 // z182: the full rank order = the built-in ranks plus the ranks added on the Crew Roster of every open department file, each after the rank it names
@@ -7775,7 +7888,7 @@ const rankOf = p => { const k = RANKS.indexOf(String(p.name || "").replace(/\(NS
 const nameNoRank = p => { const w = String(p.name || "").replace(/\(NS\)/ig, " ").trim().split(/\s+/); return (rankOf(p) < 99 ? w.slice(1) : w).join(" "); };
 const sansGrp = p => /^sans$/i.test(p.status || "") ? "SANS" : /^nsmen$/i.test(p.status || "") ? "NSMEN" : "";
 const rosEmpty = p => !p.id && !p.name && !p.role;
-const rosSec = i => !S.catCol ? [0, N] : i >= REG_N ? [REG_N, N] : [0, REG_N];
+const rosSec = i => !S.catCol ? [0, S.n] : i >= REG_N ? [REG_N, S.n] : [0, REG_N];
 const rosGrp = i => S.catCol && i >= REG_N ? sansGrp(S.roster[i]) || "OTHER" : "REG";
 const ROS_SORTS = [["cat", "Cat Status, then rank"], ["rank", "Rank, then Cat Status"], ["id", "Callsign A to Z"], ["name", "Name A to Z"], ["role", "Role, then Cat Status"]];
 // the rank at the start of a name ("CPT (NS) Lee Kok Wai" -> CPT + "(NS) Lee Kok Wai"); a first word that is no known rank is part of the name
@@ -7873,7 +7986,7 @@ function rosSortDo(sec, by, inactLast) {
 // rows under them close up (one empty row at the end of that part); a transfer puts them after the last person of the new group and takes an empty
 // row of that part. Plans, Personnel Info and Currency move with everyone through rosApply. Returns { order, clear, at } or { err }.
 function rosLay(i, to) {   // to: "" = remove, "REG", "SANS", "NSMEN"
-  const CLR = -1, reg = [], san = []; for (let j = 0; j < N; j++) (j < REG_N || !S.catCol ? reg : san).push(j);
+  const CLR = -1, reg = [], san = []; for (let j = 0; j < S.n; j++) (j < REG_N || !S.catCol ? reg : san).push(j);
   const src = reg.includes(i) ? reg : san, dst = !to ? null : to === "REG" ? reg : san;
   src.splice(src.indexOf(i), 1); if (dst !== src) src.push(CLR);
   if (dst) {

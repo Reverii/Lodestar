@@ -16,7 +16,7 @@ DEPT = sys.argv[2] if len(sys.argv) > 2 else "SUP 2"   # the department that own
 NOFILTER = os.environ.get("NOFILTER") == "1"
 NOCHART = os.environ.get("NOCHART") == "1"; NOCOMMENT = os.environ.get("NOCOMMENT") == "1"; STATICNAMES = os.environ.get("STATICNAMES") == "1"; SMALLFREEZE = os.environ.get("SMALLFREEZE") == "1"; WEBCLEAN = os.environ.get("WEBCLEAN") == "1"; COMPACT = os.environ.get("COMPACT") == "1"   # Excel Online test variants
 YEAR = 2026
-N = 60                # crew slots
+N = 75                # crew slots (layout 5, 6 Nov: 45 regular + 30 SANS / NSmen; 60 = 45 + 15 before)
 NA = 60               # activity slots
 HAS_DUTY = True   # BDO (every department) + SDO (SDO_DEPTS) duty days from the Duty Roster
 HAS_GND = True   # ground programme row (from the Master Planner)
@@ -131,7 +131,7 @@ roster = wb.create_sheet("Roster")
 acts = wb.create_sheet("Activities")
 
 # ---------------------------------------------------------------- Roster
-REG_N = 45            # roster rows 6-50 are regular crew, rows 51-65 are SANS / NSmen (shown at the bottom of every planner)
+REG_N = 45            # roster rows 6-50 are regular crew, rows 51-80 are SANS / NSmen (shown at the bottom of every planner)
 SANS_ROW0 = 6 + REG_N
 CREW_CATS = [("CAT A", "000000"), ("CAT B", "15803D"), ("CAT C", "D4A800"), ("CAT D", "DC2626"), ("TRAINEE", "C026D3")]
 ROLES = ["Instructor", "Senior CAT A", "Junior"]
@@ -1100,7 +1100,7 @@ name("MonthIdx", "Dashboard!$Z$1")
 dash["Z1"] = "=MATCH($B$5,{" + ",".join(f'"{x}"' for x in MONTHS_FULL) + "},0)"
 dash.column_dimensions["Z"].hidden = True
 # layout stamp: the dashboard compares it with the layout it was written for (bump it when cell positions change)
-dash["Z2"] = "LODESTAR dept layout 4"; dash.column_dimensions["Z"].hidden = True
+dash["Z2"] = "LODESTAR dept layout 5"; dash.column_dimensions["Z"].hidden = True
 dv = DataValidation(type="list", formula1='"' + ",".join(str(y) for y in range(2025, 2036)) + '"'); dv.add("A5"); dash.add_data_validation(dv)
 dv = DataValidation(type="list", formula1='"' + ",".join(MONTHS_FULL) + '"'); dv.add("B5"); dash.add_data_validation(dv)
 def pick(cellref):
@@ -1264,7 +1264,7 @@ lines = [
     ("", None),
     ("ADDING AND REMOVING CREW", "h"),
     ("Add: type them in the next empty Roster row. They appear on every month tab, the Dashboard and Daily View.", None),
-    ("Regular crew go in rows 6-50 (Status Active). SANS and NSmen go in the purple rows 51-65 (Status SANS or NSMEN), so they always show at the bottom of every planner.", None),
+    (f"Regular crew go in rows 6-50 (Status Active). SANS and NSmen go in the purple rows {SANS_ROW0}-{5 + N} (Status SANS or NSMEN), so they always show at the bottom of every planner.", None),
     ("Cat Status colours the crew member's name: CAT A black, CAT B green, CAT C yellow, CAT D red, TRAINEE magenta.", None),
     ("Empty crew slots are hidden by a filter. After adding someone in Excel, click Data > Reapply (or Ctrl+Alt+L) on each month tab, the Dashboard and Daily View to show them. Crew added through the dashboard show up straight away. There are 60 slots.", None),
     ("Remove: set Status to Inactive. Their name is struck through and the crew count drops, but their past plans and totals are kept.", None),

@@ -1246,7 +1246,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z190</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z191</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1983,7 +1983,8 @@ function masterCodeSet(st) {
 // "AC" | "PAX" | "" for crew grid row r (person i = r/3, shift r%3) on day d of month mi; a tag on a cell that is no longer a flight does not count
 function roleOf(st, mi, r, d) {
   const k = mi + ":" + r + ":" + d, t = (st.roleTags && st.roleTags.get(k)) || "", e = st.roleSor && st.roleSor.get(k); if (!t && !e) return "";
-  const M = st.m[mi], v = M && M.grid[r] && M.grid[r][d]; if (!v || !isFlightCode(st, v)) return "";
+  const M = st.m[mi], v = M && M.grid[r] && M.grid[r][d]; if (!v) return "";
+  if (!isFlightCode(st, v)) return t === "AC" && isSb(String(v).trim()) && !isWdRow(r, st) ? "AC" : "";   // z191: the AC on standby (P1 / P2 / BU), Pilot plan
   if (e) { const f = sorOf(st, mi, r, d); if (f) return f.every(x => x === "P") ? "PAX" : t === "PAX" ? "" : t; }   // Pax on some flights only: not a passenger on the whole flight
   return t;
 }
@@ -5026,6 +5027,7 @@ function renderPlanner() {
         if (rest) W.push(["⚠ REST DAY " + rn, "rest"]);
         if (ol) W.push(["⚠ NOT ON LIST", "bad"]);
         if (a && a.ci === CAT_FLIGHT && !cx && !isWdRow(gridRow(i, s))) { const mx = cmFlight(mi, d, s, v); if (mx && !mx.ok) { W.push(["⚠ CREW MATRIX", "bad"]); tip = (tip ? tip + "\n" : "") + cmText(mx); } }
+        else if (a && isSb(a.code) && !isWdRow(gridRow(i, s))) { const mx = cmStandby(mi, d, S.dept, p.id || p.name); if (mx && !mx.ok) { W.push(["⚠ CREW MATRIX", "bad"]); tip = (tip ? tip + "\n" : "") + "Standby " + cmText(mx).replace(/^D/, "d"); } }   // z191
         if (s === 0 && CL.has(i) && CL.get(i).has(d)) CL.get(i).get(d).forEach(w => W.push(w));
         let l1cls = "", l1 = "";   // ATOM: the day a currency expires is marked (layer 1); a flight after it alerts (layer 2)
         const am = AR ? atomDayMarks(AR, isoOf(y, mi, d), s, !!(a && a.ci === CAT_FLIGHT && !cx)) : null;
@@ -5534,7 +5536,7 @@ function opsCrewOn(y, mi, d) {
       S.roster.forEach((p, i) => { if (!p.id && !p.name) return; for (let s = 0; s < SHIFT_ROWS; s++) { const v = M.grid[gridRow(i, s)] && M.grid[gridRow(i, s)][d]; const a = v && A.get(String(v).toUpperCase());
         // standby crew (P1 / P2 / BU) belong to no shift: whichever shift the plan marks, they go in one whole-day list (kept in slot 2 so saved Ops Room rows still match)
         const sbk = a && a.ci !== CAT_FLIGHT && isSb(a.code) ? 2 : -1; if (sbk >= 0 && out.sb[2].some(c => c.dept === S.dept && c.i === i && same(c.code, v))) continue;
-        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: a.ci === CAT_FLIGHT ? roleOf(S, mi, gridRow(i, s), d) : "", sor: a.ci === CAT_FLIGHT ? sorOf(S, mi, gridRow(i, s), d) : null, note: (S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "", opsNote: (S.opsNotes && S.opsNotes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "" }); } }); });
+        if (a && (a.ci === CAT_FLIGHT || sbk >= 0)) (a.ci === CAT_FLIGHT ? out[s] : out.sb[2]).push({ dept: S.dept, i, id: p.id || p.name, name: p.name, ini: p.ini, cat: p.cat, status: p.status, role: p.role, code: String(v).trim(), tag: roleOf(S, mi, gridRow(i, s), d), sor: a.ci === CAT_FLIGHT ? sorOf(S, mi, gridRow(i, s), d) : null, note: (S.notes && S.notes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "", opsNote: (S.opsNotes && S.opsNotes.get(mi + ":" + (gridRow(i, s)) + ":" + d)) || "" }); } }); });
   });
   return out;
 }
@@ -5670,8 +5672,9 @@ function opsDay(iso) {
     if (!OPS_SB_SHIFTS.includes(s)) return;
     const desc = books.filter(isDept).map(b => b.S.acts.find(a => same(a.code, code))).find(Boolean);
     const x = { f: { time: "", note: "" }, s, ac: 1, code, desc: desc ? desc.desc : "Standby", hrs: 0, sb: true, key: opsKey(iso, SHIFTS[s], code, "", 1), need: OPS_SEATS.map(() => true) };
-    const L = on.slice(), auto = OPS_SEATS.map(z => { const j = L.findIndex(c => same(c.dept, z[1])); return j < 0 ? null : L.splice(j, 1)[0]; });
-    if (auto[0] && auto[1] && (ROLE_RANK(auto[1].role) - ROLE_RANK(auto[0].role) || CAT_RANK(auto[1].cat) - CAT_RANK(auto[0].cat)) < 0) auto.splice(0, 2, auto[1], auto[0]);
+    // z191: a pilot the Pilot plan tags AC on this standby takes the AC seat (the first one in roster order if several); no tag = the senior pilot, as before
+    const tagAC = on.find(c => same(c.dept, "Pilot") && c.tag === "AC"), L = tagAC ? [tagAC].concat(on.filter(c => c !== tagAC)) : on.slice(), auto = OPS_SEATS.map(z => { const j = L.findIndex(c => same(c.dept, z[1])); return j < 0 ? null : L.splice(j, 1)[0]; });
+    if (!tagAC && auto[0] && auto[1] && (ROLE_RANK(auto[1].role) - ROLE_RANK(auto[0].role) || CAT_RANK(auto[1].cat) - CAT_RANK(auto[0].cat)) < 0) auto.splice(0, 2, auto[1], auto[0]);
     const key = x.key + "|1", o = ob && ob.fc.get(key) || null;
     const seats = OPS_SEATS.map((z, k) => { const v = o && o.seat[k]; return v ? Object.assign({}, opsPerson(z[1], v, crew.sb[s]), { set: true }) : auto[k]; });
     sb.push({ x, a: 0, key, o, seats, pax: paxList(o), extra: L, etd: "", eta: "", etd0: "", eta0: "", dur: null });
@@ -5845,7 +5848,8 @@ function opsTable(D, rows, ed) {
     const btn = v => "<button class='sbset" + (n === v ? " on" : "") + "'" + (ed ? " data-sbset='" + v + "'" : " disabled") + ">" + v + " Set</button>";
     return "<tr class='sbh'><td colspan='" + NC + "'>Standby Duty<span class='sbsets' title='1 Set: one crew covers P1 and P2. 2 Set: separate P1 and P2 crews.'>" + btn(1) + btn(2) + "</span></td></tr>" + L.map((r, j) => {
       const ex = r.extra.length ? "<div class='ocn'>also: " + r.extra.map(c => esc(opsName(c)) + " (" + esc(c.dept) + ")").join(", ") + "</div>" : "";
-      return "<tr class='sb' data-ok='" + esc(r.key) + "'><td class='ocs sbc'><b>" + esc(r.lab || r.x.code) + "</b>" + ex + "</td>" + opsTail(r, ed, true) + "<td class='osort'></td>" + OPS_SEATS.map((z, k) => opsCrewCell(r, k, ed)).join("") +
+      const mx = cmRow(r), mxc = mx && !mx.ok ? "<div><span class='mxm' title='" + esc("Standby: " + cmText(mx)).replace(/'/g, "&#39;") + "'>CREW MATRIX ✕</span></div>" : "";   // z191
+      return "<tr class='sb' data-ok='" + esc(r.key) + "'><td class='ocs sbc'><b>" + esc(r.lab || r.x.code) + "</b>" + ex + mxc + "</td>" + opsTail(r, ed, true) + "<td class='osort'></td>" + OPS_SEATS.map((z, k) => opsCrewCell(r, k, ed)).join("") +
         (j ? "" : opsTxt(Object.assign({}, r, { o: Object.assign({}, r.o, { alert: A.map(z => z.o && z.o.alert).filter(Boolean).join("\n") }) }), "alert", ed, "Alert status", "oalert").replace("<td ", "<td colspan='4' rowspan='" + L.length + "' ").replace(/<\/td>$/, (ed ? "<button class='alAdd' title='Add an alert time'>+</button>" : "") + "</td>") + "<td class='osbx' colspan='3' rowspan='" + L.length + "'></td>") + opsTxt(r, "rem", ed, "", "orem").replace(/^(<td[^>]*>)/, "$1" + opsNoteLines(r)) + "</tr>"; }).join(""); };
   const band = s => { const F = D.flights.filter(z => z.s === s), nS = D.rows.filter(r => r.x.s === s).length; return "<tr class='band s" + s + "'><td colspan='" + NC + "'>" + SHIFTS[s] + "<small>" + (F.length ? F.length + " flight" + (F.length === 1 ? "" : "s") + " · " + nS + " sortie" + (nS === 1 ? "" : "s") : "No flights · standby only") + "</small></td></tr>"; };
   const closeTo = s => "";   // standby is a whole-day block, drawn once after the last shift
@@ -6637,11 +6641,19 @@ function cmMission(code) {   // the code's Mission Type: the Master Planner's Fl
   for (const b of books) if (isDept(b)) { k = b.S.acts.find(z => z.code && sameCode(z.code, code)); if (k && k.mtype) return k.mtype; }
   return "";
 }
-function cmRow(r) {   // an Ops Room flight row: the seats as filled on the board (Captain, Pilot, LM, TACCO, SUP 1, SUP 2)
-  if (!r.x || r.x.sb) return null;
-  const mission = cmMission(r.x.code); if (!mission) return null;
+const CM_SB_MISSION = "MAS OPS";   // z191 (Brandon): standby (P1, P2, BU) is checked against the MAS OPS rows
+function cmRow(r) {   // an Ops Room flight or standby row: the seats as filled on the board (Captain, Pilot, LM, TACCO, SUP 1, SUP 2)
+  if (!r.x) return null;
+  const mission = r.x.sb ? CM_SB_MISSION : cmMission(r.x.code); if (!mission) return null;
   const g = k => r.seats[k] ? [r.seats[k].cat || ""] : [];
   return cmCheck(mission, r.x.s, { ac: g(0), pilot: g(1), lm: g(2), tacco: g(3), sup: g(4).concat(g(5)) });
+}
+// z191: the standby row (as on the Ops Room board: 1 Set / 2 Set, AC tag, Ops Room picks) that holds this person on day d of month mi, checked as MAS OPS
+function cmStandby(mi, d, dept, id) {
+  const iso = isoOf(S.year, mi, d), key = "sb|" + iso; let L = cmMemo.get(key);
+  if (!L) { const D = (() => { try { return opsDay(iso); } catch (e) { return null; } })(); L = D && D.sb ? opsSbList(D, D.sb).map(r => ({ r, res: cmRow(r) })) : []; cmMemo.set(key, L); }
+  const hit = L.find(z => z.r.seats.some(c => c && same(c.dept, dept) && same(c.id, id)) || (z.r.extra || []).some(c => same(c.dept, dept) && same(c.id, id)));
+  return hit ? hit.res : null;
 }
 const cmText = res => res.ok ? "Meets the crew matrix" : "Does not meet the crew matrix: no " + res.mission + " row fits (" + res.fails.join(", ") + "). Closest row needs at least: " + res.closest;
 const cmMemo = new Map();   // per render: the crew of a day and the result per flight
@@ -6746,9 +6758,11 @@ function openPop(k, initial) {
 }
 // the "Role on this flight" row of the cell popup: None / AC (Pilot file only) / Pax, on a flight cell the user may edit
 function popRoleDraw(p0) {
-  const el = $("popRole"), v = p0 && S.m[cur.m].grid[p0.r][p0.d], on = !!v && !isWdRow(p0.r) && isFlightCode(S, v) && mayEdit(cur.b);
+  const el = $("popRole"), v = p0 && S.m[cur.m].grid[p0.r][p0.d], sb = !!v && !isFlightCode(S, v) && isSb(String(v).trim()) && same(S.dept, "Pilot");   // z191: standby in the Pilot plan: None / AC
+  const on = !!v && !isWdRow(p0.r) && (isFlightCode(S, v) || sb) && mayEdit(cur.b);
   el.style.display = on ? "block" : "none"; if (!on) { el.innerHTML = ""; return; }
-  const now = roleOf(S, cur.m, p0.r, p0.d), opts = [["", "None"]].concat(same(S.dept, "Pilot") ? [["AC", "AC"]] : [], [["PAX", "Pax"]]);
+  const now = roleOf(S, cur.m, p0.r, p0.d), opts = [["", "None"]].concat(same(S.dept, "Pilot") ? [["AC", "AC"]] : [], sb ? [] : [["PAX", "Pax"]]);
+  if (sb) { el.innerHTML = "Role on " + esc(String(v).trim()) + " (standby)<div class='rbtn'>" + opts.map(([k, l]) => "<button data-role='" + k + "'" + (k === now ? " class='on'" : "") + ">" + l + "</button>").join("") + "</div>"; return; }
   el.innerHTML = "Role on this flight<div class='rbtn'>" + opts.map(([k, l]) => "<button data-role='" + k + "'" + (k === now ? " class='on'" : "") + ">" + l + "</button>").join("") + "</div>" + sorPopHtml(p0, v);
 }
 // z175: a running change: Crew / Pax / Not on for each of its flights, with each flight's share of the time and the person's planned hours
@@ -6983,7 +6997,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z190 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z191 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7995,6 +8009,7 @@ devUi();
 /*/DEV*/
 const HELP = {
   plan: ["Planner", "<p>Your department's month: one row per person per shift (AM, PM, NIGHT). Right-click a cell (or select it and press Enter) to pick an activity. Type to search the list; Delete clears; Ctrl+C / Ctrl+V copy a cell.</p>" +
+    "<p>In the Pilot plan the same popup marks the <b>AC</b> on a flight, and on standby (P1, P2, BU): the pilot marked AC takes the AC seat on the Ops Room standby row and the AFP; with no mark the senior pilot does. Standby crew are checked against the <b>MAS OPS</b> rows of the Crew Matrix.</p>" +
     "<h3>Rows at the top</h3><ul><li><b>MASTER</b>: the flights planned for your department, copied from the Master Planner. Click the blue label to fold or open it.</li><li><b>SQUADRON PROGRAMME</b>: the day's squadron events.</li><li><b>ALERT</b>: the squadron's alert state (AL90, AL2, ...) set by the Master Planner for each week; point at a day to also see the crew on P1, P2 or BU in the open plans.</li><li><b>FLYING RESTRICTION</b>: restrictions typed in the Ops Room, on every day they cover.</li><li><b>DUTY DAYS</b>: days your department has BDO / SDO from the Duty Roster (red if nobody is on it).</li></ul>" +
     "<h3>Colours and marks</h3><ul><li>Activity colours follow the categories in the legend (Flight, Sim, Ground Duty, Squadron Duty, Leave, Off, Admin, Medical, Oversea Duty).</li>" +
     "<li>" + sw("#dcfce7", "#166534", "3 ✓") + " shift covered, " + sw("#fef3c7", "#92400e", "! 2") + " short of crew, " + sw("#fee2e2", "#991b1b", "⚠ 1") + " flights but nobody flying, " + sw("#e2e8f0", "#475569", "NO FLY") + " no-flying day.</li>" +

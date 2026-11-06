@@ -84,8 +84,8 @@ test("planner_cell_warns_only_on_a_failing_flight", async ({ page, errs }) => {
 });
 test("ops_room_row_check", async ({ page }) => {
   const r = await page.evaluate(() => { window.cmMission = () => "MAS TRG"; const p = (cat) => ({ cat }), row = (ac, co) => ({ x: { code: "X", s: 0 }, seats: [p(ac), p(co), p("CAT C"), p("CAT C"), p("CAT B"), p("CAT C")] });
-    return [cmRow(row("CAT B", "CAT C")).ok, cmRow(row("CAT B", "CAT D")).ok, cmRow({ x: { code: "X", s: 0, sb: true }, seats: [] })]; });
-  assert.deepStrictEqual(r, [true, false, null]);
+    return [cmRow(row("CAT B", "CAT C")).ok, cmRow(row("CAT B", "CAT D")).ok, (cmRow({ x: { code: "P1", s: 2, sb: true }, seats: [] }) || {}).mission]; });   // z191: standby is checked as MAS OPS
+  assert.deepStrictEqual(r, [true, false, "MAS OPS"]);
 });
 test("ops_room_shows_the_mark", async ({ page, errs }) => {
   const r = await page.evaluate(() => { window.cmMission = () => "MAS TRG"; window.cmRow = () => ({ ok: false, mission: "MAS TRG", fails: ["AC"], closest: "AC A" });

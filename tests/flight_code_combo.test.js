@@ -14,22 +14,18 @@ const setup = page => page.evaluate(() => {
 const typeCode = (page, row, v) => page.evaluate(([row, v]) => { const el = document.querySelector("#mpSide input[data-f='code'][data-row='" + row + "']"); el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); }, [row, v]);
 const fl = (page, row) => page.evaluate(row => { const f = masterBook().S.fl.find(x => x.row === +row); return f && f.code; }, row);
 
-test("syllabus_tag_is_a_dropdown_of_tracks", async ({ page }) => {   // z166: Flight Codes tab, Syllabus tag picked from the syllabus tracks
+test("syllabus_tags_are_click_tags_several_per_code", async ({ page }) => {   // z200: EIS MS SAL Airlift General, several per code, stored as a comma list
   await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='codes']").click(); renderCodes(); });
-  const r = await page.evaluate(() => { const s = document.querySelector("#codeTable select[data-f='stag']"); return { inputs: document.querySelectorAll("#codeTable input[data-f='stag']").length, opts: s ? [...s.options].map(o => o.value) : null }; });
-  assert.strictEqual(r.inputs, 0, "no open cell"); assert.ok(r.opts && r.opts[0] === "" && r.opts.includes("EIS"), JSON.stringify(r.opts));
-  assert.ok(!r.opts.some(o => /^role:/i.test(o)), "Role: prefix dropped");
-  const row = await page.evaluate(() => { const s = document.querySelectorAll("#codeTable select[data-f='stag']")[0]; s.value = "EIS"; s.dispatchEvent(new Event("change", { bubbles: true })); return masterBook().S.codeAll[0]; });
-  assert.strictEqual(row.stag, "EIS");
+  const i = await page.evaluate(() => masterBook().S.codeAll.findIndex(k => k.code && !k.stag));
+  const st = () => page.evaluate(i => { const box = document.querySelector("#codeTable .fcstag [data-fci='" + i + "']").parentElement;
+    return { stag: masterBook().S.codeAll[i].stag, tags: [...box.querySelectorAll(".tag")].map(x => x.textContent), on: [...box.querySelectorAll(".tag.on")].map(x => x.textContent), all: !!box.querySelector(".all"), sel: document.querySelectorAll("#codeTable select[data-f='stag']").length }; }, i);
+  let r = await st(); assert.deepStrictEqual([r.tags, r.on, r.all, r.sel], [["EIS", "MS", "SAL", "Airlift", "General"], [], false, 0], JSON.stringify(r));
+  const click = t => page.click("#codeTable .fcstag [data-fci='" + i + "'][data-fst='" + t + "']");
+  await click("Flight"); await click("SAL"); r = await st(); assert.deepStrictEqual([r.stag, r.on], ["SAL, Flight", ["SAL", "General"]], JSON.stringify(r));
   assert.ok(await page.evaluate(() => [...masterBook().dirty].some(k => /Flight Codes!E/.test(String(k)))), "written to Flight Codes column E");
-}, ED);
-test("syllabus_tag_lists_flight_tracks_only", async ({ page }) => {   // z198: Role: EIS / MS / SAL / Airlift, General Flight (no Sims, TTX, Intro); a tag that is no track listed apart
-  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='codes']").click(); renderCodes(); });
-  const r = await page.evaluate(() => { const s = document.querySelector("#codeTable select[data-f='stag']");
-    return { main: [...s.querySelectorAll(":scope > option")].map(o => o.value), odd: [...s.querySelectorAll("optgroup option")].map(o => o.value), first: s.options[0].textContent, lab: [...s.options].find(o => o.value === "EIS").textContent }; });
-  assert.deepStrictEqual(r.main, ["", "EIS", "MS", "SAL", "Airlift", "Flight"], JSON.stringify(r));
-  assert.ok(!r.odd.some(t => /^(sims?|ttx|intro)$/i.test(t)), JSON.stringify(r.odd));
-  assert.strictEqual(r.first, "None (all flights)"); assert.strictEqual(r.lab, "Role: EIS");
+  await click("SAL"); r = await st(); assert.strictEqual(r.stag, "Flight");
+  const odd = await page.evaluate(() => { const k = masterBook().S.codeAll.findIndex(c => c.stag === "MAS Tact"); return [...document.querySelectorAll("#codeTable .fcstag [data-fci='" + k + "'].tX")].map(x => x.textContent); });
+  assert.deepStrictEqual(odd, ["MAS Tact"]);
 }, ED);
 test("tagged_flight_offers_flight_items_of_that_track_only", async ({ page }) => {   // z198: no TTX (Ground) or sim items on a tagged flight cell
   const r = await page.evaluate(() => { const Y = S.sylDef;
@@ -37,9 +33,10 @@ test("tagged_flight_offers_flight_items_of_that_track_only", async ({ page }) =>
     const stg = { stg: { name: "T" }, names: [...new Set(all.map(x => x.it.track))], tracks: {}, all };
     all.forEach(x => (stg.tracks[x.it.track] = stg.tracks[x.it.track] || []).push(x));
     const P = { stages: [stg], wk: 0 }, out = t => sylOpen(P, CAT_FLIGHT, "2026-11-10", t).cur.flatMap(g => g.items.map(i => sylTr(i.x.it.track) + "/" + i.x.it.type));
-    return { eis: out("EIS"), fl: out("Flight"), gf: out("General Flight") }; });
+    return { eis: out("EIS"), fl: out("Flight"), gf: out("General Flight"), both: out("SAL, Flight") }; });
   assert.ok(r.eis.length && r.eis.every(x => x === "EIS/Flight"), JSON.stringify(r.eis));
   assert.ok(r.fl.length && r.fl.every(x => x === "Flight/Flight"), JSON.stringify(r.fl)); assert.deepStrictEqual(r.gf, r.fl);
+  assert.ok(r.both.some(x => x === "SAL/Flight") && r.both.some(x => x === "Flight/Flight") && r.both.every(x => /^(SAL|Flight)\/Flight$/.test(x)), JSON.stringify(r.both));
 }, { fresh: true });
 test("crew_column_is_click_tags", async ({ page }) => {   // z199: P L T S1 S2 tags; none on = everyone (blank)
   await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='codes']").click(); renderCodes(); });

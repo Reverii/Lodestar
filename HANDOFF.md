@@ -1,5 +1,8 @@
 # LODESTAR handoff (updated 2026-11-07, after z200; next-session notes below)
 
+## Guide PDFs updated to z200 (7 Nov)
+Screens retaken on a fresh layout-5 demo set (09 Flight Codes with Crew and Syllabus click tags, 27 Currency with General flying only, and others), 03_day_panel.png trimmed to 2173 px high again. Text: Currency "Rules table" paragraph (General flying only, a guideline; ATOM is the truth), AFP remarks (no For the Ops Room lines), Flight Codes Crew and Syllabus tag rows. Footer "For dashboard version z200", date 7 November 2026 (`GUIDE_DATE` default). Master Planner 20 pages, Department Planner 22, Ops Room 16.
+
 ## z200: several syllabus tags per flight code (Brandon, 7 Nov: "what if theres more than 1 tag require, like SAL & general flight")
 - Flight Codes Syllabus tag is click tags like the Crew column: **EIS MS SAL Airlift General** (+ other "Role: ..." tracks with Flight items), orange when on; several can be on. Stored as a comma list in list order in the same cell (E, older files H), e.g. "SAL, Flight"; the cell picker already treated a comma list as "any of" (`sylOpen`). A tag not on the list shows red (demo MAS TRG "MAS Tact"); click to take it off. None on = every flight item (header tooltip). The planner Activities list shows "General Flight" for Flight.
 - Tests: flight_code_combo 7/7 (the two dropdown tests replaced by one click-tag test; the picker test also checks "SAL, Flight"); code_sync 17, hours_from_times 17, fc_crew_matrix 8, disable_remove 7, syllabus_edit 12, syllabus_stages 7 (fresh set). Screen `previews/fc_crew_tags_real.png`.

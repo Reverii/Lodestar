@@ -29,7 +29,7 @@ test("syllabus_tag_lists_flight_tracks_only", async ({ page }) => {   // z198: R
     return { main: [...s.querySelectorAll(":scope > option")].map(o => o.value), odd: [...s.querySelectorAll("optgroup option")].map(o => o.value), first: s.options[0].textContent, lab: [...s.options].find(o => o.value === "EIS").textContent }; });
   assert.deepStrictEqual(r.main, ["", "EIS", "MS", "SAL", "Airlift", "Flight"], JSON.stringify(r));
   assert.ok(!r.odd.some(t => /^(sims?|ttx|intro)$/i.test(t)), JSON.stringify(r.odd));
-  assert.strictEqual(r.first, "None (all flight items)"); assert.strictEqual(r.lab, "Role: EIS");
+  assert.strictEqual(r.first, "None (all flights)"); assert.strictEqual(r.lab, "Role: EIS");
 }, ED);
 test("tagged_flight_offers_flight_items_of_that_track_only", async ({ page }) => {   // z198: no TTX (Ground) or sim items on a tagged flight cell
   const r = await page.evaluate(() => { const Y = S.sylDef;
@@ -41,6 +41,17 @@ test("tagged_flight_offers_flight_items_of_that_track_only", async ({ page }) =>
   assert.ok(r.eis.length && r.eis.every(x => x === "EIS/Flight"), JSON.stringify(r.eis));
   assert.ok(r.fl.length && r.fl.every(x => x === "Flight/Flight"), JSON.stringify(r.fl)); assert.deepStrictEqual(r.gf, r.fl);
 }, { fresh: true });
+test("crew_column_is_click_tags", async ({ page }) => {   // z199: P L T S1 S2 tags; none on = everyone (blank)
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='codes']").click(); renderCodes(); });
+  const i = await page.evaluate(() => masterBook().S.codeAll.findIndex(k => k.code && !k.crew));
+  const st = () => page.evaluate(i => { const k = masterBook().S.codeAll[i], el = document.querySelector("#codeTable [data-fci='" + i + "']").parentElement;
+    return { crew: k.crew, on: [...el.querySelectorAll(".tag.on")].map(x => x.textContent), every: !!el.querySelector(".all"), input: !!document.querySelector("#codeTable input[data-f='crew']") }; }, i);
+  let r = await st(); assert.deepStrictEqual([r.crew, r.on, r.every, r.input], ["", [], true, false], JSON.stringify(r));
+  const click = t => page.click("#codeTable [data-fci='" + i + "'][data-fct='" + t + "']");
+  await click("T"); await click("P"); r = await st(); assert.deepStrictEqual([r.crew, r.on, r.every], ["P T", ["P", "T"], false], JSON.stringify(r));
+  assert.ok(await page.evaluate(() => [...masterBook().dirty].some(k => /Flight Codes!C/.test(String(k)))), "written to Flight Codes column C");
+  await click("P"); await click("T"); r = await st(); assert.deepStrictEqual([r.crew, r.on, r.every], ["", [], true], JSON.stringify(r));
+}, ED);
 test("existing_code_ignores_case_and_spaces", async ({ page }) => {
   const k = await page.evaluate(() => masterBook().S.codes.find(c => c.code.length > 3 && /[\s-]/.test(c.code)) || masterBook().S.codes[0]);
   const row = await setup(page); await typeCode(page, row, k.code.toLowerCase().replace(/\s+/g, ""));

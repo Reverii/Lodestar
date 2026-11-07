@@ -1,7 +1,10 @@
-# LODESTAR handoff (updated 2026-11-07, after z198; next-session notes below)
+# LODESTAR handoff (updated 2026-11-07, after z199; next-session notes below)
+
+## z199: Flight Codes Crew column as click tags (Brandon, 7 Nov)
+- The Crew column on Master Planner > Flight Codes is five click tags P L T S1 S2 (the new-code panel's colours; `fcCrewChips`, click handler on `#codeTable` `[data-fct]`). None on = "everyone", stored blank as before; written in the same cell (Flight Codes C, older files E) in tag order ("P T S2"). Empty rows show no tags. The typed box is gone. Syllabus tag column 165 px, "None (all flights)". Test `flight_code_combo` 8/8 (1 new); code_sync 17, fc_crew_matrix 8, disable_remove 7, hours_from_times 17. Screen `previews/fc_crew_tags_real.png`.
 
 ## z198: Syllabus tag list tidied (Brandon, 7 Nov: "its confusing")
-- Flight Codes Syllabus tag dropdown is now a fixed list: **None (all flight items), Role: EIS, Role: MS, Role: SAL, Role: Airlift, General Flight** (`STAG_BASE`, `sylTagList`), plus any other "Role: ..." track with Flight items in an open syllabus. Sims, TTX, Intro and other track names are no longer offered. A tag already on a code that is not on the list shows under "Not in any syllabus", in red (demo: MAS TRG = "MAS Tact").
+- Flight Codes Syllabus tag dropdown is now a fixed list: **None (all flights), Role: EIS, Role: MS, Role: SAL, Role: Airlift, General Flight** (`STAG_BASE`, `sylTagList`), plus any other "Role: ..." track with Flight items in an open syllabus. Sims, TTX, Intro and other track names are no longer offered. A tag already on a code that is not on the list shows under "Not in any syllabus", in red (demo: MAS TRG = "MAS Tact").
 - Stored short as before (EIS, MS, SAL, Airlift, Flight in Flight Codes E / Activities K), so existing tags keep working. `sylTr` maps "Role: EIS" -> EIS and "General Flight" -> the Flight track.
 - Cell picker (`sylOpen`): a tag that names a track picks that track only (it used to match the word in any Track or Description, so "Flight" also caught "EIS Flight 1"); on a flight or sim cell only items of that type are offered (TTX / Ground items no longer come with a tag). Other tags still match a whole word; no match = every item of the cell's type.
 - **Role: Airlift has no track in the syllabus yet**: until a "Role: Airlift" track with Flight items is added (Syllabus Tracking, Edit syllabus items), a code tagged Airlift offers every flight item.

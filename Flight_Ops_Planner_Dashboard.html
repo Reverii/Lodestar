@@ -292,6 +292,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfb .v{padding:6px 8px;border:1px solid var(--s200);border-radius:6px;font-size:14px}.spfb .v.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb .tags{display:flex;gap:4px;align-items:center}.spfb .tag{border:1px solid var(--s300);border-radius:4px;padding:2px 8px;font:800 12px Arial,sans-serif;color:var(--s500);cursor:pointer;background:#fff}
 .spfb .tag.on{color:#fff;border-color:transparent}.spfb .tag.tP.on{background:#1d4ed8}.spfb .tag.tL.on{background:#0f766e}.spfb .tag.tT.on{background:#b45309}.spfb .tag.tS1.on{background:#7e22ce}.spfb .tag.tS2.on{background:#be123c}
+.fccrew{display:flex;gap:4px;align-items:center;flex-wrap:nowrap}.fccrew .tag{font:700 11px Arial,sans-serif;border:1px solid var(--s300);border-radius:4px;padding:2px 5px;background:#fff;color:var(--s400);line-height:1.2;user-select:none}.fccrew .tag.on{color:#fff;border-color:transparent}.fccrew .tag.tP.on{background:#1d4ed8}.fccrew .tag.tL.on{background:#0f766e}.fccrew .tag.tT.on{background:#b45309}.fccrew .tag.tS1.on{background:#7e22ce}.fccrew .tag.tS2.on{background:#be123c}.fccrew .all{font-size:11px;color:var(--s500);font-style:italic;margin-left:2px}
 .spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}.was{font:700 10px Arial,sans-serif;color:#92400e;background:#fef3c7;border-radius:3px;padding:1px 4px}.glab{color:#6d28d9;font-style:italic}.gmore{color:var(--s500);font-weight:700;cursor:help}.nocrew{color:#b91c1c;font:800 11px Arial,sans-serif;background:#fee2e2;border-radius:3px;padding:1px 5px}.spfb .tag.tALL.on{background:#0f172a}
 .spb .addb{display:block;width:100%;border:2px dashed #93c5fd;background:#eff6ff;color:#1d4ed8;font-weight:800;padding:9px;border-radius:8px;font-size:14.5px;cursor:pointer;margin-top:10px}.spb .addb:hover{background:#dbeafe}
 .fGND{background:#dcfce7;color:#166534;border-left:4px solid #16a34a}
@@ -1251,7 +1252,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z198</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z199</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4664,7 +4665,7 @@ function renderCodes() {
   const P = books[bi].S, ed = mpEditable(), C = P.codeAll;
   $("codesNote").innerHTML = (ed ? "<b>You keep the flights programme.</b> Every flight code the squadron uses lives here. Each department gets new and changed codes by itself the next time it saves. A code you stop using stays in the departments, so their old plans keep counting it; just leave it out of new flights. Add or change codes here, then <b>Save to Excel</b>."
     : "<b>🔒 Set by the Master Planner.</b> Your department's flight codes come from this list. New and changed codes are added to your Activities tab when you save.") +
-    " Crew: P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2 (blank = everyone). Mission Type is used by the currency rules. Crew Matrix picks the mission on the Crew Matrix page that checks the crew's CAT. Auto uses the mission with the same name as the Mission Type (none = not checked); Not checked skips the check.";
+    " Crew: click P Pilot, L Loadmaster, T TACCO, S1 SUP 1, S2 SUP 2 to switch them on (none = everyone). Mission Type is used by the currency rules. Crew Matrix picks the mission on the Crew Matrix page that checks the crew's CAT. Auto uses the mission with the same name as the Mission Type (none = not checked); Not checked skips the check.";
   const show = Math.min(FC_N, Math.max(lastFilled(C, k => k.code || k.desc) + (ed ? 4 : 1), ed ? 6 : 1));
   const inp = (i, f, extra) => "<input data-fc='" + i + "' data-f='" + f + "' value='" + esc(C[i][f] == null ? "" : C[i][f]) + "'" + (extra || "") + (ed ? "" : " disabled") + ">";
   // z166: the Syllabus tag is a dropdown of the syllabus tracks of every open department ("Role: EIS" offers EIS), plus tags already on a code
@@ -4672,7 +4673,7 @@ function renderCodes() {
   const tagL = sylTagList(), inL = v => tagL.some(x => same(x[0], sylTr(v)));
   const tagOdd = [...new Set(C.map(k => str(k.stag)).filter(t => t && !inL(t)))];
   const stagSel = i => { const v = str(C[i].stag), odd = v && !inL(v);
-    return "<select data-fc='" + i + "' data-f='stag'" + (odd ? " class='cmxodd' title='" + esc(v + " is not on the syllabus tag list: planners get every flight item for this code") + "'" : v ? "" : " style='color:var(--s400)'") + (ed ? "" : " disabled") + "><option value=''>None (all flight items)</option>" +
+    return "<select data-fc='" + i + "' data-f='stag'" + (odd ? " class='cmxodd' title='" + esc(v + " is not on the syllabus tag list: planners get every flight item for this code") + "'" : v ? "" : " style='color:var(--s400)'") + (ed ? "" : " disabled") + "><option value=''>None (all flights)</option>" +
       tagL.map(([t, lab]) => "<option value='" + esc(t) + "'" + (v && same(t, sylTr(v)) ? " selected" : "") + ">" + esc(lab) + "</option>").join("") +
       (tagOdd.length ? "<optgroup label='Not in any syllabus'>" + tagOdd.map(t => "<option value='" + esc(t) + "'" + (same(t, v) ? " selected" : "") + ">" + esc(t) + "</option>").join("") + "</optgroup>" : "") + "</select>"; };
   // z195: which Crew Matrix mission checks the code's crew: blank = the mission named like its Mission Type, "-" = not checked
@@ -4681,13 +4682,16 @@ function renderCodes() {
     return "<select data-fc='" + i + "' data-f='cmx' class='" + (odd ? "cmxodd" : v ? "" : "cmxauto") + "'" + (odd ? " title='" + esc(v + " is not a mission on the Crew Matrix page: this code is not checked") + "'" : "") + (ed ? "" : " disabled") + ">" +
       "<option value=''>" + esc(auto ? "Auto (" + auto + ")" : "Auto (none)") + "</option>" + cmMs.map(m => "<option" + (cmNorm(m) === cmNorm(v) ? " selected" : "") + ">" + esc(m) + "</option>").join("") +
       (odd ? "<option selected>" + esc(v) + "</option>" : "") + "<option value='-'" + (v === "-" ? " selected" : "") + ">Not checked</option></select>"; };
-  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th><th style='width:170px' title='The Crew Matrix mission that checks the CAT of this code&#39;s crew'>Crew Matrix</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only the Flight items of this syllabus track. None = every flight item'>Syllabus tag</th>" : "") + "</tr>";
-  for (let i = 0; i < show; i++) h += "<tr data-fr='" + i + "'" + (C[i].off ? " class='roff' title='Switched off: not offered for new flights; flights already planned keep it. Right-click to switch it on.'" : "") + "><td class='n'>" + (i + 1) + (C[i].off ? "<i class='offtag'>OFF</i>" : "") + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td><td>" + cmxSel(i) + "</td>" + (P.hasStag ? "<td>" + stagSel(i) + "</td>" : "") + "</tr>";
+  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:190px'>Crew</th><th style='width:120px'>Mission Type</th><th style='width:170px' title='The Crew Matrix mission that checks the CAT of this code&#39;s crew'>Crew Matrix</th>" + (P.hasStag ? "<th style='width:165px' title='The Planner cell picker lists only the Flight items of this syllabus track. None = every flight item'>Syllabus tag</th>" : "") + "</tr>";
+  for (let i = 0; i < show; i++) h += "<tr data-fr='" + i + "'" + (C[i].off ? " class='roff' title='Switched off: not offered for new flights; flights already planned keep it. Right-click to switch it on.'" : "") + "><td class='n'>" + (i + 1) + (C[i].off ? "<i class='offtag'>OFF</i>" : "") + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + fcCrewChips(i) + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td><td>" + cmxSel(i) + "</td>" + (P.hasStag ? "<td>" + stagSel(i) + "</td>" : "") + "</tr>";
   // z196: standby P1 / P2 / BU stay ground duties in the departments; listed here only to pick the crew matrix that checks them
   const sbSel = c => { const v = str((P.sbCmx || {})[c]), odd = v && v !== "-" && !cmMs.some(m => cmNorm(m) === cmNorm(v));
     return "<select data-sb='" + c + "' class='" + (odd ? "cmxodd" : v ? "" : "cmxauto") + "'" + (ed ? "" : " disabled") + "><option value=''>Auto (" + CM_SB_MISSION + ")</option>" + cmMs.filter(m => cmNorm(m) !== cmNorm(CM_SB_MISSION)).map(m => "<option" + (cmNorm(m) === cmNorm(v) ? " selected" : "") + ">" + esc(m) + "</option>").join("") +
       (odd ? "<option selected>" + esc(v) + "</option>" : "") + "<option value='-'" + (v === "-" ? " selected" : "") + ">Not checked</option></select>"; };
   const nc = 6 + (P.hasStag ? 1 : 0);
+  // z199 (Brandon): the Crew column as click tags P L T S1 S2 (same look as the new-code panel); none on = everyone (stored blank, as before)
+  function fcCrewChips(i) { const cw = crewTags(C[i].crew); if (!str(C[i].code) && !cw.length) return "";
+    return "<div class='tags fccrew'>" + CREW_TAGS.map(([k, nm]) => "<span class='tag t" + k + (cw.includes(k) ? " on" : "") + "'" + (ed ? " data-fct='" + k + "' data-fci='" + i + "' style='cursor:pointer'" : "") + " title='" + nm + (ed ? ": click to switch on or off" : "") + "'>" + k + "</span>").join("") + (cw.length ? "" : "<span class='all'>everyone</span>") + "</div>"; }
   h += "<tr class='fcsbh'><td colspan='" + nc + "'>Standby duty <small>P1, P2 and BU are ground duties in the department plans (they don't count as flights). They are listed here only to pick the crew matrix that checks the standby crew.</small></td></tr>" +
     OPS_SB.map(c => "<tr class='fcsb'><td class='n'></td><td><b class='fcsbc'>" + c + "</b></td><td class='muted'>Standby " + c + "</td><td class='muted'>everyone</td><td class='muted'>standby</td><td>" + sbSel(c) + "</td>" + (P.hasStag ? "<td></td>" : "") + "</tr>").join("");
   $("codeTable").innerHTML = h;
@@ -4695,6 +4699,13 @@ function renderCodes() {
   C.forEach(k => { if (!k.code) return; const u = k.code.toUpperCase(); if (seen[u]) dups.push(k.code); seen[u] = 1; });
   $("codesWarn").innerHTML = (gap >= 0 && gap < last ? "<div class='warnbox'>There is an empty row in the middle of the list (row " + (gap + 1) + "). Codes below it won't appear in the Excel dropdown until it's filled.</div>" : "") + (dups.length ? "<div class='warnbox'>Duplicate codes: " + esc(dups.join(", ")) + "</div>" : "");
 }
+$("codeTable").addEventListener("click", e => {   // z199: Crew tags on Flight Codes
+  const el = e.target.closest("[data-fct]"); if (!el || !mpEditable()) return;
+  const i = +el.dataset.fci, t = el.dataset.fct;
+  withBook(mpIdx(), () => { const k = S.codeAll[i], cw = crewTags(k.crew), nt = cw.includes(t) ? cw.filter(x => x !== t) : cw.concat(t);
+    const v = CREW_TAGS.map(x => x[0]).filter(x => nt.includes(x)).join(" "); k.crew = v; put("Flight Codes", (S.fcOld ? "E" : "C") + k.row, v); mkCodes(S); });
+  cmMemo.clear(); renderCodes(); renderMp(); renderActs(); renderPlanner(); renderCmx(); if ($("v-ops") && $("v-ops").classList.contains("on")) renderOps();
+});
 $("codeTable").addEventListener("change", e => {
   if (e.target.dataset.sb) { const c = e.target.dataset.sb, v = e.target.value; if (!mpEditable()) return;
     withBook(mpIdx(), () => { const fc = readCells("Flight Codes"), k = OPS_SB.indexOf(c), note = "Flight Codes: standby " + c + " crew matrix " + (v === "-" ? "not checked" : v || "Auto (" + CM_SB_MISSION + ")");
@@ -7083,7 +7094,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z198 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z199 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

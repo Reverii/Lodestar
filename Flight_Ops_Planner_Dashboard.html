@@ -1251,7 +1251,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z196</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z197</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2150,15 +2150,15 @@ function afpData(iso) {
   const fl = D.rows.filter(r => opsOutcome(r, iso) !== "cxl").map((r, n) => {
     const o = r.o || {}, x = r.x, cs = D.crew[x.s] || [], seat = {}, pax = [];
     [...new Set(OPS_SEATS.map(z => z[1]))].forEach(dep => { const q = afpSeat(r, dep, cs); seat[dep] = q.out.map(afpName); pax.push(...q.pax); });
-    // z188: the AFP shows what the Ops Room shows: the Ops Room lines from the plans, the Ops Room remark (an Ops Add's own comment), never the Master Planner comment or planner notes
-    const rem = [o.brf ? "BRF " + normTime(o.brf) : "", ...opsNoteList(r, D).map(c => opsName(c) + ": " + c.opsNote), o.rem || (x.f.oa ? x.f.note || "" : ""), o.oth ? "Others: " + o.oth : "", pax.length ? "PAX: " + pax.map(c => c.name || c.id).join(", ") : ""].filter(Boolean);
+    // z197 (Brandon): the AFP REMARKS carry only what the Ops Room typed (its remark, an Ops Add's own comment); the planners' "For the Ops Room" lines stay on the board, never on the AFP, nor the Master Planner comment or planner notes
+    const rem = [o.brf ? "BRF " + normTime(o.brf) : "", o.rem || (x.f.oa ? x.f.note || "" : ""), o.oth ? "Others: " + o.oth : "", pax.length ? "PAX: " + pax.map(c => c.name || c.id).join(", ") : ""].filter(Boolean);
     return { sn: n + 1, etd: normTime(r.etd || ""), eta: normTime(r.eta || ""), cs: [o.cs || "", x.ac > 1 ? sorName(r.a, x.ac).toUpperCase() : ""].filter(Boolean).join("\n"),
       seat, mission: mt(x.code), area: [o.ao, o.at].filter(Boolean).join("\n"), rem: rem.join("\n"), tail: o.tail || "" };
   });
   let ps = 0, ph = 0; for (let s = 0; s < 3; s++) mpShift(P, D.mi, D.d, s).forEach(f => { if (!f.code) return; ps += flSort(f); ph += mpFlHrs(P, f).h || 0; });
   const tk = D.rows.filter(r => opsOutcome(r, iso) !== "cxl"), th = tk.reduce((n, r) => n + (r.pdur || 0), 0);
   const sb = opsSbList(D, D.sb).map(r => { const o = r.o || {}, seat = {}; [...new Set(OPS_SEATS.map(z => z[1]))].forEach(dep => { const q = afpSeat(r, dep, D.crew.sb[2] || []); seat[dep] = q.out.concat(q.pax).map(afpName); });
-    return { code: r.lab || r.x.code, tail: o.tail || "", seat, brf: o.brf ? normTime(o.brf) : "", rem: [...opsNoteList(r, D).map(c => opsName(c) + ": " + c.opsNote), o.rem || ""].filter(Boolean).join("\n") }; });
+    return { code: r.lab || r.x.code, tail: o.tail || "", seat, brf: o.brf ? normTime(o.brf) : "", rem: o.rem || "" }; });
   const GSH = ["AM", "PM", "NIGHT", "WD"];
   const gr = opsGround(D).map(g => ({ time: g.grp === 0 ? (mpRange(afpText(g.when), 0) || afpText(g.when)) : g.grp === 3 ? g.until.replace(/^until /, "TILL ").toUpperCase() : GSH[g.sh] || "", act: g.act + (g.desc && !same(g.desc, g.act) ? " (" + g.desc + ")" : ""), who: afpText(g.who), venue: afpText(g.note) }));
   const sxo = afpDuty(iso, "SXO"), opso = afpDuty(iso, "OPS O"), sdo = afpDuty(iso, "SDO");
@@ -7071,7 +7071,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z196 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z197 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -8088,7 +8088,7 @@ const HELP = {
     "<h3>Rows at the top</h3><ul><li><b>MASTER</b>: the flights planned for your department, copied from the Master Planner. Click the blue label to fold or open it.</li><li><b>SQUADRON PROGRAMME</b>: the day's squadron events.</li><li><b>ALERT</b>: the squadron's alert state (AL90, AL2, ...) set by the Master Planner for each week; point at a day to also see the crew on P1, P2 or BU in the open plans.</li><li><b>FLYING RESTRICTION</b>: restrictions typed in the Ops Room, on every day they cover.</li><li><b>DUTY DAYS</b>: days your department has BDO / SDO from the Duty Roster (red if nobody is on it).</li></ul>" +
     "<h3>Colours and marks</h3><ul><li>Activity colours follow the categories in the legend (Flight, Sim, Ground Duty, Squadron Duty, Leave, Off, Admin, Medical, Oversea Duty).</li>" +
     "<li>" + sw("#dcfce7", "#166534", "3 ✓") + " shift covered, " + sw("#fef3c7", "#92400e", "! 2") + " short of crew, " + sw("#fee2e2", "#991b1b", "⚠ 1") + " flights but nobody flying, " + sw("#e2e8f0", "#475569", "NO FLY") + " no-flying day.</li>" +
-    "<li>Amber outline: differs from the Master Planner. Purple corner (top right): a <b>planner note</b>, for planners only (never shown in the Ops Room). Blue corner (top left): a line <b>for the Ops Room</b>, shown in that flight's Ops Room Remarks and on the AFP. Click a cell to type either one on its card. Red dashed outline: on a duty they aren't on the crew list for.</li>" +
+    "<li>Amber outline: differs from the Master Planner. Purple corner (top right): a <b>planner note</b>, for planners only (never shown in the Ops Room). Blue corner (top left): a line <b>for the Ops Room</b>, shown in that flight's Ops Room Remarks (not on the AFP). Click a cell to type either one on its card. Red dashed outline: on a duty they aren't on the crew list for.</li>" +
     "<li>" + sw("#ea580c", "#fff", "REST") + " flying 5+ days in a row. " + "Currency (from ATOM): the day a currency expires is marked in the row, and a flight after it shows a red corner. See the Currency tab help.</li>" +
     "<li>" + sw("#991b1b", "#fff", "DOWN") + " down-chitted after MC: not cleared to fly. Striped red cells are the down-chit days; a flight on them gets a red box. Click DOWN (or Up-chit… in the cell list) to up-chit.</li>" +
     "<li>Struck-through flight: cancelled in the Ops Room. Blue column: today. Weekends dark, public holidays red.</li></ul>" +

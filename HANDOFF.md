@@ -1,5 +1,9 @@
 # LODESTAR handoff (updated 2026-11-07, after z196; next-session notes below)
 
+## z197: AFP without planner lines; only General flying built in (Brandon, 7 Nov)
+- **AFP REMARKS** no longer carry the planners' "For the Ops Room" lines (flights and standby rows, `afpData`). They still show in the Ops Room board's Remarks. The AFP keeps the brief time, what the Ops Room typed in Remarks (or an Ops Add's own comment), Others and PAX. Planner help text and guide row (section 2.4 table) updated. Test `ops_notes` now checks the line is not on the AFP (7/7); afp_export 10/10.
+- **Currency rules:** Brandon: ATOM is the truth, Mission currency and Night flying are redundant; the 45-day General flying stays as a guideline. The builder now writes only General flying for every build (demo, real data, crew list), and no sample "before" dates for the other two. The repo's demo xlsx still hold the three rules (not rebuilt). **Brandon's live files: he removes the two rules himself** (Currency tab, Rules, right-click, Remove; each department file). Checked on a fresh set: wd_row 19/19, disable_remove 7/7, wd_builder.
+
 
 ## Ops Room guide: Ground programme section (Brandon: "ops room guide should include the management of ground programme")
 New section 5.8 in the source (2.8 in the Ops Room PDF, now 16 pages): where the rows come from (squadron events from the Master Planner, Ops rows), + Ops row (time or AM / PM / NIGHT / WD, TILL for several days, activity, location, ALL or people by department, the department-plans reference box), ✎ change (squadron event: only changed fields, this day), ✕ hide a squadron event (hidden (n), Unhide) or delete an Ops row, "was linked", saved in the Ops Room file and on the AFP. Quick start has a ground programme step; the cards table points to the section. Screens `57_ground_card.png` (one Ops row added in memory, row hovered) and `58_ground_row.png` from `make_shots_more.js ops`.

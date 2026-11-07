@@ -601,10 +601,8 @@ if HAS_CUR:
     rules.sheet_properties.tabColor = "7C3AED"
     banner(rules, "CURRENCY RULES", "One rule per row. A person is flagged when they haven't done enough qualifying flights within the window. Rules apply to pilots and non-pilots alike.", 9)
     header(rules, 5, 1, ["Rule", "Applies to", "Who", "Counts", "Which", "Within (days)", "At least (flights)", "Warn (days before)", "Notes"])
-    samples = [("General flying", "All", "", "Any flight", "", 45, 1, 7, "Flagged after 45 calendar days without flying"),
-               ("Mission currency", "All", "", "Mission type", "MSN", 180, 1, 14, "Flagged after 180 days without a mission sortie (Mission Type MSN on Activities)"),
-               ("Night flying", "Role", "Instructor", "Mission type", "NIGHT", 90, 2, 14, "Example of a count rule: at least 2 night sorties in 90 days")]
-    if REAL: samples = samples[:1]   # the real codes have no MSN / NIGHT mission types: keep the general rule, the squadron adds its own
+    # Brandon (7 Nov, z197): ATOM is the truth for mission and night currency; only the 45-day general flying guideline is built in
+    samples = [("General flying", "All", "", "Any flight", "", 45, 1, 7, "Flagged after 45 calendar days without flying (a guideline; ATOM is the true currency)")]
     for k in range(CUR_RULES):
         r = CUR_ROW0 + k
         for c in range(1, 10):
@@ -655,7 +653,7 @@ if HAS_CUR:
         for k in range(CUR_RULES):
             c0 = 4 + 2 * k
             x = cur.cell(r, c0); x.fill = INPUT_FILL; x.font = INPUT_FONT; x.number_format = "dd-mmm-yy"; x.border = BOX; x.alignment = CENTER
-            if k in base.get(i, {}) and not FRESH: x.value = dt.date.fromisoformat(base[i][k])
+            if k in base.get(i, {}) and k < len(samples) and not FRESH: x.value = dt.date.fromisoformat(base[i][k])
             y = cur.cell(r, c0 + 1); y.border = BOX; y.font = f(False, SLATE700, 9); y.alignment = Alignment(horizontal="left", vertical="center", indent=1, shrink_to_fit=True)
         for c in range(1, 4): cur.cell(r, c).border = BOX
         if is_sans(i):

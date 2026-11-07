@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 7 Nov 2026 (z193). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 7 Nov 2026 (z197). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -66,7 +66,8 @@ Last updated: 7 Nov 2026 (z193). Tell Claude in this thread when something chang
 
 - [~] Currency Rules sheet (open rule system for pilots and non-pilots, up to 12 rules) and Currency sheet (every department)
 - [~] Currency tab, red/amber badges on names, warning in the cell picker (every department)
-- [ ] Your real currency rules entered (the three are samples), and each person's "before the planner" dates filled in
+- [x] Mission currency and Night flying dropped (Brandon, 7 Nov, z197): ATOM is the true currency; only the 45-day General flying guideline is built in. Remove the two rules from your live files (Currency tab, right-click, Remove)
+- [ ] Your real currency rules entered (if any beyond General flying), and each person's "before the planner" dates filled in
 - [ ] ❓ Any pilot rules that depend on other rules (e.g. "if lapsed, must fly with an instructor")?
 
 ## 5. Master Planner (squadron flights)

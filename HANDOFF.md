@@ -1,6 +1,7 @@
 # LODESTAR handoff (updated 2026-11-07, after z200; next-session notes below)
 
 ## Guide PDFs updated to z200 (7 Nov)
+**DRAFT removed (Brandon, 7 Nov):** no DRAFT / NOT FOR ISSUE on the covers or footers; the cover shows the date in a grey box. Files renamed without _DRAFT: `guide/LODESTAR_Guide_Master_Planner.pdf`, `_Department_Planner.pdf`, `_Ops_Room.pdf` (the _DRAFT copies are deleted).
 Screens retaken on a fresh layout-5 demo set (09 Flight Codes with Crew and Syllabus click tags, 27 Currency with General flying only, and others), 03_day_panel.png trimmed to 2173 px high again. Text: Currency "Rules table" paragraph (General flying only, a guideline; ATOM is the truth), AFP remarks (no For the Ops Room lines), Flight Codes Crew and Syllabus tag rows. Footer "For dashboard version z200", date 7 November 2026 (`GUIDE_DATE` default). Master Planner 20 pages, Department Planner 22, Ops Room 16.
 
 ## z200: several syllabus tags per flight code (Brandon, 7 Nov: "what if theres more than 1 tag require, like SAL & general flight")

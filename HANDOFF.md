@@ -1,4 +1,8 @@
-# LODESTAR handoff (updated 2026-11-07, after z199; next-session notes below)
+# LODESTAR handoff (updated 2026-11-07, after z200; next-session notes below)
+
+## z200: several syllabus tags per flight code (Brandon, 7 Nov: "what if theres more than 1 tag require, like SAL & general flight")
+- Flight Codes Syllabus tag is click tags like the Crew column: **EIS MS SAL Airlift General** (+ other "Role: ..." tracks with Flight items), orange when on; several can be on. Stored as a comma list in list order in the same cell (E, older files H), e.g. "SAL, Flight"; the cell picker already treated a comma list as "any of" (`sylOpen`). A tag not on the list shows red (demo MAS TRG "MAS Tact"); click to take it off. None on = every flight item (header tooltip). The planner Activities list shows "General Flight" for Flight.
+- Tests: flight_code_combo 7/7 (the two dropdown tests replaced by one click-tag test; the picker test also checks "SAL, Flight"); code_sync 17, hours_from_times 17, fc_crew_matrix 8, disable_remove 7, syllabus_edit 12, syllabus_stages 7 (fresh set). Screen `previews/fc_crew_tags_real.png`.
 
 ## z199: Flight Codes Crew column as click tags (Brandon, 7 Nov)
 - The Crew column on Master Planner > Flight Codes is five click tags P L T S1 S2 (the new-code panel's colours; `fcCrewChips`, click handler on `#codeTable` `[data-fct]`). None on = "everyone", stored blank as before; written in the same cell (Flight Codes C, older files E) in tag order ("P T S2"). Empty rows show no tags. The typed box is gone. Syllabus tag column 165 px, "None (all flights)". Test `flight_code_combo` 8/8 (1 new); code_sync 17, fc_crew_matrix 8, disable_remove 7, hours_from_times 17. Screen `previews/fc_crew_tags_real.png`.

@@ -292,7 +292,7 @@ td.mc.nofly .nt{color:#b91c1c!important;font-weight:800}
 .spfb .v{padding:6px 8px;border:1px solid var(--s200);border-radius:6px;font-size:14px}.spfb .v.nt{font-style:italic;color:#92400e;background:#fffdf5}
 .spfb .tags{display:flex;gap:4px;align-items:center}.spfb .tag{border:1px solid var(--s300);border-radius:4px;padding:2px 8px;font:800 12px Arial,sans-serif;color:var(--s500);cursor:pointer;background:#fff}
 .spfb .tag.on{color:#fff;border-color:transparent}.spfb .tag.tP.on{background:#1d4ed8}.spfb .tag.tL.on{background:#0f766e}.spfb .tag.tT.on{background:#b45309}.spfb .tag.tS1.on{background:#7e22ce}.spfb .tag.tS2.on{background:#be123c}
-.fccrew{display:flex;gap:4px;align-items:center;flex-wrap:nowrap}.fccrew .tag{font:700 11px Arial,sans-serif;border:1px solid var(--s300);border-radius:4px;padding:2px 5px;background:#fff;color:var(--s400);line-height:1.2;user-select:none}.fccrew .tag.on{color:#fff;border-color:transparent}.fccrew .tag.tP.on{background:#1d4ed8}.fccrew .tag.tL.on{background:#0f766e}.fccrew .tag.tT.on{background:#b45309}.fccrew .tag.tS1.on{background:#7e22ce}.fccrew .tag.tS2.on{background:#be123c}.fccrew .all{font-size:11px;color:var(--s500);font-style:italic;margin-left:2px}
+.fccrew{display:flex;gap:4px;align-items:center;flex-wrap:nowrap}.fccrew .tag{font:700 11px Arial,sans-serif;border:1px solid var(--s300);border-radius:4px;padding:2px 5px;background:#fff;color:var(--s400);line-height:1.2;user-select:none}.fccrew .tag.on{color:#fff;border-color:transparent}.fccrew .tag.tP.on{background:#1d4ed8}.fccrew .tag.tL.on{background:#0f766e}.fccrew .tag.tT.on{background:#b45309}.fccrew .tag.tS1.on{background:#7e22ce}.fccrew .tag.tS2.on{background:#be123c}.fcstag{flex-wrap:wrap;row-gap:3px}.fccrew .tag.tS.on{background:#b45309}.fccrew .tag.tX.on{background:#dc2626}.fccrew .all{font-size:11px;color:var(--s500);font-style:italic;margin-left:2px}
 .spfb .tags.def .tag.on{opacity:.55}.spfb .all{font-size:12px;color:var(--s500);font-style:italic}.was{font:700 10px Arial,sans-serif;color:#92400e;background:#fef3c7;border-radius:3px;padding:1px 4px}.glab{color:#6d28d9;font-style:italic}.gmore{color:var(--s500);font-weight:700;cursor:help}.nocrew{color:#b91c1c;font:800 11px Arial,sans-serif;background:#fee2e2;border-radius:3px;padding:1px 5px}.spfb .tag.tALL.on{background:#0f172a}
 .spb .addb{display:block;width:100%;border:2px dashed #93c5fd;background:#eff6ff;color:#1d4ed8;font-weight:800;padding:9px;border-radius:8px;font-size:14.5px;cursor:pointer;margin-top:10px}.spb .addb:hover{background:#dbeafe}
 .fGND{background:#dcfce7;color:#166534;border-left:4px solid #16a34a}
@@ -1252,7 +1252,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z199</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z200</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4670,18 +4670,20 @@ function renderCodes() {
   // z166: the Syllabus tag is a dropdown of the syllabus tracks of every open department ("Role: EIS" offers EIS), plus tags already on a code
   // z198 (Brandon): the fixed list Role: EIS, Role: MS, Role: SAL, Role: Airlift, General Flight (+ other Role tracks); a tag on a code that is not in it is listed apart, in red
   const tagL = sylTagList(), inL = v => tagL.some(x => same(x[0], sylTr(v)));
-  const tagOdd = [...new Set(C.map(k => str(k.stag)).filter(t => t && !inL(t)))];
-  const stagSel = i => { const v = str(C[i].stag), odd = v && !inL(v);
-    return "<select data-fc='" + i + "' data-f='stag'" + (odd ? " class='cmxodd' title='" + esc(v + " is not on the syllabus tag list: planners get every flight item for this code") + "'" : v ? "" : " style='color:var(--s400)'") + (ed ? "" : " disabled") + "><option value=''>None (all flights)</option>" +
-      tagL.map(([t, lab]) => "<option value='" + esc(t) + "'" + (v && same(t, sylTr(v)) ? " selected" : "") + ">" + esc(lab) + "</option>").join("") +
-      (tagOdd.length ? "<optgroup label='Not in any syllabus'>" + tagOdd.map(t => "<option value='" + esc(t) + "'" + (same(t, v) ? " selected" : "") + ">" + esc(t) + "</option>").join("") + "</optgroup>" : "") + "</select>"; };
+  // z200 (Brandon): more than one tag per code (e.g. SAL and General Flight): click tags, stored as a comma list in list order ("SAL, Flight"); the planner offers the items of any of them.
+  // A tag that is not on the list shows red; click it to take it off
+  const stagSel = i => { const v = stagParts(C[i].stag), odd = v.filter(t => !inL(t)), lab = t => (tagL.find(x => same(x[0], sylTr(t))) || [t, t])[1];
+    if (!str(C[i].code) && !v.length) return "";
+    const tg = (t, on, cls, tip) => "<span class='tag" + (on ? " on" : "") + cls + "'" + (ed ? " data-fst='" + esc(t) + "' data-fci='" + i + "' style='cursor:pointer'" : "") + " title='" + esc(tip) + "'>" + esc(t === "Flight" ? "General" : t) + "</span>";
+    return "<div class='tags fccrew fcstag'>" + tagL.map(([t, l]) => tg(t, v.some(x => same(sylTr(x), t)), " tS", l + (ed ? ": click to switch on or off" : ""))).join("") +
+      odd.map(t => tg(t, true, " tX", t + " is not on the syllabus tag list: it matches no track" + (ed ? ". Click to take it off" : ""))).join("") + "</div>"; };   // none on = every flight item (header tooltip)
   // z195: which Crew Matrix mission checks the code's crew: blank = the mission named like its Mission Type, "-" = not checked
   const cmMs = [...new Set(CM_RULES().rows.map(r => r.m).filter(Boolean).map(cmNorm))].map(m => CM_RULES().rows.find(r => cmNorm(r.m) === m).m);
   const cmxSel = i => { const v = str(C[i].cmx), auto = cmAuto(C[i]), odd = v && v !== "-" && !cmMs.some(m => cmNorm(m) === cmNorm(v));
     return "<select data-fc='" + i + "' data-f='cmx' class='" + (odd ? "cmxodd" : v ? "" : "cmxauto") + "'" + (odd ? " title='" + esc(v + " is not a mission on the Crew Matrix page: this code is not checked") + "'" : "") + (ed ? "" : " disabled") + ">" +
       "<option value=''>" + esc(auto ? "Auto (" + auto + ")" : "Auto (none)") + "</option>" + cmMs.map(m => "<option" + (cmNorm(m) === cmNorm(v) ? " selected" : "") + ">" + esc(m) + "</option>").join("") +
       (odd ? "<option selected>" + esc(v) + "</option>" : "") + "<option value='-'" + (v === "-" ? " selected" : "") + ">Not checked</option></select>"; };
-  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:190px'>Crew</th><th style='width:120px'>Mission Type</th><th style='width:170px' title='The Crew Matrix mission that checks the CAT of this code&#39;s crew'>Crew Matrix</th>" + (P.hasStag ? "<th style='width:165px' title='The Planner cell picker lists only the Flight items of this syllabus track. None = every flight item'>Syllabus tag</th>" : "") + "</tr>";
+  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:190px'>Crew</th><th style='width:120px'>Mission Type</th><th style='width:170px' title='The Crew Matrix mission that checks the CAT of this code&#39;s crew'>Crew Matrix</th>" + (P.hasStag ? "<th style='width:215px' title='The Planner cell picker lists only the Flight items of these syllabus tracks (any of them). None = every flight item'>Syllabus tag</th>" : "") + "</tr>";
   for (let i = 0; i < show; i++) h += "<tr data-fr='" + i + "'" + (C[i].off ? " class='roff' title='Switched off: not offered for new flights; flights already planned keep it. Right-click to switch it on.'" : "") + "><td class='n'>" + (i + 1) + (C[i].off ? "<i class='offtag'>OFF</i>" : "") + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + fcCrewChips(i) + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td><td>" + cmxSel(i) + "</td>" + (P.hasStag ? "<td>" + stagSel(i) + "</td>" : "") + "</tr>";
   // z196: standby P1 / P2 / BU stay ground duties in the departments; listed here only to pick the crew matrix that checks them
   const sbSel = c => { const v = str((P.sbCmx || {})[c]), odd = v && v !== "-" && !cmMs.some(m => cmNorm(m) === cmNorm(v));
@@ -4698,6 +4700,16 @@ function renderCodes() {
   C.forEach(k => { if (!k.code) return; const u = k.code.toUpperCase(); if (seen[u]) dups.push(k.code); seen[u] = 1; });
   $("codesWarn").innerHTML = (gap >= 0 && gap < last ? "<div class='warnbox'>There is an empty row in the middle of the list (row " + (gap + 1) + "). Codes below it won't appear in the Excel dropdown until it's filled.</div>" : "") + (dups.length ? "<div class='warnbox'>Duplicate codes: " + esc(dups.join(", ")) + "</div>" : "");
 }
+const stagParts = v => String(v || "").split(/[,\/]/).map(t => t.trim()).filter(Boolean);
+$("codeTable").addEventListener("click", e => {   // z200: Syllabus tags on Flight Codes (several per code)
+  const el = e.target.closest("[data-fst]"); if (!el || !mpEditable()) return;
+  const i = +el.dataset.fci, t = el.dataset.fst;
+  withBook(mpIdx(), () => { const k = S.codeAll[i], cur0 = stagParts(k.stag), has = cur0.some(x => same(sylTr(x), sylTr(t)));
+    const nt = has ? cur0.filter(x => !same(sylTr(x), sylTr(t))) : cur0.concat(t), L = sylTagList().map(x => x[0]);
+    nt.sort((a, b) => { const ia = L.findIndex(x => same(x, sylTr(a))), ib = L.findIndex(x => same(x, sylTr(b))); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+    const v = nt.join(", "); k.stag = v; put("Flight Codes", (S.fcOld ? "H" : "E") + k.row, v); mkCodes(S); });
+  renderCodes(); renderMp(); renderActs(); renderPlanner();
+});
 $("codeTable").addEventListener("click", e => {   // z199: Crew tags on Flight Codes
   const el = e.target.closest("[data-fct]"); if (!el || !mpEditable()) return;
   const i = +el.dataset.fci, t = el.dataset.fct;
@@ -6475,7 +6487,7 @@ function renderActs() {
   $("actSync").innerHTML = !P ? "Flight codes come from the Master Planner and are added here when you save. Open the Master Planner (Add other departments) to see them." :
     "<b>Flight codes come from the Master Planner</b> and are added here when you save." + (wait.length ? " <b style='color:#b45309'>Waiting to add: " + wait.map(esc).join(", ") + "</b>" : "");
   const flRow = a => { const ci = S.cats.findIndex(c => c && c === a.cat);
-    return "<tr><td><b class='" + (ci >= 0 ? "cat" + ci : "") + "' style='padding:2px 6px;border-radius:4px'>" + esc(a.code) + "</b></td><td>" + esc(a.desc) + "</td>" + (S.hasCur ? "<td>" + esc(a.mtype || "") + "</td>" : "") + (S.hasStag ? "<td>" + (a.stag ? "<b class='sylgold'>🎓 " + esc(a.stag) + "</b>" : "") + "</td>" : "") + "</tr>"; };
+    return "<tr><td><b class='" + (ci >= 0 ? "cat" + ci : "") + "' style='padding:2px 6px;border-radius:4px'>" + esc(a.code) + "</b></td><td>" + esc(a.desc) + "</td>" + (S.hasCur ? "<td>" + esc(a.mtype || "") + "</td>" : "") + (S.hasStag ? "<td>" + (a.stag ? "<b class='sylgold'>🎓 " + esc(stagParts(a.stag).map(t => same(sylTr(t), "Flight") ? "General Flight" : t).join(", ")) + "</b>" : "") + "</td>" : "") + "</tr>"; };
   $("actFlTable").innerHTML = "<tr><th>Code</th><th>Description</th>" + (S.hasCur ? "<th style='width:100px'>Mission Type</th>" : "") + (S.hasStag ? "<th style='width:110px' title='Set on the Master Planner Flight Codes. The cell picker lists only the syllabus items that match it'>Syllabus tag</th>" : "") + "</tr>" + (fl.length ? fl.map(flRow).join("") : "<tr><td colspan=4 class='muted'>No flight codes yet.</td></tr>");
   // ground programme: the rest, editable, plus a few empty rows to add to
   const ground = S.acts.map((a, i) => i).filter(i => S.acts[i].code ? !isFlAct(S, S.acts[i]) : false), empty = S.acts.map((a, i) => i).filter(i => !S.acts[i].code && !S.acts[i].desc).slice(0, 3);
@@ -7093,7 +7105,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z199 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z200 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

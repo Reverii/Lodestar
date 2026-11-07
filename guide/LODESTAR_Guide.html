@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>LODESTAR User Guide</title>
+<style>
+@page { size: A4; margin: 16mm 16mm 18mm 16mm; }
+:root { --ink:#0f172a; --mute:#475569; --line:#e2e8f0; --navy:#0f172a; --blue:#1d4ed8; --green:#15803d; --amber:#b45309; --red:#b91c1c; --soft:#f1f5f9; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font-family: "Segoe UI", "Inter", Arial, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5; background: #fff; }
+h1, h2, h3 { line-height: 1.2; margin: 0; }
+h2 { font-size: 17pt; margin: 0 0 6px; padding-top: 2px; }
+h2 .n { color: var(--blue); margin-right: 8px; }
+h3 { font-size: 12pt; margin: 16px 0 4px; }
+p { margin: 0 0 8px; }
+ul, ol { margin: 0 0 8px; padding-left: 20px; }
+li { margin: 0 0 3px; }
+.ui { font-weight: 700; background: var(--soft); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; white-space: nowrap; font-size: 9.5pt; }
+.sec { break-before: page; }
+figure { margin: 10px 0 14px; break-inside: avoid; text-align: center; }
+figure img { max-width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; }
+figure.half img { max-width: 62%; }
+figure.third img { max-width: 44%; }
+figcaption { font-size: 8.5pt; color: var(--mute); margin-top: 4px; }
+.box { border-radius: 8px; padding: 10px 14px; margin: 10px 0 12px; break-inside: avoid; }
+.box.tip { background: #eff6ff; border-left: 4px solid var(--blue); }
+.box.warn { background: #fffbeb; border-left: 4px solid #f59e0b; }
+.box h4 { margin: 0 0 4px; font-size: 10pt; text-transform: uppercase; letter-spacing: .4px; color: var(--mute); }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+table.t { width: 100%; border-collapse: collapse; margin: 8px 0 12px; font-size: 9.5pt; break-inside: avoid; }
+table.t th { background: var(--navy); color: #fff; text-align: left; padding: 5px 8px; font-weight: 600; }
+table.t td { border-bottom: 1px solid var(--line); padding: 5px 8px; vertical-align: top; }
+.chip { display: inline-block; border-radius: 4px; padding: 0 6px; font-weight: 700; font-size: 9pt; }
+.am { background: #e0f2fe; color: #075985; border-left: 3px solid #0284c7; }
+.pm { background: #fef3c7; color: #92400e; border-left: 3px solid #d97706; }
+.nt { background: #1e1b4b; color: #fff; border-left: 3px solid #6366f1; }
+.gnd { background: #dcfce7; color: #166534; border-left: 3px solid #16a34a; }
+.nocrew { background: #fee2e2; color: var(--red); }
+.nofly { background: repeating-linear-gradient(135deg,#fee2e2 0 6px,#fff 6px 12px); color: var(--red); border: 1px solid #fecaca; }
+.rest { background: var(--red); color: #fff; }
+.ok { background: #dcfce7; color: #166534; }
+.short { background: #fef3c7; color: #92400e; }
+.none { background: #fee2e2; color: #991b1b; }
+.down { background: #991b1b; color: #fff; }
+.restd { background: #ea580c; color: #fff; }
+
+/* cover */
+.cover { height: 260mm; display: flex; flex-direction: column; }
+.cover .band { background: var(--navy); color: #fff; border-radius: 14px; padding: 40px 36px 36px; }
+.cover .band img { width: 70px; }
+.cover .kicker { letter-spacing: 4px; font-size: 10pt; color: #93c5fd; margin-top: 22px; }
+.cover h1 { font-size: 40pt; margin-top: 6px; letter-spacing: .5px; }
+.cover .sub { font-size: 14pt; color: #cbd5e1; margin-top: 8px; }
+.cover .draft { margin-top: 26px; display: inline-block; background: #f59e0b; color: #111; font-weight: 800; padding: 4px 12px; border-radius: 4px; font-size: 10pt; letter-spacing: 1px; }
+.cover .who { margin-top: 28px; }
+.cover .who h3 { margin-top: 0; }
+.cover .foot { margin-top: auto; color: var(--mute); font-size: 9pt; border-top: 1px solid var(--line); padding-top: 10px; }
+.parts { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
+.parts div { background: var(--soft); border-radius: 8px; padding: 8px 12px; }
+.parts b { color: var(--blue); margin-right: 6px; }
+.toc { columns: 2; column-gap: 28px; font-size: 10pt; margin-top: 8px; }
+.toc div { break-inside: avoid; padding: 2px 0; border-bottom: 1px dotted #cbd5e1; }
+.toc span { color: var(--blue); font-weight: 700; display: inline-block; width: 34px; }
+
+/* part divider */
+.part { break-before: page; }
+.part .pband { background: var(--navy); color: #fff; border-radius: 12px; padding: 26px 30px; margin-bottom: 14px; }
+.part .pband .pk { letter-spacing: 3px; font-size: 9.5pt; color: #93c5fd; }
+.part .pband h1 { font-size: 28pt; margin-top: 4px; }
+.part .pband .ps { color: #cbd5e1; margin-top: 6px; font-size: 11.5pt; }
+
+/* quick start */
+.qs { counter-reset: q; list-style: none; padding: 0; }
+.qs li { counter-increment: q; position: relative; padding: 8px 10px 8px 46px; margin: 0 0 8px; background: var(--soft); border-radius: 8px; break-inside: avoid; }
+.qs li::before { content: counter(q); position: absolute; left: 10px; top: 8px; width: 26px; height: 26px; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 800; text-align: center; line-height: 26px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+.two figure { margin-top: 0; }
+.two figure img { max-height: 200mm; width: auto; }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<section class="cover">
+  <div class="band">
+    <img src="../logo/final/Lodestar_icon_512.png" alt="">
+    <div class="kicker">121 SQN · FLIGHT &amp; OPS PLANNER</div>
+    <h1>LODESTAR User Guide</h1>
+    <div class="sub">One unified plan. One true north.</div>
+    <div class="draft">DRAFT · NOT FOR ISSUE</div>
+  </div>
+  <div class="who">
+    <h3>How to use this guide</h3>
+    <p>Everyone reads <b>Part 1, Getting started</b>. It explains how LODESTAR is put together, how to open it, and how saving works. After that, read only the part for your job.</p>
+    <div class="parts">
+      <div><b>Part 1</b>Getting started: for everyone.</div>
+      <div><b>Part 2</b>Department planners: for the planners of SUP 1, SUP 2, TACCO, Loadmaster and Pilot.</div>
+      <div><b>Part 3</b>Master Planner: for the person who keeps the squadron's flight programme.</div>
+      <div><b>Part 4</b>Duty Planner: for the person who keeps the BDO and SDO duty roster.</div>
+      <div><b>Part 5</b>Ops Room: for the SDO / AOS on duty and the Ops Room staff.</div>
+    </div>
+    <p style="margin-top:12px">Every page in the dashboard also has its own help. Press the <b>?</b> button at the right end of the tab bar.</p>
+  </div>
+  <div class="foot">LODESTAR · 121 SQN · Guide for dashboard version z196 (BETA) · Screenshots use demo data only: the names, callsigns and flights are made up.</div>
+</section>
+
+<!-- ======================================================================= -->
+<!-- ========================= PART 1: GETTING STARTED ===================== -->
+<!-- ======================================================================= -->
+<section class="part">
+  <div class="pband"><div class="pk">PART 1</div><h1>Getting started</h1><div class="ps">How LODESTAR works, how to open it, and how your work is saved</div></div>
+  <div class="toc">
+    <div><span>1.1</span>What LODESTAR is</div>
+    <div><span>1.2</span>Opening LODESTAR</div>
+    <div><span>1.3</span>The screen</div>
+    <div><span>1.4</span>Saving, undo and the Changelog</div>
+    <div><span>1.5</span>Who can change what</div>
+    <div><span>1.6</span>Common questions</div>
+  </div>
+
+  <h2 style="margin-top:18px"><span class="n">1.1</span>What LODESTAR is</h2>
+  <p>LODESTAR is the squadron's daily flying and ops planner. It replaces copying plans by hand between the department Excel files and the Ops Room. It has two pieces:</p>
+  <ul>
+    <li><b>Eight Excel files</b> in the SharePoint folder <b>Program</b>. They hold all the data. They have no macros and still open normally in Excel.</li>
+    <li><b>The dashboard</b>, one web page in the same folder. It opens the Excel files, shows them as planners, calendars and boards, and saves your changes back into them.</li>
+  </ul>
+  <table class="t">
+    <tr><th style="width:36%">File</th><th>What it holds</th></tr>
+    <tr><td>Flight_Ops_Planner_SUP1, _SUP2, _TACCO, _Loadmaster, _Pilot</td><td>One file per department: the crew list, each person's plan for every day (AM, PM, NIGHT and a whole-day WD row), currency, syllabus and the month totals.</td></tr>
+    <tr><td>Master_Planner</td><td>The squadron's flights, no-flying days, squadron events, alert states, flight codes and the Crew Matrix. It is the one true list of flights.</td></tr>
+    <tr><td>Duty_Roster</td><td>Who does BDO on each day, and which department does SDO on each day.</td></tr>
+    <tr><td>Ops_Room</td><td>The day board: tails, seats, ATD and ATA, flown or cancelled, Ops Adds, flying restrictions, down-chits and the ATOM currency export.</td></tr>
+  </table>
+  <div class="box tip"><h4>How the plan flows</h4>
+    <p>The <b>Master Planner</b> plans the flights. Each <b>department</b> copies its flights into its own planner and puts its people on them. The <b>Duty Planner</b> hands out BDO and SDO days, and each department copies its days too. The <b>Ops Room</b> reads all of it and fills the seats on the day's board by itself. Nobody has to retype anything.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">1.2</span>Opening LODESTAR</h2>
+  <ol>
+    <li>Open the SharePoint folder <b>Program</b> and open the LODESTAR dashboard file in Edge.</li>
+    <li>The screen <b>"Which department are you from?"</b> appears. Each card shows when its file last changed and who changed it: green is today, amber is this week, red is a week or more ago.</li>
+    <li>Click your own card. Your file opens <b>for editing</b> and the other files open beside it <b>to view only</b>, so you can see the rest of the squadron.</li>
+  </ol>
+  <figure><img src="img/01_department_screen.png" alt=""><figcaption>The department screen. The card you opened last is marked "You opened this last".</figcaption></figure>
+  <ul>
+    <li>The dashboard remembers your choice in this browser. To pick another card, click the <b>LODESTAR</b> logo at the top left.</li>
+    <li><span class="ui">⟳ Refresh</span> or F5 reads the latest files again and keeps you where you are.</li>
+    <li>On SharePoint the dashboard looks for changes from other people every 15 seconds and shows them without you doing anything.</li>
+  </ul>
+  <div class="box warn"><h4>Dashboard and files go together</h4>
+    <p>The dashboard and the Excel files are made as a matched set. If a yellow bar says a file uses an <b>older layout</b> or is <b>newer than the dashboard</b>, tell the LODESTAR maintainer. Do not keep planning in a mixed set.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">1.3</span>The screen</h2>
+  <h3 style="margin-top:4px">Top bar</h3>
+  <figure><img src="img/21_header.png" alt=""><figcaption>The top bar.</figcaption></figure>
+  <ul>
+    <li><b>The file pills</b> list the open files. Yours is white and marked <b>yours</b>. A grey dot means view only.</li>
+    <li><b>− 100% +</b> zooms the whole page. Use it to fit the planner on a small screen.</li>
+    <li><b>↶ ↷</b> undo and redo.</li>
+    <li><span class="ui">Save to Excel</span> saves now. It turns bright green when there is something to save.</li>
+  </ul>
+  <h3>Tab bar</h3>
+  <figure><img src="img/21_tabs.png" alt=""><figcaption>The tab bar. The padlock on Master Planner means you can look but not change it.</figcaption></figure>
+  <table class="t">
+    <tr><th style="width:26%">Tab</th><th>What it is</th></tr>
+    <tr><td>My Lodestar</td><td>Your own page: today's flight, your month, your currency and what changed. View only.</td></tr>
+    <tr><td>Planning ▾</td><td>Planner (the month plan), Overview, Syllabus Tracking and Miscellaneous Notes (Part 2).</td></tr>
+    <tr><td>Crew Roster, Currency, Activities</td><td>Your department's crew list, currency checks and activity list (Part 2).</td></tr>
+    <tr><td>Changelog</td><td>Every saved change, with who and when (section 1.4).</td></tr>
+    <tr><td>Ops Room</td><td>The day board (Part 5). Departments see it view only.</td></tr>
+    <tr><td>Master Planner ▾</td><td>The squadron calendar, Flight Codes and Crew Matrix (Part 3).</td></tr>
+    <tr><td>Duty Planner</td><td>BDO and SDO (Part 4).</td></tr>
+    <tr><td>?</td><td>Help for the page you are on, with the meaning of its colours.</td></tr>
+  </table>
+  <figure class="third"><img src="img/22_help.png" style="max-height:95mm;width:auto" alt=""><figcaption>The help (?) for the Planner.</figcaption></figure>
+</section>
+
+<section class="sec">
+  <h2><span class="n">1.4</span>Saving, undo and the Changelog</h2>
+  <h3 style="margin-top:4px">Saving</h3>
+  <ul>
+    <li><b>On SharePoint your work saves by itself</b> a few seconds after each change. <span class="ui">Save to Excel</span> saves at once.</li>
+    <li>Only the cells you changed are written. The rest of the file, including its formulas and drop-downs, is left alone. If someone else saved the same file in the meantime, their changes are kept and yours are added on top.</li>
+    <li>If you close the tab with unsaved changes, the browser asks you to confirm.</li>
+  </ul>
+  <h3>Undo and redo</h3>
+  <p><span class="ui">↶</span> and <span class="ui">↷</span>, or <b>Ctrl+Z</b> and <b>Ctrl+Y</b>, undo and redo your recent changes (up to 40 steps).</p>
+  <h3>Changelog</h3>
+  <p>Every save is written to a <b>Change Log</b> sheet in the file itself: when, who, what changed in words, and the value before and after. The <span class="ui">Changelog</span> tab shows the log of your own file, the Master Planner and the Ops Room. You can filter by person, file, day or text, and hover over a line to see the exact sheet and cell. Lines older than 90 days are dropped; SharePoint's version history keeps older copies of the file.</p>
+</section>
+
+<section class="sec">
+  <h2><span class="n">1.5</span>Who can change what</h2>
+  <table class="t">
+    <tr><th style="width:26%">You opened</th><th>You can change</th><th style="width:34%">You can see</th></tr>
+    <tr><td>Your department</td><td>Your department's plan, Crew Roster, Currency, Activities, Syllabus and Notes.</td><td>Every other file, view only.</td></tr>
+    <tr><td>Master Planner</td><td>Flights, no-flying days, squadron events, alert states, Flight Codes and the Crew Matrix.</td><td>Every other file, view only.</td></tr>
+    <tr><td>Duty Roster</td><td>The BDO and SDO roster and the duty crew lists.</td><td>Every other file, view only.</td></tr>
+    <tr><td>Ops Room</td><td>The day board. It can also up-chit a person in a department file.</td><td>Every file.</td></tr>
+  </table>
+  <p>On SharePoint this also follows the folder's edit rights. If you have no edit rights on a file, you cannot save it, even if you picked its card.</p>
+  <div class="box tip"><h4>Excel still works</h4><p>You can open any of the files in desktop Excel to read or print them. Prefer the dashboard for changes: it keeps the copies between files in step. If you do edit in Excel, close the file before others save from the dashboard.</p></div>
+
+  <h2 style="margin-top:18px"><span class="n">1.6</span>Common questions</h2>
+  <table class="t">
+    <tr><th style="width:38%">Question</th><th>Answer</th></tr>
+    <tr><td>Everything is locked (🔒) and I cannot click.</td><td>You opened another department's card. Click the LODESTAR logo and pick your own.</td></tr>
+    <tr><td>I can't see a change someone just made.</td><td>Wait 15 seconds, or press ⟳ Refresh (F5).</td></tr>
+    <tr><td>A yellow bar says "older layout".</td><td>The files and the dashboard don't match. Tell the LODESTAR maintainer.</td></tr>
+    <tr><td>Save to Excel stays green.</td><td>The save did not go through. Check you are still signed in to SharePoint and have edit rights, then press it again.</td></tr>
+    <tr><td>The page is too big for my screen.</td><td>Use − in the top bar to zoom out.</td></tr>
+  </table>
+</section>
+
+<!-- ======================================================================= -->
+<!-- ========================= PART 2: DEPARTMENT PLANNERS ================= -->
+<!-- ======================================================================= -->
+<section class="part">
+  <div class="pband"><div class="pk">PART 2</div><h1>Department planners</h1><div class="ps">For the planners of SUP 1, SUP 2, TACCO, Loadmaster and Pilot</div></div>
+  <p>Every department has its own file built from the same template, so this part works for all five departments. The screenshots show SUP 2.</p>
+  <div class="toc">
+    <div><span>QS</span>Quick start</div>
+    <div><span>2.1</span>Reading the Planner</div>
+    <div><span>2.2</span>Planning a person</div>
+    <div><span>2.3</span>Notes on a cell</div>
+    <div><span>2.4</span>Copying from the Master Planner</div>
+    <div><span>2.5</span>Colours and warnings</div>
+    <div><span>2.6</span>Pilot: AC and Pax</div>
+    <div><span>2.7</span>Crew Roster</div>
+    <div><span>2.8</span>Currency</div>
+    <div><span>2.9</span>Syllabus Tracking</div>
+    <div><span>2.10</span>Overview, Activities, Notes</div>
+    <div><span>2.11</span>Questions and problems</div>
+  </div>
+  <h2 style="margin-top:18px"><span class="n">QS</span>Quick start</h2>
+  <ol class="qs">
+    <li><b>Open the dashboard</b> and pick your department on the department screen. The Planner opens on this month.</li>
+    <li><b>Copy the flights.</b> If an amber bar says your flights differ from the Master Planner, press <span class="ui">Copy flights and squadron events from the Master Planner</span>.</li>
+    <li><b>Copy your duty days</b> on the <span class="ui">Duty Planner</span> tab with <span class="ui">Copy my duty days from the Duty Roster</span>.</li>
+    <li><b>Put people on flights.</b> Right-click a person's cell (or select it and press Enter) and pick the flight, duty or leave from the list.</li>
+    <li><b>Check the MASTER row.</b> Each shift should show green <span class="chip ok">2 ✓</span>. Amber means short of crew, red means flights with nobody from your department.</li>
+    <li><b>Let it save</b>, or press <span class="ui">Save to Excel</span>.</li>
+  </ol>
+</section>
+
+<section class="sec">
+  <h2><span class="n">2.1</span>Reading the Planner</h2>
+  <figure><img src="img/20_planner.png" alt=""><figcaption>The Planner, October. Rows at the top for the squadron, then one block per person.</figcaption></figure>
+  <h3>Controls along the top</h3>
+  <ul>
+    <li><b>YEAR</b> and <b>MONTH</b> pick the month. <span class="ui">Today</span> jumps to today's month and column (blue).</li>
+    <li><b>FILTER CREW</b> shows only people whose name, callsign or role matches. <b>SHOW</b> switches the Active, SANS, NSMEN and Inactive groups on or off.</li>
+    <li><b>FIND IN THIS MONTH</b> outlines every cell with that code, time, comment or name. Enter jumps to the next.</li>
+    <li><b>Merge runs</b> shows a run of the same leave or course over several days as one block, for example "LL 1–2 Nov · 2 days".</li>
+  </ul>
+  <h3>Rows at the top</h3>
+  <table class="t">
+    <tr><th style="width:28%">Row</th><th>What it shows</th></tr>
+    <tr><td>MASTER 🔒</td><td>The flights the Master Planner planned for your department, per shift. Folded, it shows how well each shift is crewed. Click the blue label to open it and see each flight's code and time.</td></tr>
+    <tr><td>SQUADRON PROGRAMME</td><td>The day's squadron events (meetings, lectures, ceremonies) that your department attends.</td></tr>
+    <tr><td>ALERT</td><td>The squadron's alert state (for example AL90 or AL2), set by the Master Planner for each week. Point at a day to see who is on P1, P2 or BU.</td></tr>
+    <tr><td>FLYING RESTRICTION</td><td>Restrictions typed in the Ops Room, on every day they cover.</td></tr>
+    <tr><td>DUTY DAYS</td><td>Your department's BDO and SDO days from the Duty Roster. Red means nobody is planned on it yet.</td></tr>
+  </table>
+  <h3>Crew rows</h3>
+  <p>Each person has four rows: <b>AM</b>, <b>PM</b>, <b>NIGHT</b> and <b>WD</b> (whole day). Put flights and shift duties on AM, PM or NIGHT. Put whole-day items such as BDO, courses and admin on the WD row. Regular crew are at the top; SANS and NSmen are always at the bottom.</p>
+  <p>The strip along the bottom adds up the month: total flights, planned hours, ground duties, duty days, active crew, planned sorties, and the problem counts (shifts with no crew, shifts short of crew, duty days uncovered). <span class="ui">⌨ Keys</span> lists the keyboard shortcuts.</p>
+</section>
+
+<section class="sec">
+  <h2><span class="n">2.2</span>Planning a person</h2>
+  <div class="two">
+    <figure><img src="img/23_cell_list.png" alt=""><figcaption>The cell list (right-click). The day's flights come first, with their planned times.</figcaption></figure>
+    <div>
+      <ol>
+        <li><b>Right-click</b> the person's cell for the day and shift, or click it and press <b>Enter</b>.</li>
+        <li>The list opens with <b>the day's flights for that shift at the top</b>, then Sim, Ground Duty, Squadron Duty, Admin, Leave and so on.</li>
+        <li>Type a few letters to search, then click the item or press Enter.</li>
+      </ol>
+      <p>At the top of the list you may see a warning about this person, for example a lapsed currency. It only warns.</p>
+      <h3>Shortcuts</h3>
+      <ul>
+        <li><b>Delete</b> clears the selected cell.</li>
+        <li><b>Ctrl+C</b> and <b>Ctrl+V</b> copy one cell to another.</li>
+        <li>Arrow keys move the selection.</li>
+        <li><b>Block of days…</b> at the bottom of the list puts one item over a range of dates, for example a course, a detachment or leave.</li>
+      </ul>
+      <div class="box tip"><h4>Flights</h4><p>Only put someone on a flight that is on the MASTER row for that shift. That is what the Ops Room uses to seat them.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">2.3</span>Notes on a cell</h2>
+  <figure class="third"><img src="img/23_cell_card.png" alt=""><figcaption>Click a cell to open its card. It has two boxes for notes.</figcaption></figure>
+  <p><b>Click</b> (left-click) a cell to open its card. It shows what is planned and has two separate notes:</p>
+  <table class="t">
+    <tr><th style="width:26%">Box</th><th>Who sees it</th><th style="width:22%">Mark on the cell</th></tr>
+    <tr><td><b>Planner note</b></td><td>Planners only. Never shown in the Ops Room. Use it for reminders, for example "Swap with HAWK if the sim moves".</td><td>Purple corner, top right</td></tr>
+    <tr><td><b>For the Ops Room</b></td><td>Shown in that flight's Remarks on the Ops Room board (not on the AFP). Use it for things the duty staff must know, for example "Back by 1500H for the course".</td><td>Blue corner, top left</td></tr>
+  </table>
+  <p>Type in a box and press Enter to save it, or Esc to cancel. Clear the box to remove the note.</p>
+
+  <h2 style="margin-top:18px"><span class="n">2.4</span>Copying from the Master Planner</h2>
+  <p>The Master Planner plans the squadron's flights and squadron events. Your planner does not change by itself when they do. Instead:</p>
+  <ul>
+    <li>An amber bar says how many slots differ ("…differ from the Master Planner in 11 slots this year"), and the changed slots are outlined amber.</li>
+    <li>Press <span class="ui">Copy flights and squadron events from the Master Planner</span>. Your MASTER and SQUADRON PROGRAMME rows are updated for the whole year.</li>
+    <li>Your people stay where you put them. If a flight moved or was removed, check the people you had planned on it.</li>
+  </ul>
+  <p>You only get flights whose crew tags include your department. If you think a flight is missing, ask the Master Planner to check the tags. New flight codes reach your Activities list by themselves the next time you save.</p>
+  <h3>Running changes: Flight 1/2, Flight 2/2</h3>
+  <p>When the Master Planner gives a flight 2 or 3 sorties, the MASTER cell says <b>2 SORTIES</b>. By default everyone you put on it is crew on every sortie. To change that for a person, right-click their cell and use <b>On this flight</b>: Crew, Pax or Not on, for each flight. The cell then shows a tag such as <b>PAX FLIGHT 1/2</b> or <b>FLIGHT 1/2 ONLY</b>, and the Ops Room seats them on the right rows.</p>
+</section>
+
+<section class="sec">
+  <h2><span class="n">2.5</span>Colours and warnings</h2>
+  <table class="t">
+    <tr><th style="width:30%">Mark</th><th>Meaning</th></tr>
+    <tr><td><span class="chip ok">3 ✓</span></td><td>On the MASTER row: the shift is covered. The number is the planned sorties.</td></tr>
+    <tr><td><span class="chip short">! 2</span></td><td>Short of crew: some flights in the shift have fewer of your people than needed.</td></tr>
+    <tr><td><span class="chip none">⚠ 1</span></td><td>There are flights in the shift but nobody from your department is on them.</td></tr>
+    <tr><td><span class="chip" style="background:#e2e8f0;color:#475569">NO FLY</span></td><td>A no-flying day set by the Master Planner.</td></tr>
+    <tr><td>Amber outline</td><td>Differs from the Master Planner (section 2.4).</td></tr>
+    <tr><td>Red dashed outline, "NOT ON LIST"</td><td>The person is on a duty (BDO or SDO) but is not on the crew list for that duty (Part 4).</td></tr>
+    <tr><td><span class="chip restd">REST</span></td><td>The person flies 5 or more days in a row.</td></tr>
+    <tr><td><span class="chip down">DOWN</span></td><td>Down-chitted after MC: not cleared to fly. The down-chit days are striped red, and a flight on them gets a red box. Click DOWN, or <b>Up-chit…</b> in the cell list, to up-chit.</td></tr>
+    <tr><td>"LAPSED", "NOT CURRENT", red corner</td><td>A currency has expired before this flight (section 2.8). It only warns.</td></tr>
+    <tr><td>Purple mark on the WD row</td><td>A mission currency expires that day (from ATOM).</td></tr>
+    <tr><td>"CREW MATRIX" (amber)</td><td>The planned crew on that flight or standby does not fit the Crew Matrix for its mission. It only warns.</td></tr>
+    <tr><td>Struck-through flight</td><td>Cancelled in the Ops Room.</td></tr>
+    <tr><td>Amber underline</td><td>A past flight that the Ops Room has not closed yet (not marked flown or cancelled).</td></tr>
+    <tr><td>Columns</td><td>Blue: today. Dark: weekend. Red: public holiday.</td></tr>
+  </table>
+  <p>The coloured chips above the grid (Flight, Sim, Ground Duty, Squadron Duty, Leave, Off, Admin, Medical, Oversea Duty) are the legend for the activity colours.</p>
+
+  <h2 style="margin-top:14px"><span class="n">2.6</span>Pilot: AC and Pax</h2>
+  <p>In the Pilot plan, the right-click list of a flight cell also lets you mark the <b>AC</b> (aircraft captain). The pilot marked AC takes the Captain seat on the Ops Room board and on the AFP; with no mark, the most senior pilot does. The same works on standby (P1, P2, BU). Any department can mark a person as <b>Pax</b> on a flight: they ride along but are not crew.</p>
+</section>
+
+<section class="sec">
+  <h2><span class="n">2.7</span>Crew Roster</h2>
+  <figure><img src="img/26_roster.png" alt=""><figcaption>The Crew Roster. Regular crew at the top, then SANS and NSMEN.</figcaption></figure>
+  <p>Your department's crew list: callsign, rank, name, initials, Cat Status, role, status and remarks. Changes here show on every tab. The order here is the order on the Planner, the Ops Room and in Excel.</p>
+  <ul>
+    <li><b>Add a person:</b> type in the next empty row of their group (regular, SANS or NSMEN).</li>
+    <li><b>Right-click a person</b> for: Insert crew above or below, Move up or down, <b>Sort…</b> (by Cat Status, rank, callsign, name or role, with a preview), <b>Transfer</b> to SANS, NSMEN or regular crew, and <b>Remove crew…</b>.</li>
+    <li>A person's plans for every month move with them when you insert, move or sort.</li>
+    <li><b>+ Add rank…</b> and <b>+ Add role…</b> at the bottom of those drop-downs add a new one to your file.</li>
+    <li><b>Initials</b> must match the person's name in ATOM, so the currency can find them (section 2.8).</li>
+    <li>The name colour follows the Cat Status: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE violet.</li>
+  </ul>
+  <div class="box warn"><h4>Someone leaves</h4>
+    <p>To keep their history, set <b>Status</b> to <b>Inactive</b>. <b>Remove crew…</b> clears their row and plans and closes the gap. Never clear a person's row by hand to reuse it for someone else: the plans are tied to the row, so the old plan would carry over to the new person.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">2.8</span>Currency</h2>
+  <figure><img src="img/27_currency.png" alt=""><figcaption>The Currency tab (demo file, no ATOM data shared yet).</figcaption></figure>
+  <h3>ATOM currencies</h3>
+  <p><b>ATOM is the truth.</b> Once a day the Ops Room adds the ATOM export and publishes it to everyone (Part 5). LODESTAR then shows for each person the Day Capt, Day Curr, IRT, Night Capt and Night Curr dates, the month's clocked hours and the mission currencies. Nothing else from ATOM is kept, and no names, only the initials.</p>
+  <ul>
+    <li>Red is expired, amber expires within 14 days (you can change the window), a dash is not held, and a hatched box is not recorded.</li>
+    <li><b>Names to fix</b> lists people LODESTAR cannot match, for example missing or wrong initials on the Crew Roster. It suggests the likely person: <b>Use as Initials</b> writes it in for you.</li>
+    <li>On the Planner, the day a currency expires is marked in the person's row, and a flight after it shows a red corner and "NOT CURRENT". This only warns.</li>
+  </ul>
+  <h3>Rules table and the past flights check</h3>
+  <p>Below the ATOM table are the older per-rule checks worked out from the plan. Right-click a rule to switch it off or remove it. A past planned flight counts as flown for these rules, so any flight in the last 45 days that the Ops Room has not closed is listed under the note and underlined amber on the Planner.</p>
+</section>
+
+<section class="sec">
+  <h2><span class="n">2.9</span>Syllabus Tracking</h2>
+  <figure><img src="img/25_syllabus.png" alt=""><figcaption>Syllabus Tracking for a crew member working on CAT C.</figcaption></figure>
+  <p>Under <span class="ui">Planning ▾</span>. Each person's training is shown as a path of stages along the top: <b>OCU, CAT D, CAT C, CAT B, CAT A</b>. Under the stage they are working on you see the tracks side by side, then the Check once the tracks are passed.</p>
+  <ul>
+    <li><b>Enter a result:</b> click an item, type the date, instructor and remarks, then <b>✓ Pass</b> or <b>✕ Fail</b>. × deletes a wrong entry.</li>
+    <li><b>Plan it from the Planner:</b> right-click a crew cell, open the gold <b>🎓 Syllabus</b> box and tick the item. The cell gets a gold corner. On the day, click the cell again to record Pass or Fail.</li>
+    <li><b>Chances:</b> each item has a number of chances. Fails before the first pass use them up. At 0 the item shows ⛔ <b>out of chances</b>. Nothing is blocked; it is a flag for the chain of command.</li>
+    <li>When every item of a stage is passed it says <b>Stage complete, awaiting paperwork</b>. LODESTAR never changes a Cat Status: update the Crew Roster by hand once the paperwork is approved.</li>
+    <li>The CAT A stage is instructor training. It opens only for CAT A crew selected for it: open the person and press <b>Select for instructor training</b>.</li>
+    <li><b>✎ Edit syllabus items</b> changes the items and chances. An item that already has results is locked (🔒).</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">2.10</span>Overview, Activities and Miscellaneous Notes</h2>
+  <figure><img src="img/24_overview.png" alt=""><figcaption>Overview: every department for the month, then your department's year.</figcaption></figure>
+  <ul>
+    <li><b>Overview</b> (under Planning ▾): flights, planned hours, ground duties, SDO and leave per department this month, and your department's year, with a chart. Click a month to open it on the Planner.</li>
+    <li><b>Activities</b>: the list behind the cell picker. The <b>Flights programme</b> part is filled from the Master Planner when you save. The <b>Ground programme</b> codes are yours to edit. The category decides each item's colour and which total it counts in. Public holidays are on the right.</li>
+    <li><b>Miscellaneous Notes</b> (under Planning ▾): a scratch sheet for your planners, like a small Excel sheet with bold, colours, borders and merge. Only your department sees it here. It is a hidden sheet in your Excel file, so keep personal data out.</li>
+  </ul>
+
+  <h2 style="margin-top:14px"><span class="n">2.11</span>Questions and problems</h2>
+  <table class="t">
+    <tr><th style="width:38%">Problem</th><th>What to do</th></tr>
+    <tr><td>A flight is on the Master Planner but not on my MASTER row.</td><td>Press the copy button (section 2.4). If it is still missing, the flight's crew tags do not include your department: ask the Master Planner.</td></tr>
+    <tr><td>A flight code is missing from my list.</td><td>Save once. New codes from the Master Planner are added on save.</td></tr>
+    <tr><td>Someone shows "NOT ON LIST" on a duty.</td><td>Ask the Duty Planner to add them to that duty's crew list, or plan someone who is on it.</td></tr>
+    <tr><td>Currency says "Names to fix".</td><td>Make the person's Initials on the Crew Roster the same as their name in ATOM.</td></tr>
+    <tr><td>The Ops Room doesn't show my person in the seat.</td><td>Check they are on the flight code in the right shift, not on the WD row, and not marked Pax or down-chitted.</td></tr>
+    <tr><td>I put a whole-day item on AM.</td><td>Move it to the WD row. Whole-day items belong there.</td></tr>
+  </table>
+</section>
+
+<!-- ======================================================================= -->
+<!-- ========================= PART 3: MASTER PLANNER ====================== -->
+<!-- ======================================================================= -->
+<section class="part">
+  <div class="pband"><div class="pk">PART 3</div><h1>Master Planner</h1><div class="ps">Planning the squadron's flights, squadron events and flight codes</div></div>
+  <p>The Master Planner is the one list of flights for 121 SQN. Every department copies its flights from it, the Ops Room builds the day's board from it, and crew see it on their own pages. Department planners can look at the calendar but cannot change it.</p>
+  <div class="toc">
+    <div><span>QS</span>Quick start</div>
+    <div><span>3.1</span>What the Master Planner holds</div>
+    <div><span>3.2</span>Opening the Master Planner</div>
+    <div><span>3.3</span>Reading the calendar</div>
+    <div><span>3.4</span>Planning a day</div>
+    <div><span>3.5</span>Adding a new flight code</div>
+    <div><span>3.6</span>No-flying days</div>
+    <div><span>3.7</span>Squadron events</div>
+    <div><span>3.8</span>Alert state</div>
+    <div><span>3.9</span>Flying restrictions</div>
+    <div><span>3.10</span>The Flight Codes page</div>
+    <div><span>3.11</span>The Crew Matrix</div>
+    <div><span>3.12</span>Exporting the programme</div>
+    <div><span>3.13</span>Who sees your changes</div>
+    <div><span>3.14</span>Questions and problems</div>
+  </div>
+  <h2 style="margin-top:18px"><span class="n">QS</span>Quick start</h2>
+  <ol class="qs">
+    <li><b>Open the dashboard</b> and pick <span class="ui">Master Planner</span> on the department screen. The calendar opens with your file ready to edit.</li>
+    <li><b>Pick the month</b> in the <span class="ui">MONTH</span> box at the top left, and <b>click a day</b>. The day opens in a panel on the right.</li>
+    <li><b>Press <span class="ui">+ Add flight</span></b>, pick or type the <b>flight code</b> and type the <b>time as a range</b>, for example <b>0830-1030</b>. The start time decides the shift and the range gives the planned hours.</li>
+    <li><b>Check the crew tags</b> (P, L, T, S1, S2). They come from the flight code. Click one to change it for this flight only.</li>
+    <li><b>For a running change</b>, type 2 or 3 in the <span class="ui">Sorties</span> box. Leave it blank for a normal flight.</li>
+    <li><b>Mark days with no flying</b> with the <span class="ui">Day status</span> box, and add <b>squadron events</b> with <span class="ui">+ Add squadron event</span> (always choose ALL or the tags).</li>
+    <li><b>Let it save.</b> Departments see the change within about 15 seconds and copy it into their planners.</li>
+  </ol>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.1</span>What the Master Planner holds</h2>
+  <ul>
+    <li><b>Flights:</b> every planned flight of the year, with its date, time, flight code, sorties, crew tags and a comment.</li>
+    <li><b>Day status:</b> which days have no flying, and why.</li>
+    <li><b>Squadron events:</b> ground events for the squadron, such as meetings, ceremonies and lectures.</li>
+    <li><b>Alert states:</b> the squadron's alert state for each week (AL90, AL2…).</li>
+    <li><b>Flight codes:</b> the one list of flight codes the squadron uses.</li>
+    <li><b>Crew Matrix:</b> the lowest CAT allowed in each seat on a mission.</li>
+  </ul>
+  <h3>Where your plan goes</h3>
+  <table class="t">
+    <tr><th style="width:28%">Who</th><th>What they get</th></tr>
+    <tr><td>Department planners</td><td>Their flights and squadron events on the MASTER and SQUADRON PROGRAMME rows, after they press the copy button. A department only gets a flight if its crew tags include it. New flight codes reach their Activities list by themselves the next time they save.</td></tr>
+    <tr><td>Ops Room</td><td>The day's flight board, one row per sortie, with the seats filled from the department plans. No-flying days and flying restrictions show there too.</td></tr>
+    <tr><td>Crew</td><td>Their flights on My Lodestar.</td></tr>
+    <tr><td>Outside offices</td><td>A clean Excel copy of the flights and planned hours, made with <b>Export…</b> (section 3.12).</td></tr>
+  </table>
+  <h3>Words used in this part</h3>
+  <table class="t">
+    <tr><th style="width:28%">Word</th><th>Meaning</th></tr>
+    <tr><td>Flight code</td><td>The short name of a kind of flight, for example FLT-2.0, NVG-2.0 or MAS TRG. Each code has a description, default crew and a Mission Type.</td></tr>
+    <tr><td>Shift</td><td>AM, PM or NIGHT. The start time decides it: before 1200H is AM, before 1800H is PM, later is NIGHT.</td></tr>
+    <tr><td>Crew tags</td><td><b>P</b> Pilot, <b>L</b> Loadmaster, <b>T</b> TACCO, <b>S1</b> SUP 1, <b>S2</b> SUP 2. On a flight, no tags means every department.</td></tr>
+    <tr><td>Sorties</td><td>How many sorties one flight is split into. A normal flight is 1. A running change is 2 or 3.</td></tr>
+    <tr><td>Planned hours</td><td>Worked out from the flight's time range. 0830H-1030H is 2.0 hours. ATOM stays the record of the hours actually flown.</td></tr>
+  </table>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.2</span>Opening the Master Planner</h2>
+  <p>Pick <b>Master Planner</b> on the department screen (Part 1). The calendar is under the <span class="ui">Master Planner ▾</span> tab at the right of the tab bar, which has three pages:</p>
+  <div class="two">
+    <figure><img src="img/13_menu.png" alt=""><figcaption>The Master Planner menu.</figcaption></figure>
+    <div>
+      <ul>
+        <li><b>Master Planning:</b> the calendar of flights. This is where you spend most of your time.</li>
+        <li><b>Flight Codes:</b> the list of flight codes (section 3.10).</li>
+        <li><b>Crew Matrix:</b> the CAT each seat needs on a mission (section 3.11).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 style="margin-top:14px"><span class="n">3.3</span>Reading the calendar</h2>
+  <figure><img src="img/02_calendar.png" alt=""><figcaption>Master Planning, October. Each day lists its flights and squadron events. The Week column adds up the week.</figcaption></figure>
+  <table class="t">
+    <tr><th style="width:30%">What you see</th><th>What it means</th></tr>
+    <tr><td><span class="chip am">0830H-1030H FLT-2.0</span> <span class="chip pm">PM</span> <span class="chip nt">NIGHT</span></td><td>A flight: its time range and flight code, in its shift colour. Crew tags follow when the flight has its own crew.</td></tr>
+    <tr><td><span class="chip gnd">1500H Sqn Meeting</span></td><td>A squadron event. A red <b>!</b> on it means nobody was chosen to attend (section 3.7).</td></tr>
+    <tr><td><span class="chip nofly">NO FLYING · Maintenance</span></td><td>A no-flying day and its reason (section 3.6).</td></tr>
+    <tr><td><span class="chip rest">RESTRICTION</span></td><td>A flying restriction covers this day (section 3.9).</td></tr>
+    <tr><td>"3 sorties", "+3 more", blue outline</td><td>Sorties planned that day; more items than fit (click the day); today.</td></tr>
+  </table>
+  <p>The strip along the bottom shows this month and the whole year: flights planned, sorties, planned flying hours, flying days and no-flying days. Flights on a no-flying day are not counted. Hover over a chip to see its full details.</p>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.4</span>Planning a day</h2>
+  <div class="two">
+    <figure><img src="img/03_day_panel.png" alt=""><figcaption>The day panel: Day status, the day's flights, + Add flight and Squadron events.</figcaption></figure>
+    <div>
+      <p>Click a day. It opens in a panel on the right. <b>‹ ›</b> or the arrow keys move a day; <b>✕</b> or Esc closes it.</p>
+      <h3>Add a flight</h3>
+      <ol>
+        <li>Press <span class="ui">+ Add flight</span>.</li>
+        <li><b>Flight code:</b> pick from the list, or type it. Capitals and spaces do not matter. A code that is not on the list starts a new code (section 3.5).</li>
+        <li><b>Time:</b> type the range, for example <b>0830-1030</b>. It is saved as 0830H-1030H, and the flight moves to the right shift by itself.</li>
+        <li><b>Sorties:</b> leave blank for a normal flight.</li>
+        <li><b>Crew:</b> check the tags.</li>
+        <li><b>Comment:</b> optional, for example "Long range". Departments see it.</li>
+      </ol>
+      <p>To remove a flight, press the red <b>✕</b> in its header.</p>
+      <h3>Times and planned hours</h3>
+      <ul>
+        <li><b>2200-0100</b> ends the next day and is 3.0 hours.</li>
+        <li><b>Only a start time</b> counts as 0 hours and shows a red <b>No end time</b> chip.</li>
+        <li>0 hours or over 12 hours shows a red <b>Check time</b> chip.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <h3 style="margin-top:0">Running changes (Sorties)</h3>
+  <div class="two">
+    <figure><img src="img/04_flight_card.png" alt=""><figcaption>A flight in the panel. The green chip is the planned hours from the time range.</figcaption></figure>
+    <div>
+      <p>A running change is <b>one flight</b> with <b>one time range covering the whole thing</b> and 2 or 3 in the <span class="ui">Sorties</span> box. Do not enter it as two flights.</p>
+      <ul>
+        <li>The time is split evenly: 1000H-1300H with 2 sorties is two flights of 1.5 hours, <b>Flight 1/2</b> and <b>Flight 2/2</b>.</li>
+        <li>The Ops Room shows one row per sortie. The departments choose who is crew or Pax on each one.</li>
+        <li>A formation (two aircraft at once) is entered as two flights.</li>
+      </ul>
+    </div>
+  </div>
+  <h3>Crew tags</h3>
+  <ul>
+    <li><b>Faded tags</b> come from the flight code's default crew. "all crew" means the code has no default, so every department flies.</li>
+    <li><b>Click a tag</b> to switch it on or off for <b>this flight only</b>. The tags then show in colour.</li>
+    <li>A department only gets the flight if its tag is on (or no tag is on).</li>
+  </ul>
+  <div class="box tip"><h4>Tip</h4><p>Set the usual crew once on the flight code (section 3.10), and only change tags on the odd flight that differs.</p></div>
+
+  <h2 style="margin-top:14px"><span class="n">3.5</span>Adding a new flight code</h2>
+  <div class="two">
+    <figure><img src="img/05_new_code.png" alt=""><figcaption>Typing a code that is not on the list opens the green New code panel.</figcaption></figure>
+    <div>
+      <ol>
+        <li>Type the new code in a flight's code box and press Tab.</li>
+        <li>In the green <b>New code</b> panel choose the <b>crew by default</b>, the <b>Mission Type</b> (for example GEN, OPS or MAS TRG) and a description.</li>
+        <li>Press <span class="ui">Add code</span>.</li>
+      </ol>
+      <p>Hours come from the time range, so one code covers every length of the same kind of flight: one <b>MAS</b> code can replace MAS3, MAS4 and MAS6.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.6</span>No-flying days</h2>
+  <div class="two">
+    <figure><img src="img/06_no_flying_day.png" alt=""><figcaption>A day set to Maintenance.</figcaption></figure>
+    <div>
+      <p>Use the <b>Day status</b> box at the top of the day panel. Choose a reason such as <b>Maintenance</b>, <b>Stand-down</b> or <b>Public Holiday</b>. The calendar day is striped with the reason.</p>
+      <ul>
+        <li>Choose <b>Flying day</b> to undo it.</li>
+        <li>Flights already on that day are kept but greyed out. They are not counted and do not reach the departments or the Ops Room. Remove them if they are cancelled for good.</li>
+        <li>Squadron events still work on a no-flying day.</li>
+      </ul>
+    </div>
+  </div>
+  <h2 style="margin-top:14px"><span class="n">3.7</span>Squadron events</h2>
+  <p>Ground events for the squadron: meetings, ceremonies, lectures, sports. They show as green chips on the calendar and on each department's SQUADRON PROGRAMME row.</p>
+  <ol>
+    <li>Press <span class="ui">+ Add squadron event</span> in the day panel.</li>
+    <li>Type or pick the <b>activity</b> and the <b>time</b>.</li>
+    <li>Choose who attends: <b>ALL</b>, or the crew tags of the departments that attend.</li>
+    <li>Add a comment if useful, such as the place.</li>
+  </ol>
+  <div class="box warn"><h4>Always choose who attends</h4>
+    <p>A new event starts with nobody chosen and shows a red <span class="chip nocrew">NO CREW</span>. Unlike a flight, an event with no tags does <b>not</b> mean everyone: no department gets it until you pick ALL or the tags.</p>
+  </div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.8</span>Alert state</h2>
+  <p>The squadron's alert state changes from week to week (for example AL90 one week, AL2 the next). You set it in the <b>Alert state</b> section of the day panel:</p>
+  <ol>
+    <li>Click any day in the week.</li>
+    <li>Type the level, or pick AL2 or AL90.</li>
+    <li>Check <b>From</b> and <b>To</b>. They start as that week, Monday to Sunday. <b>This week</b>, <b>2 weeks</b> and <b>One day</b> fill them for you.</li>
+    <li>Press <b>Set alert state</b>. ✕ removes it.</li>
+  </ol>
+  <p>A single day set inside a week overrides the week for that day. Departments see the state on their ALERT row.</p>
+
+  <h2 style="margin-top:14px"><span class="n">3.9</span>Flying restrictions</h2>
+  <p>A flying restriction is a short notice for a range of dates, for example "No low flying in Area Echo". It shows as a red banner on the Ops Room, on the departments' FLYING RESTRICTION row, and as a <span class="chip rest">RESTRICTION</span> tag on the calendar.</p>
+  <ul>
+    <li>Restrictions are kept in the Ops Room file, so they are <b>added and changed in the Ops Room</b> (<span class="ui">+ Restriction</span>, Part 5).</li>
+    <li>The day panel lists the day's restrictions. If you also have edit rights on the Ops Room file, you can add, change and remove them there.</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.10</span>The Flight Codes page</h2>
+  <p><span class="ui">Master Planner ▾</span> → <span class="ui">Flight Codes</span>. Every flight code the squadron uses, one per row.</p>
+  <figure><img src="img/09_flight_codes.png" alt=""><figcaption>The Flight Codes page.</figcaption></figure>
+  <table class="t">
+    <tr><th style="width:22%">Column</th><th>What to type</th></tr>
+    <tr><td>Code</td><td>The short name used on the calendar. Keep each code unique.</td></tr>
+    <tr><td>Description</td><td>A plain description. Departments see it in their planner.</td></tr>
+    <tr><td>Crew</td><td>The default crew tags, for example <b>P T S2</b>. Blank means every department.</td></tr>
+    <tr><td>Mission Type</td><td>For example GEN, OPS or MAS TRG. Used by the currency rules and, by default, the Crew Matrix.</td></tr>
+    <tr><td>Crew Matrix</td><td>Which Crew Matrix mission checks this code. <b>Auto</b> uses the mission with the same name as the Mission Type; <b>Not checked</b> switches the check off.</td></tr>
+    <tr><td>Syllabus tag</td><td>Optional. Picks the syllabus track the departments are offered for this code.</td></tr>
+  </table>
+  <ul>
+    <li><b>Renaming a code:</b> you are asked whether to change the flights that use it.</li>
+    <li><b>Right-click a code</b> to <b>switch it off</b> (kept, greyed with OFF; not offered for new flights; flights already planned keep it and still count) or <b>remove</b> it (only when no flight this year uses it).</li>
+    <li>The <b>Standby duty</b> block at the bottom sets which Crew Matrix mission checks P1, P2 and BU (normally MAS OPS).</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.11</span>The Crew Matrix</h2>
+  <p><span class="ui">Master Planner ▾</span> → <span class="ui">Crew Matrix</span>. The lowest CAT allowed in each seat (AC, Co-pilot, LM, TACCO, SUP 1, SUP 2) for each mission.</p>
+  <figure><img src="img/10_crew_matrix.png" alt=""><figcaption>The Crew Matrix page.</figcaption></figure>
+  <ul>
+    <li>A flight is checked against the mission chosen for its flight code (section 3.10). Standby (P1, P2, BU) is checked as MAS OPS.</li>
+    <li>A crew passes when it fits <b>any one row</b> of its mission. Seats nobody is planned in yet are not counted.</li>
+    <li>When the planned crew fits no row, the flight card, the department planners and the Ops Room show a <b>CREW MATRIX</b> warning. <b>It only warns</b> and never blocks a plan.</li>
+  </ul>
+  <h3>Changing the matrix</h3>
+  <ul>
+    <li>Click a cell to change the letter. <b>+ Add mission</b> adds a mission.</li>
+    <li>Right-click a row to move it, add a copy below, switch it off (kept, not checked) or remove it.</li>
+    <li>Rows that cannot be used are shown red with the reason.</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.12</span>Exporting the programme</h2>
+  <div class="two">
+    <figure><img src="img/08_export.png" alt=""><figcaption>The Export dialog.</figcaption></figure>
+    <div>
+      <p><span class="ui">Export…</span> at the top right of Master Planning gives an outside office a clean Excel copy of the flight programme.</p>
+      <ol>
+        <li>Choose the dates in <b>From</b> and <b>To</b>.</li>
+        <li>Untick any flight code to leave it out of the rows and the totals. Your ticks are remembered.</li>
+        <li>Press <span class="ui">Export</span>. An Excel file downloads.</li>
+      </ol>
+      <p>The file has one <b>Calendar</b> sheet: each month as a calendar with every flight and its hours, the day and week totals, no-flying days with their reason, and a month total. It prints on landscape A4, one page wide.</p>
+      <div class="box warn"><h4>Never exported</h4><p>No crew, names, callsigns or comments. Only dates, times, flight codes and planned hours.</p></div>
+    </div>
+  </div>
+  <h2 style="margin-top:14px"><span class="n">3.13</span>Who sees your changes</h2>
+  <table class="t">
+    <tr><th style="width:30%">Who</th><th>When</th></tr>
+    <tr><td>Anyone with the dashboard open</td><td>Within about 15 seconds of your save.</td></tr>
+    <tr><td>Department planners</td><td>An amber note says their flights differ, with the changed slots outlined. Their plan changes when they press the copy button.</td></tr>
+    <tr><td>Ops Room</td><td>Straight away on the day's board.</td></tr>
+  </table>
+</section>
+
+<section class="sec">
+  <h2><span class="n">3.14</span>Questions and problems</h2>
+  <table class="t">
+    <tr><th style="width:36%">Problem</th><th>What to do</th></tr>
+    <tr><td>The calendar shows a padlock.</td><td>You opened another card. Click the LODESTAR logo and pick <b>Master Planner</b>. If it is still locked, ask the folder owner for edit rights to Master_Planner.xlsx.</td></tr>
+    <tr><td>A flight shows <b>No end time</b> or <b>Check time</b>.</td><td>Type a full range such as 0830-1030.</td></tr>
+    <tr><td>A flight is in the wrong shift.</td><td>The start time sets the shift. Correct the start time.</td></tr>
+    <tr><td>A department cannot see a flight.</td><td>Check its crew tag is on (or no tags at all). Then the department presses its copy button.</td></tr>
+    <tr><td>A squadron event shows <b>NO CREW</b>.</td><td>Click ALL or the tags of the departments that attend.</td></tr>
+    <tr><td>A flight does not count in the totals.</td><td>The day is set to no flying.</td></tr>
+    <tr><td>The Crew Matrix does not check a flight.</td><td>On Flight Codes, set the code's Crew Matrix column, or make its Mission Type match a mission.</td></tr>
+    <tr><td>I cannot remove a flight code.</td><td>A flight this year still uses it. Switch it off instead.</td></tr>
+    <tr><td>"The Flights sheet is full".</td><td>The file holds 1,000 flights a year. Tell the LODESTAR maintainer.</td></tr>
+  </table>
+</section>
+
+<!-- ======================================================================= -->
+<!-- ========================= PART 4: DUTY PLANNER ======================== -->
+<!-- ======================================================================= -->
+<section class="part">
+  <div class="pband"><div class="pk">PART 4</div><h1>Duty Planner</h1><div class="ps">BDO (Base Duty Officer) and SDO (Squadron Duty Orderly)</div></div>
+  <div class="toc">
+    <div><span>QS</span>Quick start</div>
+    <div><span>4.1</span>How duty planning works</div>
+    <div><span>4.2</span>The duty crew lists</div>
+    <div><span>4.3</span>Planning BDO</div>
+    <div><span>4.4</span>Planning SDO</div>
+    <div><span>4.5</span>What the departments do</div>
+    <div><span>4.6</span>Questions and problems</div>
+  </div>
+  <h2 style="margin-top:18px"><span class="n">QS</span>Quick start</h2>
+  <ol class="qs">
+    <li><b>Open the dashboard</b> and pick <span class="ui">Duty Roster</span> on the department screen, then the <span class="ui">Duty Planner</span> tab.</li>
+    <li><b>Check the crew lists</b>: who may do BDO, and who may do SDO.</li>
+    <li><b>BDO:</b> for each day, pick the person from the drop-down. Leave a day blank when no BDO is needed.</li>
+    <li><b>SDO:</b> switch to <span class="ui">SDO · Squadron Duty Orderly</span> and pick the department for each day.</li>
+    <li><b>Let it save.</b> Each department then copies its days into its own planner.</li>
+  </ol>
+
+  <h2 style="margin-top:14px"><span class="n">4.1</span>How duty planning works</h2>
+  <table class="t">
+    <tr><th style="width:20%">Duty</th><th>The Duty Roster says</th><th>The department then</th></tr>
+    <tr><td><b>BDO</b></td><td>The <b>person</b> on duty each day, picked from the BDO crew list. A blank day means no BDO is needed.</td><td>Copies the days. BDO goes on that person's WD row.</td></tr>
+    <tr><td><b>SDO</b></td><td>The <b>department</b> on duty each day.</td><td>Copies the days and chooses who in the department does it, by putting SDO on that person's row.</td></tr>
+  </table>
+  <p>The Duty Roster only changes the Duty_Roster.xlsx file. Nothing in a department's plan changes until that department copies its days.</p>
+</section>
+
+<section class="sec">
+  <h2><span class="n">4.2</span>The duty crew lists</h2>
+  <figure><img src="img/41_duty_roster.png" alt=""><figcaption>The Duty Planner, opened from the Duty Roster: the BDO crew list and the year's calendar.</figcaption></figure>
+  <p>At the top of each duty is its crew list: who may be put on that duty, grouped by department.</p>
+  <ul>
+    <li><b>+ Add from an open department roster…</b> picks a person from the departments' Crew Rosters.</li>
+    <li><b>+ Type a callsign</b> adds someone by callsign.</li>
+    <li><b>×</b> on a name takes them off the list.</li>
+  </ul>
+  <p>If a department plans the duty for someone who is not on the list, their cell is marked <b>NOT ON LIST</b> with a red dashed outline.</p>
+</section>
+
+<section class="sec">
+  <h2><span class="n">4.3</span>Planning BDO</h2>
+  <figure><img src="img/42_duty_october.png" alt=""><figcaption>BDO for October: one person per day, coloured by their department.</figcaption></figure>
+  <ul>
+    <li>Each day has a drop-down of the BDO crew list, grouped by department. Pick the person. The day takes the colour of their department, with the department's name under it.</li>
+    <li>Leave a day blank when no BDO is needed. The month header counts the BDO days.</li>
+    <li><b>"has FLT-2.0"</b> under the name means that person already has something else planned that day. The day turns amber so you can check.</li>
+    <li>An <b>amber day</b> also means that department's file does not match the roster yet (they have not copied their days).</li>
+    <li>Blue outline: today. Red: a public holiday.</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">4.4</span>Planning SDO</h2>
+  <figure><img src="img/43_duty_sdo.png" alt=""><figcaption>SDO: one department per day.</figcaption></figure>
+  <ul>
+    <li>Switch with <span class="ui">SDO · Squadron Duty Orderly</span> at the top.</li>
+    <li>Each day has a drop-down of the departments. Pick the department on duty. The month header shows how many days are set.</li>
+    <li>A <b>red day</b> means more than one department is on duty. An <b>amber day</b> means a department's file does not match the roster yet.</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">4.5</span>What the departments do</h2>
+  <figure><img src="img/40_duty_dept.png" alt="" style="max-width:80%"><figcaption>The Duty Planner as a department sees it, with the copy button.</figcaption></figure>
+  <p>A department planner opens the <span class="ui">Duty Planner</span> tab from their own file. They can see the whole roster but cannot change it.</p>
+  <ol>
+    <li>An amber line says how many days differ from the Duty Roster.</li>
+    <li>They press <span class="ui">Copy my duty days from the Duty Roster</span>.</li>
+    <li><b>BDO</b> goes on the named person's WD row, and is taken off anyone else in the department that day. It asks before replacing something else in that cell.</li>
+    <li><b>SDO</b> days appear on the department's DUTY DAYS row. The planner puts SDO on the person who will do it. Until then the day shows red.</li>
+  </ol>
+  <div class="box tip"><h4>The Ops Room</h4><p>The Ops Room duty strip shows the BDO and SDO for the day from these plans. Before a department copies its BDO days, it shows the roster's person, for example "MAMBA (Pilot)".</p></div>
+
+  <h2 style="margin-top:14px"><span class="n">4.6</span>Questions and problems</h2>
+  <table class="t">
+    <tr><th style="width:38%">Problem</th><th>What to do</th></tr>
+    <tr><td>A person is missing from the BDO drop-down.</td><td>Add them to the BDO crew list (section 4.2).</td></tr>
+    <tr><td>Days stay amber.</td><td>That department has not copied its duty days yet. Ask its planner to press the copy button.</td></tr>
+    <tr><td>A department's SDO day stays red on their Planner.</td><td>Nobody in the department has SDO on that day. The department planner must put someone on it.</td></tr>
+    <tr><td>A person shows "not in your Crew Roster".</td><td>The callsign on the BDO list does not match anyone in that department's Crew Roster. Check the callsign.</td></tr>
+  </table>
+</section>
+
+<!-- ======================================================================= -->
+<!-- ========================= PART 5: OPS ROOM ============================ -->
+<!-- ======================================================================= -->
+<section class="part">
+  <div class="pband"><div class="pk">PART 5</div><h1>Ops Room</h1><div class="ps">The day board for the SDO / AOS on duty and the projector</div></div>
+  <div class="toc">
+    <div><span>QS</span>Quick start</div>
+    <div><span>5.1</span>Reading the board</div>
+    <div><span>5.2</span>The duty strip</div>
+    <div><span>5.3</span>Seats and crew</div>
+    <div><span>5.4</span>Closing a flight</div>
+    <div><span>5.5</span>Standby duty</div>
+    <div><span>5.6</span>Ops Add</div>
+    <div><span>5.7</span>The cards under the board</div>
+    <div><span>5.8</span>Ground programme</div>
+    <div><span>5.9</span>Flying restrictions</div>
+    <div><span>5.10</span>Export AFP</div>
+    <div><span>5.11</span>ATOM export</div>
+    <div><span>5.12</span>Questions and problems</div>
+  </div>
+  <h2 style="margin-top:18px"><span class="n">QS</span>Quick start</h2>
+  <ol class="qs">
+    <li><b>Open the dashboard</b> and pick <span class="ui">Ops Room</span> on the department screen. Every file opens and the board shows today.</li>
+    <li><b>Check the seats.</b> They fill themselves from the department plans. Click a seat to change it or mark MC / CRMO.</li>
+    <li><b>Type the day's details</b>: tails, Brief Timing, the duty strip (Safety, Prefect, Security, Intel, DOB, Codes) and Remarks.</li>
+    <li><b>Check the ground programme</b>: add the day's other ground activities with <span class="ui">+ Ops row</span>, and fix any NO PERSONNEL rows.</li>
+    <li><b>Close every flight</b>: type ATD and ATA when it flew, or cancel it from its status pill with a reason.</li>
+    <li><b>Once a day</b>, add the ATOM export and press <b>Publish to everyone</b>.</li>
+    <li>Press <span class="ui">⇩ Export AFP</span> when the AFP is needed.</li>
+  </ol>
+</section>
+
+<section class="sec">
+  <h2><span class="n">5.1</span>Reading the board</h2>
+  <figure><img src="img/51_ops_board.png" alt=""><figcaption>The Ops Room, 14 October: a running change of 2 sorties, standby duty and the cards under the board.</figcaption></figure>
+  <ul>
+    <li><b>‹ Today Tomorrow ›</b> and the date box move the day. The clock shows the time now.</li>
+    <li>Flights are grouped in bands: <b>AM</b> blue, <b>PM</b> amber, <b>NIGHT</b> indigo. A running change has one row per sortie (Flight 1/2, Flight 2/2).</li>
+    <li>The chips on top count the day: flights, sorties, MC not set, flown, cancelled, not closed. Click one to show only those flights; click it again to show all.</li>
+    <li>Crew initials are coloured by their CAT (legend at the top right). A dashed <b>+</b> seat means nobody from that department is planned yet; it turns red when the flight is due (2 hours before ETD).</li>
+    <li><b>Hours</b> shows Plan above Actual. Actual is amber if longer than planned, green if shorter.</li>
+    <li><b>Remarks</b> on a flight show the lines planners marked <b>For the Ops Room</b>. Planner notes and the Master Planner's comment are not shown here.</li>
+    <li><b>A− A+</b> sizes the board. <span class="ui">Projector</span> hides the menus for the screen on the wall.</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">5.2</span>The duty strip</h2>
+  <figure><img src="img/53_ops_strip.png" alt=""><figcaption>The duty strip at the top of the board.</figcaption></figure>
+  <ul>
+    <li><b>SXO, OPS O and SDO</b> come from the plans, by shift (AM, PM, NIGHT). <b>BDO</b> is for the whole day.</li>
+    <li><b>Safety, Prefect, Security, DOB</b> and <b>Codes</b>: click and type. Enter starts a new line; Ctrl+Enter or clicking away saves.</li>
+    <li><b>Intel</b>: click <b>Flights</b> to tick the flights that need intel (it starts empty), and add other lines under the ticks.</li>
+  </ul>
+
+  <h2 style="margin-top:14px"><span class="n">5.3</span>Seats and crew</h2>
+  <div class="two">
+    <figure><img src="img/54_seat_pop.png" alt=""><figcaption>Clicking a seat.</figcaption></figure>
+    <div>
+      <p>The seats fill themselves from the department plans. The pilot marked AC (or else the senior pilot) takes the AC seat. Click a seat to:</p>
+      <ul>
+        <li><b>Pick someone else</b> from the Crew list, or go back to <b>Auto (from the plan)</b>.</li>
+        <li>Mark <b>Mission Commander</b> or <b>CRMO</b>.</li>
+        <li>Mark someone <b>Pax</b>.</li>
+        <li><b>⇅ Swap Captain / Pilot</b>.</li>
+        <li>See <b>Additional crew</b> from the plan, and <b>+ Add … crew</b>.</li>
+      </ul>
+      <p>A <span class="chip down">DOWN</span> seat means that person is down-chitted (MC). Click it to up-chit them or pick someone else.</p>
+      <p>Click a text cell (Callsign, Tail, AO / Area time, Brief Timing, Remarks) to type in it.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">5.4</span>Closing a flight</h2>
+  <p>Every flight should end the day <b>FLOWN</b> or <b>CANCELLED</b>. The pill under the callsign shows the status:</p>
+  <table class="t">
+    <tr><th style="width:24%">Status</th><th>Meaning</th></tr>
+    <tr><td>PLANNED</td><td>Planned. It counts as flown once ATD and ATA are filled.</td></tr>
+    <tr><td>DUE</td><td>Within 2 hours of ETD.</td></tr>
+    <tr><td>FLOWN</td><td>ATD and ATA are filled.</td></tr>
+    <tr><td>CANCELLED</td><td>Cancelled, with the reason.</td></tr>
+    <tr><td>NOT CLOSED</td><td>The flight is in the past and still open: fill ATD and ATA if it flew, or cancel it.</td></tr>
+    <tr><td>OPS ADD</td><td>An ad hoc flight added in the Ops Room (section 5.6).</td></tr>
+  </table>
+  <ul>
+    <li><b>Flown:</b> type <b>ATD</b> and <b>ATA</b> in their columns.</li>
+    <li><b>Cancelled:</b> click the status pill, press <b>Cancel this flight</b> and type the reason. The flight is struck through on the department planners.</li>
+  </ul>
+  <div class="box warn"><h4>Why it matters</h4><p>The departments' currency checks count a past flight as flown until the Ops Room closes it. An open flight shows amber on their Planner and Currency pages.</p></div>
+
+  <h2 style="margin-top:14px"><span class="n">5.5</span>Standby duty</h2>
+  <ul>
+    <li>The green <b>Standby Duty</b> rows (P1, P2, BU) fill from the plans, like flights.</li>
+    <li><b>1 Set / 2 Set</b> at the right of the band chooses how many standby sets the day has.</li>
+    <li>Each row has its own Brief Timing and Remarks. There is one <b>Alert status</b> box per shift; <b>+ alert time</b> adds a line.</li>
+    <li>Standby crew are checked against the Crew Matrix (normally MAS OPS).</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">5.6</span>Ops Add</h2>
+  <figure class="half"><img src="img/55_ops_add.png" alt=""><figcaption>The Ops Add dialog.</figcaption></figure>
+  <p><span class="ui">+ Ops Add</span> adds an ad hoc flight for the day: pick the shift, the flight code, the time, the departments that fly and an optional comment, then <b>Add flight</b>.</p>
+  <ul>
+    <li>It is not put on the Master Planner. Departments see it on their MASTER rows marked <b>OPS ADD</b>, and crew you seat on it get it on their plan.</li>
+    <li>To remove it, click its status pill.</li>
+  </ul>
+
+  <h2 style="margin-top:14px"><span class="n">5.7</span>The cards under the board</h2>
+  <table class="t">
+    <tr><th style="width:24%">Card</th><th>What it does</th></tr>
+    <tr><td>Remarks</td><td>Notes for the day: weather, NOTAMs, changes, reminders.</td></tr>
+    <tr><td>Leave and MC</td><td>Who is on leave, off or on MC today, from the plans. Right-click to add.</td></tr>
+    <tr><td>Down-chit</td><td>Who is not cleared to fly. Click a name to up-chit them. Right-click to add a down-chit. Up-chitting saves into that person's department file as well.</td></tr>
+    <tr><td>Ground programme</td><td>The day's squadron events and the Ops Room's own rows. See section 5.8.</td></tr>
+    <tr><td>Area &amp; Codes</td><td>The day's areas, shown when they are filled in.</td></tr>
+  </table>
+</section>
+
+<section class="sec">
+  <h2><span class="n">5.8</span>Ground programme</h2>
+  <p>The <b>Ground programme</b> card under the board is the day's list of ground activities: it goes on the AFP and on the screen in the Ops Room. The Ops Room manages it.</p>
+  <figure><img src="img/57_ground_card.png" alt="" style="max-width:85%"><figcaption>The Ground programme card. Point at a row to show ✎ (change) and ✕ (hide or delete).</figcaption></figure>
+  <h3>Where the rows come from</h3>
+  <table class="t">
+    <tr><th style="width:28%">Row</th><th>Where it comes from</th></tr>
+    <tr><td>Squadron events</td><td>Planned by the Master Planner (meetings, lectures, ceremonies). They show by themselves, with the event's time, place and who attends. <b>NO PERSONNEL</b> means the Master Planner did not choose who attends.</td></tr>
+    <tr><td>Ops rows</td><td>Added here by the Ops Room with <span class="ui">+ Ops row</span>, for anything else the squadron should see: a dinghy drill, a visit, a course.</td></tr>
+  </table>
+  <p>The rows are in time order: clock times first, then AM, PM and NIGHT, then whole day, then items running on to a later day.</p>
+  <h3>Add a row</h3>
+  <div class="two">
+    <figure><img src="img/58_ground_row.png" alt=""><figcaption>Adding a row. The box at the top lists the departments' own ground items for the day, for reference.</figcaption></figure>
+    <div>
+      <ol>
+        <li>Press <span class="ui">+ Ops row</span>.</li>
+        <li><b>Time:</b> type a time or range (1400-1600 is saved as 1400H-1600H), or press <b>AM</b>, <b>PM</b>, <b>NIGHT</b> or <b>WD</b> (whole day).</li>
+        <li>For something that runs over several days, pick the last day in <b>TILL</b>. The row then shows on every day up to that date.</li>
+        <li>Type the <b>Activity</b> and the <b>Location</b>.</li>
+        <li>Tick <b>ALL (everyone)</b>, or tick the people by department.</li>
+        <li>Press <span class="ui">Save</span>. A row needs a time, an activity and the personnel.</li>
+      </ol>
+      <p>The <b>From the department plans</b> box shows what the departments have planned for the day (for example a person on Outstation). It is there to help you fill the row; it is not added by itself.</p>
+    </div>
+  </div>
+  <h3>Change, hide and delete</h3>
+  <ul>
+    <li><b>✎</b> changes a row. On a squadron event, only the fields you change are kept for this day; the rest still follow the Master Planner. The Master Planner's own event is not changed.</li>
+    <li><b>✕</b> on a squadron event <b>hides</b> it for this day only. <b>hidden (1)</b> under the table lists the hidden rows, with <b>Unhide</b>.</li>
+    <li><b>✕</b> on an Ops row <b>deletes</b> it.</li>
+    <li>If the Master Planner later changes or removes an event you had changed, your row stays and is marked <b>was linked</b>. Check it, then change or delete it.</li>
+  </ul>
+  <div class="box tip"><h4>Saved in the Ops Room file</h4><p>Ops rows and changes are kept in the Ops Room file, so everyone sees them within about 15 seconds. They go on the AFP export (section 5.10).</p></div>
+</section>
+
+<section class="sec">
+  <h2><span class="n">5.9</span>Flying restrictions</h2>
+  <p><span class="ui">+ Restriction</span> adds a short notice for a range of dates, for example "No low flying in Area Echo". It shows as a red banner on the board, on the departments' FLYING RESTRICTION row and on the Master Planner calendar. On the banner, ✎ changes it and ✕ removes it.</p>
+
+  <h2 style="margin-top:14px"><span class="n">5.10</span>Export AFP</h2>
+  <figure class="half"><img src="img/56_afp.png" alt=""><figcaption>The Export AFP dialog, with the items still missing.</figcaption></figure>
+  <p><span class="ui">⇩ Export AFP</span> fills the squadron AFP format for the day on screen and downloads it as an Excel file.</p>
+  <ul>
+    <li>The dialog lists what is still missing, for example a flight with no callsign or tail number. Fix these first if you can.</li>
+    <li>Type the CO's name and contact number once. They are kept for the next time.</li>
+    <li>Names read Rank Name (CAT). Cancelled flights are left out. The brief time goes in the remarks.</li>
+    <li>SXO, OPS O and SDO: line 1 of the box is AM, line 2 PM, line 3 NIGHT (one line means the whole day). Standby P1 is AM SAL, P2 is PM SAL.</li>
+    <li>Prepared by is the SDO; Vetted by is the OPS O.</li>
+  </ul>
+</section>
+
+<section class="sec">
+  <h2><span class="n">5.11</span>ATOM export</h2>
+  <p>The Ops Room shares the day's ATOM currency data with the whole squadron:</p>
+  <ol>
+    <li>Export the currency report from ATOM as usual.</li>
+    <li>In LODESTAR open the <span class="ui">Currency</span> tab and press <b>Add ATOM export</b>. Pick the file.</li>
+    <li>Press <b>Publish to everyone</b>. It is saved in the Ops Room file, and every department sees it within about 15 seconds.</li>
+  </ol>
+  <p>Only the currency dates, the month's clocked hours and the mission currencies are kept, matched by initials. No names are stored. A banner turns amber when the data is 7 days old and red after 30, so do this once a day.</p>
+
+  <h2 style="margin-top:14px"><span class="n">5.12</span>Questions and problems</h2>
+  <table class="t">
+    <tr><th style="width:38%">Problem</th><th>What to do</th></tr>
+    <tr><td>"Not open, so their seats can't be filled: SUP 2".</td><td>That department's file did not open. Press ⟳ Refresh. If it stays, check the file is in the Program folder.</td></tr>
+    <tr><td>A seat is empty (dashed +).</td><td>Nobody from that department is planned on the flight. Ask the department, or click the seat and pick someone.</td></tr>
+    <tr><td>The wrong pilot is in the AC seat.</td><td>Click the seat and use Swap Captain / Pilot, or ask the Pilot planner to mark the AC.</td></tr>
+    <tr><td>A flight shows NOT CLOSED.</td><td>Fill ATD and ATA, or cancel it with a reason.</td></tr>
+    <tr><td>The ground programme shows NO PERSONNEL.</td><td>The Master Planner did not choose who attends the event. Ask them, or change the line with the pencil.</td></tr>
+    <tr><td>My change to a seat didn't stick.</td><td>Check Save to Excel is not still green. The Ops Room file needs edit rights.</td></tr>
+  </table>
+  <div class="box tip"><h4>Help on every page</h4><p>The <b>?</b> button at the right end of the tab bar explains the Ops Room's colours and tools.</p></div>
+</section>
+
+</body>
+</html>

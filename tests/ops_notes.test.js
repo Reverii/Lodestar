@@ -72,12 +72,12 @@ test("master_planner_comment_not_in_the_ops_room_or_afp", async ({ page }) => {
   assert.ok(!r.board, "not on the board"); assert.ok(!r.afp, "not on the AFP");
 }, ED);
 
-test("afp_remarks_carry_the_ops_room_line_only", async ({ page }) => {
+test("afp_remarks_carry_no_planner_lines", async ({ page }) => {
   const c = await flightCell(page);
   await page.evaluate(c => { setNote(cur.m, c.r, c.d, "SECRET planner idea", false); setNote(cur.m, c.r, c.d, "Back by 1500H", true); }, c);
   await toOps(page);
   const r = await page.evaluate(() => JSON.stringify(afpData(cur.opsDay)));
-  assert.ok(/Back by 1500H/.test(r), "Ops Room line on the AFP"); assert.ok(!/SECRET planner idea/.test(r), "no planner note on the AFP");
+  assert.ok(!/Back by 1500H/.test(r), "no For the Ops Room line on the AFP (z197)"); assert.ok(!/SECRET planner idea/.test(r), "no planner note on the AFP");
 }, ED);
 
 (async () => {

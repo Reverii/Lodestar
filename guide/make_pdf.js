@@ -5,7 +5,7 @@
 const { chromium } = require("playwright");
 const { execFileSync } = require("child_process");
 const fs = require("fs"), path = require("path"), os = require("os");
-const DATE = process.env.GUIDE_DATE || "6 November 2026";
+const DATE = process.env.GUIDE_DATE || "7 November 2026";
 // source parts: 1 Getting started, 2 Department planners, 3 Master Planner, 4 Duty Planner, 5 Ops Room
 const ELSEWHERE = { 2: "the Department Planner guide", 3: "the Master Planner guide", 4: "the Department Planner guide", 5: "the Ops Room guide" };
 const GUIDES = [
@@ -43,7 +43,7 @@ async function build(page, g, pages) {
     c.querySelector(".who").innerHTML = "<h3>Who this guide is for</h3><p>" + g.who + "</p><h3>In this guide</h3><div class='parts'>" +
       partsNow.map(p => "<div><b>Part " + p.n + "</b>" + p.t + ": " + (/^[A-Z][a-z]/.test(p.s) ? p.s.charAt(0).toLowerCase() + p.s.slice(1) : p.s) + ".</div>").join("") + "</div>" +
       "<p style='margin-top:12px'>Start with <b>Part 1, Getting started</b>. The contents on the next page give the page of every section. Every page in the dashboard also has its own help: press the <b>?</b> button at the right end of the tab bar.</p>";
-    c.querySelector(".foot").innerHTML = "LODESTAR · 121 SQN · <b>" + g.title + " guide</b> · Dated " + DATE + " · For dashboard version z196 (BETA) · Screenshots use demo data only: the names, callsigns and flights are made up.";
+    c.querySelector(".foot").innerHTML = "LODESTAR · 121 SQN · <b>" + g.title + " guide</b> · Dated " + DATE + " · For dashboard version z200 (BETA) · Screenshots use demo data only: the names, callsigns and flights are made up.";
     // keys + hidden page markers on every part title and section heading
     let k = 0; const ents = [];
     document.querySelectorAll("section.part, section.sec").forEach(s => {

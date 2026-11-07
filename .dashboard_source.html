@@ -1251,7 +1251,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z197</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-07 z198</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -4667,17 +4667,20 @@ function renderCodes() {
   const show = Math.min(FC_N, Math.max(lastFilled(C, k => k.code || k.desc) + (ed ? 4 : 1), ed ? 6 : 1));
   const inp = (i, f, extra) => "<input data-fc='" + i + "' data-f='" + f + "' value='" + esc(C[i][f] == null ? "" : C[i][f]) + "'" + (extra || "") + (ed ? "" : " disabled") + ">";
   // z166: the Syllabus tag is a dropdown of the syllabus tracks of every open department ("Role: EIS" offers EIS), plus tags already on a code
-  const tagOpts = []; const addT = t => { t = str(t); if (t && !tagOpts.some(x => same(x, t))) tagOpts.push(t); };
-  books.forEach(b => { const Y = b.S && b.S.sylDef; if (Y) Y.items.forEach(it => addT(String(it.track || "").split(":").pop())); });
-  C.forEach(k => addT(k.stag)); tagOpts.sort((x, y) => x.toLowerCase() < y.toLowerCase() ? -1 : 1);
-  const stagSel = i => "<select data-fc='" + i + "' data-f='stag'" + (str(C[i].stag) ? "" : " style='color:var(--s400)'") + (ed ? "" : " disabled") + "><option value=''>none</option>" + tagOpts.map(t => "<option" + (same(t, C[i].stag) ? " selected" : "") + ">" + esc(t) + "</option>").join("") + "</select>";
+  // z198 (Brandon): the fixed list Role: EIS, Role: MS, Role: SAL, Role: Airlift, General Flight (+ other Role tracks); a tag on a code that is not in it is listed apart, in red
+  const tagL = sylTagList(), inL = v => tagL.some(x => same(x[0], sylTr(v)));
+  const tagOdd = [...new Set(C.map(k => str(k.stag)).filter(t => t && !inL(t)))];
+  const stagSel = i => { const v = str(C[i].stag), odd = v && !inL(v);
+    return "<select data-fc='" + i + "' data-f='stag'" + (odd ? " class='cmxodd' title='" + esc(v + " is not on the syllabus tag list: planners get every flight item for this code") + "'" : v ? "" : " style='color:var(--s400)'") + (ed ? "" : " disabled") + "><option value=''>None (all flight items)</option>" +
+      tagL.map(([t, lab]) => "<option value='" + esc(t) + "'" + (v && same(t, sylTr(v)) ? " selected" : "") + ">" + esc(lab) + "</option>").join("") +
+      (tagOdd.length ? "<optgroup label='Not in any syllabus'>" + tagOdd.map(t => "<option value='" + esc(t) + "'" + (same(t, v) ? " selected" : "") + ">" + esc(t) + "</option>").join("") + "</optgroup>" : "") + "</select>"; };
   // z195: which Crew Matrix mission checks the code's crew: blank = the mission named like its Mission Type, "-" = not checked
   const cmMs = [...new Set(CM_RULES().rows.map(r => r.m).filter(Boolean).map(cmNorm))].map(m => CM_RULES().rows.find(r => cmNorm(r.m) === m).m);
   const cmxSel = i => { const v = str(C[i].cmx), auto = cmAuto(C[i]), odd = v && v !== "-" && !cmMs.some(m => cmNorm(m) === cmNorm(v));
     return "<select data-fc='" + i + "' data-f='cmx' class='" + (odd ? "cmxodd" : v ? "" : "cmxauto") + "'" + (odd ? " title='" + esc(v + " is not a mission on the Crew Matrix page: this code is not checked") + "'" : "") + (ed ? "" : " disabled") + ">" +
       "<option value=''>" + esc(auto ? "Auto (" + auto + ")" : "Auto (none)") + "</option>" + cmMs.map(m => "<option" + (cmNorm(m) === cmNorm(v) ? " selected" : "") + ">" + esc(m) + "</option>").join("") +
       (odd ? "<option selected>" + esc(v) + "</option>" : "") + "<option value='-'" + (v === "-" ? " selected" : "") + ">Not checked</option></select>"; };
-  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th><th style='width:170px' title='The Crew Matrix mission that checks the CAT of this code&#39;s crew'>Crew Matrix</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only syllabus items whose Track or Description contains this (a comma list = any)'>Syllabus tag</th>" : "") + "</tr>";
+  let h = "<tr><th style='width:30px'>#</th><th style='width:130px'>Code</th><th>Description</th><th style='width:110px'>Crew</th><th style='width:120px'>Mission Type</th><th style='width:170px' title='The Crew Matrix mission that checks the CAT of this code&#39;s crew'>Crew Matrix</th>" + (P.hasStag ? "<th style='width:130px' title='The Planner cell picker lists only the Flight items of this syllabus track. None = every flight item'>Syllabus tag</th>" : "") + "</tr>";
   for (let i = 0; i < show; i++) h += "<tr data-fr='" + i + "'" + (C[i].off ? " class='roff' title='Switched off: not offered for new flights; flights already planned keep it. Right-click to switch it on.'" : "") + "><td class='n'>" + (i + 1) + (C[i].off ? "<i class='offtag'>OFF</i>" : "") + "</td><td>" + inp(i, "code", " class='cat0' style='font-weight:700'") + "</td><td>" + inp(i, "desc") + "</td><td>" + inp(i, "crew", " placeholder='everyone'") + "</td><td>" + inp(i, "mtype", " placeholder='e.g. GEN'") + "</td><td>" + cmxSel(i) + "</td>" + (P.hasStag ? "<td>" + stagSel(i) + "</td>" : "") + "</tr>";
   // z196: standby P1 / P2 / BU stay ground duties in the departments; listed here only to pick the crew matrix that checks them
   const sbSel = c => { const v = str((P.sbCmx || {})[c]), odd = v && v !== "-" && !cmMs.some(m => cmNorm(m) === cmNorm(v));
@@ -6896,15 +6899,24 @@ const sylToday = () => { const t = new Date(); return isoOf(t.getFullYear(), t.g
 const sylFlyCode = code => { const a = code && actIndex().get(String(code).trim().toUpperCase()); return a && (a.ci === CAT_FLIGHT || a.ci === CAT_SIM) ? a.ci : -1; };
 const sylLink = (st, id, iso, sh) => st.syl.find(x => x.sh === sh && x.iso === iso && same(x.id, id));
 const sylTag = code => String(code).split("-").pop();
+// z198: a track's short name ("Role: EIS" -> "EIS"; "General Flight" -> the Flight track). The Syllabus tag list (Brandon, 7 Nov): Role: EIS, Role: MS, Role: SAL,
+// Role: Airlift, General Flight, then any other "Role: ..." track with Flight items. Stored short (EIS, MS, SAL, Airlift, Flight) on Flight Codes E, as before
+const sylTr = t => { t = String(t || "").split(":").pop().trim(); return /^general flight$/i.test(t) ? "Flight" : t; };
+const STAG_BASE = [["EIS", "Role: EIS"], ["MS", "Role: MS"], ["SAL", "Role: SAL"], ["Airlift", "Role: Airlift"], ["Flight", "General Flight"]];
+function sylTagList() { const L = STAG_BASE.map(x => x.slice());
+  books.forEach(b => { const Y = b.S && b.S.sylDef; if (Y) Y.items.forEach(it => { if (!/^\s*role\s*:/i.test(it.track || "") || !same(it.type, "Flight")) return; const t = sylTr(it.track); if (t && !L.some(x => same(x[0], t))) L.push([t, "Role: " + t]); }); });
+  return L; }
 // the items a person can plan now: the stage they work on, next / failed / out-of-chances items (Check only once both tracks are done)
 // the items a person can plan (forecast) on a cell of date iso: every unpassed item of the stage they work on that fits the cell, grouped by track in order,
-// then the next stage's. Fits = the cell code's Syllabus tag (Activities K, from the Master Planner) in the item's Track or Description (a comma list = any);
+// then the next stage's. Fits = the cell code's Syllabus tag (Activities K, from the Master Planner): the track it names, else a word in the Track or Description (a comma list = any);
 // no tag, or a tag that matches nothing, = the cell's type (flight / sim). sug = per track the first item neither passed nor planned on an earlier date: the "forecast next"
 function sylOpen(path, ci, iso, tag) {
-  const ty = ci === CAT_SIM ? "Sim" : ci === CAT_FLIGHT ? "Flight" : null;   // ground items (TTX) are logged on Syllabus Tracking only, unless a tag names them
+  const ty = ci === CAT_SIM ? "Sim" : ci === CAT_FLIGHT ? "Flight" : null;   // ground items (TTX) are logged on Syllabus Tracking only
   // tags are whole words ("MS" is not the MS in SIMS), comma or slash separated; a tag keeps ground items and items of the cell's own type
-  const tags = String(tag || "").split(/[,\/]/).map(t => t.trim()).filter(Boolean).map(t => new RegExp("(^|[^a-z0-9])" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "($|[^a-z0-9])", "i"));
-  const byTag = x => tags.some(t => t.test(x.it.track + " " + x.it.desc)) && (!ty || !x.it.type || same(x.it.type, ty) || same(x.it.type, "Ground")), byType = x => ty ? same(x.it.type, ty) : !same(x.it.type, "Ground");
+  // z198: a tag that names a track picks that track only; any other tag is a whole word in the Track or Description. On a flight / sim cell only items of that type (no TTX)
+  const trks = new Set(path.stages.flatMap(s => s.all.map(x => sylTr(x.it.track).toLowerCase())));
+  const tags = String(tag || "").split(/[,\/]/).map(t => t.trim()).filter(Boolean).map(t => trks.has(sylTr(t).toLowerCase()) ? { tr: sylTr(t) } : { re: new RegExp("(^|[^a-z0-9])" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "($|[^a-z0-9])", "i") });
+  const byTag = x => tags.some(t => t.tr ? same(sylTr(x.it.track), t.tr) : t.re.test(x.it.track + " " + x.it.desc)) && (!ty || !x.it.type || same(x.it.type, ty)), byType = x => ty ? same(x.it.type, ty) : !same(x.it.type, "Ground");
   const w = path.stages[path.wk], n = path.stages[path.wk + 1], ok = tags.length && [w, n].some(s => s && s.all.some(x => !x.pass && byTag(x))) ? byTag : byType;
   const grp = (s, nx) => s.names.map(t => { const L = s.tracks[t].filter(x => !x.pass);
     const f = L.find(x => !x.plan.some(a => a.iso < iso));
@@ -7070,7 +7082,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z197 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-07 z198 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

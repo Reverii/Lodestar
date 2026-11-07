@@ -1,4 +1,11 @@
-# LODESTAR handoff (updated 2026-11-07, after z196; next-session notes below)
+# LODESTAR handoff (updated 2026-11-07, after z198; next-session notes below)
+
+## z198: Syllabus tag list tidied (Brandon, 7 Nov: "its confusing")
+- Flight Codes Syllabus tag dropdown is now a fixed list: **None (all flight items), Role: EIS, Role: MS, Role: SAL, Role: Airlift, General Flight** (`STAG_BASE`, `sylTagList`), plus any other "Role: ..." track with Flight items in an open syllabus. Sims, TTX, Intro and other track names are no longer offered. A tag already on a code that is not on the list shows under "Not in any syllabus", in red (demo: MAS TRG = "MAS Tact").
+- Stored short as before (EIS, MS, SAL, Airlift, Flight in Flight Codes E / Activities K), so existing tags keep working. `sylTr` maps "Role: EIS" -> EIS and "General Flight" -> the Flight track.
+- Cell picker (`sylOpen`): a tag that names a track picks that track only (it used to match the word in any Track or Description, so "Flight" also caught "EIS Flight 1"); on a flight or sim cell only items of that type are offered (TTX / Ground items no longer come with a tag). Other tags still match a whole word; no match = every item of the cell's type.
+- **Role: Airlift has no track in the syllabus yet**: until a "Role: Airlift" track with Flight items is added (Syllabus Tracking, Edit syllabus items), a code tagged Airlift offers every flight item.
+- Tests: flight_code_combo 7/7 (2 new), syllabus_stages 7/7 (fresh set), syllabus_edit 12/12, code_sync 17/17, my_lodestar 67/67, ops_notes 7/7.
 
 ## z197: AFP without planner lines; only General flying built in (Brandon, 7 Nov)
 - **AFP REMARKS** no longer carry the planners' "For the Ops Room" lines (flights and standby rows, `afpData`). They still show in the Ops Room board's Remarks. The AFP keeps the brief time, what the Ops Room typed in Remarks (or an Ops Add's own comment), Others and PAX. Planner help text and guide row (section 2.4 table) updated. Test `ops_notes` now checks the line is not on the AFP (7/7); afp_export 10/10.

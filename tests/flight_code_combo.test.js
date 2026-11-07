@@ -23,6 +23,24 @@ test("syllabus_tag_is_a_dropdown_of_tracks", async ({ page }) => {   // z166: Fl
   assert.strictEqual(row.stag, "EIS");
   assert.ok(await page.evaluate(() => [...masterBook().dirty].some(k => /Flight Codes!E/.test(String(k)))), "written to Flight Codes column E");
 }, ED);
+test("syllabus_tag_lists_flight_tracks_only", async ({ page }) => {   // z198: Role: EIS / MS / SAL / Airlift, General Flight (no Sims, TTX, Intro); a tag that is no track listed apart
+  await page.evaluate(() => { document.querySelector("nav.tabs button[data-v='codes']").click(); renderCodes(); });
+  const r = await page.evaluate(() => { const s = document.querySelector("#codeTable select[data-f='stag']");
+    return { main: [...s.querySelectorAll(":scope > option")].map(o => o.value), odd: [...s.querySelectorAll("optgroup option")].map(o => o.value), first: s.options[0].textContent, lab: [...s.options].find(o => o.value === "EIS").textContent }; });
+  assert.deepStrictEqual(r.main, ["", "EIS", "MS", "SAL", "Airlift", "Flight"], JSON.stringify(r));
+  assert.ok(!r.odd.some(t => /^(sims?|ttx|intro)$/i.test(t)), JSON.stringify(r.odd));
+  assert.strictEqual(r.first, "None (all flight items)"); assert.strictEqual(r.lab, "Role: EIS");
+}, ED);
+test("tagged_flight_offers_flight_items_of_that_track_only", async ({ page }) => {   // z198: no TTX (Ground) or sim items on a tagged flight cell
+  const r = await page.evaluate(() => { const Y = S.sylDef;
+    const it = t => ({ it: Object.assign({}, t), pass: false, plan: [] }), all = Y.items.map(it);
+    const stg = { stg: { name: "T" }, names: [...new Set(all.map(x => x.it.track))], tracks: {}, all };
+    all.forEach(x => (stg.tracks[x.it.track] = stg.tracks[x.it.track] || []).push(x));
+    const P = { stages: [stg], wk: 0 }, out = t => sylOpen(P, CAT_FLIGHT, "2026-11-10", t).cur.flatMap(g => g.items.map(i => sylTr(i.x.it.track) + "/" + i.x.it.type));
+    return { eis: out("EIS"), fl: out("Flight"), gf: out("General Flight") }; });
+  assert.ok(r.eis.length && r.eis.every(x => x === "EIS/Flight"), JSON.stringify(r.eis));
+  assert.ok(r.fl.length && r.fl.every(x => x === "Flight/Flight"), JSON.stringify(r.fl)); assert.deepStrictEqual(r.gf, r.fl);
+}, { fresh: true });
 test("existing_code_ignores_case_and_spaces", async ({ page }) => {
   const k = await page.evaluate(() => masterBook().S.codes.find(c => c.code.length > 3 && /[\s-]/.test(c.code)) || masterBook().S.codes[0]);
   const row = await setup(page); await typeCode(page, row, k.code.toLowerCase().replace(/\s+/g, ""));

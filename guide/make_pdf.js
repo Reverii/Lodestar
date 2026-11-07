@@ -9,11 +9,11 @@ const DATE = process.env.GUIDE_DATE || "7 November 2026";
 // source parts: 1 Getting started, 2 Department planners, 3 Master Planner, 4 Duty Planner, 5 Ops Room
 const ELSEWHERE = { 2: "the Department Planner guide", 3: "the Master Planner guide", 4: "the Department Planner guide", 5: "the Ops Room guide" };
 const GUIDES = [
-  { out: "LODESTAR_Guide_Master_Planner_DRAFT.pdf", title: "Master Planner", sub: "Planning the squadron's flights, squadron events and flight codes", parts: [1, 3],
+  { out: "LODESTAR_Guide_Master_Planner.pdf", title: "Master Planner", sub: "Planning the squadron's flights, squadron events and flight codes", parts: [1, 3],
     who: "This guide is for the person who keeps the squadron's flight programme: the flights, no-flying days, squadron events, alert states, flight codes and the Crew Matrix." },
-  { out: "LODESTAR_Guide_Department_Planner_DRAFT.pdf", title: "Department Planner", sub: "Planning your department's crew, duties, currency and training", parts: [1, 2, 4],
+  { out: "LODESTAR_Guide_Department_Planner.pdf", title: "Department Planner", sub: "Planning your department's crew, duties, currency and training", parts: [1, 2, 4],
     who: "This guide is for the planners of SUP 1, SUP 2, TACCO, Loadmaster and Pilot. Every department's file is built from the same template, so it works for all five. It also covers the Duty Planner (BDO and SDO)." },
-  { out: "LODESTAR_Guide_Ops_Room_DRAFT.pdf", title: "Ops Room", sub: "Running the day board", parts: [1, 5],
+  { out: "LODESTAR_Guide_Ops_Room.pdf", title: "Ops Room", sub: "Running the day board", parts: [1, 5],
     who: "This guide is for the SDO / AOS on duty and the Ops Room staff: the day's flight board, the seats, closing flights, Ops Add, the AFP and the daily ATOM export." },
 ];
 
@@ -38,7 +38,7 @@ async function build(page, g, pages) {
     c.querySelector(".kicker").textContent = "LODESTAR USER GUIDE · 121 SQN";
     c.querySelector("h1").textContent = g.title;
     c.querySelector(".sub").textContent = g.sub;
-    c.querySelector(".draft").textContent = "DRAFT · NOT FOR ISSUE · " + DATE.toUpperCase();
+    c.querySelector(".draft").textContent = DATE.toUpperCase();   // the cover date (no DRAFT mark since 7 Nov)
     const partsNow = [...document.querySelectorAll("section.part")].map(s => ({ n: s.querySelector(".pk").textContent.replace("PART ", ""), t: s.querySelector("h1").textContent, s: s.querySelector(".ps").textContent }));
     c.querySelector(".who").innerHTML = "<h3>Who this guide is for</h3><p>" + g.who + "</p><h3>In this guide</h3><div class='parts'>" +
       partsNow.map(p => "<div><b>Part " + p.n + "</b>" + p.t + ": " + (/^[A-Z][a-z]/.test(p.s) ? p.s.charAt(0).toLowerCase() + p.s.slice(1) : p.s) + ".</div>").join("") + "</div>" +
@@ -74,7 +74,7 @@ async function build(page, g, pages) {
   }, { g, ELSEWHERE, DATE, pages });
   const file = path.join(__dirname, g.out);
   await page.pdf({ path: file, format: "A4", printBackground: true, preferCSSPageSize: true, displayHeaderFooter: true, headerTemplate: "<span></span>",
-    footerTemplate: "<div style='font-size:8px;color:#64748b;width:100%;padding:0 16mm;display:flex;justify-content:space-between'><span>LODESTAR user guide · " + g.title + " · DRAFT · " + DATE + "</span><span><span class='pageNumber'></span> / <span class='totalPages'></span></span></div>" });
+    footerTemplate: "<div style='font-size:8px;color:#64748b;width:100%;padding:0 16mm;display:flex;justify-content:space-between'><span>LODESTAR user guide · " + g.title + " · " + DATE + "</span><span><span class='pageNumber'></span> / <span class='totalPages'></span></span></div>" });
   return file;
 }
 const PY = "import sys,re,json,subprocess\nt=subprocess.run(['pdftotext',sys.argv[1],'-'],capture_output=True,text=True).stdout;o={}\nfor i,p in enumerate(t.split('\\f')):\n  for k in re.findall(r'@@(K\\d+)@@',p.replace(' ','').replace('\\n','')):\n    o.setdefault(k,i+1)\nprint(json.dumps(o))";

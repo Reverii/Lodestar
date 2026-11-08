@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 8 Nov 2026 (z202). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 8 Nov 2026 (z203). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -271,4 +271,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] More SANS / NSMEN rows (z183, 6 Nov, Brandon): 30 instead of 15 (75 people per department file), department layout 5, and Upgrade department files… on the start screen (dev) that copies everything typed in the old file into a new empty one (awaiting his upgrade of the intranet files)
 - [x] Stray ">" in the Currency and Crew Matrix help popups fixed (z201, 8 Nov)
 - [?] Start new year clears the Master Planner's alert states; an entry running into the new year stays (z202, 8 Nov, Brandon) (awaiting his test)
-- [ ] Drag (Brandon, 8 Nov, options 3 and 4): Planner fill handle (drag a cell's corner to copy its code to the next days / shifts / crew, like Excel; not for flights: no handle on a flight cell and flights in the way are kept, Brandon 8 Nov) and Crew Roster drag to reorder (plans move with the person). Mock-up `previews/drag_mockup_*.png`, awaiting his look
+- [?] Drag (Brandon, 8 Nov; **built z203**, awaiting his test): Planner fill handle (select a cell, drag the blue corner square along the row or down to other shifts and crew to copy its code; filled cells replaced; flights never copied or replaced; Ctrl+Z) and Crew Roster drag by the row number to reorder within the group (plans move with the person)

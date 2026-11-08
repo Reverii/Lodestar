@@ -144,7 +144,14 @@ table.plan thead th.hol{background:#9f1239;color:#fff}
 thead .stk1,thead .stk2,thead .stk3{z-index:7;background:var(--s900)!important}
 td.c{min-width:82px;max-width:82px;text-align:center;cursor:pointer;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;user-select:none}
 td.c:hover{outline:2px solid #93c5fd;outline-offset:-2px}
-td.c.sel{outline:2px solid var(--blue);outline-offset:-2px}
+td.c.sel{outline:2px solid var(--blue);outline-offset:-2px;position:relative}
+/* z203: fill handle (drag the selected cell's corner) and Crew Roster drag */
+#plan .fillh{position:absolute;right:0;bottom:0;width:8px;height:8px;background:var(--blue);border:1.5px solid #fff;cursor:crosshair;z-index:3;touch-action:none}
+#plan td.fillin{background-image:linear-gradient(rgba(37,99,235,.14),rgba(37,99,235,.14))!important;outline:1px dashed #2563eb;outline-offset:-1px}
+body.filling,body.filling *{cursor:crosshair!important}body.rdrag,body.rdrag *{cursor:grabbing!important}
+.dragTip{position:fixed;z-index:900;background:#1e293b;color:#fff;border-radius:6px;padding:5px 9px;font-size:12px;line-height:1.4;white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.25)}.dragTip small{color:#cbd5e1}
+#rosterTable.rdok td.n{cursor:grab;position:relative;padding-left:13px;touch-action:none}#rosterTable.rdok td.n::before{content:'\22EE\22EE';position:absolute;left:3px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:10px;letter-spacing:-2px}
+#rosterTable tr.rdsrc td{opacity:.35}#rosterTable tr.rdb td{box-shadow:inset 0 3px 0 #2563eb}#rosterTable tr.rda td{box-shadow:inset 0 -3px 0 #2563eb}
 td.wk{background:var(--s100)}
 td.hol{background:#ffe4e6}
 .cat0{background:var(--c0bg)!important;color:var(--c0fg)}.cat1{background:var(--c1bg)!important;color:var(--c1fg)}
@@ -1194,7 +1201,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
   <section class="view" id="v-syl"><div id="sylWrap"></div></section>
   <section class="view" id="v-misc"><div id="mnWrap"></div></section>
   <section class="view" id="v-roster">
-    <div class="note">Add crew in the next empty row, or <b>right-click a person</b> to insert a row above or below them, move them up or down, sort the list, transfer them to SANS, NSMEN or the regular crew, or remove them: their plans move with them. Regular crew at the top, SANS and NSMEN in their own groups (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE pink. To keep someone's plans and history, set Status to Inactive; <b>Remove crew…</b> clears their row and plans and closes the gap. Don't clear a person's row by hand to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
+    <div class="note">Add crew in the next empty row, <b>drag a person by the row number</b> to reorder, or <b>right-click a person</b> to insert a row above or below them, move them up or down, sort the list, transfer them to SANS, NSMEN or the regular crew, or remove them: their plans move with them. Regular crew at the top, SANS and NSMEN in their own groups (they always show at the bottom of the planner). Cat Status sets the colour of the name: CAT A black, CAT B blue, CAT C yellow, CAT D dark red, TRAINEE pink. To keep someone's plans and history, set Status to Inactive; <b>Remove crew…</b> clears their row and plans and closes the gap. Don't clear a person's row by hand to reuse it for someone else: the month plans are tied to the row, so their old plan would carry over to the new person.</div>
     <div class="card"><table class="edit" id="rosterTable"></table></div>
   </section>
   <section class="view" id="v-acts">
@@ -1252,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-08 z202</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-08 z203</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -5115,6 +5122,7 @@ function renderPlanner() {
   markFind();
   mergeRuns();
   if (cur.sel) { const el = cellEl(cur.sel); if (el) el.classList.add("sel"); }
+  fillMark();
 }
 
 // Merge runs (z144): the same non-flight activity on following days (and on AM, PM and NIGHT) reads as one block. Display only: every cell stays in the table with its own value, so click, keys, copy, find and saving work on single days.
@@ -6480,6 +6488,7 @@ function renderRoster() {
     if (rest.length) { h += "<tr class='sansSep'><td colspan=9>Inactive or other status</td></tr>"; rest.forEach(i => h += row(i, "", ++no)); }
   }
   $("rosterTable").innerHTML = h;
+  $("rosterTable").classList.toggle("rdok", mayEdit(cur.b));   // z203: drag by the row number
 }
 function renderActs() {
   if (S.kind) { rosterNote("actTable"); $("actWarn").innerHTML = ""; $("catList").innerHTML = ""; $("holList").innerHTML = ""; return; }
@@ -6528,6 +6537,7 @@ function setVal(k, v, noRender) {
 function select(k) {
   document.querySelectorAll("#plan td.sel").forEach(e => e.classList.remove("sel"));
   cur.sel = k; const el = k && cellEl(k); if (el) { el.classList.add("sel"); el.scrollIntoView({ block: "nearest", inline: "nearest" }); }
+  fillMark();
 }
 let popKey = null, popItems = [], popHi = 0, popPlan = null;
 // flights planned on the MASTER rows for a day and shift (both slots plus any "+N more" list): Map code -> time
@@ -7106,7 +7116,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-08 z202 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-08 z203 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7627,6 +7637,120 @@ function blkGo0() {
   toast(code + " put on " + x.cells.length + " cell" + (x.cells.length === 1 ? "" : "s") + (months.length > 1 ? " across " + months.map(m => MONTHS[m % 12] + (m === NX_MI ? " " + (S.year + 1) : "")).join(", ") : "") + ". Undo with Ctrl+Z.", 4000);
 }
 
+// ---------- Fill handle (z203, Brandon 8 Nov): drag the selected cell's corner to copy its code into a box of cells (more days, other shifts, other crew), like Excel.
+// Not for flights (each day's flights differ): no handle on a flight cell, and flights inside the box are kept. Other filled cells are replaced; the WD row only
+// takes what it allows (wdAllowed). Only the code is copied (no comment, no AC / Pax tag). One Undo step (put() groups everything done in one go).
+let fillDrag = null, fillSwallow = false;
+function fillSrc(k) {
+  if (!k || !k.startsWith("g:") || !S || S.kind || !mayEdit(cur.b)) return null;
+  const p = keyParts(k), v = String((S.m[cur.m].grid[p.r] || [])[p.d] || "").trim(); if (!v) return null;
+  const a = actIndex().get(v.toUpperCase()); if (a && a.ci === CAT_FLIGHT) return null;
+  return { r: p.r, d: p.d, v, a };
+}
+function fillMark() {
+  document.querySelectorAll("#plan .fillh").forEach(e => e.remove());
+  const f = fillSrc(cur.sel), el = f && cellEl(cur.sel); if (!el) return;
+  const h = document.createElement("span"); h.className = "fillh"; h.title = "Drag to copy " + f.v + " into more days, shifts or crew"; el.appendChild(h);
+}
+// the cells a fill would write: { cells: [{ r, d, old }], box: keys inside the box, fl: flights kept, wd: WD cells skipped }
+function fillCells(F) {
+  const A = actIndex(), G = S.m[cur.m].grid, i0 = F.order.indexOf(F.f.r), i1 = F.order.indexOf(F.r1), rows = F.order.slice(Math.min(i0, i1), Math.max(i0, i1) + 1);
+  const d0 = Math.min(F.f.d, F.d1), d1 = Math.max(F.f.d, F.d1), out = { cells: [], box: [], fl: 0, wd: 0, rows, d0, d1 };
+  for (const r of rows) for (let d = d0; d <= d1; d++) {
+    if (r === F.f.r && d === F.f.d) continue; out.box.push("g:" + r + ":" + d);
+    const old = String(G[r][d] || "").trim(), oa = old && A.get(old.toUpperCase());
+    if (oa && oa.ci === CAT_FLIGHT) { out.fl++; continue; }
+    if (isWdRow(r) && !wdAllowed(F.f.a)) { out.wd++; continue; }
+    if (same(old, F.f.v)) continue;
+    out.cells.push({ r, d, old });
+  }
+  return out;
+}
+const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
+function fillDays(x) { const f = d => new Date(S.year, cur.m % 12 + (cur.m === NX_MI ? 12 : 0), d + 1).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }); return x.d0 === x.d1 ? f(x.d0) : f(x.d0) + " – " + f(x.d1); }
+function fillText(F, x) {
+  const rep = x.cells.filter(c => c.old).length, crew = new Set(x.rows.map(rowPerson)).size;
+  return x.cells.length ? "Copy " + F.f.v + " to " + plural(x.cells.length, "cell") + (rep ? " · " + rep + " replaced" : "") + (x.fl ? " · " + plural(x.fl, "flight") + " kept" : "") + (x.wd ? " · not on the WD row" : "") + " · " + fillDays(x) + (crew > 1 ? " · " + crew + " crew" : "")
+    : x.box.length ? "Nothing to change" + (x.fl ? " (" + plural(x.fl, "flight") + " kept)" : "") : "";
+}
+function fillPaint(F, cx, cy) {
+  document.querySelectorAll("#plan td.fillin").forEach(e => e.classList.remove("fillin"));
+  const x = fillCells(F); x.box.forEach(k => { const el = cellEl(k); if (el) el.classList.add("fillin"); });
+  let tip = $("fillTip"); if (!tip) { tip = document.createElement("div"); tip.id = "fillTip"; tip.className = "dragTip"; document.body.appendChild(tip); }
+  const t = fillText(F, x); tip.style.display = t ? "block" : "none";
+  tip.innerHTML = esc(t).replace(esc(F.f.v), "<b>" + esc(F.f.v) + "</b>") + "<br><small>Release to fill · Esc cancels</small>";
+  const z = parseFloat(document.body.style.zoom) || 1; tip.style.left = (cx + 16) / z + "px"; tip.style.top = (cy + 14) / z + "px";
+}
+function fillEnd() { fillDrag = null; document.body.classList.remove("filling"); document.querySelectorAll("#plan td.fillin").forEach(e => e.classList.remove("fillin")); const t = $("fillTip"); if (t) t.remove(); clearInterval(fillEnd.scr); }
+function fillApply(F) {
+  const x = fillCells(F); if (!x.cells.length) { if (x.box.length) toast(fillText(F, x) + ".", 2500); return; }
+  const G = S.m[cur.m].grid, rep = x.cells.filter(c => c.old).length;
+  for (const c of x.cells) { G[c.r][c.d] = F.f.v; put(monSheet(cur.m), colL(DAY_COL0 + c.d) + (g0() + c.r), F.f.v);
+    if (c.old && S.hasSyl) {   // a replaced cell no longer carries its Planned syllabus entry (Pass / Fail results stay), as Block of days
+      const pr = S.roster[rowPerson(c.r)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, cur.m, c.d), rowShift(c.r)) : null;
+      if (lk && lk.res === "Planned") sylClear(S, lk); } }
+  renderPlanner(); renderOverview(); select("g:" + F.f.r + ":" + F.f.d);
+  toast(F.f.v + " copied to " + plural(x.cells.length, "cell") + " (" + fillDays(x) + ")" + (rep ? ", " + rep + " replaced" : "") + (x.fl ? ", " + plural(x.fl, "flight") + " kept" : "") + "." + saveHint() + " Ctrl+Z undoes it.", 4500);
+}
+$("plan").addEventListener("pointerdown", e => {
+  if (e.button !== 0 || !e.target.closest(".fillh")) return;
+  const f = fillSrc(cur.sel); if (!f) return;
+  e.preventDefault(); e.stopPropagation(); closeCard(); if (popKey) closePop();
+  const order = [...$("plan").querySelectorAll("td[data-k^='g:'][data-k$=':" + f.d + "']")].map(td => +td.dataset.k.split(":")[1]);   // crew rows in screen order (filtered crew left out)
+  fillDrag = { f, order, r1: f.r, d1: f.d, cx: e.clientX, cy: e.clientY }; document.body.classList.add("filling"); fillSwallow = true;
+  fillEnd.scr = setInterval(() => {   // near the edge of the grid: scroll it
+    if (!fillDrag) return; const w = $("gridwrap"), b = w.getBoundingClientRect(), F = fillDrag, M = 36; let dx = 0, dy = 0;
+    if (F.cx > b.right - M) dx = 24; else if (F.cx < b.left + M + 260) dx = -24; if (F.cy > b.bottom - M) dy = 18; else if (F.cy < b.top + M) dy = -18;
+    if (dx || dy) { w.scrollLeft += dx; w.scrollTop += dy; fillAt(F.cx, F.cy); } }, 60);
+});
+function fillAt(cx, cy) {
+  const F = fillDrag; if (!F) return; F.cx = cx; F.cy = cy;
+  const hit = document.elementsFromPoint(cx, cy).find(el => el.matches && el.matches("#plan td[data-k^='g:']"));
+  if (hit) { const [, r, d] = hit.dataset.k.split(":").map(Number); if (F.order.includes(r)) { F.r1 = r; F.d1 = d; } }
+  fillPaint(F, cx, cy);
+}
+document.addEventListener("pointermove", e => { if (fillDrag) { e.preventDefault(); fillAt(e.clientX, e.clientY); } });
+document.addEventListener("pointerup", e => { if (!fillDrag) return; const F = fillDrag; fillEnd(); fillApply(F); setTimeout(() => { fillSwallow = false; }, 0); });
+document.addEventListener("pointercancel", () => { if (fillDrag) { fillEnd(); fillSwallow = false; } });
+document.addEventListener("click", e => { if (fillSwallow && e.target.closest("#plan")) { fillSwallow = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);   // the click that ends a fill does not open a card
+document.addEventListener("keydown", e => { if (fillDrag && e.key === "Escape") { fillEnd(); fillSwallow = false; toast("Fill cancelled.", 1500); e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+
+// ---------- Crew Roster drag (z203, Brandon 8 Nov): grab a person by the row number and drop them between two others of their group
+// (regular crew, SANS, NSMEN). Done through rosApply like Move up / down, so their plans for every month, Personnel Info, Currency, notes and tags move too.
+let rosDrag = null;
+function rosDropTo(i, q) {   // put person i on row q; everyone between moves one row
+  const order = []; let start;
+  if (q > i) { start = i; for (let j = i + 1; j <= q; j++) order.push(j); order.push(i); } else { start = q; order.push(i); for (let j = q; j < i; j++) order.push(j); }
+  return rosApply(start, order, new Set(), null, rosDrag && rosDrag.note || "Crew Roster: " + rosWho(S.roster[i]) + " moved (with their plans)");
+}
+function rosDragEnd() { document.querySelectorAll("#rosterTable tr.rdsrc,#rosterTable tr.rda,#rosterTable tr.rdb").forEach(e => e.classList.remove("rdsrc", "rda", "rdb")); document.body.classList.remove("rdrag"); const t = $("rdTip"); if (t) t.remove(); }
+$("rosterTable").addEventListener("pointerdown", e => {
+  const tr = e.button === 0 && e.target.closest("td.n") && e.target.closest("tr[data-ri]"); if (!tr || S.kind || !mayEdit(cur.b)) return;
+  const i = +tr.dataset.ri; if (rosEmpty(S.roster[i])) return;
+  e.preventDefault(); rosDrag = { i, q: null }; tr.classList.add("rdsrc"); document.body.classList.add("rdrag");
+});
+document.addEventListener("pointermove", e => {
+  if (!rosDrag) return; e.preventDefault();
+  const D = rosDrag, i = D.i; document.querySelectorAll("#rosterTable tr.rda,#rosterTable tr.rdb").forEach(x => x.classList.remove("rda", "rdb")); D.q = null;
+  const tr = document.elementsFromPoint(e.clientX, e.clientY).map(el => el.closest && el.closest("#rosterTable tr[data-ri]")).find(Boolean);
+  let txt = "Drop between crew of the same group";
+  if (tr) { const t = +tr.dataset.ri, pt = S.roster[t];
+    if (t === i) txt = "Same place";
+    else if (!rosEmpty(pt) && rosSec(t)[0] === rosSec(i)[0] && rosGrp(t) === rosGrp(i)) {
+      const b = tr.getBoundingClientRect(), above = e.clientY < b.top + b.height / 2, q = above ? (t > i ? t - 1 : t) : (t > i ? t : t + 1);
+      tr.classList.add(above ? "rdb" : "rda");
+      if (q === i) txt = "Same place"; else { D.q = q; D.note = "Crew Roster: " + rosWho(S.roster[i]) + " moved " + (above ? "above " : "below ") + rosWho(pt) + " (with their plans)";
+        txt = "Move <b>" + esc(rosWho(S.roster[i])) + "</b> " + (above ? "above " : "below ") + esc(rosWho(pt)) + "<br><small>Their plans for every month move with them · Esc cancels</small>"; } } }
+  let tip = $("rdTip"); if (!tip) { tip = document.createElement("div"); tip.id = "rdTip"; tip.className = "dragTip"; document.body.appendChild(tip); }
+  const z = parseFloat(document.body.style.zoom) || 1; tip.innerHTML = txt; tip.style.left = (e.clientX + 16) / z + "px"; tip.style.top = (e.clientY + 12) / z + "px";
+});
+document.addEventListener("pointerup", () => {
+  if (!rosDrag) return; const D = rosDrag; rosDragEnd();
+  if (D.q != null && D.q !== D.i) { const who = rosWho(S.roster[D.i]); rosDropTo(D.i, D.q); rosDrag = null; renderAll(); toast(D.note.replace(/^Crew Roster: /, "").replace(/ \(with their plans\)$/, "") + ", with their plans." + saveHint() + " Ctrl+Z undoes it.", 3500); }
+  rosDrag = null;
+});
+document.addEventListener("keydown", e => { if (rosDrag && e.key === "Escape") { rosDrag = null; rosDragEnd(); e.preventDefault(); } }, true);
+
 // ---------- My schedule: one person's month across the open department files (flights with times, duties, ground programme, leave, comments)
 function mePeople() { const out = []; books.forEach((b, bi) => { if (!isDept(b)) return; b.S.roster.forEach((p, i) => { if (p.name || p.id) out.push({ bi, i, p, dept: b.S.dept }); }); }); return out; }
 // ---------- My Lodestar: a read-only personal home page (spec: docs/superpowers/specs/2026-10-25-my-lodestar-design.md). Never calls put().
@@ -8131,7 +8255,7 @@ const HELP = {
     "<li>" + sw("#ea580c", "#fff", "REST") + " flying 5+ days in a row. " + "Currency (from ATOM): the day a currency expires is marked in the row, and a flight after it shows a red corner. See the Currency tab help.</li>" +
     "<li>" + sw("#991b1b", "#fff", "DOWN") + " down-chitted after MC: not cleared to fly. Striped red cells are the down-chit days; a flight on them gets a red box. Click DOWN (or Up-chit… in the cell list) to up-chit.</li>" +
     "<li>Struck-through flight: cancelled in the Ops Room. Blue column: today. Weekends dark, public holidays red.</li></ul>" +
-    "<h3>Tools</h3><ul><li><b>Find in this month</b>: outlines matching codes, times, comments and names; Enter jumps to the next.</li><li><b>Today</b>: jumps to today's month and column.</li><li><b>Block of days…</b> (bottom of the cell list): one activity over a date range, e.g. a course or detachment.</li><li><b>↶ ↷</b> (top right) or Ctrl+Z / Ctrl+Y: undo and redo before you save.</li></ul>"],
+    "<h3>Tools</h3><ul><li><b>Fill handle</b>: select a cell and drag the small blue square at its bottom-right corner along the row, or down to other shifts and crew, to copy its code into every cell of the box, like Excel. Cells already filled are replaced; flights are never copied or replaced (each day's flights differ); the WD row only takes ground and admin items. Esc cancels, Ctrl+Z undoes the whole fill.</li><li><b>Find in this month</b>: outlines matching codes, times, comments and names; Enter jumps to the next.</li><li><b>Today</b>: jumps to today's month and column.</li><li><b>Block of days…</b> (bottom of the cell list): one activity over a date range, e.g. a course or detachment.</li><li><b>↶ ↷</b> (top right) or Ctrl+Z / Ctrl+Y: undo and redo before you save.</li></ul>"],
   ov: ["Overview", "<p>Your department's year at a glance: flights, flying hours, ground duties, duty days and gaps per month, with a chart and each person's totals. Click a month to open it on the Planner.</p>"],
   misc: ["Miscellaneous Notes", "<p>Under <b>Planning ▾</b>. A scratch sheet for your department's planners: to-do lists, phone numbers, ideas. Only your department sees it here; other departments and the Ops Room don't. It is saved in a hidden <b>Misc Notes</b> sheet of your own Excel file (anyone who opens the file in Excel and unhides the sheet can still read it, so keep personal data out).</p>" +
     "<ul><li>Click a cell and type. <b>Enter</b> = down, <b>Tab</b> = right, arrows move, <b>Shift</b> + arrows or drag to pick several cells. <b>F2</b> or double-click edits the text in the cell. <b>Alt+Enter</b> = a new line inside the cell.</li>" +
@@ -8148,7 +8272,7 @@ const HELP = {
   lode: ["My Lodestar", "<p>Your own page, view only. It knows who you are from your SharePoint sign-in name; if it cannot tell, pick yourself once and this browser remembers it.</p>" +
     "<ul><li><b>Cards:</b> medical (down-chit), crew rest, currency and your syllabus.</li><li><b>Today:</b> your flight with times, tail and crew, standby, ground items and duty. Prev day and Next day move it.</li><li><b>My month:</b> under Today, the whole month as a calendar. Click a flight (or any item) for its card with the crew on it; click a day to see it in Today; the arrows change month.</li><li><b>What changed:</b> edits to your plan, cancelled and moved flights and new duty days since you last looked.</li><li><b>View as:</b> look at anyone's page; Back to me returns.</li></ul>"],
   roster: ["Crew Roster", "<p>Your department's crew list: callsign, name, initials, Cat Status, role and status. Changes here show on every tab.</p>" +
-    "<p><b>Order:</b> right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b>, <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview), <b>Transfer to SANS / NSMEN / regular crew</b> (they go after the last person of that group, take an empty row there and get that Status; Active for regular crew) and <b>Remove crew…</b> (asks first; clears their roster row, plans, Personnel Info, Currency, comments and AC / Pax tags, and the crew below move up; syllabus results and medical chits stay). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; <b>+ Add rank…</b> at the bottom of the list adds a new one (you pick which rank it comes after, for sorting; it is kept in your file's Ranks sheet, and a rank nobody has can be taken off again there); Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: COL, SLTC, LTC, MAJ, CPT, LTA · MWO, 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
+    "<p><b>Order:</b> drag a person by the row number (⋮⋮) and drop them between two others of their group (regular crew, SANS or NSMEN), or right-click a person for <b>Insert crew above / below</b>, <b>Move up / down</b>, <b>Sort…</b> (Cat Status then rank, Rank then Cat Status, Callsign, Name or Role, with a preview), <b>Transfer to SANS / NSMEN / regular crew</b> (they go after the last person of that group, take an empty row there and get that Status; Active for regular crew) and <b>Remove crew…</b> (asks first; clears their roster row, plans, Personnel Info, Currency, comments and AC / Pax tags, and the crew below move up; syllabus results and medical chits stay). The <b>Rank</b> column is read from the start of the name and lists your department's ranks; <b>+ Add rank…</b> at the bottom of the list adds a new one (you pick which rank it comes after, for sorting; it is kept in your file's Ranks sheet, and a rank nobody has can be taken off again there); Excel keeps rank and name in one cell (Crew Member), e.g. CPT Sarah Lim. The order is the order on the Planner, the Ops Room and in Excel. Each person's plans for every month, their Personnel Info and Currency rows move with them; comments, chits, syllabus results and AC / Pax tags follow the callsign. Regular crew and SANS / NSMEN never mix, and SANS and NSMEN are two groups: type a new person in the empty row of their group. Rank order: COL, SLTC, LTC, MAJ, CPT, LTA · MWO, 1WO, 2WO, 3WO, MSG, SSG, 1SG, 2SG, 3SG · ME3, ME2, ME1 ((NS) is skipped). The Change Log gets one line per action. Save to Excel to keep it; Ctrl+Z undoes it.</p>" +
     "<ul><li>Name colour = Cat Status: CAT A black, " + sw("#fff", "#3b8ef0", "CAT B") + " blue, " + sw("#fff", "#ca8a04", "CAT C") + " yellow, " + sw("#fff", "#b91c1c", "CAT D") + " dark red, " + sw("#fff", "#7c3aed", "TRAINEE") + " violet.</li><li>SANS / NSmen are listed at the bottom of every planner.</li></ul>"],
   cur: ["Currency", "<p><b>Rules table:</b> right-click a rule to <b>switch it off</b> (kept, greyed with OFF, not checked anywhere; Excel's own Currency sheet still works it out) or <b>remove</b> it (clears that row and its before-the-planner dates; the other rules stay where they are).</p><p><b>ATOM currencies.</b> ATOM is the truth. The Ops Room adds the export from ATOM once a day with <b>Add ATOM export</b>, then <b>Publish to everyone</b> (Ops Room view). Everyone else sees it automatically, because it is saved in the Ops Room file (it needs that file open). You can also add an export yourself to look at it; that is only for you and is labelled \"File added by you\". Lodestar only reads these: the five currencies <b>Day Capt, Day Curr, IRT, Night Capt, Night Curr</b>, the month's <b>clocked hours</b>, and the <b>mission currencies</b> (Airlift, EIS, MAS, MAS (M), MAS (S), MAS TACT, SAL, SGH; not MAI/MCAS; Airlift and SGH only for Pilot and Loadmaster). Nothing else from ATOM is kept, and no names, only the Initials.</p>" +
     "<p>Every person is matched to ATOM by the <b>Initials</b> on the Crew Roster, so the Initials must be the same as the name in ATOM.</p>" +

@@ -1,11 +1,14 @@
-# LODESTAR handoff (updated 2026-11-07, after z200; next-session notes below)
+# LODESTAR handoff (updated 2026-11-08, after z201; next-session notes below)
+
+## z201: stray ">" in two help popups fixed (8 Nov)
+The Currency (`HELP.cur`) and Crew Matrix (`HELP.cmx`) help texts had broken tags (`<p<b>`, `<pWhoever`, `</p><p>>`); fixed in `.dashboard_source.html`, checked by rendering both in Chromium (no ">" left). Dashboard only: upload the DEV dashboard.
 
 ## Session end (7 Nov, evening): where things stand
 - Shipped and merged to main this session: z197 (AFP without the planners' Ops Room lines; builder keeps only the General flying currency rule), z198 (Syllabus tag list Role: EIS / MS / SAL / Airlift, General Flight; tagged flights offer only that track's Flight items), z199 (Flight Codes Crew column as click tags), z200 (several syllabus tags per code), and the three guide PDFs updated for z200 with the DRAFT mark removed.
 - Brandon has: the z200 DEV dashboard and the three PDFs (sent in chat). No xlsx changed this session.
 - For Brandon to do: remove Mission currency and Night flying from each live department file (Currency tab, Rules, right-click, Remove); retag MAS TRG (its "MAS Tact" matches no track); add the Role: Airlift track items to the syllabus when ready (Syllabus Tracking, Edit syllabus items).
 - **Decided (Brandon, 8 Nov): the Roles sheet stays** through Start new year and Wipe data (added roles are kept, like the Roster). Start new year already leaves it alone; nothing to build.
-- Still open from before: the stale `sample_ops_room_can_pick_a_seat` test; Alert States sheet not in Wipe data / Start new year (old rows stay; ask Brandon whether Start new year should clear them); broken tags in `HELP.cur` / `HELP.cmx` (a stray ">" in those help popups); whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the planner note.
+- Still open from before: the stale `sample_ops_room_can_pick_a_seat` test; Alert States sheet not in Wipe data / Start new year (old rows stay; ask Brandon whether Start new year should clear them); whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the planner note.
 
 ## Guide PDFs updated to z200 (7 Nov)
 **DRAFT removed (Brandon, 7 Nov):** no DRAFT / NOT FOR ISSUE on the covers or footers; the cover shows the date in a grey box. Files renamed without _DRAFT: `guide/LODESTAR_Guide_Master_Planner.pdf`, `_Department_Planner.pdf`, `_Ops_Room.pdf` (the _DRAFT copies are deleted).

@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 7 Nov 2026 (z198). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 8 Nov 2026 (z201). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -269,3 +269,4 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Flight Codes: a Crew Matrix column to pick which matrix mission checks each code (Brandon, 7 Nov; **built z195, awaiting his test**). Auto = the mission named like the Mission Type (as before), or pick any mission on the Crew Matrix page, or Not checked. Saved in the Flight Codes sheet column H, no layout change
 - [?] Wider flight card; P1 / P2 / BU cells open the card with the standby crew and crew matrix check; standby P1 / P2 / BU listed on Flight Codes to pick their crew matrix (Brandon, 7 Nov; **built z196, awaiting his test**). They stay ground duties (not flights); saved in Flight Codes K5:L8
 - [?] More SANS / NSMEN rows (z183, 6 Nov, Brandon): 30 instead of 15 (75 people per department file), department layout 5, and Upgrade department files… on the start screen (dev) that copies everything typed in the old file into a new empty one (awaiting his upgrade of the intranet files)
+- [x] Stray ">" in the Currency and Crew Matrix help popups fixed (z201, 8 Nov)

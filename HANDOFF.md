@@ -1,5 +1,10 @@
 # LODESTAR handoff (updated 2026-11-08, after z202; next-session notes below)
 
+## Planned (8 Nov, Brandon: "3 & 4"; mock-up sent, wait for "build it"): Planner fill handle and Crew Roster drag
+Mock-ups `previews/drag_mockup_{fill_drag,fill_done,roster_drag}.png` (script `previews/drag_mockup.js`, demo files, nothing saved).
+- **Fill handle (Planner):** the selected crew cell (`cur.sel`, `g:` keys) shows a small blue square at its bottom-right corner (editors only; not MASTER rows, not View only). Drag it right / left (days) or up / down (other shifts and other crew): a dashed box and a tip "Copy BDO to 3 cells · Sun 8 Nov – Tue 10 Nov AM", Esc cancels; release writes the code into every cell of the box (the same write as `blkGo0`: grid + `put`, a replaced Planned syllabus link cleared). Only the code (no comment, no AC / Pax tag). Filled cells are replaced (the tip counts them). Stops at the month end. One Change Log run (the existing run grouping), Ctrl+Z undoes it all. Mind the page zoom (`document.body.style.zoom`, 85% on the Planner) when turning mouse positions into cells.
+- **Crew Roster drag:** grab a person by the row number (⋮⋮ grip, editors only) and drop between two others (blue line, tip "Move HAWK between FALCON and EAGLE"); only within their group (regular / SANS / NSMEN, `rosGrp`, `rosSec`); done through `rosApply` with a rotated order (like `rosMove` over several rows), so plans, Personnel Info, Currency, notes and tags move with them. One Change Log line, Ctrl+Z. Right-click Move up / down stays.
+
 ## z202: Start new year clears the Alert States (Brandon, 8 Nov)
 The Master Planner's Alert States sheet (z185) is now cleared by Start new year (`rollBook`, master branch), except entries whose To date is in the new year (kept: their dates are real dates). The dialog's "Started empty" list says so; a note counts the kept entries. The Roles and Ranks sheets stay (Brandon, 8 Nov). Test `alert_fr_rows` 8/8 (1 new); ground_rows 13/13. Wipe data (Admin page, on hold) should clear Alert States too when it is built. Upload the DEV dashboard.
 

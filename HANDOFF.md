@@ -1,5 +1,11 @@
 # LODESTAR handoff (updated 2026-11-08, after z203; next-session notes below)
 
+## Session end (8 Nov): where things stand
+- Shipped and merged to main ([Reverii/Lodestar#13](https://github.com/Reverii/Lodestar/pull/13)): z201 (stray ">" in the Currency and Crew Matrix help), z202 (Start new year clears Alert States; Roles and Ranks stay), z203 (Planner fill handle, Crew Roster drag), the stale Ops Room seat test fixed.
+- Brandon has: the z203 zip (DEV dashboard + the demo xlsx, which are for UI testing only). No live xlsx changed this session.
+- For Brandon to test: fill handle (across a flight, down across crew, Ctrl+Z), Crew Roster drag, Start new year on copies, the two help popups.
+- Still open: whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the planner note; Wipe data (Admin page, on hold) should clear Alert States when built.
+
 ## z203: Planner fill handle and Crew Roster drag (Brandon, 8 Nov: "3 & 4", "replace, allow across crew, build it")
 Mock-ups `previews/drag_mockup_{fill_drag,fill_done,roster_drag}.png` (script `previews/drag_mockup.js`); real screens `previews/fill_handle_real.png`, `fill_handle_done_real.png`, `roster_drag_real.png`.
 - **Fill handle** (`fillSrc`, `fillMark`, `fillCells`, `fillApply`; pointer handlers on `#plan`): the selected crew cell shows a small blue square at its bottom-right corner (editors only; not on an empty cell, a flight cell, MASTER rows or a View only file). Drag it along the row, up / down to other shifts and other crew (rows in screen order, filtered crew left out): dashed box (`td.fillin`) and a tip ("Copy OL to 6 cells · 2 replaced · 1 flight kept · Tue 17 Nov – Fri 20 Nov"); the grid scrolls near its edge; Esc cancels. Release writes the code into every cell of the box like Block of days (`put`, a replaced Planned syllabus link cleared). **No flights** (Brandon: each day's flights differ): flights in the box are kept. Other filled cells are **replaced** (Brandon). The WD row only takes what `wdAllowed` allows. Only the code (no comment, no AC / Pax tag). One Undo step; the click that ends the drag opens no card (`fillSwallow`). Tip positions divide by the page zoom (85% on the Planner).

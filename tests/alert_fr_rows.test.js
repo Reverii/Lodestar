@@ -41,6 +41,16 @@ test("a_shorter_entry_overrides_and_remove_works", async ({ page }) => {
   await page.evaluate(() => { window.confirm = () => true; document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpDay = 4; renderMp(); });
   await page.click("[data-alx]"); await planNov(page); r = await alertRow(page); assert.strictEqual(r[4], "AL90");
 }, { mine: "Master_Planner", fresh: true });
+test("start_new_year_clears_alert_states", async ({ page }) => {   // z202: old entries go, one running into the new year stays
+  const t = await page.evaluate(() => { alSave({ level: "AL90", from: "2026-11-02", to: "2026-11-08" }); alSave({ level: "AL2", from: "2026-12-28", to: "2027-01-03" });
+    const bi = mpIdx(); let bytes; withBook(bi, () => { bytes = buildXlsx().bytes; }); reparseBook(bi, bytes);
+    const rows = books[bi].S.al.map(e => e.level + "@" + e.row), r = rollBook(bi, books[bi].S.year, []);
+    return { rows, xml: td.decode(r.files[books[bi].WB.paths[AL_SHEET]]), notes: r.notes }; });
+  assert.deepStrictEqual(t.rows, ["AL90@2", "AL2@3"], "both saved");
+  assert.ok(/<c r="C2"[^>]*\/>/.test(t.xml) && !/AL90/.test(t.xml), "the old year's entry is cleared");
+  assert.ok(/AL2/.test(t.xml) && /Level/.test(t.xml), "the entry running into 2027 and the heading stay");
+  assert.ok(t.notes.some(n => /1 alert state running into 2027 kept/.test(n)), t.notes.join(" | "));
+}, { mine: "Master_Planner", fresh: true });
 test("department_view_cannot_set_it", async ({ page }) => {
   await page.evaluate(() => { books[mpIdx()].S.al = [{ row: 2, from: "2026-11-02", to: "2026-11-08", level: "AL90", by: "" }]; document.querySelector("nav.tabs button[data-v='mp']").click(); cur.mpM = 10; cur.mpDay = 4; renderMp(); });
   assert.strictEqual(await page.locator("#alLevel").count(), 0); assert.ok(/AL90/.test(await page.textContent("#mpSide")));

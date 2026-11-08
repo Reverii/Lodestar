@@ -1252,7 +1252,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-08 z201</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-08 z202</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -7106,7 +7106,7 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-08 z201 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-08 z202 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7363,7 +7363,7 @@ document.addEventListener("click", e => { if (!e.target.closest("#mpMenu")) $("m
 // The old files are kept as copies in an "Archive <year>" folder (SharePoint) or a zip download first.
 // Carried over: rosters, Personnel Info, Activities, Currency Rules, Duty Roster crew lists, open down-chits (as manual down-chits),
 // each person's currency 'Before' dates (the date each rule was last met) and their days flying in a row at 31 Dec (crew rest).
-// Started empty: month plans, cell notes, requests, SDO / BDO days, Master Planner flights / day status / ground programme, Ops Room days.
+// Started empty: month plans, cell notes, requests, SDO / BDO days, Master Planner flights / day status / ground programme / alert states (z202), Ops Room days. Kept: Roles, Ranks.
 const SG_HOLS = {
   2026: [["2026-01-01", "New Year's Day"], ["2026-02-17", "Chinese New Year"], ["2026-02-18", "Chinese New Year"], ["2026-03-21", "Hari Raya Puasa"], ["2026-04-03", "Good Friday"], ["2026-05-01", "Labour Day"], ["2026-05-27", "Hari Raya Haji"], ["2026-05-31", "Vesak Day"], ["2026-06-01", "Vesak Day (in lieu)"], ["2026-08-09", "National Day"], ["2026-08-10", "National Day (in lieu)"], ["2026-11-08", "Deepavali"], ["2026-11-09", "Deepavali (in lieu)"], ["2026-12-25", "Christmas Day"]],
   2027: [["2027-01-01", "New Year's Day"], ["2027-02-06", "Chinese New Year"], ["2027-02-07", "Chinese New Year"], ["2027-02-08", "Chinese New Year (in lieu)"], ["2027-03-10", "Hari Raya Puasa"], ["2027-03-26", "Good Friday"], ["2027-05-01", "Labour Day"], ["2027-05-17", "Hari Raya Haji"], ["2027-05-20", "Vesak Day"], ["2027-08-09", "National Day"], ["2027-10-28", "Deepavali"], ["2027-12-25", "Christmas Day"]]
@@ -7449,6 +7449,10 @@ function rollBook(bi, y, opsCarry) {
       edit("Ground Programme", x => rollClear(x, keepRows(rows(GR_ROW0, GR_ROW0 + GR_N - 1, 1, 5), nxGr)));
       nxN = nxFl.size + nxGr.size;
       edit("Requests", x => rollClear(x, rows(RQ_ROW0, RQ_ROW0 + RQ_N - 1, 1, 30)));
+      // z202 (Brandon, 8 Nov): the alert states go; an entry that runs into the new year stays (its dates are real dates)
+      const nxAl = new Set((st.al || []).filter(e => +e.to.slice(0, 4) > y).map(e => e.row));
+      edit(AL_SHEET, x => rollClear(x, keepRows(rows(AL_ROW0, AL_ROW0 + AL_N - 1, 1, 5), nxAl)));
+      if (nxAl.size) notes.push(nxAl.size + " alert state" + (nxAl.size === 1 ? "" : "s") + " running into " + (y + 1) + " kept");
     } else if (st.kind === "roster") {
       edit("SDO Plan", x => rollClear(x, sdoSet())); edit("BDO Plan", x => rollClear(x, sdoSet()));
       nxN = dutyCarry("SDO Plan") + dutyCarry("BDO Plan");
@@ -7505,7 +7509,7 @@ function rollOpen() {
   $("rollBody").innerHTML = (prob.length ? "<div class='rollbad'><b>Not ready yet</b><ul>" + prob.map(p => "<li>" + p + "</li>").join("") + "</ul></div>" : "") +
     "<p>Moves all " + books.length + " files from <b>" + y + "</b> to <b>" + (y + 1) + "</b>. " + (SP.on ? "First a copy of each file is saved in an <b>Archive " + y + "</b> folder next to them on SharePoint." : "First a zip of the " + y + " files is downloaded as the archive, then the " + (y + 1) + " files are downloaded as a second zip: put those in your folder in place of the old ones.") + "</p>" +
     "<div class='rollcols'><div><h3>Carried over</h3><ul><li>Crew rosters, Initials, Personnel Info</li><li>Activities and Currency Rules</li><li>Duty Roster crew lists</li><li>Everything already planned for January " + (y + 1) + " (the Jan (next year) tab): it becomes the new January</li><li>Open down-chits (still down on 31 Dec)</li><li>Currency: the date each rule was last met</li><li>Days flying in a row at 31 Dec (crew rest)</li><li>" + (y + 1) + " public holidays" + (SG_HOLS[y + 1] ? "" : " <b style='color:#b45309'>(not known yet: add them)</b>") + "</li></ul></div>" +
-    "<div><h3>Started empty</h3><ul><li>Every month plan, cell note and request</li><li>SDO and BDO days</li><li>Master Planner flights, day status and squadron events</li><li>Ops Room flights, Ops Add and Day Board</li></ul></div></div>" +
+    "<div><h3>Started empty</h3><ul><li>Every month plan, cell note and request</li><li>SDO and BDO days</li><li>Master Planner flights, day status, squadron events and alert states</li><li>Ops Room flights, Ops Add and Day Board</li></ul></div></div>" +
     "<p class='muted'>Every flight planned up to 31 Dec counts as flown for currency and crew rest, so run this after the last flying day of " + y + ".</p>";
   $("rollGo").disabled = !!prob.length; $("rollGo").textContent = y ? "Start " + (y + 1) : "Start";
   $("rollPop").style.display = "flex";

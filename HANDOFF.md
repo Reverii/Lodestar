@@ -1,4 +1,7 @@
-# LODESTAR handoff (updated 2026-11-08, after z201; next-session notes below)
+# LODESTAR handoff (updated 2026-11-08, after z202; next-session notes below)
+
+## z202: Start new year clears the Alert States (Brandon, 8 Nov)
+The Master Planner's Alert States sheet (z185) is now cleared by Start new year (`rollBook`, master branch), except entries whose To date is in the new year (kept: their dates are real dates). The dialog's "Started empty" list says so; a note counts the kept entries. The Roles and Ranks sheets stay (Brandon, 8 Nov). Test `alert_fr_rows` 8/8 (1 new); ground_rows 13/13. Wipe data (Admin page, on hold) should clear Alert States too when it is built. Upload the DEV dashboard.
 
 ## z201: stray ">" in two help popups fixed (8 Nov)
 The Currency (`HELP.cur`) and Crew Matrix (`HELP.cmx`) help texts had broken tags (`<p<b>`, `<pWhoever`, `</p><p>>`); fixed in `.dashboard_source.html`, checked by rendering both in Chromium (no ">" left). Dashboard only: upload the DEV dashboard.

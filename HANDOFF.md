@@ -1,10 +1,27 @@
-# LODESTAR handoff (updated 2026-11-07, after z200; next-session notes below)
+# LODESTAR handoff (updated 2026-11-08, after z203; next-session notes below)
+
+## z203: Planner fill handle and Crew Roster drag (Brandon, 8 Nov: "3 & 4", "replace, allow across crew, build it")
+Mock-ups `previews/drag_mockup_{fill_drag,fill_done,roster_drag}.png` (script `previews/drag_mockup.js`); real screens `previews/fill_handle_real.png`, `fill_handle_done_real.png`, `roster_drag_real.png`.
+- **Fill handle** (`fillSrc`, `fillMark`, `fillCells`, `fillApply`; pointer handlers on `#plan`): the selected crew cell shows a small blue square at its bottom-right corner (editors only; not on an empty cell, a flight cell, MASTER rows or a View only file). Drag it along the row, up / down to other shifts and other crew (rows in screen order, filtered crew left out): dashed box (`td.fillin`) and a tip ("Copy OL to 6 cells · 2 replaced · 1 flight kept · Tue 17 Nov – Fri 20 Nov"); the grid scrolls near its edge; Esc cancels. Release writes the code into every cell of the box like Block of days (`put`, a replaced Planned syllabus link cleared). **No flights** (Brandon: each day's flights differ): flights in the box are kept. Other filled cells are **replaced** (Brandon). The WD row only takes what `wdAllowed` allows. Only the code (no comment, no AC / Pax tag). One Undo step; the click that ends the drag opens no card (`fillSwallow`). Tip positions divide by the page zoom (85% on the Planner).
+- **Crew Roster drag** (`rosDrag`, `rosDropTo`): ⋮⋮ grip on the row number for editors (`#rosterTable.rdok`); drop above / below a filled person of the **same group** (regular, SANS, NSMEN; else "Drop between crew of the same group"); blue line on the target row, tip "Move HAWK below EAGLE". `rosApply` with a rotated order, so plans for every month, Personnel Info, Currency, notes and tags move; Change Log "Crew Roster: HAWK moved below EAGLE (with their plans)"; Ctrl+Z. Right-click Move up / down stays.
+- Help (?) texts for the Planner (Tools) and Crew Roster, and the Crew Roster page note, mention both.
+- Tests: new `node tests/drag.test.js` (11). roster_order 25, my_lodestar 67, misc_notes 25, changelog 8, flight_card 17, other_depts 10, role_tags 15, syllabus_edit 12, ops_room 60, running_change, excel_safe, alert_fr_rows 8, dept_select 24. Dashboard only: upload the DEV dashboard.
+
+## z202: Start new year clears the Alert States (Brandon, 8 Nov)
+The Master Planner's Alert States sheet (z185) is now cleared by Start new year (`rollBook`, master branch), except entries whose To date is in the new year (kept: their dates are real dates). The dialog's "Started empty" list says so; a note counts the kept entries. The Roles and Ranks sheets stay (Brandon, 8 Nov). Test `alert_fr_rows` 8/8 (1 new); ground_rows 13/13. Wipe data (Admin page, on hold) should clear Alert States too when it is built. Upload the DEV dashboard.
+
+## z201: stray ">" in two help popups fixed (8 Nov)
+The Currency (`HELP.cur`) and Crew Matrix (`HELP.cmx`) help texts had broken tags (`<p<b>`, `<pWhoever`, `</p><p>>`); fixed in `.dashboard_source.html`, checked by rendering both in Chromium (no ">" left). Dashboard only: upload the DEV dashboard.
+
+## Stale Ops Room test fixed (8 Nov)
+`sample_ops_room_can_pick_a_seat` clicked the sample button removed in z159. Renamed `ops_room_can_pick_a_seat`: it opens the folder's files as the Ops Room (plus SUP 2, which `boot` leaves out when the Ops Room is `mine`) and picks a person for an empty seat. `node tests/ops_room.test.js` 60/60. Test only, no dashboard change.
 
 ## Session end (7 Nov, evening): where things stand
 - Shipped and merged to main this session: z197 (AFP without the planners' Ops Room lines; builder keeps only the General flying currency rule), z198 (Syllabus tag list Role: EIS / MS / SAL / Airlift, General Flight; tagged flights offer only that track's Flight items), z199 (Flight Codes Crew column as click tags), z200 (several syllabus tags per code), and the three guide PDFs updated for z200 with the DRAFT mark removed.
 - Brandon has: the z200 DEV dashboard and the three PDFs (sent in chat). No xlsx changed this session.
 - For Brandon to do: remove Mission currency and Night flying from each live department file (Currency tab, Rules, right-click, Remove); retag MAS TRG (its "MAS Tact" matches no track); add the Role: Airlift track items to the syllabus when ready (Syllabus Tracking, Edit syllabus items).
-- Still open from before: the stale `sample_ops_room_can_pick_a_seat` test; Alert States and Roles sheets not in Wipe data / Start new year; broken tags in `HELP.cur` / `HELP.cmx` (a stray ">" in those help popups); whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the planner note.
+- **Decided (Brandon, 8 Nov): the Roles sheet stays** through Start new year and Wipe data (added roles are kept, like the Roster). Start new year already leaves it alone; nothing to build.
+- Still open from before: whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the planner note.
 
 ## Guide PDFs updated to z200 (7 Nov)
 **DRAFT removed (Brandon, 7 Nov):** no DRAFT / NOT FOR ISSUE on the covers or footers; the cover shows the date in a grey box. Files renamed without _DRAFT: `guide/LODESTAR_Guide_Master_Planner.pdf`, `_Department_Planner.pdf`, `_Ops_Room.pdf` (the _DRAFT copies are deleted).

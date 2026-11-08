@@ -485,18 +485,18 @@ test("area_add_hidden_when_projector_clicked", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsSide .opsac .v.oe").length), 0, "no empty area lines on the projector");
 }, ED);
 
-test("sample_ops_room_can_pick_a_seat", async ({ page }) => {
-  await page.click("#wSample");
-  await page.waitForFunction(() => typeof books !== "undefined" && books.length >= 8, null, { timeout: 20000 });
+test("ops_room_can_pick_a_seat", async ({ page }) => {   // was sample_ops_room_can_pick_a_seat: the sample button went in z159, so it opens the folder's files as the Ops Room
+  await page.setInputFiles("#fileInputMore", require("path").join(process.env.LODE_FILES ? require("path").resolve(process.env.LODE_FILES) : require("path").join(__dirname, ".."), "Flight_Ops_Planner_SUP2.xlsx"));   // boot leaves SUP 2 out when the Ops Room is "mine"
+  await page.waitForFunction(() => books.length >= 8, null, { timeout: 20000 });
   await goOps(page, DAY);
-  assert.ok(await page.evaluate(() => opsEditable()), "the sample's Ops Room is editable");
+  assert.ok(await page.evaluate(() => opsEditable()), "the Ops Room is editable");
   const before = await page.evaluate(() => document.querySelectorAll("#opsMain td.oc.miss[data-oc]").length);
   assert.ok(before > 0, "an empty seat can be clicked");
   await page.click("#opsMain td.oc.miss[data-oc]");
   assert.ok(await page.evaluate(() => getComputedStyle(document.getElementById("opsPop")).display === "block"), "the seat picker opens");
   await page.selectOption("#opsPick", { index: 1 });
   assert.strictEqual(await page.evaluate(() => document.querySelectorAll("#opsMain td.oc.miss[data-oc]").length), before - 1, "the seat is filled");
-}, { blank: true });
+}, ED);
 
 
 // ---- hours from the time range, sorties from the flight (z126): a running change is one flight with 2 or 3 sorties

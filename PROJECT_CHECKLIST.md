@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 7 Nov 2026 (z198). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 8 Nov 2026 (z203). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -255,7 +255,7 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [x] Syllabus (6 Nov, Brandon): SUP 1, SUP 2 and TACCO share the same syllabus; Pilot and Loadmaster start empty (builder; in the fresh intranet set)
 - [?] Crew Roster: Remove crew and Transfer to SANS / NSMEN / regular crew on the right-click menu (z181, 6 Nov, Brandon): plans, Personnel Info and Currency go with the person; Remove asks first and the crew below move up (awaiting his test)
 - [?] Add a rank (z182, 6 Nov, Brandon): + Add rank… at the bottom of the Crew Roster Rank dropdown, you pick which rank it comes after; kept in the file's Ranks sheet (awaiting his test)
-- [?] + Add role on the Crew Roster (z187, 7 Nov, Brandon): Roles sheet per department file, order after a chosen role, optional "counts as instructor"; BETA tag in the header, DEV tag hidden (awaiting his look)
+- [?] + Add role on the Crew Roster (z187, 7 Nov, Brandon): Roles sheet per department file, order after a chosen role, optional "counts as instructor"; BETA tag in the header, DEV tag hidden (awaiting his look). The Roles sheet stays through Start new year and Wipe data (Brandon, 8 Nov)
 - [?] Real crew list (z186, 7 Nov, Brandon): crew list workbook filled from ATOM (Initials, Rank, Callsign, Active / NSMEN / SANS); a new eight-file set built from it with empty plans (his choice); ranks COL, SLTC, MWO added (awaiting his upload)
 - [?] Planner rows (z184, 6 Nov, Brandon): GROUND PROGRAMME renamed SQUADRON PROGRAMME; new ALERT row (z185: the alert state AL90 / AL2 set per week by the Master Planner, Alert States sheet; P1 / P2 / BU crew in the tooltip; rows slimmed to keep the old height) and FLYING RESTRICTION row (from the Ops Room restrictions); dashboard only, no Excel change (awaiting his look)
 - [?] Planner notes vs Ops Room remarks (Brandon, 7 Nov: **option 1 chosen**, **built z188 (7 Nov), awaiting his test**). The planner's flight card gets two boxes: **Planner note** (purple, planners only, never in the Ops Room or the AFP; existing cell comments stay as planner notes) and **For the Ops Room** (blue, shows as "SL · Back by 1500H" at the top of that flight's Ops Room Remarks). Grid: purple corner top right = planner note, blue corner top left = Ops Room line. Ops Room seats show only the name (the comment under the name goes). The Master Planner flight comment is left out of the Ops Room (Remarks hint text, view-only board, AFP); Ops Add comments stay. Storage: Cell Notes column H (spare), no layout change. The AFP REMARKS carry the Ops Room lines too (Brandon, 7 Nov: the AFP just reflects the Ops Room data) Mock-up `previews/cell_note_ops_mockup_{opt1,opt2,ops,ops_zoom}.png` (script `previews/cell_note_ops_mockup.js`)
@@ -269,3 +269,6 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Flight Codes: a Crew Matrix column to pick which matrix mission checks each code (Brandon, 7 Nov; **built z195, awaiting his test**). Auto = the mission named like the Mission Type (as before), or pick any mission on the Crew Matrix page, or Not checked. Saved in the Flight Codes sheet column H, no layout change
 - [?] Wider flight card; P1 / P2 / BU cells open the card with the standby crew and crew matrix check; standby P1 / P2 / BU listed on Flight Codes to pick their crew matrix (Brandon, 7 Nov; **built z196, awaiting his test**). They stay ground duties (not flights); saved in Flight Codes K5:L8
 - [?] More SANS / NSMEN rows (z183, 6 Nov, Brandon): 30 instead of 15 (75 people per department file), department layout 5, and Upgrade department files… on the start screen (dev) that copies everything typed in the old file into a new empty one (awaiting his upgrade of the intranet files)
+- [x] Stray ">" in the Currency and Crew Matrix help popups fixed (z201, 8 Nov)
+- [?] Start new year clears the Master Planner's alert states; an entry running into the new year stays (z202, 8 Nov, Brandon) (awaiting his test)
+- [?] Drag (Brandon, 8 Nov; **built z203**, awaiting his test): Planner fill handle (select a cell, drag the blue corner square along the row or down to other shifts and crew to copy its code; filled cells replaced; flights never copied or replaced; Ctrl+Z) and Crew Roster drag by the row number to reorder within the group (plans move with the person)

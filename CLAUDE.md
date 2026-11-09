@@ -41,7 +41,11 @@ existing macro-heavy ops tool (Oracle).
    postings dates, aircraft availability, weekly CO summary, leave balance, actual flying hours tracking beyond the Ops
    Room (ATOM's clocked hours for the month are shown since 2026-10-26, nothing more), Aborted / Re-plan, duplicate-tail warning, pairing rules, SDO person assignment / swap / fairness, PDF export,
    phone view, .ics export, look-ahead panel, copy last week, notes for the day, Ops Room P1/P2 alert windows (resolved by the 1 Set / 2 Set button, 2026-10-25).
-9. Ask before anything irreversible or outward-facing. Brandon uploads to SharePoint himself.
+9. **ATOM initials only** (Brandon, 9 Nov): any file set built for Brandon uses the ATOM initials from his crew list
+   (`LODESTAR_CREWLIST=<abs path>/input/LODESTAR_Crew_Initials_Input.xlsx`), never the made-up demo names. Build it outside
+   the repo and hand it over as a zip: the repo is public, so real initials are never committed. The repo's demo xlsx
+   (made-up names) are only for tests, screenshots and the Pages demo.
+10. Ask before anything irreversible or outward-facing. Brandon uploads to SharePoint himself.
 
 ## Files in this folder
 

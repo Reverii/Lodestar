@@ -1,4 +1,18 @@
-# LODESTAR handoff (updated 2026-11-08, after z203; next-session notes below)
+# LODESTAR handoff (updated 2026-11-09, after z203; next-session notes below)
+
+## Session end (9 Nov): ATOM initials only
+- Brandon asked why the Excel files still had dummy names, then: "from now on use the ATOM initials only", "wipe the dummy name".
+  The repo's eight xlsx are the demo set on purpose (made-up names, still layout 4); the repo is public, so real initials stay out of it.
+- **Rule added to CLAUDE.md (constraint 9):** every file set built for Brandon uses the ATOM initials from his crew list
+  (`LODESTAR_CREWLIST=<abs path>/input/LODESTAR_Crew_Initials_Input.xlsx`; the path must be absolute because the driver runs
+  the builders in a temp dir), built outside the repo and handed over as a zip. The demo xlsx are only for tests, screenshots and Pages.
+- **Built and sent:** `LODESTAR_ATOM_Initials_2026-11-09.zip` = the eight layout-5 xlsx + the z203 DEV dashboard. 101 people
+  (Pilot 42, Loadmaster 21, TACCO 14, SUP 2 13, SUP 1 11), Name = Initials = the ATOM initials, empty plans, flights and duty days,
+  demo flight codes and activities, public holidays. Checked: none of the 45 demo names or callsigns appears in any of the eight files.
+- **Gaps in that set:** the `input/` crew list (git-ignored) is the unfilled copy, so Rank, Callsign and Remarks are blank and the
+  5 people Brandon marked REMOVE on 7 Nov are still in; no ATOM export in the session, so Cat Status and Role are blank. Asked Brandon
+  to send the filled crew list and the ATOM export for a rebuild (with both: `LODESTAR_CREWLIST=... LODESTAR_ATOM=...`), or fill
+  them on the Crew Roster page. No dashboard change, no repo xlsx change.
 
 ## Session end (8 Nov): where things stand
 - Shipped and merged to main ([Reverii/Lodestar#13](https://github.com/Reverii/Lodestar/pull/13)): z201 (stray ">" in the Currency and Crew Matrix help), z202 (Start new year clears Alert States; Roles and Ranks stay), z203 (Planner fill handle, Crew Roster drag), the stale Ops Room seat test fixed.

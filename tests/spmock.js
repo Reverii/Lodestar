@@ -113,7 +113,7 @@ function startMock(o = {}) {
       return send(400, () => err(res, 400, "Mock does not know " + req.method + " " + api));
     }
   }
-  return new Promise(ok => server.listen(0, "127.0.0.1", () => {
+  return new Promise(ok => server.listen(o.port || 0, "127.0.0.1", () => {
     const port = server.address().port;
     Object.assign(m, {
       opts: o, port, origin: "http://127.0.0.1:" + port, url: "http://127.0.0.1:" + port + FOLDER + "/Flight_Ops_Planner_Dashboard.html?sptest", FOLDER,

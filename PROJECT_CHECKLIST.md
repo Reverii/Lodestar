@@ -159,6 +159,8 @@ Last updated: 9 Nov 2026 (z203). Tell Claude in this thread when something chang
 ## 11. Running it long term
 
 - [x] Year rollover: "Start new year" built 23 Oct; files are now year-agnostic
+- [?] Bug testing round (12 Nov, Brandon: "start with the SharePoint mock", "do more test", "cross-file flows"): SharePoint mock and save / merge / refresh tests (z204), strict check that saved files open in Excel without a repair (z205), Start new year end to end and the layout 4 -> 5 upgrade of every department (z206). Fixed: two saves in the same second losing edits, an expired SharePoint digest stopping autosave, a desktop-Excel-saved file being damaged on the next save (shared formulas), and three Start new year problems (someone's save lost, last year's plans written into the new year, old Daily View formulas carried over). Awaiting his test of z206 on SharePoint
+- [ ] One test script that builds a fresh file set and runs every test against it (today some tests need the repo's demo set and some a fresh set)
 - [x] Plan next January while still in December (built 24 Oct, z83): 'Jan (next year)' tab after Dec (SUP 2 file; other departments get it when scaled up), Master Planner, Duty Roster and Ops Room take next-January dates, the planner month list goes on to January of next year, crew rest and the Master copy run across 31 Dec; Start new year moves it into the new January without retyping
 - [x] Add the 'Jan (next year)' tab to SUP 1, TACCO, Loadmaster and Pilot (scale-up 26 Oct, z91)
 - [ ] Backups: where old versions are kept (SharePoint version history may be enough; confirm it's on)

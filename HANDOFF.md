@@ -1,5 +1,18 @@
 # LODESTAR handoff (updated 2026-11-12, after z206; next-session notes below)
 
+## Session end (12 Nov): bug testing round
+- Brandon asked whether agentic bug testing was needed; agreed plan: SharePoint mock and saves, saved files valid for Excel,
+  flows across files. All three done: z204, z205, z206 (sections below). Six bugs found and fixed, all dashboard-side.
+- Shipped on the work branch `claude/practical-lamport-j13scq` (pushed, **not merged to main, no PR yet**: ask Brandon).
+- For Brandon: upload the DEV dashboard (z206). No xlsx changed. Nothing new to see in normal use. Worth testing on SharePoint:
+  autosave and refresh as usual; save one department file in desktop Excel, then edit it in the dashboard and reopen in Excel
+  (no repair message); Start new year only on copies of the files.
+- Not verified on real SharePoint: that `ETag` comes back on `GetFileByServerRelativeUrl(...)?$select=TimeLastModified,ETag`
+  and on the `Files/add` reply (z204). If not, the dashboard falls back to the time alone, as before.
+- Still open from the testing plan: one script that builds a fresh set and runs every suite (some suites need the repo's
+  layout-4 demo set, `bdo_person` / `syllabus_stages` / `upgrade` need a fresh one, `wd_row` a layout-3 one).
+  `my_lodestar` `currency_soonest_rule` fails on a fresh set (test data, not a bug).
+
 ## z206: Start new year with other people working; flows across files tested (12 Nov)
 Brandon: "do the cross-file flows next" (third item of the testing plan). Crew Roster remove / transfer is safe across files: the
 Ops Room seats, additional crew and chits refer to people by callsign, not by row. Start new year had never been run end to end.

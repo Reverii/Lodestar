@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-12 z205</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-12 z206</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3786,13 +3786,25 @@ function liveRedraw() { if (typing()) { liveRender = true; return; } liveRender 
 document.addEventListener("focusout", () => setTimeout(() => { if (liveRender && !typing()) liveRedraw(); }, 50));
 // the currency status text written on save is not an undo step
 function curQuiet() { const k = undoPend; undoPend = true; try { writeCurrency(); } catch (e) { console.warn(e); } finally { undoPend = k; } }
+// z206: the plan year written in a file (Dashboard!A5), straight from its sheet XML
+function fileYear(files) { try { const P = sheetPaths(files), p = P.Dashboard; return p && files[p] ? num(readCellsOf(files, p, parseSST(files)).A5) || null : null; } catch (e) { return null; } }
+// z206: someone ran Start new year while this file was open with unsaved changes: writing them would put last year's plans into the
+// new year's file. Nothing is written; the person is told to reload. Returns true when the year moved.
+function yearMoved(b, nf) {
+  const y0 = fileYear(b.WB.files), y1 = fileYear(nf); if (!y0 || !y1 || y0 === y1) return false;
+  b.autoStop = b.S.dept + " has moved to " + y1 + " (Start new year): reload the dashboard. Changes made since your last save were not saved";
+  toast(b.S.dept + " was moved to " + y1 + " by Start new year while you had changes open. Your changes since your last save were NOT saved (they belong to " + y0 + "). Reload the dashboard (Ctrl+Shift+R) to plan " + y1 + ".", 20000);
+  return true;
+}
 async function autoSaveBook(b) {
   const h = b.WB.handle; let merged = false;
   if (h.sp) {
     const d = await spStamp(h.url);
     if (spChanged(h, d)) {   // someone else saved it: start from their file
       const buf = await spFetch({ Name: h.name, ServerRelativeUrl: h.url }); if (!books.includes(b)) return;
-      b.WB.files = fflate.unzipSync(new Uint8Array(buf)); b.WB.sst = parseSST(b.WB.files); b.WB.paths = sheetPaths(b.WB.files); spMark(h, d); merged = true;
+      const nf = fflate.unzipSync(new Uint8Array(buf));
+      if (yearMoved(b, nf)) return;
+      b.WB.files = nf; b.WB.sst = parseSST(b.WB.files); b.WB.paths = sheetPaths(b.WB.files); spMark(h, d); merged = true;
     } else spMark(h, d);
   }
   const bi = books.indexOf(b); if (bi < 0) return;
@@ -7152,7 +7164,7 @@ async function spStamp(url) {
 }
 const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
 function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-12 z205 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-12 z206 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7387,7 +7399,11 @@ $("spGo").onclick = async () => {
 async function spSave(h, bytes) {
   const folder = h.url.slice(0, h.url.lastIndexOf("/"));
   try {
-    if (spChanged(h, await spStamp(h.url)) && !confirm(h.name + " was changed on SharePoint after you opened it (by someone else, or in Excel). Saving now will replace those changes with yours.\n\nSave anyway? Click Cancel to keep their version; then reopen the file to see it.")) return false;
+    const st = await spStamp(h.url);
+    if (spChanged(h, st)) { const b = books.find(x => x.WB.handle === h);
+      if (b) { const nf = fflate.unzipSync(new Uint8Array(await spFetch({ Name: h.name, ServerRelativeUrl: h.url }))), y0 = fileYear(b.WB.files), y1 = fileYear(nf);
+        if (y0 && y1 && y0 !== y1) { alert(h.name + " has moved to " + y1 + " (Start new year was run). Your changes belong to " + y0 + " and were not saved.\n\nReload the dashboard (Ctrl+Shift+R) to plan " + y1 + ". The " + y0 + " file is in the Archive " + y0 + " folder."); return false; } } }
+    if (spChanged(h, st) && !confirm(h.name + " was changed on SharePoint after you opened it (by someone else, or in Excel). Saving now will replace those changes with yours.\n\nSave anyway? Click Cancel to keep their version; then reopen the file to see it.")) return false;
     const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(folder) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)",
       { method: "POST", body: bytes, headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
     spMark(h, r.d);
@@ -7519,6 +7535,7 @@ function rollBook(bi, y, opsCarry) {
     edit(LOG_SHEET, x => rollClear(x, (c, r) => r >= 2));
     Object.keys(WB.paths).forEach(sh => edit(sh, x => rollDV(x, y)));
     for (const [sh, L] of Object.entries(sets)) edit(sh, x => { for (const [ref, v] of L) x = setCell(x, ref, v); return x; });
+    if (isDept(books[bi])) dvFormulaFix(files);   // z206: the old broken Daily View formulas are repaired here too, as on every save
     let w = td.decode(files["xl/workbook.xml"]);
     if (/<calcPr\b/.test(w)) { w = /fullCalcOnLoad=/.test(w) ? w.replace(/fullCalcOnLoad="[^"]*"/, 'fullCalcOnLoad="1"') : w.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"'); }
     else w = w.replace(/(<extLst>|<\/workbook>)/, '<calcPr fullCalcOnLoad="1"/>$1');
@@ -7570,6 +7587,9 @@ async function rollGo() {
     const olds = books.map(b => fflate.zipSync(b.WB.files, { level: 6 })), news = out.map(o => fflate.zipSync(o.files, { level: 6 }));
     const names = books.map(b => b.WB.name || (b.S.dept + ".xlsx"));
     if (SP.on && books.every(b => b.WB.handle && b.WB.handle.sp)) {
+      // z206: someone saved a file after it was opened here: their save would be lost (and missing from the archive). Stop before writing anything.
+      const late = []; for (const b of books) if (spChanged(b.WB.handle, await spStamp(b.WB.handle.url))) late.push(b.WB.name);
+      if (late.length) { alert("Start new year did not run: " + late.join(", ") + (late.length === 1 ? " was" : " were") + " saved by someone after you opened " + (late.length === 1 ? "it" : "them") + ".\n\nPress Refresh (F5) so you have their changes, then run Start new year again. Nothing was changed."); $("rollGo").disabled = false; $("rollGo").textContent = "Start " + (y + 1); return; }
       const folder = books[0].WB.handle.url.slice(0, books[0].WB.handle.url.lastIndexOf("/")), arch = folder + "/Archive " + y;
       await spJson(SP.web + "/_api/web/folders", { method: "POST", body: JSON.stringify({ __metadata: { type: "SP.Folder" }, ServerRelativeUrl: arch }), headers: { Accept: "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
       for (let i = 0; i < books.length; i++) await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(arch) + "')/Files/add(url='" + spQ(names[i]) + "',overwrite=true)", { method: "POST", body: olds[i], headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });

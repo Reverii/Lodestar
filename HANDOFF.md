@@ -1,4 +1,28 @@
-# LODESTAR handoff (updated 2026-11-12, after z205; next-session notes below)
+# LODESTAR handoff (updated 2026-11-12, after z206; next-session notes below)
+
+## z206: Start new year with other people working; flows across files tested (12 Nov)
+Brandon: "do the cross-file flows next" (third item of the testing plan). Crew Roster remove / transfer is safe across files: the
+Ops Room seats, additional crew and chits refer to people by callsign, not by row. Start new year had never been run end to end.
+- **Tests** `node tests/new_year.test.js` (6, on the SharePoint mock; helpers moved to `tests/sp_lib.js`, used by `sharepoint.test.js` too):
+  end to end (December and Jan (next year) plans in SUP 2 and Pilot, Master Planner flights in Dec and Jan 2027, SDO days; archive
+  folder holds the 2026 files; all 8 new files are 2027 and pass `xlsx_check.py`; Jan (next year) became January, December empty;
+  a fresh dashboard opens them all as 2027); someone saved meanwhile; an open dashboard with unsaved changes; the Save button after
+  the new year; an idle dashboard re-reads the 2027 files on refresh; rosters unchanged.
+- **Bug 1 (fixed):** someone's save made after the Ops Room opened the files was overwritten by Start new year, and was missing from
+  the archive copy too. `rollGo` now checks every file's time / ETag first; if one changed it stops before writing anything:
+  "Start new year did not run: <file> was saved by someone after you opened it. Press Refresh (F5) ..., then run Start new year again."
+- **Bug 2 (fixed):** a department dashboard still open on 2026 with unsaved changes autosaved them into the new 2027 file (a
+  December 2026 plan landed in December 2027), and its Save button offered to replace the 2027 file with the 2026 one. Now
+  `yearMoved` / `fileYear` compare the year in the file on SharePoint with the one it was opened from: autosave stops with a
+  20-second message ("... was moved to 2027 by Start new year ... Your changes since your last save were NOT saved ... Reload"),
+  and Save refuses with an alert. An idle dashboard simply re-reads the 2027 files on refresh.
+- **Bug 3 (fixed):** Start new year did not repair the old broken Daily View formulas (`{ref}`, z167) the way every save does, so a
+  department file never saved since z167 went into the new year still broken. `rollBook` now runs `dvFormulaFix`.
+- **Upgrade 4 -> 5:** new `every_department_full_plans_upgrade_cleanly` in `tests/upgrade.test.js`: all 5 departments with plans in
+  every month (regular and SANS / NSMEN rows, all four rows), notes and currency dates; everything matches after the upgrade, the
+  15 new rows are empty, the upgraded files pass `xlsx_check.py`. No bug found. (`LODE_NEW=<fresh layout-5 set>`.)
+- Suites re-run on z206: sharepoint 14, new_year 6, upgrade 5, roster_order 25, ground_rows 13, alert_fr_rows 8, excel_safe,
+  xlsx_stress 6, daily_view_fix, dept_select 24, refresh 13, changelog 8. Dashboard only.
 
 ## z205: saved files checked for Excel repairs; shared-formula fix (12 Nov)
 Brandon: "Do more test". Second item of the testing plan: do saved files open in desktop Excel without "We found a problem with some content"?

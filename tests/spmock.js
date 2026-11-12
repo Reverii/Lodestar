@@ -15,6 +15,7 @@
 // m.fixClock(ms | null)       every save gets this modified time (two saves in the same second); null = real clock
 // startMock({ refuseTag: true })  a site that refuses $select=ETag (400): the dashboard falls back to the time alone
 // m.secondClock = true        TimeLastModified has whole seconds, like SharePoint (default true)
+// m.other                   Map "<folder>/<name>" -> bytes saved outside the Program folder (Archive <year>)
 // m.log                       [{ method, path, user, status }]
 // m.saves(name)               the Files/add calls for that file
 // m.close()
@@ -29,7 +30,7 @@ function startMock(o = {}) {
   const page = o.page || path.join(__dirname, "..", "Flight_Ops_Planner_Dashboard.html");
   const files = new Map();   // name -> { bytes, modified (ms), by }
   let clock = Date.parse(o.start || "2026-10-26T08:00:00Z");
-  const m = { log: [], secondClock: o.secondClock !== false, locks: new Set(), ro: new Set(), fails: [], delays: [], digests: new Set(), dead: new Set(), seq: 0, fixed: null };
+  const m = { other: new Map(), folders: new Set(), log: [], secondClock: o.secondClock !== false, locks: new Set(), ro: new Set(), fails: [], delays: [], digests: new Set(), dead: new Set(), seq: 0, fixed: null };
   const now = () => m.fixed != null ? m.fixed : (clock = Math.max(clock + 1, Date.now()));
   const iso = t => new Date(m.secondClock ? Math.floor(t / 1000) * 1000 : t).toISOString().replace(/\.000Z$/, "Z");
   let ids = 0;
@@ -95,7 +96,10 @@ function startMock(o = {}) {
       if (req.method === "POST" && (mm = /^\/web\/GetFolderByServerRelativeUrl\('(.*)'\)\/Files\/add\(url='(.*)',overwrite=true\)$/.exec(api))) {
         const folder = mm[1].replace(/''/g, "'"), n = mm[2].replace(/''/g, "'");
         if (!digestOk()) return send(403, () => err(res, 403, "The security validation for this page is invalid and might be corrupted. Please use your web browser's Back button to try your operation again."));
-        if (folder !== FOLDER) { store("__other__" + folder + "/" + n, body, now(), user); return send(200, () => json(res, 200, { d: { Name: n, TimeLastModified: iso(clock) } })); }
+        if (folder !== FOLDER) {   // another folder (the Archive <year> folder of Start new year): kept apart, never listed with the Program folder
+          if (!m.folders.has(folder)) return send(404, () => err(res, 404, "Folder not found: " + folder));
+          m.other.set(folder + "/" + n, Buffer.from(body)); return send(200, () => json(res, 200, { d: { Name: n, ServerRelativeUrl: folder + "/" + n, TimeLastModified: iso(now()) } }));
+        }
         if (m.ro.has(n)) return send(403, () => err(res, 403, "Access denied."));
         if (m.locks.has(n)) return send(423, () => err(res, 423, "The file \"" + n + "\" is locked for shared use by someone else."));
         store(n, body, now(), user);
@@ -103,7 +107,8 @@ function startMock(o = {}) {
       }
       if (req.method === "POST" && api === "/web/folders") {
         if (!digestOk()) return send(403, () => err(res, 403, "The security validation for this page is invalid."));
-        return send(200, () => json(res, 200, { d: { ServerRelativeUrl: JSON.parse(body.toString() || "{}").ServerRelativeUrl } }));
+        const fu = JSON.parse(body.toString() || "{}").ServerRelativeUrl; m.folders.add(fu);
+        return send(200, () => json(res, 200, { d: { ServerRelativeUrl: fu } }));
       }
       return send(400, () => err(res, 400, "Mock does not know " + req.method + " " + api));
     }

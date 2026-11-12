@@ -2,52 +2,10 @@
 // Build first: python3 .lodestar_build.py dashboard
 // Run: node tests/sharepoint.test.js [name-filter]      LODE_FILES=<folder> to use another set of xlsx files
 const assert = require("assert");
-const fs = require("fs"), os = require("os"), path = require("path");
-const { execFileSync } = require("child_process");
-const { chromium } = require("playwright");
-const { startMock } = require("./spmock");
-const ROOT = path.resolve(__dirname, "..");
-const FILES = process.env.LODE_FILES ? path.resolve(process.env.LODE_FILES) : ROOT;
+const { cells, person, cellOf, code, edit, seen, saved, live, sleep, runTests } = require("./sp_lib");
 const SUP2 = "Flight_Ops_Planner_SUP2.xlsx", PILOT = "Flight_Ops_Planner_Pilot.xlsx";
 const tests = [];
 const test = (name, fn) => tests.push({ name, fn });
-
-// ---- helpers ----
-function folderFiles() { const o = {}; for (const n of fs.readdirSync(FILES)) if (/\.xlsx$/i.test(n) && !/^~\$/.test(n)) o[n] = fs.readFileSync(path.join(FILES, n)); return o; }
-// read cells from xlsx bytes with openpyxl: refs = [[sheet, ref], ...] -> values (strings, "" for empty); sheet "Change Log" -> its rows as text
-function cells(bytes, refs) {
-  const f = path.join(os.tmpdir(), "lodestar_spmock_" + process.pid + ".xlsx"); fs.writeFileSync(f, bytes);
-  const py = "import sys,json,openpyxl\nwb=openpyxl.load_workbook(sys.argv[1])\nout=[]\nfor s,r in json.loads(sys.argv[2]):\n" +
-    "  if r=='*':\n    out.append(['|'.join('' if v is None else str(v) for v in row) for row in wb[s].iter_rows(values_only=True)] if s in wb.sheetnames else None)\n" +
-    "  else:\n    v=wb[s][r].value\n    out.append('' if v is None else str(v))\nprint(json.dumps(out))";
-  return JSON.parse(execFileSync("python3", ["-c", py, f, JSON.stringify(refs)]).toString());
-}
-let BROWSER = null;
-// one person: a browser context with their SharePoint name, opened on a department card (or "Ops Room")
-async function person(m, name, dept, errs) {
-  const ctx = await BROWSER.newContext({ viewport: { width: 1280, height: 720 } });
-  await ctx.addCookies([{ name: "spuser", value: name.replace(/ /g, "+"), url: m.origin }]);
-  const page = await ctx.newPage();
-  page.on("pageerror", e => errs.push(name + " PAGEERROR " + e.message));
-  page.on("dialog", d => { errs.push(name + " DIALOG " + d.message().slice(0, 200)); page.__dialogs = (page.__dialogs || []).concat(d.message()); d.type() === "confirm" && page.__confirm ? d.accept() : d.dismiss(); });
-  await page.addInitScript(() => { window.OPS_TODAY = "2026-10-26"; window.CUR_TODAY = "2026-10-26"; });
-  await page.goto(m.url);
-  await page.waitForFunction(() => SP.on && document.querySelector("#spGrid .dcard"), null, { timeout: 20000 });
-  await page.waitForFunction(() => SP.user && SP.user.Title, null, { timeout: 5000 }).catch(() => {});
-  if (dept === "Ops Room") { await page.click("#spPick button[data-ops]"); await page.waitForFunction(() => OPS && books.length >= 6, null, { timeout: 60000 }); }
-  else { await page.click("#spGrid button[data-dept='" + dept + "']"); await page.waitForFunction(() => books.length >= 4 && !spOthersBusy, null, { timeout: 60000 }); }
-  page.ctx = ctx; return page;
-}
-// a crew grid cell on the Oct tab of the open file named `file` (person i, shift s, day d) -> { sheet, ref }
-const cellOf = (page, file, i, s, d) => page.evaluate(([file, i, s, d]) => { const bi = books.findIndex(b => b.WB.name === file); return withBook(bi, () => ({ sheet: monSheet(9), ref: colL(DAY_COL0 + d) + (g0() + gridRow(i, s)) })); }, [file, i, s, d]);
-const code = page => page.evaluate(() => (S.acts.find(a => a.code && /leave/i.test(a.code)) || S.acts.find(a => a.code)).code);
-// type a value into an open file, the way the planner grid does (put on that book)
-const edit = (page, file, c, v) => page.evaluate(([file, c, v]) => { const bi = books.findIndex(b => b.WB.name === file), keep = cur.b; useBook(bi); try { put(c.sheet, c.ref, v); } finally { useBook(keep); } autoKick(); }, [file, c, v]);
-// what the page itself holds for that cell now (saved file + unsaved changes)
-const seen = (page, file, c) => page.evaluate(([file, c]) => { const b = books.find(b => b.WB.name === file), d = b.dirty.get(c.sheet + "!" + c.ref); if (d) return String(d.val ?? ""); const v = cellsAt(b, b.WB.files, c.sheet)[c.ref]; return String(v ?? ""); }, [file, c]);
-const saved = (page, file, ms = 20000) => page.waitForFunction(f => { const b = books.find(b => b.WB.name === f); return b && !b.dirty.size && !autoBusy; }, file, { timeout: ms });
-const live = page => page.evaluate(() => liveCheck(true));
-const sleep = ms => new Promise(z => setTimeout(z, ms));
 
 // ---- tests ----
 test("connects_lists_and_names_the_user", async ({ m, errs }) => {
@@ -194,19 +152,4 @@ test("ops_room_and_department_edit_the_same_file", async ({ m, errs }) => {
   const [x, y] = cells(m.file(SUP2), [[co.sheet, co.ref], [cd.sheet, cd.ref]]); assert.deepStrictEqual([x, y], [v, v], JSON.stringify({ x, y, co, cd, saves: m.saves(SUP2).map(e => e.user) }));
 });
 
-(async () => {
-  const only = process.argv[2]; let pass = 0, ran = 0;
-  BROWSER = await chromium.launch();
-  for (const t of tests) {
-    if (only && !t.name.includes(only)) continue; ran++;
-    const m = await startMock({ files: folderFiles(), secondClock: !process.env.SPMOCK_MS }), errs = [];
-    try { await t.fn({ m, errs }); const bad = errs.filter(e => /PAGEERROR/.test(e)); if (bad.length) throw new Error(bad.join(" | ")); pass++; console.log("ok   " + t.name); }
-    catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 400) + (errs.length ? "  [" + errs.join(" | ").slice(0, 300) + "]" : "")); }
-    finally {
-      if (process.env.LODE_DUMP) { fs.mkdirSync(process.env.LODE_DUMP, { recursive: true }); for (const n of new Set(m.saves().map(e => /url='([^']+)'/.exec(e.path)[1]))) if (m.file(n)) fs.writeFileSync(path.join(process.env.LODE_DUMP, "sharepoint_" + t.name + "_" + n), m.file(n)); }
-      for (const c of BROWSER.contexts()) await c.close(); await m.close();
-    }
-  }
-  await BROWSER.close();
-  console.log(pass + "/" + ran + " passed"); process.exit(pass === ran ? 0 : 1);
-})();
+runTests(tests, "sharepoint");

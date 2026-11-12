@@ -29,7 +29,9 @@ async function dumpBooks(page) {
           const fo = []; for (const e of b.dirty.values()) { const p = WB.paths[e.sheet], x = p && WB.files[p] ? td.decode(WB.files[p]) : ""; const m = x && new RegExp('<c r="' + e.ref + '"[^>]*>(?:(?!</c>).)*?<f[ >/]').exec(x); if (m) fo.push(e.sheet + "!" + e.ref); }
           const built = logBuild(b, new Map(b.dirty)); let s = ""; const u = built.bytes;
           for (let k = 0; k < u.length; k += 0x8000) s += String.fromCharCode.apply(null, u.subarray(k, k + 0x8000));
-          out.push({ name: b.WB.name, b64: btoa(s), n: b.dirty.size, fo });
+          // the file's state in memory, for tests/reopen_check.js: a saved file opened again must read back the same
+          let state = ""; try { state = JSON.stringify(b.S, (k, v) => k[0] === "_" ? undefined : v instanceof Map ? { "#map": [...v.entries()].sort((x, y) => String(x[0]) < String(y[0]) ? -1 : 1) } : v instanceof Set ? { "#set": [...v].sort() } : v); } catch (e) { }
+          out.push({ name: b.WB.name, b64: btoa(s), n: b.dirty.size, fo, state });
         } catch (e) { out.push({ name: b.WB.name, err: String(e && e.message || e) }); }
       });
       try { if (books.length) useBook(keep); } catch (e) { }
@@ -41,6 +43,7 @@ async function dumpBooks(page) {
     const base = SUITE + "_" + process.pid + "_" + (++dumpN) + "_" + g.name.replace(/\.xlsx$/i, "");
     if (g.err) fs.writeFileSync(path.join(DUMP, base + ".builderror.txt"), g.err);
     else fs.writeFileSync(path.join(DUMP, base + ".xlsx"), Buffer.from(g.b64, "base64"));
+    if (g.state) fs.writeFileSync(path.join(DUMP, base + ".state.json"), g.state);
     if (g.fo && g.fo.length) fs.writeFileSync(path.join(DUMP, base + ".formula_overwrites.txt"), g.fo.join("\n"));
   }
 }

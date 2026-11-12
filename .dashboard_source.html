@@ -5177,7 +5177,7 @@ function mergeRuns() {
     if (sh.length === 3) R.get(sh[0]).forEach(a => { const b = R.get(sh[1]).find(x => x.d0 === a.d0 && x.d1 === a.d1 && x.v === a.v), c = R.get(sh[2]).find(x => x.d0 === a.d0 && x.d1 === a.d1 && x.v === a.v); if (b && c) { blocks.push({ r0: sh[0], r1: sh[2], rows: sh, d0: a.d0, d1: a.d1 }); [a, b, c].forEach(x => x.done = true); } });
     rs.forEach(r => R.get(r).forEach(x => { if (!x.done && x.d1 > x.d0) blocks.push({ r0: r, r1: r, rows: [r], d0: x.d0, d1: x.d1 }); }));
   });
-  const mon = MONTHS[cur.m].slice(0, 3);
+  const mon = MONTHS[cur.m % 12];   // z207: Jan (next year) is month 12; MONTHS[12] threw here and the planner stopped drawing half way
   const made = [];
   blocks.forEach(b => {
     const first = byRow.get(b.r0)[b.d0], txt = first.textContent.trim(), cs = getComputedStyle(first), col = cs.color, bg = cs.backgroundColor;
@@ -8768,7 +8768,7 @@ $("sdoNote").addEventListener("click", e => {
     const L = colL(DAY_COL0 + x.d), sh = monSheet(x.mi);
     x.clr.forEach(j => { for (let s = 0; s < rp(S); s++) { const rr = gridRow(j, s); if (dutyKey(M.grid[rr][x.d]) === "BDO") { M.grid[rr][x.d] = ""; put(sh, L + (g0() + rr), ""); } } });
     if (x.put >= 0) { const rr = bdoRow(S, x.put), old = String(M.grid[rr][x.d] || "").trim(), p = S.roster[x.put];
-      if (old && !confirm((p.id || p.name) + " already has " + old + " on " + ROW_LABELS[rowShift(rr)] + " on " + (x.d + 1) + " " + MONTHS[x.mi] + ". The Duty Roster puts them on BDO that day. Replace it with BDO?")) { skip++; continue; }
+      if (old && !confirm((p.id || p.name) + " already has " + old + " on " + ROW_LABELS[rowShift(rr)] + " on " + (x.d + 1) + " " + MONTHS[x.mi % 12] + (x.mi === NX_MI ? " " + (S.year + 1) : "") + ". The Duty Roster puts them on BDO that day. Replace it with BDO?")) { skip++; continue; }
       M.grid[rr][x.d] = "BDO"; put(sh, L + (g0() + rr), "BDO"); }
   }
   useBook(keep); renderSdo(); renderPlanner(); renderOverview();

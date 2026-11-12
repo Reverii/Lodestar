@@ -202,7 +202,10 @@ test("ops_room_and_department_edit_the_same_file", async ({ m, errs }) => {
     const m = await startMock({ files: folderFiles(), secondClock: !process.env.SPMOCK_MS }), errs = [];
     try { await t.fn({ m, errs }); const bad = errs.filter(e => /PAGEERROR/.test(e)); if (bad.length) throw new Error(bad.join(" | ")); pass++; console.log("ok   " + t.name); }
     catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 400) + (errs.length ? "  [" + errs.join(" | ").slice(0, 300) + "]" : "")); }
-    finally { for (const c of BROWSER.contexts()) await c.close(); await m.close(); }
+    finally {
+      if (process.env.LODE_DUMP) { fs.mkdirSync(process.env.LODE_DUMP, { recursive: true }); for (const n of new Set(m.saves().map(e => /url='([^']+)'/.exec(e.path)[1]))) if (m.file(n)) fs.writeFileSync(path.join(process.env.LODE_DUMP, "sharepoint_" + t.name + "_" + n), m.file(n)); }
+      for (const c of BROWSER.contexts()) await c.close(); await m.close();
+    }
   }
   await BROWSER.close();
   console.log(pass + "/" + ran + " passed"); process.exit(pass === ran ? 0 : 1);

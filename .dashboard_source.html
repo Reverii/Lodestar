@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-12 z204</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-12 z205</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3495,9 +3495,32 @@ function cellXml(ref, attrs, val) {
   if (typeof val === "number") return '<c r="' + ref + '"' + attrs + "><v>" + val + "</v></c>";
   return '<c r="' + ref + '"' + attrs + ' t="inlineStr"><is><t xml:space="preserve">' + esc(xmlSafe(val)) + "</t></is></c>";
 }
+// z204: a formula moved from one cell to another, the way Excel fills it: relative references shift by (dc, dr), $ parts stay.
+// Text in quotes and quoted sheet names are left alone; a name followed by "(" is a function (LOG10), not a cell.
+function shiftFormula(f, dc, dr) {
+  const one = t => t.replace(/(^|[^A-Za-z0-9_.$])(\$?)([A-Z]{1,3})(\$?)(\d+)(?![A-Za-z0-9_(])/g, (m0, pre, dcol, col, drow, row) => {
+    const c = dcol ? colN(col) : colN(col) + dc, r = drow ? +row : +row + dr;
+    if (c < 1 || r < 1) return pre + "#REF!";
+    return pre + dcol + colL(c) + drow + r; });
+  return f.split(/("(?:[^"]|"")*"|'(?:[^']|'')*')/).map((p, k) => k % 2 ? p : one(p)).join("");
+}
+// z204: a file desktop Excel saved stores a formula filled across cells once, in its first cell (the master: <f t="shared" ref si>),
+// and the others as <f t="shared" si/>. Before the master is overwritten, every other cell of that group gets its own formula,
+// else Excel repairs the file and drops them.
+function unshareFormula(xml, master) {
+  const fm = /<f\b([^>]*\bt="shared"[^>]*)>([^<]*)<\/f>/.exec(master.cell); if (!fm || !/\bref="/.test(fm[1])) return xml;
+  const si = (/\bsi="(\d+)"/.exec(fm[1]) || [])[1]; if (si == null) return xml;
+  const un = t => t.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+  const text = un(fm[2]), mc = colN(master.ref.match(/[A-Z]+/)[0]), mr = +master.ref.match(/\d+/)[0];
+  const keep = a => a.replace(/\s+(?:t|si|ref)="[^"]*"/g, "");
+  return xml.replace(/(<c r="([A-Z]+)(\d+)"[^>]*>(?:(?!<\/c>)[\s\S])*?)<f\b([^>]*)\/>/g, (m0, head, col, row, at) => {
+    if (!/\bt="shared"/.test(at) || (/\bsi="(\d+)"/.exec(at) || [])[1] !== si) return m0;
+    return head + "<f" + keep(at) + ">" + esc(shiftFormula(text, colN(col) - mc, +row - mr)) + "</f>"; });
+}
 function setCell(xml, ref, val) {
   const re = new RegExp('<c r="' + ref + '"((?:\\s+[\\w:]+="[^"]*")*)\\s*(?:/>|>[\\s\\S]*?</c>)');
-  const m = xml.match(re);
+  let m = xml.match(re);
+  if (m && /<f\b[^>]*\bt="shared"[^>]*\bref="/.test(m[0])) { xml = unshareFormula(xml, { ref, cell: m[0] }); m = xml.match(re); }
   if (m) return xml.slice(0, m.index) + cellXml(ref, m[1], val) + xml.slice(m.index + m[0].length);
   if (val === "" || val == null) return xml;
   const rowN = +ref.match(/\d+/)[0], col = colN(ref.match(/[A-Z]+/)[0]);
@@ -7128,7 +7151,7 @@ async function spStamp(url) {
 }
 const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
 function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-12 z204 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-12 z205 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

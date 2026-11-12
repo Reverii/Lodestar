@@ -1,4 +1,13 @@
-# LODESTAR handoff (updated 2026-11-09, after z203; next-session notes below)
+# LODESTAR handoff (updated 2026-11-12, after z204; next-session notes below)
+
+## z204: SharePoint mock, two save fixes (12 Nov)
+Brandon asked whether agentic bug testing was needed; agreed to start with a SharePoint REST mock and save checks.
+- **Mock** `tests/spmock.js`: a real HTTP server (Node) serving the built dashboard at `/sites/121SQN/Program/Flight_Ops_Planner_Dashboard.html?sptest` with the folder's xlsx in memory (never written to disk). Answers contextinfo, folder listing (with and without `$expand=ModifiedBy`), file time / ETag, `$value`, EffectiveBasePermissions, `Files/add`, `folders`, currentuser. Controls: `lock` (423), `readOnly`, `failNext`, `delayNext` (saves landing together), `fixClock` (two saves in one second), `expireDigests`, `refuseTag`. Whole-second `TimeLastModified` like SharePoint. One browser context per person (cookie `spuser`).
+- **Tests** `node tests/sharepoint.test.js` (14): autosave once with a digest and a Change Log line naming the user; two people on one file keep both edits; live refresh shows another department's save; refresh keeps an unsaved edit then merges; saves landing together healed by `liveHeal`; same-second saves; a site without ETag; locked file; dropped save retried (one log line); expired digest; view-only permission; Ops Room saves each department file by itself; Ops Room and a department editing the same file.
+- **Bug 1 (data loss, fixed):** the dashboard spotted someone else's save only by `TimeLastModified`, which has whole seconds. Two saves of one file in the same second (an Ops Room autosave and a department autosave, both 2.5 s after typing) looked unchanged, so the later save dropped the earlier person's cells and refresh never healed it. The mock showed it without forcing (`ops_room_and_department_edit_the_same_file` failed on z203). Fix: `spStamp` / `spChanged` / `spMark` also compare the file's `ETag` (changes on every save); a site that refuses `$select=ETag` (400) falls back to the time alone (`SP.noTag`).
+- **Bug 2 (fixed):** a form digest SharePoint refused early (403 "security validation", e.g. after signing in again) was kept for its whole 30 minutes, so autosave failed until then. `spJson` now fetches a new digest and retries once.
+- Not checked on real SharePoint: that `ETag` comes back on `GetFileByServerRelativeUrl(...)?$select=TimeLastModified,ETag` and on the `Files/add` reply. If it doesn't, behaviour is as before z204. Brandon: autosave and refresh as usual; nothing new to see.
+- Other suites run: dept_select 24, refresh 13, running_change, merge_runs, changelog 8. Dashboard only.
 
 ## Session end (9 Nov): ATOM initials only
 - Brandon asked why the Excel files still had dummy names, then: "from now on use the ATOM initials only", "wipe the dummy name".

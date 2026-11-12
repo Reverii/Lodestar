@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-08 z203</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-12 z204</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3765,11 +3765,11 @@ function curQuiet() { const k = undoPend; undoPend = true; try { writeCurrency()
 async function autoSaveBook(b) {
   const h = b.WB.handle; let merged = false;
   if (h.sp) {
-    const j = await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(h.url) + "')?$select=TimeLastModified");
-    if (j.d.TimeLastModified !== h.modified) {   // someone else saved it: start from their file
+    const d = await spStamp(h.url);
+    if (spChanged(h, d)) {   // someone else saved it: start from their file
       const buf = await spFetch({ Name: h.name, ServerRelativeUrl: h.url }); if (!books.includes(b)) return;
-      b.WB.files = fflate.unzipSync(new Uint8Array(buf)); b.WB.sst = parseSST(b.WB.files); b.WB.paths = sheetPaths(b.WB.files); h.modified = j.d.TimeLastModified; merged = true;
-    }
+      b.WB.files = fflate.unzipSync(new Uint8Array(buf)); b.WB.sst = parseSST(b.WB.files); b.WB.paths = sheetPaths(b.WB.files); spMark(h, d); merged = true;
+    } else spMark(h, d);
   }
   const bi = books.indexOf(b); if (bi < 0) return;
   let built, sent;
@@ -3777,7 +3777,7 @@ async function autoSaveBook(b) {
   if (h.sp) {
     const folder = h.url.slice(0, h.url.lastIndexOf("/"));
     const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(folder) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: built.bytes, headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
-    h.modified = r.d.TimeLastModified || h.modified;
+    spMark(h, r.d);
   } else { const w = await h.createWritable(); await w.write(new Blob([built.bytes])); await w.close(); }
   b.WB.files = built.files; b.saved = b.saved || new Set();
   b.recent = b.recent || new Map(); const now = Date.now();
@@ -3813,11 +3813,12 @@ async function liveCheck(manual) {
     for (const b of books.slice()) {
       const h = b.WB.handle; if (!h || !h.sp) continue; if (b.dirty.size) { held++; continue; }
       try {
-        const j = await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(h.url) + "')?$select=TimeLastModified");
-        if (j.d.TimeLastModified === h.modified || b.dirty.size) continue;
+        const d = await spStamp(h.url);
+        if (!spChanged(h, d)) { spMark(h, d); continue; }
+        if (b.dirty.size) continue;
         const buf = await spFetch({ Name: h.name, ServerRelativeUrl: h.url });
         const i = books.indexOf(b); if (i < 0 || b.dirty.size) continue;
-        reparseBook(i, buf); h.modified = j.d.TimeLastModified; got.push(b.S.dept); gotIx.push(i); liveHeal(b);
+        reparseBook(i, buf); spMark(h, d); got.push(b.S.dept); gotIx.push(i); liveHeal(b);
       } catch (e) { console.warn("live", e); }
     }
   } finally { liveBusy = false; }
@@ -7101,7 +7102,11 @@ const spQ = p => encodeURIComponent(p.replace(/'/g, "''"));
 const spLabel = f => f.Name.replace(/\.xlsx$/i, "").replace(/^Flight_Ops_Planner_/, "").replace(/_/g, " ");
 async function spJson(url, opt = {}) {
   const r = await fetch(url, Object.assign({ credentials: "same-origin", headers: { Accept: "application/json;odata=verbose" } }, opt));
-  if (!r.ok) { const t = await r.text().catch(() => ""); const e = new Error(spErr(r.status, t)); e.status = r.status; throw e; }
+  if (!r.ok) { const t = await r.text().catch(() => "");
+    // z204: SharePoint refused the form digest before its time ran out (signed in again, server restarted): get a new one and try once more
+    if (r.status === 403 && opt.headers && opt.headers["X-RequestDigest"] && !opt.digestRetry && /security validation/i.test(t)) {
+      SP.digest = ""; return spJson(url, Object.assign({}, opt, { digestRetry: true, headers: Object.assign({}, opt.headers, { "X-RequestDigest": await spDigest() }) }));
+    } const e = new Error(spErr(r.status, t)); e.status = r.status; throw e; }
   return r.json();
 }
 function spErr(status, text) {
@@ -7115,7 +7120,15 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-08 z203 · SharePoint check: " + msg; }
+// z204: has someone else saved this file since we read it? SharePoint's TimeLastModified only has whole seconds, so two saves in the
+// same second look unchanged by time alone; the file's ETag changes on every save. Sites that refuse ETag fall back to the time.
+async function spStamp(url) {
+  try { return (await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(url) + "')?$select=TimeLastModified" + (SP.noTag ? "" : ",ETag"))).d; }
+  catch (e) { if (!SP.noTag && e.status === 400) { SP.noTag = true; return spStamp(url); } throw e; }
+}
+const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
+function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-12 z204 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7350,11 +7363,10 @@ $("spGo").onclick = async () => {
 async function spSave(h, bytes) {
   const folder = h.url.slice(0, h.url.lastIndexOf("/"));
   try {
-    const j = await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(h.url) + "')?$select=TimeLastModified");
-    if (j.d.TimeLastModified !== h.modified && !confirm(h.name + " was changed on SharePoint after you opened it (by someone else, or in Excel). Saving now will replace those changes with yours.\n\nSave anyway? Click Cancel to keep their version; then reopen the file to see it.")) return false;
+    if (spChanged(h, await spStamp(h.url)) && !confirm(h.name + " was changed on SharePoint after you opened it (by someone else, or in Excel). Saving now will replace those changes with yours.\n\nSave anyway? Click Cancel to keep their version; then reopen the file to see it.")) return false;
     const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(folder) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)",
       { method: "POST", body: bytes, headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
-    h.modified = r.d.TimeLastModified || h.modified;
+    spMark(h, r.d);
     toast("Saved to SharePoint: " + h.name);
     return true;
   } catch (e) { alert(e && e.status === 403 ? "You only have view access to this file." : "Could not save to SharePoint: " + (e.message || e)); return false; }
@@ -7538,7 +7550,7 @@ async function rollGo() {
       await spJson(SP.web + "/_api/web/folders", { method: "POST", body: JSON.stringify({ __metadata: { type: "SP.Folder" }, ServerRelativeUrl: arch }), headers: { Accept: "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
       for (let i = 0; i < books.length; i++) await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(arch) + "')/Files/add(url='" + spQ(names[i]) + "',overwrite=true)", { method: "POST", body: olds[i], headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
       for (let i = 0; i < books.length; i++) { const h = books[i].WB.handle, f = h.url.slice(0, h.url.lastIndexOf("/"));
-        const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(f) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: news[i], headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } }); h.modified = r.d.TimeLastModified || h.modified; }
+        const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(f) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: news[i], headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } }); spMark(h, r.d); }
     } else {
       const za = {}, zn = {}; names.forEach((n, i) => { za[n] = olds[i]; zn[n] = news[i]; });
       rollDl("LODESTAR_archive_" + y + ".zip", fflate.zipSync(za, { level: 0 }));

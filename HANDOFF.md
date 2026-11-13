@@ -1,4 +1,15 @@
-# LODESTAR handoff (updated 2026-11-12, after z206; next-session notes below)
+# LODESTAR handoff (updated 2026-11-13, after z207; next-session notes below)
+
+## Session end (13 Nov): z207 merged to main
+- Brandon: "merge to main and push and end session for now". The work branch `claude/practical-lamport-j13scq` (z204 to z207, the
+  bug testing round) is merged into `main` and pushed. No xlsx changed.
+- **z207 (12 Nov, late):** the Planner on Jan (next year) stopped drawing at merge runs; it draws the merged blocks again
+  (`.dashboard_source.html`, check added to `tests/merge_runs.test.js`). New test tools: `tests/sp_serve.js` (the SharePoint mock as a
+  standing server, to click through by hand), `tests/run_all.js` (runs the suites in one go) and `tests/reopen_check.js`.
+- For Brandon: upload the DEV dashboard (z207). To test: as listed under the 12 Nov session end below.
+- Still open: one script that builds a fresh set and runs every suite against the right set; the ATOM initials set rebuild once
+  Brandon sends the filled crew list and the ATOM export; whether Beta also means the release build; whether My Lodestar should
+  show the Ops Room line instead of the planner note.
 
 ## Session end (12 Nov): bug testing round
 - Brandon asked whether agentic bug testing was needed; agreed plan: SharePoint mock and saves, saved files valid for Excel,

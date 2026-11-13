@@ -75,12 +75,52 @@ test("upgraded_file_reads_in_openpyxl", async ({ page }) => {
   assert.strictEqual(res, "LODESTAR dept layout 5 ME2 Old Row LEAVE hidden ME4");
 });
 
+// z206: every department, plans in every month (regular and SANS / NSMEN crew, all four rows), notes and currency dates.
+// Each old file is filled, saved to bytes, read back as "before", upgraded, read back as "after"; the two must match
+// for the first 60 people, the 15 new rows must be empty, and the upgraded file must pass tests/xlsx_check.py.
+test("every_department_full_plans_upgrade_cleanly", async ({ page }) => {
+  await page.evaluate(() => { OPS = true; });
+  const depts = await page.evaluate(() => books.map((b, i) => [i, b.WB.name, !b.S.kind]).filter(x => x[2]).map(x => [x[0], x[1]]));
+  assert.strictEqual(depts.length, 5, "5 department files open");
+  for (const [bi, name] of depts) {
+    const res = await page.evaluate(([bi, B]) => withBook(bi, () => {
+      const codes = S.acts.filter(a => a.code).map(a => a.code), n0 = S.n, who = [0, 7, 44, 45, 52, n0 - 1];
+      let k = 0;
+      for (let mi = 0; mi < 13; mi++) { if (mi === NX_MI && !S.nx) continue; const sh = monSheet(mi);
+        for (const i of who) for (let s = 0; s < ROWS_PER; s++) for (let d = (i + s + mi) % 4; d < 28; d += 4) put(sh, colL(DAY_COL0 + d) + (g0() + gridRow(i, s)), codes[k++ % codes.length]); }
+      const rc = rosterCols(S); who.forEach(i => { put("Roster", rc.id + (ROSTER_ROW0 + i), "UP" + i); put("Roster", rc.name + (ROSTER_ROW0 + i), "ME2 Person " + i); if (i >= REG_N && S.catCol) put("Roster", rc.status + (ROSTER_ROW0 + i), i % 2 ? "SANS" : "NSMEN"); });
+      if (S.hasNotes) [[9, 0, 3], [10, 52, 8]].forEach(([mi, i, d]) => setNote(mi, gridRow(i, 1), d, "note " + mi + "/" + i));
+      if (S.hasCur) who.forEach(i => put("Currency", "D" + (CUR_ROW0 + i), dateSerial(2026, 5, 1 + (i % 20))));
+      const bk = books[bi], ob = logBuild(bk, new Map(bk.dirty)).bytes; bk.dirty.clear();
+      const snap = () => ({ n: S.n, roster: S.roster.slice(0, n0).map(p => [p.id, p.name, p.status, p.cat, p.ini, p.role].join("|")),
+        grids: S.m.map(M => M && M.grid ? M.grid.slice(0, n0 * ROWS_PER).map(x => x.join(",")).join(";") : ""),
+        newRows: S.roster.slice(n0).filter(p => !rosEmpty(p)).length + S.m.reduce((t, M) => t + (M && M.grid ? M.grid.slice(n0 * ROWS_PER).flat().filter(Boolean).length : 0), 0),
+        notes: [...(S.notes || new Map())].map(([k, v]) => k + "=" + v).sort().join(";"), cur: (S.curBase || []).slice(0, n0).map(r => (r || []).join(",")).join(";") });
+      reparseBook(bi, ob.buffer.slice(ob.byteOffset, ob.byteOffset + ob.byteLength)); useBook(bi); const before = snap();
+      const nb = Uint8Array.from(atob(B), c => c.charCodeAt(0)).buffer, up = upgDeptFile(ob.buffer.slice(ob.byteOffset, ob.byteOffset + ob.byteLength), nb).bytes;
+      reparseBook(bi, up.buffer.slice(up.byteOffset, up.byteOffset + up.byteLength)); useBook(bi); const after = snap();
+      let s = ""; for (let i = 0; i < up.length; i += 32768) s += String.fromCharCode.apply(null, up.subarray(i, i + 32768));
+      return { before, after, b64: btoa(s), filled: before.grids.join("").replace(/[,;]/g, "").length };
+    }), [bi, b64(name)]);
+    const B = res.before, A = res.after;
+    assert.ok(res.filled > 1000, name + ": plans were typed");
+    assert.strictEqual(A.n, 75, name + " has 75 slots");
+    assert.deepStrictEqual(A.roster, B.roster, name + " roster");
+    B.grids.forEach((g, mi) => assert.ok(g === A.grids[mi], name + " month " + mi + " plans differ"));
+    assert.strictEqual(A.newRows, 0, name + ": the 15 new rows are empty");
+    assert.strictEqual(A.notes, B.notes, name + " notes"); assert.strictEqual(A.cur, B.cur, name + " currency dates");
+    const f = path.join(os.tmpdir(), "lodestar_upgrade_" + name); fs.writeFileSync(f, Buffer.from(res.b64, "base64"));
+    let pr = ""; try { execFileSync("python3", [path.join(__dirname, "xlsx_check.py"), f], { stdio: "pipe" }); } catch (e) { pr = String(e.stdout); }
+    assert.strictEqual(pr, "", name + " upgraded file: " + pr.split("\n").slice(0, 3).join(" | "));
+  }
+});
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0;
   for (const t of tests) {
     if (only && !t.name.includes(only)) continue;
     ran++; let S = null;
-    try { S = await boot({ today: "2026-10-26", others: false }); await t.fn(S); if (S.errs.length) throw new Error("page errors: " + S.errs.join(" | ").slice(0, 300)); pass++; console.log("ok   " + t.name); }
+    try { S = await boot({ today: "2026-10-26", others: t.name.startsWith("every_department") }); await t.fn(S); if (S.errs.length) throw new Error("page errors: " + S.errs.join(" | ").slice(0, 300)); pass++; console.log("ok   " + t.name); }
     catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).slice(0, 600)); }
     if (S) await S.close();
   }

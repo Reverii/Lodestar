@@ -207,12 +207,12 @@ test("rest_flags_at_five", async ({ page }) => {
 });
 test("currency_soonest_rule", async ({ page }) => {
   const v = await cards(page, "VIPER", "2026-10-26");
-  assert.deepStrictEqual([v.cur.level, v.cur.text, v.cur.sub], ["bad", "Night flying lapsed", "1 of 3 rules current"]);
+  assert.deepStrictEqual([v.cur.level, v.cur.text, v.cur.sub], ["bad", "Night flying lapsed", "1 of 3 rules current"], JSON.stringify(v.cur));
   const e = await cards(page, "OWL", "2026-10-26");
   assert.deepStrictEqual([e.cur.level, e.cur.text], ["ok", "All current"]);
   await page.evaluate(() => { const st = books[0].S; st.rules.find(r => r.name === "Mission currency").warn = 200; });   // widen the warning window so HAWK's rule is "due"
   const h = await cards(page, "HAWK", "2026-10-26");
-  assert.deepStrictEqual([h.cur.level, h.cur.text, h.cur.sub], ["due", "Mission currency due 17 Dec", "1 of 2 rules current"]);
+  assert.deepStrictEqual([h.cur.level, h.cur.text, h.cur.sub], ["due", "Mission currency due 17 Dec", "1 of 2 rules current"], JSON.stringify(h.cur));
 });
 test("currency_none_when_no_rules", async ({ page }) => {
   const id = await page.evaluate(() => { const x = mePeople().find(z => z.dept === "SUP 1"); books[x.bi].S.hasCur = false; return x.p.id; });   // a file without currency rules

@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-08 z203</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-12 z207</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3496,9 +3496,32 @@ function cellXml(ref, attrs, val) {
   if (typeof val === "number") return '<c r="' + ref + '"' + attrs + "><v>" + val + "</v></c>";
   return '<c r="' + ref + '"' + attrs + ' t="inlineStr"><is><t xml:space="preserve">' + esc(xmlSafe(val)) + "</t></is></c>";
 }
+// z204: a formula moved from one cell to another, the way Excel fills it: relative references shift by (dc, dr), $ parts stay.
+// Text in quotes and quoted sheet names are left alone; a name followed by "(" is a function (LOG10), not a cell.
+function shiftFormula(f, dc, dr) {
+  const one = t => t.replace(/(^|[^A-Za-z0-9_.$])(\$?)([A-Z]{1,3})(\$?)(\d+)(?![A-Za-z0-9_(])/g, (m0, pre, dcol, col, drow, row) => {
+    const c = dcol ? colN(col) : colN(col) + dc, r = drow ? +row : +row + dr;
+    if (c < 1 || r < 1) return pre + "#REF!";
+    return pre + dcol + colL(c) + drow + r; });
+  return f.split(/("(?:[^"]|"")*"|'(?:[^']|'')*')/).map((p, k) => k % 2 ? p : one(p)).join("");
+}
+// z204: a file desktop Excel saved stores a formula filled across cells once, in its first cell (the master: <f t="shared" ref si>),
+// and the others as <f t="shared" si/>. Before the master is overwritten, every other cell of that group gets its own formula,
+// else Excel repairs the file and drops them.
+function unshareFormula(xml, master) {
+  const fm = /<f\b([^>]*\bt="shared"[^>]*)>([^<]*)<\/f>/.exec(master.cell); if (!fm || !/\bref="/.test(fm[1])) return xml;
+  const si = (/\bsi="(\d+)"/.exec(fm[1]) || [])[1]; if (si == null) return xml;
+  const un = t => t.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+  const text = un(fm[2]), mc = colN(master.ref.match(/[A-Z]+/)[0]), mr = +master.ref.match(/\d+/)[0];
+  const keep = a => a.replace(/\s+(?:t|si|ref)="[^"]*"/g, "");
+  return xml.replace(/(<c r="([A-Z]+)(\d+)"[^>]*>(?:(?!<\/c>)[\s\S])*?)<f\b([^>]*)\/>/g, (m0, head, col, row, at) => {
+    if (!/\bt="shared"/.test(at) || (/\bsi="(\d+)"/.exec(at) || [])[1] !== si) return m0;
+    return head + "<f" + keep(at) + ">" + esc(shiftFormula(text, colN(col) - mc, +row - mr)) + "</f>"; });
+}
 function setCell(xml, ref, val) {
   const re = new RegExp('<c r="' + ref + '"((?:\\s+[\\w:]+="[^"]*")*)\\s*(?:/>|>[\\s\\S]*?</c>)');
-  const m = xml.match(re);
+  let m = xml.match(re);
+  if (m && /<f\b[^>]*\bt="shared"[^>]*\bref="/.test(m[0])) { xml = unshareFormula(xml, { ref, cell: m[0] }); m = xml.match(re); }
   if (m) return xml.slice(0, m.index) + cellXml(ref, m[1], val) + xml.slice(m.index + m[0].length);
   if (val === "" || val == null) return xml;
   const rowN = +ref.match(/\d+/)[0], col = colN(ref.match(/[A-Z]+/)[0]);
@@ -3763,14 +3786,26 @@ function liveRedraw() { if (typing()) { liveRender = true; return; } liveRender 
 document.addEventListener("focusout", () => setTimeout(() => { if (liveRender && !typing()) liveRedraw(); }, 50));
 // the currency status text written on save is not an undo step
 function curQuiet() { const k = undoPend; undoPend = true; try { writeCurrency(); } catch (e) { console.warn(e); } finally { undoPend = k; } }
+// z206: the plan year written in a file (Dashboard!A5), straight from its sheet XML
+function fileYear(files) { try { const P = sheetPaths(files), p = P.Dashboard; return p && files[p] ? num(readCellsOf(files, p, parseSST(files)).A5) || null : null; } catch (e) { return null; } }
+// z206: someone ran Start new year while this file was open with unsaved changes: writing them would put last year's plans into the
+// new year's file. Nothing is written; the person is told to reload. Returns true when the year moved.
+function yearMoved(b, nf) {
+  const y0 = fileYear(b.WB.files), y1 = fileYear(nf); if (!y0 || !y1 || y0 === y1) return false;
+  b.autoStop = b.S.dept + " has moved to " + y1 + " (Start new year): reload the dashboard. Changes made since your last save were not saved";
+  toast(b.S.dept + " was moved to " + y1 + " by Start new year while you had changes open. Your changes since your last save were NOT saved (they belong to " + y0 + "). Reload the dashboard (Ctrl+Shift+R) to plan " + y1 + ".", 20000);
+  return true;
+}
 async function autoSaveBook(b) {
   const h = b.WB.handle; let merged = false;
   if (h.sp) {
-    const j = await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(h.url) + "')?$select=TimeLastModified");
-    if (j.d.TimeLastModified !== h.modified) {   // someone else saved it: start from their file
+    const d = await spStamp(h.url);
+    if (spChanged(h, d)) {   // someone else saved it: start from their file
       const buf = await spFetch({ Name: h.name, ServerRelativeUrl: h.url }); if (!books.includes(b)) return;
-      b.WB.files = fflate.unzipSync(new Uint8Array(buf)); b.WB.sst = parseSST(b.WB.files); b.WB.paths = sheetPaths(b.WB.files); h.modified = j.d.TimeLastModified; merged = true;
-    }
+      const nf = fflate.unzipSync(new Uint8Array(buf));
+      if (yearMoved(b, nf)) return;
+      b.WB.files = nf; b.WB.sst = parseSST(b.WB.files); b.WB.paths = sheetPaths(b.WB.files); spMark(h, d); merged = true;
+    } else spMark(h, d);
   }
   const bi = books.indexOf(b); if (bi < 0) return;
   let built, sent;
@@ -3778,7 +3813,7 @@ async function autoSaveBook(b) {
   if (h.sp) {
     const folder = h.url.slice(0, h.url.lastIndexOf("/"));
     const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(folder) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: built.bytes, headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
-    h.modified = r.d.TimeLastModified || h.modified;
+    spMark(h, r.d);
   } else { const w = await h.createWritable(); await w.write(new Blob([built.bytes])); await w.close(); }
   b.WB.files = built.files; b.saved = b.saved || new Set();
   b.recent = b.recent || new Map(); const now = Date.now();
@@ -3814,11 +3849,12 @@ async function liveCheck(manual) {
     for (const b of books.slice()) {
       const h = b.WB.handle; if (!h || !h.sp) continue; if (b.dirty.size) { held++; continue; }
       try {
-        const j = await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(h.url) + "')?$select=TimeLastModified");
-        if (j.d.TimeLastModified === h.modified || b.dirty.size) continue;
+        const d = await spStamp(h.url);
+        if (!spChanged(h, d)) { spMark(h, d); continue; }
+        if (b.dirty.size) continue;
         const buf = await spFetch({ Name: h.name, ServerRelativeUrl: h.url });
         const i = books.indexOf(b); if (i < 0 || b.dirty.size) continue;
-        reparseBook(i, buf); h.modified = j.d.TimeLastModified; got.push(b.S.dept); gotIx.push(i); liveHeal(b);
+        reparseBook(i, buf); spMark(h, d); got.push(b.S.dept); gotIx.push(i); liveHeal(b);
       } catch (e) { console.warn("live", e); }
     }
   } finally { liveBusy = false; }
@@ -5142,7 +5178,7 @@ function mergeRuns() {
     if (sh.length === 3) R.get(sh[0]).forEach(a => { const b = R.get(sh[1]).find(x => x.d0 === a.d0 && x.d1 === a.d1 && x.v === a.v), c = R.get(sh[2]).find(x => x.d0 === a.d0 && x.d1 === a.d1 && x.v === a.v); if (b && c) { blocks.push({ r0: sh[0], r1: sh[2], rows: sh, d0: a.d0, d1: a.d1 }); [a, b, c].forEach(x => x.done = true); } });
     rs.forEach(r => R.get(r).forEach(x => { if (!x.done && x.d1 > x.d0) blocks.push({ r0: r, r1: r, rows: [r], d0: x.d0, d1: x.d1 }); }));
   });
-  const mon = MONTHS[cur.m].slice(0, 3);
+  const mon = MONTHS[cur.m % 12];   // z207: Jan (next year) is month 12; MONTHS[12] threw here and the planner stopped drawing half way
   const made = [];
   blocks.forEach(b => {
     const first = byRow.get(b.r0)[b.d0], txt = first.textContent.trim(), cs = getComputedStyle(first), col = cs.color, bg = cs.backgroundColor;
@@ -7102,7 +7138,11 @@ const spQ = p => encodeURIComponent(p.replace(/'/g, "''"));
 const spLabel = f => f.Name.replace(/\.xlsx$/i, "").replace(/^Flight_Ops_Planner_/, "").replace(/_/g, " ");
 async function spJson(url, opt = {}) {
   const r = await fetch(url, Object.assign({ credentials: "same-origin", headers: { Accept: "application/json;odata=verbose" } }, opt));
-  if (!r.ok) { const t = await r.text().catch(() => ""); const e = new Error(spErr(r.status, t)); e.status = r.status; throw e; }
+  if (!r.ok) { const t = await r.text().catch(() => "");
+    // z204: SharePoint refused the form digest before its time ran out (signed in again, server restarted): get a new one and try once more
+    if (r.status === 403 && opt.headers && opt.headers["X-RequestDigest"] && !opt.digestRetry && /security validation/i.test(t)) {
+      SP.digest = ""; return spJson(url, Object.assign({}, opt, { digestRetry: true, headers: Object.assign({}, opt.headers, { "X-RequestDigest": await spDigest() }) }));
+    } const e = new Error(spErr(r.status, t)); e.status = r.status; throw e; }
   return r.json();
 }
 function spErr(status, text) {
@@ -7116,7 +7156,15 @@ async function spDigest() {
   const ci = j.d.GetContextWebInformation; SP.digest = ci.FormDigestValue; SP.digestAt = Date.now(); SP.ttl = ci.FormDigestTimeoutSeconds || 1800;
   return SP.digest;
 }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-08 z203 · SharePoint check: " + msg; }
+// z204: has someone else saved this file since we read it? SharePoint's TimeLastModified only has whole seconds, so two saves in the
+// same second look unchanged by time alone; the file's ETag changes on every save. Sites that refuse ETag fall back to the time.
+async function spStamp(url) {
+  try { return (await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(url) + "')?$select=TimeLastModified" + (SP.noTag ? "" : ",ETag"))).d; }
+  catch (e) { if (!SP.noTag && e.status === 400) { SP.noTag = true; return spStamp(url); } throw e; }
+}
+const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
+function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-12 z207 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7351,11 +7399,14 @@ $("spGo").onclick = async () => {
 async function spSave(h, bytes) {
   const folder = h.url.slice(0, h.url.lastIndexOf("/"));
   try {
-    const j = await spJson(SP.web + "/_api/web/GetFileByServerRelativeUrl('" + spQ(h.url) + "')?$select=TimeLastModified");
-    if (j.d.TimeLastModified !== h.modified && !confirm(h.name + " was changed on SharePoint after you opened it (by someone else, or in Excel). Saving now will replace those changes with yours.\n\nSave anyway? Click Cancel to keep their version; then reopen the file to see it.")) return false;
+    const st = await spStamp(h.url);
+    if (spChanged(h, st)) { const b = books.find(x => x.WB.handle === h);
+      if (b) { const nf = fflate.unzipSync(new Uint8Array(await spFetch({ Name: h.name, ServerRelativeUrl: h.url }))), y0 = fileYear(b.WB.files), y1 = fileYear(nf);
+        if (y0 && y1 && y0 !== y1) { alert(h.name + " has moved to " + y1 + " (Start new year was run). Your changes belong to " + y0 + " and were not saved.\n\nReload the dashboard (Ctrl+Shift+R) to plan " + y1 + ". The " + y0 + " file is in the Archive " + y0 + " folder."); return false; } } }
+    if (spChanged(h, st) && !confirm(h.name + " was changed on SharePoint after you opened it (by someone else, or in Excel). Saving now will replace those changes with yours.\n\nSave anyway? Click Cancel to keep their version; then reopen the file to see it.")) return false;
     const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(folder) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)",
       { method: "POST", body: bytes, headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
-    h.modified = r.d.TimeLastModified || h.modified;
+    spMark(h, r.d);
     toast("Saved to SharePoint: " + h.name);
     return true;
   } catch (e) { alert(e && e.status === 403 ? "You only have view access to this file." : "Could not save to SharePoint: " + (e.message || e)); return false; }
@@ -7484,6 +7535,7 @@ function rollBook(bi, y, opsCarry) {
     edit(LOG_SHEET, x => rollClear(x, (c, r) => r >= 2));
     Object.keys(WB.paths).forEach(sh => edit(sh, x => rollDV(x, y)));
     for (const [sh, L] of Object.entries(sets)) edit(sh, x => { for (const [ref, v] of L) x = setCell(x, ref, v); return x; });
+    if (isDept(books[bi])) dvFormulaFix(files);   // z206: the old broken Daily View formulas are repaired here too, as on every save
     let w = td.decode(files["xl/workbook.xml"]);
     if (/<calcPr\b/.test(w)) { w = /fullCalcOnLoad=/.test(w) ? w.replace(/fullCalcOnLoad="[^"]*"/, 'fullCalcOnLoad="1"') : w.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"'); }
     else w = w.replace(/(<extLst>|<\/workbook>)/, '<calcPr fullCalcOnLoad="1"/>$1');
@@ -7535,11 +7587,14 @@ async function rollGo() {
     const olds = books.map(b => fflate.zipSync(b.WB.files, { level: 6 })), news = out.map(o => fflate.zipSync(o.files, { level: 6 }));
     const names = books.map(b => b.WB.name || (b.S.dept + ".xlsx"));
     if (SP.on && books.every(b => b.WB.handle && b.WB.handle.sp)) {
+      // z206: someone saved a file after it was opened here: their save would be lost (and missing from the archive). Stop before writing anything.
+      const late = []; for (const b of books) if (spChanged(b.WB.handle, await spStamp(b.WB.handle.url))) late.push(b.WB.name);
+      if (late.length) { alert("Start new year did not run: " + late.join(", ") + (late.length === 1 ? " was" : " were") + " saved by someone after you opened " + (late.length === 1 ? "it" : "them") + ".\n\nPress Refresh (F5) so you have their changes, then run Start new year again. Nothing was changed."); $("rollGo").disabled = false; $("rollGo").textContent = "Start " + (y + 1); return; }
       const folder = books[0].WB.handle.url.slice(0, books[0].WB.handle.url.lastIndexOf("/")), arch = folder + "/Archive " + y;
       await spJson(SP.web + "/_api/web/folders", { method: "POST", body: JSON.stringify({ __metadata: { type: "SP.Folder" }, ServerRelativeUrl: arch }), headers: { Accept: "application/json;odata=verbose", "Content-Type": "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
       for (let i = 0; i < books.length; i++) await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(arch) + "')/Files/add(url='" + spQ(names[i]) + "',overwrite=true)", { method: "POST", body: olds[i], headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
       for (let i = 0; i < books.length; i++) { const h = books[i].WB.handle, f = h.url.slice(0, h.url.lastIndexOf("/"));
-        const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(f) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: news[i], headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } }); h.modified = r.d.TimeLastModified || h.modified; }
+        const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(f) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: news[i], headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } }); spMark(h, r.d); }
     } else {
       const za = {}, zn = {}; names.forEach((n, i) => { za[n] = olds[i]; zn[n] = news[i]; });
       rollDl("LODESTAR_archive_" + y + ".zip", fflate.zipSync(za, { level: 0 }));
@@ -8714,7 +8769,7 @@ $("sdoNote").addEventListener("click", e => {
     const L = colL(DAY_COL0 + x.d), sh = monSheet(x.mi);
     x.clr.forEach(j => { for (let s = 0; s < rp(S); s++) { const rr = gridRow(j, s); if (dutyKey(M.grid[rr][x.d]) === "BDO") { M.grid[rr][x.d] = ""; put(sh, L + (g0() + rr), ""); } } });
     if (x.put >= 0) { const rr = bdoRow(S, x.put), old = String(M.grid[rr][x.d] || "").trim(), p = S.roster[x.put];
-      if (old && !confirm((p.id || p.name) + " already has " + old + " on " + ROW_LABELS[rowShift(rr)] + " on " + (x.d + 1) + " " + MONTHS[x.mi] + ". The Duty Roster puts them on BDO that day. Replace it with BDO?")) { skip++; continue; }
+      if (old && !confirm((p.id || p.name) + " already has " + old + " on " + ROW_LABELS[rowShift(rr)] + " on " + (x.d + 1) + " " + MONTHS[x.mi % 12] + (x.mi === NX_MI ? " " + (S.year + 1) : "") + ". The Duty Roster puts them on BDO that day. Replace it with BDO?")) { skip++; continue; }
       M.grid[rr][x.d] = "BDO"; put(sh, L + (g0() + rr), "BDO"); }
   }
   useBook(keep); renderSdo(); renderPlanner(); renderOverview();

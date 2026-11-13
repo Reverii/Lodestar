@@ -1,4 +1,89 @@
-# LODESTAR handoff (updated 2026-11-08, after z203; next-session notes below)
+# LODESTAR handoff (updated 2026-11-13, after z207; next-session notes below)
+
+## Session end (13 Nov): z207 merged to main
+- Brandon: "merge to main and push and end session for now". The work branch `claude/practical-lamport-j13scq` (z204 to z207, the
+  bug testing round) is merged into `main` and pushed. No xlsx changed.
+- **z207 (12 Nov, late):** the Planner on Jan (next year) stopped drawing at merge runs; it draws the merged blocks again
+  (`.dashboard_source.html`, check added to `tests/merge_runs.test.js`). New test tools: `tests/sp_serve.js` (the SharePoint mock as a
+  standing server, to click through by hand), `tests/run_all.js` (runs the suites in one go) and `tests/reopen_check.js`.
+- For Brandon: upload the DEV dashboard (z207). To test: as listed under the 12 Nov session end below.
+- Still open: one script that builds a fresh set and runs every suite against the right set; the ATOM initials set rebuild once
+  Brandon sends the filled crew list and the ATOM export; whether Beta also means the release build; whether My Lodestar should
+  show the Ops Room line instead of the planner note.
+
+## Session end (12 Nov): bug testing round
+- Brandon asked whether agentic bug testing was needed; agreed plan: SharePoint mock and saves, saved files valid for Excel,
+  flows across files. All three done: z204, z205, z206 (sections below). Six bugs found and fixed, all dashboard-side.
+- Shipped on the work branch `claude/practical-lamport-j13scq` (pushed, **not merged to main, no PR yet**: ask Brandon).
+- For Brandon: upload the DEV dashboard (z206). No xlsx changed. Nothing new to see in normal use. Worth testing on SharePoint:
+  autosave and refresh as usual; save one department file in desktop Excel, then edit it in the dashboard and reopen in Excel
+  (no repair message); Start new year only on copies of the files.
+- Not verified on real SharePoint: that `ETag` comes back on `GetFileByServerRelativeUrl(...)?$select=TimeLastModified,ETag`
+  and on the `Files/add` reply (z204). If not, the dashboard falls back to the time alone, as before.
+- Still open from the testing plan: one script that builds a fresh set and runs every suite (some suites need the repo's
+  layout-4 demo set, `bdo_person` / `syllabus_stages` / `upgrade` need a fresh one, `wd_row` a layout-3 one).
+  `my_lodestar` `currency_soonest_rule` fails on a fresh set (test data, not a bug).
+
+## z206: Start new year with other people working; flows across files tested (12 Nov)
+Brandon: "do the cross-file flows next" (third item of the testing plan). Crew Roster remove / transfer is safe across files: the
+Ops Room seats, additional crew and chits refer to people by callsign, not by row. Start new year had never been run end to end.
+- **Tests** `node tests/new_year.test.js` (6, on the SharePoint mock; helpers moved to `tests/sp_lib.js`, used by `sharepoint.test.js` too):
+  end to end (December and Jan (next year) plans in SUP 2 and Pilot, Master Planner flights in Dec and Jan 2027, SDO days; archive
+  folder holds the 2026 files; all 8 new files are 2027 and pass `xlsx_check.py`; Jan (next year) became January, December empty;
+  a fresh dashboard opens them all as 2027); someone saved meanwhile; an open dashboard with unsaved changes; the Save button after
+  the new year; an idle dashboard re-reads the 2027 files on refresh; rosters unchanged.
+- **Bug 1 (fixed):** someone's save made after the Ops Room opened the files was overwritten by Start new year, and was missing from
+  the archive copy too. `rollGo` now checks every file's time / ETag first; if one changed it stops before writing anything:
+  "Start new year did not run: <file> was saved by someone after you opened it. Press Refresh (F5) ..., then run Start new year again."
+- **Bug 2 (fixed):** a department dashboard still open on 2026 with unsaved changes autosaved them into the new 2027 file (a
+  December 2026 plan landed in December 2027), and its Save button offered to replace the 2027 file with the 2026 one. Now
+  `yearMoved` / `fileYear` compare the year in the file on SharePoint with the one it was opened from: autosave stops with a
+  20-second message ("... was moved to 2027 by Start new year ... Your changes since your last save were NOT saved ... Reload"),
+  and Save refuses with an alert. An idle dashboard simply re-reads the 2027 files on refresh.
+- **Bug 3 (fixed):** Start new year did not repair the old broken Daily View formulas (`{ref}`, z167) the way every save does, so a
+  department file never saved since z167 went into the new year still broken. `rollBook` now runs `dvFormulaFix`.
+- **Upgrade 4 -> 5:** new `every_department_full_plans_upgrade_cleanly` in `tests/upgrade.test.js`: all 5 departments with plans in
+  every month (regular and SANS / NSMEN rows, all four rows), notes and currency dates; everything matches after the upgrade, the
+  15 new rows are empty, the upgraded files pass `xlsx_check.py`. No bug found. (`LODE_NEW=<fresh layout-5 set>`.)
+- Suites re-run on z206: sharepoint 14, new_year 6, upgrade 5, roster_order 25, ground_rows 13, alert_fr_rows 8, excel_safe,
+  xlsx_stress 6, daily_view_fix, dept_select 24, refresh 13, changelog 8. Dashboard only.
+
+## z205: saved files checked for Excel repairs; shared-formula fix (12 Nov)
+Brandon: "Do more test". Second item of the testing plan: do saved files open in desktop Excel without "We found a problem with some content"?
+- **Checker** `python3 tests/xlsx_check.py <file-or-folder>`: reads the zip and XML directly (openpyxl is too lenient) and reports what Excel repairs: XML that doesn't parse or holds control characters, content types, relationships pointing nowhere, worksheet / workbook element order, rows and cells out of order or twice, shared-string and style indexes past the end, bad numbers, duplicate sheet names or defined names, shared formulas without their master, formula text with stray template text (the old Daily View `{ref}` bug), merges overlapping, count attributes, comments without VML, table columns. Self-test `python3 tests/xlsx_check.test.py` (11 kinds of damage). Fresh builder set: 0 problems. Repo demo xlsx: only the known Daily View `{ref}` formulas (30; repaired by the dashboard on save since z167).
+- **Every suite's edits checked:** `LODE_DUMP=<folder>` in `tests/lode_lib.js` builds each open file with edits, the way a save does, when a test closes its page (plus downloads), and lists formula cells a save overwrites (`*.formula_overwrites.txt`); `sharepoint.test.js` dumps the mock's saved files. All suites run with it (repo set, plus a fresh layout-5 set for bdo_person, syllabus_stages, roster_order, drag, ops_room, crew_matrix_edit, disable_remove, misc_notes, my_lodestar): see the result line below.
+- **Stress test** `node tests/xlsx_stress.test.js` (6): cells added before / between / after existing cells, rows past the end, in gaps and on self-closing rows; a 40,000-character value, emoji, control characters, "=SUM(...)" as text, odd numbers; cleared merged cells; formula cells overwritten; a shared formula's master overwritten; `shiftFormula` cases.
+- **Bug (fixed):** a file last saved by desktop Excel stores a formula filled down a column once (the master) and the cells below as references to it. The dashboard overwrites formula cells on every department save (the currency status column `Currency!AA6` down, `Jan!A1`); overwriting a master left the cells below pointing at nothing, so Excel would repair the file and drop those formulas. Now `setCell` first gives every cell of that group its own formula (`unshareFormula`, references moved by `shiftFormula` the way Excel fills them; $ parts, quoted text and function names left alone). Only matters once someone has saved a department file in desktop Excel.
+- `my_lodestar` `currency_soonest_rule` fails on a fresh layout-5 builder set (VIPER has one currency rule there, three in the repo demo set): test data, not the dashboard. Passes on the repo set.
+
+## z204: SharePoint mock, two save fixes (12 Nov)
+Brandon asked whether agentic bug testing was needed; agreed to start with a SharePoint REST mock and save checks.
+- **Mock** `tests/spmock.js`: a real HTTP server (Node) serving the built dashboard at `/sites/121SQN/Program/Flight_Ops_Planner_Dashboard.html?sptest` with the folder's xlsx in memory (never written to disk). Answers contextinfo, folder listing (with and without `$expand=ModifiedBy`), file time / ETag, `$value`, EffectiveBasePermissions, `Files/add`, `folders`, currentuser. Controls: `lock` (423), `readOnly`, `failNext`, `delayNext` (saves landing together), `fixClock` (two saves in one second), `expireDigests`, `refuseTag`. Whole-second `TimeLastModified` like SharePoint. One browser context per person (cookie `spuser`).
+- **Tests** `node tests/sharepoint.test.js` (14): autosave once with a digest and a Change Log line naming the user; two people on one file keep both edits; live refresh shows another department's save; refresh keeps an unsaved edit then merges; saves landing together healed by `liveHeal`; same-second saves; a site without ETag; locked file; dropped save retried (one log line); expired digest; view-only permission; Ops Room saves each department file by itself; Ops Room and a department editing the same file.
+- **Bug 1 (data loss, fixed):** the dashboard spotted someone else's save only by `TimeLastModified`, which has whole seconds. Two saves of one file in the same second (an Ops Room autosave and a department autosave, both 2.5 s after typing) looked unchanged, so the later save dropped the earlier person's cells and refresh never healed it. The mock showed it without forcing (`ops_room_and_department_edit_the_same_file` failed on z203). Fix: `spStamp` / `spChanged` / `spMark` also compare the file's `ETag` (changes on every save); a site that refuses `$select=ETag` (400) falls back to the time alone (`SP.noTag`).
+- **Bug 2 (fixed):** a form digest SharePoint refused early (403 "security validation", e.g. after signing in again) was kept for its whole 30 minutes, so autosave failed until then. `spJson` now fetches a new digest and retries once.
+- Not checked on real SharePoint: that `ETag` comes back on `GetFileByServerRelativeUrl(...)?$select=TimeLastModified,ETag` and on the `Files/add` reply. If it doesn't, behaviour is as before z204. Brandon: autosave and refresh as usual; nothing new to see.
+- Other suites run: dept_select 24, refresh 13, running_change, merge_runs, changelog 8. Dashboard only.
+
+## Session end (9 Nov): ATOM initials only
+- Brandon asked why the Excel files still had dummy names, then: "from now on use the ATOM initials only", "wipe the dummy name".
+  The repo's eight xlsx are the demo set on purpose (made-up names, still layout 4); the repo is public, so real initials stay out of it.
+- **Rule added to CLAUDE.md (constraint 9):** every file set built for Brandon uses the ATOM initials from his crew list
+  (`LODESTAR_CREWLIST=<abs path>/input/LODESTAR_Crew_Initials_Input.xlsx`; the path must be absolute because the driver runs
+  the builders in a temp dir), built outside the repo and handed over as a zip. The demo xlsx are only for tests, screenshots and Pages.
+- **Built and sent:** `LODESTAR_ATOM_Initials_2026-11-09.zip` = the eight layout-5 xlsx + the z203 DEV dashboard. 101 people
+  (Pilot 42, Loadmaster 21, TACCO 14, SUP 2 13, SUP 1 11), Name = Initials = the ATOM initials, empty plans, flights and duty days,
+  demo flight codes and activities, public holidays. Checked: none of the 45 demo names or callsigns appears in any of the eight files.
+- **Gaps in that set:** the `input/` crew list (git-ignored) is the unfilled copy, so Rank, Callsign and Remarks are blank and the
+  5 people Brandon marked REMOVE on 7 Nov are still in; no ATOM export in the session, so Cat Status and Role are blank. Asked Brandon
+  to send the filled crew list and the ATOM export for a rebuild (with both: `LODESTAR_CREWLIST=... LODESTAR_ATOM=...`), or fill
+  them on the Crew Roster page. No dashboard change, no repo xlsx change.
+
+## Session end (8 Nov): where things stand
+- Shipped and merged to main ([Reverii/Lodestar#13](https://github.com/Reverii/Lodestar/pull/13)): z201 (stray ">" in the Currency and Crew Matrix help), z202 (Start new year clears Alert States; Roles and Ranks stay), z203 (Planner fill handle, Crew Roster drag), the stale Ops Room seat test fixed.
+- Brandon has: the z203 zip (DEV dashboard + the demo xlsx, which are for UI testing only). No live xlsx changed this session.
+- For Brandon to test: fill handle (across a flight, down across crew, Ctrl+Z), Crew Roster drag, Start new year on copies, the two help popups.
+- Still open: whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the planner note; Wipe data (Admin page, on hold) should clear Alert States when built.
 
 ## z203: Planner fill handle and Crew Roster drag (Brandon, 8 Nov: "3 & 4", "replace, allow across crew, build it")
 Mock-ups `previews/drag_mockup_{fill_drag,fill_done,roster_drag}.png` (script `previews/drag_mockup.js`); real screens `previews/fill_handle_real.png`, `fill_handle_done_real.png`, `roster_drag_real.png`.

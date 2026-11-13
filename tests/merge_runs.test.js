@@ -23,6 +23,14 @@ const { boot } = require("./lode_lib");
   await p.click("#mergeTog"); r = await q();
   ok("off: nothing merged", () => { assert.strictEqual(r.mg, 0); assert.strictEqual(r.labs.length, 0); });
   await p.click("#mergeTog"); r = await q(); ok("on again", () => assert.strictEqual(r.mg, mg0));
+  // z207: Jan (next year) is month 12; the block label read MONTHS[12] and the planner stopped drawing half way
+  const nx = await p.evaluate(({ c, i }) => {
+    const e = document.getElementById("month"); if (e.options.length < 13) return null;
+    e.selectedIndex = 12; e.dispatchEvent(new Event("change", { bubbles: true }));
+    for (let d = 4; d <= 7; d++) S.m[cur.m].grid[gridRow(i, 0)][d] = c;
+    renderPlanner(); return { m: cur.m, labs: [...document.querySelectorAll("#plan .mlab, #gridwrap .mlab")].map(x => x.textContent) };
+  }, info);
+  ok("Jan (next year) draws merged blocks", () => { if (!nx) return; assert.strictEqual(nx.m, 12); assert.ok(nx.labs.some(t => /5 – 8 Jan/.test(t) && t.includes("4 days")), JSON.stringify(nx.labs)); });
   ok("no page errors", () => assert.deepStrictEqual(b.errs, []));
   await b.close(); console.log(fails ? fails + " failed" : "all pass"); process.exit(fails ? 1 : 0);
 })();

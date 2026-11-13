@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 8 Nov 2026 (z203). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 13 Nov 2026 (z207). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)
@@ -159,6 +159,8 @@ Last updated: 8 Nov 2026 (z203). Tell Claude in this thread when something chang
 ## 11. Running it long term
 
 - [x] Year rollover: "Start new year" built 23 Oct; files are now year-agnostic
+- [?] Bug testing round (12 Nov, Brandon: "start with the SharePoint mock", "do more test", "cross-file flows"): SharePoint mock and save / merge / refresh tests (z204), strict check that saved files open in Excel without a repair (z205), Start new year end to end and the layout 4 -> 5 upgrade of every department (z206). Fixed: two saves in the same second losing edits, an expired SharePoint digest stopping autosave, a desktop-Excel-saved file being damaged on the next save (shared formulas), and three Start new year problems (someone's save lost, last year's plans written into the new year, old Daily View formulas carried over). Also z207: the Planner on Jan (next year) draws merged blocks again. Merged to main 13 Nov. Awaiting his test of z207 on SharePoint
+- [ ] One test script that builds a fresh file set and runs every test against it (today some tests need the repo's demo set and some a fresh set)
 - [x] Plan next January while still in December (built 24 Oct, z83): 'Jan (next year)' tab after Dec (SUP 2 file; other departments get it when scaled up), Master Planner, Duty Roster and Ops Room take next-January dates, the planner month list goes on to January of next year, crew rest and the Master copy run across 31 Dec; Start new year moves it into the new January without retyping
 - [x] Add the 'Jan (next year)' tab to SUP 1, TACCO, Loadmaster and Pilot (scale-up 26 Oct, z91)
 - [ ] Backups: where old versions are kept (SharePoint version history may be enough; confirm it's on)
@@ -256,6 +258,7 @@ Order was (30 Oct): 3, then 5 (AC and Pax tags), then 1; all three are built (z1
 - [?] Crew Roster: Remove crew and Transfer to SANS / NSMEN / regular crew on the right-click menu (z181, 6 Nov, Brandon): plans, Personnel Info and Currency go with the person; Remove asks first and the crew below move up (awaiting his test)
 - [?] Add a rank (z182, 6 Nov, Brandon): + Add rank… at the bottom of the Crew Roster Rank dropdown, you pick which rank it comes after; kept in the file's Ranks sheet (awaiting his test)
 - [?] + Add role on the Crew Roster (z187, 7 Nov, Brandon): Roles sheet per department file, order after a chosen role, optional "counts as instructor"; BETA tag in the header, DEV tag hidden (awaiting his look). The Roles sheet stays through Start new year and Wipe data (Brandon, 8 Nov)
+- [?] ATOM initials only (9 Nov, Brandon): every file set built for you uses the ATOM initials, no made-up names; built outside the public repo and sent as a zip. Set of 9 Nov sent (101 people, empty plans); rank, callsign, CAT and role are blank until you send the filled crew list and the ATOM export, or fill them on the Crew Roster
 - [?] Real crew list (z186, 7 Nov, Brandon): crew list workbook filled from ATOM (Initials, Rank, Callsign, Active / NSMEN / SANS); a new eight-file set built from it with empty plans (his choice); ranks COL, SLTC, MWO added (awaiting his upload)
 - [?] Planner rows (z184, 6 Nov, Brandon): GROUND PROGRAMME renamed SQUADRON PROGRAMME; new ALERT row (z185: the alert state AL90 / AL2 set per week by the Master Planner, Alert States sheet; P1 / P2 / BU crew in the tooltip; rows slimmed to keep the old height) and FLYING RESTRICTION row (from the Ops Room restrictions); dashboard only, no Excel change (awaiting his look)
 - [?] Planner notes vs Ops Room remarks (Brandon, 7 Nov: **option 1 chosen**, **built z188 (7 Nov), awaiting his test**). The planner's flight card gets two boxes: **Planner note** (purple, planners only, never in the Ops Room or the AFP; existing cell comments stay as planner notes) and **For the Ops Room** (blue, shows as "SL · Back by 1500H" at the top of that flight's Ops Room Remarks). Grid: purple corner top right = planner note, blue corner top left = Ops Room line. Ops Room seats show only the name (the comment under the name goes). The Master Planner flight comment is left out of the Ops Room (Remarks hint text, view-only board, AFP); Ops Add comments stay. Storage: Cell Notes column H (spare), no layout change. The AFP REMARKS carry the Ops Room lines too (Brandon, 7 Nov: the AFP just reflects the Ops Room data) Mock-up `previews/cell_note_ops_mockup_{opt1,opt2,ops,ops_zoom}.png` (script `previews/cell_note_ops_mockup.js`)

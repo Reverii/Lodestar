@@ -1,4 +1,26 @@
-# LODESTAR handoff (updated 2026-11-13, after z207; next-session notes below)
+# LODESTAR handoff (updated 2026-11-15, after z208; next-session notes below)
+
+## z208 (15 Nov): four fixes from a code review
+Brandon had an outside review checked ("verify this"); of the eight points, these four were real and he said "fix 1, 3, 5 and 7".
+- **Squadron Event crew tags were never saved.** In the Master Planner, clicking ALL / P / L / T / S1 / S2 on a Squadron Event
+  changed the screen only: the `put()` for Ground Programme D sat inside a comment (since fb74e68). Now saved. Test
+  `master_calendar` `ground_tag_click_is_saved`.
+- **A failed or cancelled save left its Change Log rows in memory**, so the retry logged the same edits twice. `logBuild` now always
+  hands the workbook back as it was; the callers take the built files and sheet paths only after the file is written. Test
+  `changelog` `failed_save_leaves_no_log_rows_behind`.
+- **Start new year left Sorties (Flights G) on the cleared December rows.** G is cleared with A-F now (a Sorties formula in an older
+  Master Planner is left alone). Check added to `new_year` `new_year_end_to_end`.
+- **Undo after a merge could read wrong text from an older copy of the file**: `cellsAt` read old copies with the current sheet paths
+  and shared strings. Each copy is now read with its own. Test `changelog` `undo_reads_an_old_snapshot_with_its_own_strings`.
+- Not fixed (checked, not worth it or not bugs): AFP `wrapText` (the built-in template has no `wrapText="0"`), `setCell` attribute
+  order (Excel always writes `t` before `ref`), `computeChit` (up-chits are a second row by design; open chits carry to 1 Jan),
+  Activities E leftovers in the builder (1-9 check, "Blank = 1", unused `Sorties (calc)` in L: tidy-up only, needs a migration for live files).
+- Tests: `tests/sp_lib.js` `live()` now waits and asks again when the 15 s refresh is already running (`liveCheck` returned -1); this
+  made `sharepoint` fail about one run in two on z207 as well. `new_year_stops_when_someone_saved_meanwhile` fails on z207 and z208
+  alike (still to look at).
+- For Brandon: upload the DEV dashboard (z208). No xlsx changed. To test: tick a crew tag on a Squadron Event in the Master Planner,
+  let it save, press Refresh: the tag stays.
+
 
 ## Session end (13 Nov): z207 merged to main
 - Brandon: "merge to main and push and end session for now". The work branch `claude/practical-lamport-j13scq` (z204 to z207, the

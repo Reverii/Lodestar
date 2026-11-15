@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-12 z207</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-15 z208</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -3737,9 +3737,11 @@ function logApply(b, lines) {
 }
 // build with the log lines added; puts the workbook back if the build fails
 function logBuild(b, sent) {
+  // z208: the workbook in memory only takes the new Change Log rows (and any sheet the build adds) once the file is written: the caller sets
+  // b.WB.files / b.WB.paths from the result after the upload. Before, a failed or cancelled save kept the rows and the retry logged them twice.
   const W = logApply(b, logLines(b, sent)), keep = { files: b.WB.files, paths: b.WB.paths };
-  if (W) { b.WB.files = W.files; b.WB.paths = W.paths; }
-  try { return buildXlsx(); } catch (e) { b.WB.files = keep.files; b.WB.paths = keep.paths; throw e; }
+  b.WB.files = W ? W.files : Object.assign({}, keep.files); if (W) b.WB.paths = W.paths;
+  try { const built = buildXlsx(); built.paths = b.WB.paths; return built; } finally { b.WB.files = keep.files; b.WB.paths = keep.paths; }
 }
 // ---------- Changelog tab: the latest lines of your own department's, the Master Planner's and the Ops Room's Change Log (every open file in Ops Room mode)
 function logRead() {
@@ -3814,7 +3816,7 @@ async function autoSaveBook(b) {
     const r = await spJson(SP.web + "/_api/web/GetFolderByServerRelativeUrl('" + spQ(folder) + "')/Files/add(url='" + spQ(h.name) + "',overwrite=true)", { method: "POST", body: built.bytes, headers: { Accept: "application/json;odata=verbose", "X-RequestDigest": await spDigest() } });
     spMark(h, r.d);
   } else { const w = await h.createWritable(); await w.write(new Blob([built.bytes])); await w.close(); }
-  b.WB.files = built.files; b.saved = b.saved || new Set();
+  b.WB.files = built.files; b.WB.paths = built.paths; b.saved = b.saved || new Set();
   b.recent = b.recent || new Map(); const now = Date.now();
   for (const [k, v] of sent) { b.saved.add(k); b.recent.set(k, { v: v.val, t: now }); if (b.dirty.get(k) === v) b.dirty.delete(k); }
   if (merged) b.reparse = true;
@@ -3912,9 +3914,10 @@ document.addEventListener("visibilitychange", liveSoon); window.addEventListener
 // undo after an autosave: cells saved since that step go back to their value in the file as it was then
 const cellCache = new WeakMap();
 function cellsAt(b, files, sheet) {
-  let c = cellCache.get(files); if (!c) cellCache.set(files, c = {});
-  if (!(sheet in c)) { const keep = b.WB.files, bi = books.indexOf(b); b.WB.files = files; try { c[sheet] = withBook(bi, () => readCells(sheet)); } catch (e) { c[sheet] = {}; } finally { b.WB.files = keep; } }
-  return c[sheet];
+  // z208: each snapshot is read with its own sheet paths and shared strings (after a merge the book's current ones can differ: Excel rebuilds them)
+  let c = cellCache.get(files); if (!c) cellCache.set(files, c = { cells: {} });
+  if (!(sheet in c.cells)) { try { if (!c.paths) { c.paths = sheetPaths(files); c.sst = parseSST(files); } const p = c.paths[sheet]; c.cells[sheet] = p && files[p] ? readCellsOf(files, p, c.sst) : {}; } catch (e) { c.cells[sheet] = {}; } }
+  return c.cells[sheet];
 }
 function undoSaved(b, x) {
   if (!b.saved || !x.files || x.files === b.WB.files) return;
@@ -3958,7 +3961,7 @@ async function saveOwn() {
     alert("Could not save: " + (e && e.message ? e.message : e) + "\n\nIf the file is open in Excel, close it and try again.");
     return;
   }
-  WB.files = built.files; const bk = books[cur.b]; bk.saved = bk.saved || new Set(); bk.autoStop = "";
+  WB.files = built.files; WB.paths = built.paths; const bk = books[cur.b]; bk.saved = bk.saved || new Set(); bk.autoStop = "";
   for (const [k, v] of sent) { bk.saved.add(k); if (dirty.get(k) === v) dirty.delete(k); }
   updateSave();
 }
@@ -4640,7 +4643,8 @@ $("mpWrap").addEventListener("click", e => {
       } else {
         const g = S.gr.find(x => x.row === +gtg.dataset.grow); if (!g) return;
         const t = crewTags(g.crew), k = gtg.dataset.t, nt = t.includes(k) ? t.filter(x => x !== k) : t.concat(k);
-        g.crew = k === "ALL" ? (crewIsAll(g.crew) ? "" : "ALL") : CREW_TAGS.map(x => x[0]).filter(x => nt.includes(x)).join(" ");   // ALL and role tags exclude each other put("Ground Programme", "D" + g.row, g.crew);
+        g.crew = k === "ALL" ? (crewIsAll(g.crew) ? "" : "ALL") : CREW_TAGS.map(x => x[0]).filter(x => nt.includes(x)).join(" ");   // ALL and role tags exclude each other
+        put("Ground Programme", "D" + g.row, g.crew);   // z208: was inside the comment, so tag changes were never saved
       }
     });
     renderMp();
@@ -7163,7 +7167,7 @@ async function spStamp(url) {
 }
 const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
 function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-12 z207 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-15 z208 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -7503,7 +7507,7 @@ function rollBook(bi, y, opsCarry) {
     } else if (st.kind === "master") {
       // flights and ground programme dated next January stay (their dates are already in the new year); next January's day status moves up
       const nxFl = new Set(st.fl.filter(f => f.mi === NX_MI).map(f => f.row)), nxGr = new Set((st.gr || []).filter(g => g.mi === NX_MI).map(g => g.row));
-      edit("Flights", x => rollClear(x, keepRows(rows(FL_ROW0, FL_ROW0 + FL_N - 1, 1, 6), nxFl)));
+      edit("Flights", x => rollClear(x, keepRows(rows(FL_ROW0, FL_ROW0 + FL_N - 1, 1, 7), nxFl)));   // z208: G (Sorties) too; a Sorties formula in an older file is kept
       edit("Day Status", x => rollClear(x, rows(6, 5 + nDays(y), 3, 3)));
       if (st.nx) for (let d = 0; d < 31; d++) { const v = st.mp[NX_MI].status[d]; if (v) set("Day Status", "C" + (6 + d), v); }
       edit("Ground Programme", x => rollClear(x, keepRows(rows(GR_ROW0, GR_ROW0 + GR_N - 1, 1, 5), nxGr)));

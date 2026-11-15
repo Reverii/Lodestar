@@ -1,6 +1,6 @@
 # LODESTAR (Flight Ops Planner): project checklist and roadmap
 
-Last updated: 13 Nov 2026 (z207). Tell Claude in this thread when something changes and the list will be updated.
+Last updated: 15 Nov 2026 (z208). Tell Claude in this thread when something changes and the list will be updated.
 
 **Status key**
 - `[x]` Built (in every file that needs it)

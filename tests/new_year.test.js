@@ -29,7 +29,7 @@ async function plan2026(m, errs) {
   for (const [f, x] of [[SUP2, c.dec], [SUP2, c.nx], [PILOT, c.pnx]]) await edit(p, f, x, v);
   const ser = await ref(p, "[dateSerial(2026, 11, 20), dateSerial(2027, 0, 10)]");
   for (const [r, s, sh, cd] of [[906, ser[0], "AM", "FLT-2.0"], [907, ser[1], "PM", "FLT-1.5"]]) {
-    await edit(p, MP, { sheet: "Flights", ref: "A" + r }, s); await edit(p, MP, { sheet: "Flights", ref: "B" + r }, sh); await edit(p, MP, { sheet: "Flights", ref: "C" + r }, cd); }
+    await edit(p, MP, { sheet: "Flights", ref: "A" + r }, s); await edit(p, MP, { sheet: "Flights", ref: "B" + r }, sh); await edit(p, MP, { sheet: "Flights", ref: "C" + r }, cd); await edit(p, MP, { sheet: "Flights", ref: "G" + r }, r === 906 ? 3 : 2); }
   await edit(p, DR, { sheet: "SDO Plan", ref: c.sdoDec }, "SUP 2"); await edit(p, DR, { sheet: "SDO Plan", ref: c.sdoNx }, "Pilot");
   for (const f of [SUP2, PILOT, MP, DR]) await saved(p, f, 30000);
   await p.ctx.close();
@@ -55,6 +55,8 @@ test("new_year_end_to_end", async ({ m, errs }) => {
   assert.strictEqual(cells(m.file(PILOT), [["Jan", jan(c.pnx).ref]])[0], v, "Pilot January carried");
   const fl = cells(m.file(MP), [["Flights", "C906"], ["Flights", "C907"]]);
   assert.deepStrictEqual(fl, ["", "FLT-1.5"], "Master Planner: December flight gone, January 2027 flight kept");
+  const so = cells(m.file(MP), [["Flights", "G906"], ["Flights", "G907"]]).map(String);
+  assert.deepStrictEqual(so, ["", "2"], "z208: the December flight's Sorties cleared with it, the January flight keeps its own");
   const sd = cells(m.file(DR), [["SDO Plan", c.sdoNew], ["SDO Plan", c.sdoNx]]);
   assert.strictEqual(sd[0], "Pilot", "SDO day on 6 Jan 2027 carried to the new January block");
   assert.ok(sd[1] === "" || c.sdoNx === c.sdoNew, "13th block cleared");

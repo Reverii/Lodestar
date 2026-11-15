@@ -39,7 +39,8 @@ const edit = (page, file, c, v) => page.evaluate(([file, c, v]) => { const bi = 
 // what the page itself holds for that cell now (saved file + unsaved changes)
 const seen = (page, file, c) => page.evaluate(([file, c]) => { const b = books.find(b => b.WB.name === file), d = b.dirty.get(c.sheet + "!" + c.ref); if (d) return String(d.val ?? ""); const v = cellsAt(b, b.WB.files, c.sheet)[c.ref]; return String(v ?? ""); }, [file, c]);
 const saved = (page, file, ms = 20000) => page.waitForFunction(f => { const b = books.find(b => b.WB.name === f); return b && !b.dirty.size && !autoBusy; }, file, { timeout: ms });
-const live = page => page.evaluate(() => liveCheck(true));
+// the 15 s timer (or a focus event) may be refreshing already: liveCheck then returns -1 and does nothing, so wait and ask again
+const live = page => page.evaluate(async () => { for (let k = 0; k < 40; k++) { const r = await liveCheck(true); if (r !== -1) return r; await new Promise(z => setTimeout(z, 250)); } return -1; });
 const sleep = ms => new Promise(z => setTimeout(z, ms));
 
 // run a list of { name, fn({ m, errs }) } tests, each on a fresh mock holding the folder's files; LODE_DUMP gets the saved files

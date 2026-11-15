@@ -52,6 +52,26 @@ test("rows_older_than_90_days_are_dropped", async ({ page }) => {
   assert.deepStrictEqual(r, ["mid", "new"].sort());
 }, O);
 
+test("failed_save_leaves_no_log_rows_behind", async ({ page }) => {   // z208: a failed upload kept the new rows in memory and the retry logged them twice
+  await plan(page); const code = await act(page);
+  const r = await page.evaluate(c => { const b = books[cur.b], f0 = b.WB.files, p0 = b.WB.paths;
+    put(monSheet(9), colL(DAY_COL0 + 3) + (g0() + gridRow(0, 0)), c);
+    const sent = new Map(dirty), one = logBuild(b, sent);   // the upload "fails": the caller never takes one.files
+    const kept = b.WB.files === f0 && b.WB.paths === p0;
+    const two = logBuild(b, sent);                          // the retry
+    const rows = files => { const p = sheetPaths(files)[LOG_SHEET]; const c = readCellsOf(files, p, parseSST(files)); return Object.keys(c).filter(k => /^E\d+$/.test(k) && +k.slice(1) > 1).length; };
+    return { kept, one: rows(one.files), two: rows(two.files), paths: !!two.paths[LOG_SHEET] }; }, code);
+  assert.ok(r.kept, "the workbook in memory is unchanged until the file is written");
+  assert.strictEqual(r.two, r.one, "the retry logs the edit once: " + JSON.stringify(r)); assert.ok(r.one >= 1); assert.ok(r.paths);
+}, O);
+test("undo_reads_an_old_snapshot_with_its_own_strings", async ({ page }) => {   // z208: cellsAt used the book's current shared strings
+  const r = await page.evaluate(() => { const b = books[0], old = Object.assign({}, b.WB.files), sh = "Dashboard";
+    const p = b.WB.paths[sh]; old[p] = te.encode(td.decode(old[p]).replace(/<c r="G5"[^>]*?(?:\/>|>[\s\S]*?<\/c>)/, '<c r="G5" t="s"><v>0</v></c>'));
+    old["xl/sharedStrings.xml"] = te.encode('<?xml version="1.0" encoding="UTF-8"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="1" uniqueCount="1"><si><t>FROM THE OLD FILE</t></si></sst>');
+    return cellsAt(b, old, sh).G5; });
+  assert.strictEqual(r, "FROM THE OLD FILE");
+});
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0, S = null;
   for (const t of tests) {

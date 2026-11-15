@@ -44,6 +44,14 @@ test("ground_all_is_exclusive", async ({ page }) => {
   await page.click(".gtag[data-t='ALL']"); assert.strictEqual(await page.evaluate(() => masterBook().S.gr.find(g => g.row === 900).crew), "ALL");
   await page.click(".gtag[data-t='P']"); assert.strictEqual(await page.evaluate(() => masterBook().S.gr.find(g => g.row === 900).crew), "P");
 }, MP);
+test("ground_tag_click_is_saved", async ({ page }) => {   // z208: the put() was inside a comment, so the tag never reached the file
+  await openDay(page, 9, 14); await setGr(page, "S1");
+  await page.click(".gtag[data-t='P']");
+  const r = await page.evaluate(() => { const e = masterBook().dirty.get("Ground Programme!D900"); return e && e.val; });
+  assert.strictEqual(r, "P S1");
+  await page.click(".gtag[data-t='ALL']");
+  assert.strictEqual(await page.evaluate(() => masterBook().dirty.get("Ground Programme!D900").val), "ALL");
+}, MP);
 test("dept_copy_follows_tags", async ({ page }) => {
   const r = await page.evaluate(() => { const P = masterBook().S, out = {}; for (const c of ["ALL", "S2", "", "T"]) { P.gr = P.gr.filter(g => g.row !== 900); P.gr.push({ row: 900, mi: 9, d: 14, time: "", act: "PSM", crew: c, note: "" }); out[c] = deptGround(P, 9, 14, "SUP 2"); } return out; });
   assert.deepStrictEqual(r, { ALL: "PSM", S2: "PSM", "": "", T: "" });

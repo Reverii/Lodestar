@@ -1,4 +1,20 @@
-# LODESTAR handoff (updated 2026-11-16, after z209; next-session notes below)
+# LODESTAR handoff (updated 2026-11-16, after z210; next-session notes below)
+
+## Session end (16 Nov): z209 and z210 merged to main
+- Brandon: "continue bug testing", then "merge and push then conclude session". z210 is merged into `main` and pushed. No xlsx changed.
+- **z210:** `computeChit`, the up-chit dialog's MC warning (`chitWarn`) and My Lodestar's next squadron duty (`nextDuty`) read a person's rows with the layout of
+  the file on screen, not the department file they check (`gridRow(i, s)` without `st`). Same layout everywhere today (4 rows), so no visible
+  effect now; with an older 3-row file next to a newer one (e.g. half-way through an upgrade) the Ops Room would see the MC on the wrong
+  person or crash. Now `gridRow(i, s, st)`. Test `chits_duty_status` `mc_found_in_a_file_with_three_rows_per_person` (crashed on z209).
+- **New suite** `node tests/chits_duty_status.test.js` (8): down-chit then up-chit from the Ops Room saved and read back; MC on the plan
+  down-chits, the up-chit warns about a later MC; Day Status this year and next January on the row whose date matches; Duty Crew add (no
+  duplicate) and remove saved with no gap; every tab draws for a department, the Master Planner and the Ops Room. No other bugs found.
+- Test note: a test that opens the Ops Room file through `boot({ mine: "Ops_Room" })` is not in Ops Room mode (`OPS` false) until it sets
+  `OPS = true` (the department screen's Ops Room card does this); without it the other files are view-only and `put()` drops edits.
+- For Brandon: upload the DEV dashboard (z210). Nothing changes on screen.
+- Still open: whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the planner note;
+  the ATOM initials set rebuild (filled crew list and ATOM export); `wd_row` needs a layout-3 set (`LODE_OLD3`).
+
 
 ## z209 (16 Nov): bug testing continued
 Brandon: "continue running for bug test and fixes".

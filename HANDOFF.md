@@ -1,4 +1,24 @@
-# LODESTAR handoff (updated 2026-11-15, after z208; next-session notes below)
+# LODESTAR handoff (updated 2026-11-16, after z209; next-session notes below)
+
+## z209 (16 Nov): bug testing continued
+Brandon: "continue running for bug test and fixes".
+- **Full run, both sets** (`node tests/run_all.js --build`, ATOM included): 92 of 93 runs clean; the one miss (`atom hours_my_lodestar`
+  on the fresh set) was a 20 s file-open timeout under load and passes alone.
+- **Bug (fixed, dashboard):** `mpEditable()` ignored SharePoint view access (`noEdit`). The Master Planner opening their file with view
+  access only still got the edit controls (request Done / Decline, flight codes, crew matrix, alert states...): the screen changed but
+  `put()` refused the edit, so nothing was ever saved. Now no edit controls then. Test `block_find_req` `view_only_master_planner_offers_no_edits`.
+- **Tests fixed (not dashboard bugs):** `new_year_stops_when_someone_saved_meanwhile` called `liveCheck(true)` directly, which returns -1
+  while the 15 s refresh runs; it now uses `sp_lib` `live()` (3 of 3 runs pass). `hours_builder.test.py` still expected dept layout 4 and
+  Activities E as "(unused)"; E has been "Ops Room list" since z138. `my_lodestar` `currency_soonest_rule` skips on a set without the
+  Night flying / Mission currency rules (fresh builder sets since z197).
+- **One test command (checklist item):** `node tests/run_all.js --build` builds the dashboard and a fresh demo set in a temp folder and runs
+  every suite on the set it needs (`bdo_person` fresh only, `upgrade` repo only, `wd_row` only with `LODE_OLD3=<layout-3 set>`).
+- **New suite** `node tests/block_find_req.test.js` (8): Block of days across two months with weekends skipped, keep vs Replace, one Undo
+  step, into Jan (next year), bad dates refused; Find (cells, names, Enter walks the hits); a request raised, answered, read back and
+  withdrawn; the view-only Master Planner. No bugs in those features.
+- For Brandon: upload the DEV dashboard (z209). No xlsx changed. To test: nothing changes for normal use; if anyone opens the Master
+  Planner with view access only, they should now see it read-only.
+
 
 ## z208 (15 Nov): four fixes from a code review
 Brandon had an outside review checked ("verify this"); of the eight points, these four were real and he said "fix 1, 3, 5 and 7".

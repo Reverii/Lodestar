@@ -5,7 +5,7 @@
 const assert = require("assert");
 const fs = require("fs"), os = require("os"), path = require("path");
 const { execFileSync } = require("child_process");
-const { cells, person, code, edit, saved, sleep, runTests } = require("./sp_lib");
+const { cells, person, code, edit, saved, live, sleep, runTests } = require("./sp_lib");
 const SUP2 = "Flight_Ops_Planner_SUP2.xlsx", PILOT = "Flight_Ops_Planner_Pilot.xlsx", MP = "Master_Planner.xlsx", DR = "Duty_Roster.xlsx";
 const ALL = ["Duty_Roster", "Master_Planner", "Ops_Room", "Flight_Ops_Planner_SUP1", "Flight_Ops_Planner_SUP2", "Flight_Ops_Planner_TACCO", "Flight_Ops_Planner_Loadmaster", "Flight_Ops_Planner_Pilot"].map(n => n + ".xlsx");
 const ARCH = "/sites/121SQN/Program/Archive 2026";
@@ -79,7 +79,7 @@ test("new_year_stops_when_someone_saved_meanwhile", async ({ m, errs }) => {
   assert.ok(Buffer.compare(after, m.file(SUP2)) === 0, "Sarah's save is still there");
   assert.ok(errs.some(e => /DIALOG/.test(e) && /SUP2/.test(e) && /Refresh/.test(e)), "says which file and to refresh: " + errs.join(" | "));
   // after a refresh it runs, and Sarah's edit is in the archive
-  errs.length = 0; await ops.evaluate(() => liveCheck(true)); const r2 = await runRoll(ops); assert.deepStrictEqual(r2.prob, []);
+  errs.length = 0; const lr = await live(ops); assert.notStrictEqual(lr, -1, "refresh ran"); const r2 = await runRoll(ops); assert.deepStrictEqual(r2.prob, []);
   assert.strictEqual(cells(m.file(SUP2), [["Dashboard", "A5"]])[0], "2027");
   assert.strictEqual(cells(m.other.get(ARCH + "/" + SUP2), [[x.sheet, x.ref]])[0], v, "Sarah's last save is in the archive copy");
 });

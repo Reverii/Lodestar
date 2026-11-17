@@ -16,6 +16,9 @@ Brandon: "lets run some bug testing".
   `off_a_flight_drops_the_planned_syllabus_item` (fails on z212).
 - **Tests:** `wd_row` (19) passes on a fresh layout-5 set; its "needs a layout-3 set" note was out of date and `run_all.js` skipped it
   every time. It now runs on the fresh set.
+- **Full run on z213:** `LODE_DUMP=<folder> node tests/run_all.js --build`: 97 of 97 runs clean. `xlsx_check.py` on the 246 saved files:
+  12 problems, all from `daily_view_fix` putting the old placeholders back with a pattern that stopped at the ")" in 'Jan (next year)'
+  (junk no real file had; test fixed, now 0 problems). Every other saved file: 0 problems.
 - For Brandon: upload the DEV dashboard (z213). No xlsx changed. To test: type a planner note with an apostrophe, hover the cell.
 
 

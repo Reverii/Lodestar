@@ -10,8 +10,9 @@ const { boot } = require("./lode_lib");
     const r = await p.evaluate(() => {
       const dp = WB.paths["Daily View"];
       // make sure the file is in the broken state (a file built after z167 is not): put the placeholders back
+      // (z213: skip quoted sheet names, else the ")" in 'Jan (next year)' ended the match and left junk no real file had)
       let x = td.decode(WB.files[dp]);
-      x = x.replace(/(<c r="([A-G])8"[^>]*><f>)([^<]*)(<\/f>)/g, (m0, pre, col, f, post) => pre + f.replace(/CHOOSE\(IF\(YEAR\(\$A\$5\)&gt;PlanYear,13,MONTH\(\$A\$5\)\),[^)]*\)/g, col === "G" ? "{sdoref}" : "{ref}") + post);
+      x = x.replace(/(<c r="([A-G])8"[^>]*><f>)([^<]*)(<\/f>)/g, (m0, pre, col, f, post) => pre + f.replace(/CHOOSE\(IF\(YEAR\(\$A\$5\)&gt;PlanYear,13,MONTH\(\$A\$5\)\),(?:'[^']*'|[^)'])*\)/g, col === "G" ? "{sdoref}" : "{ref}") + post);
       WB.files[dp] = te.encode(x);
       const before = (x.match(/\{(?:ref|sdoref)\}/g) || []).length;
       put("Roster", "H40", "x");

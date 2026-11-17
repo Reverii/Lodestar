@@ -24,8 +24,15 @@ const go = page => page.evaluate(() => { $("blkGo").click(); });
 const at = (page, i, s, mi, d) => page.evaluate(([i, s, mi, d]) => { useBook(0); return String(S.m[mi].grid[gridRow(i, s)][d] || ""); }, [i, s, mi, d]);
 // build the saved file in memory and read it back as a fresh open
 // (inside withBook, as a real save does: logBuild builds the book that is in use)
-const roundTrip = (page, bi = 0) => page.evaluate(bi => { const bk = books[bi], bytes = withBook(bi, () => logBuild(bk, new Map(bk.dirty)).bytes);
-  bk.dirty = new Map(); reparseBook(bi, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); }, bi);
+// (LODE_DUMP=<folder>: each saved file is also written there, for tests/xlsx_check.py)
+let dumpN = 0;
+const roundTrip = async (page, bi = 0) => {
+  const r = await page.evaluate(bi => { const bk = books[bi], bytes = withBook(bi, () => logBuild(bk, new Map(bk.dirty)).bytes);
+    bk.dirty = new Map(); reparseBook(bi, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+    return window.__dump ? { name: bk.WB.name, b64: btoa(Array.from(bytes, c => String.fromCharCode(c)).join("")) } : null; }, bi);
+  if (r && process.env.LODE_DUMP) { const fs = require("fs"), path = require("path"); fs.mkdirSync(process.env.LODE_DUMP, { recursive: true });
+    fs.writeFileSync(path.join(process.env.LODE_DUMP, path.basename(__filename, ".test.js") + "_saved_" + process.pid + "_" + (++dumpN) + "_" + r.name), Buffer.from(r.b64, "base64")); }
+};
 const clear = (page, i, mis) => page.evaluate(([i, mis]) => { useBook(0); for (const mi of mis) for (let s = 0; s < 3; s++) S.m[mi].grid[gridRow(i, s)].fill(""); }, [i, mis]);
 
 test("block_across_two_months_skipping_weekends_is_saved", async ({ page, errs }) => {
@@ -151,7 +158,7 @@ test("view_only_master_planner_offers_no_edits", async ({ page }) => {
   for (const t of tests) {
     if (only && !t.name.includes(only)) continue;
     ran++; let S = null;
-    try { S = await boot(Object.assign({}, t.opts)); await t.fn(S);
+    try { S = await boot(Object.assign({}, t.opts)); if (process.env.LODE_DUMP) await S.page.evaluate(() => { window.__dump = true; }); await t.fn(S);
       const bad = S.errs.filter(e => /PAGEERROR/.test(e)); if (bad.length) throw new Error(bad.join(" | "));
       pass++; console.log("ok   " + t.name); }
     catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 400)); }

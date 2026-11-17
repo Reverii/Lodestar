@@ -9,8 +9,15 @@ const tests = [];
 const test = (name, fn, opts) => tests.push({ name, fn, opts });
 
 // save book bi in memory (inside withBook, like a real save) and read it back as a fresh open
-const roundTrip = (page, bi) => page.evaluate(bi => { const bk = books[bi], bytes = withBook(bi, () => logBuild(bk, new Map(bk.dirty)).bytes);
-  bk.dirty = new Map(); reparseBook(bi, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); }, bi);
+// (LODE_DUMP=<folder>: each saved file is also written there, for tests/xlsx_check.py)
+let dumpN = 0;
+const roundTrip = async (page, bi = 0) => {
+  const r = await page.evaluate(bi => { const bk = books[bi], bytes = withBook(bi, () => logBuild(bk, new Map(bk.dirty)).bytes);
+    bk.dirty = new Map(); reparseBook(bi, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+    return window.__dump ? { name: bk.WB.name, b64: btoa(Array.from(bytes, c => String.fromCharCode(c)).join("")) } : null; }, bi);
+  if (r && process.env.LODE_DUMP) { const fs = require("fs"), path = require("path"); fs.mkdirSync(process.env.LODE_DUMP, { recursive: true });
+    fs.writeFileSync(path.join(process.env.LODE_DUMP, path.basename(__filename, ".test.js") + "_saved_" + process.pid + "_" + (++dumpN) + "_" + r.name), Buffer.from(r.b64, "base64")); }
+};
 // a cell straight from the saved sheet XML of book bi
 const sheetCell = (page, bi, sheet, ref) => page.evaluate(([bi, sheet, ref]) => { const W = books[bi].WB; return readCellsOf(W.files, W.paths[sheet], W.sst || parseSST(W.files))[ref]; }, [bi, sheet, ref]);
 const noErrors = errs => assert.deepStrictEqual(errs.filter(e => /PAGEERROR|console\.error/.test(e)), []);
@@ -167,7 +174,7 @@ for (const mine of ["Flight_Ops_Planner_SUP2", "Master_Planner", "Ops_Room"]) {
   for (const t of tests) {
     if (only && !t.name.includes(only)) continue;
     ran++; let S = null;
-    try { S = await boot(Object.assign({}, t.opts)); await t.fn(S);
+    try { S = await boot(Object.assign({}, t.opts)); if (process.env.LODE_DUMP) await S.page.evaluate(() => { window.__dump = true; }); await t.fn(S);
       const bad = S.errs.filter(e => /PAGEERROR/.test(e)); if (bad.length) throw new Error(bad.join(" | "));
       pass++; console.log("ok   " + t.name); }
     catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 400)); }

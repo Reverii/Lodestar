@@ -1,5 +1,12 @@
 # LODESTAR handoff (updated 2026-11-17, after z215; next-session notes below)
 
+## Session end (17 Nov, later): z213 to z215 merged to main
+- Brandon: "once done merge and push, thereafter conclude session". `main` holds z215; the work branch `claude/practical-lamport-j13scq` is level with it.
+- For Brandon: upload the DEV dashboard (z215). No xlsx changed since z208.
+- Not done yet: a full `run_all` on z215 itself (z214 was fully run; z215 changed two file readers and their suites were re-run).
+- Still open for Brandon: whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the
+  planner note; the ATOM initials set rebuild once he sends the filled crew list and the ATOM export.
+
 ## z215 (17 Nov): two things lost when a file was opened again
 Brandon: "do more test".
 - **Bug (fixed):** a planner note or an Ops Room line on a **WD** cell was lost when the file was saved and opened again. `setNote`

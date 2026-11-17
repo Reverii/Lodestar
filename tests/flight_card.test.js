@@ -140,6 +140,15 @@ test("master_rows_show_lock_label", async ({ page }) => {
 });
 
 module.exports.tests = tests;
+// z213: esc() did not escape ' while the cell's title and data-cd are single-quoted: a note "CO's brief" showed as "CO" and spilt the rest into attributes
+test("apostrophe_in_a_note_keeps_the_tooltip_and_card_whole", async ({ page }) => {
+  await go(page);
+  const r = await page.evaluate(() => { const r = gridRow(0, 0), k = "g:" + r + ":5"; setVal(k, [...actIndex().values()].find(a => a.ci === CAT_FLIGHT).code, true); setNote(9, r, 5, "CO's brief at 0800"); renderPlanner();
+    const td = document.querySelector("#plan td[data-k='" + k + "']"); return { title: td.getAttribute("title"), cd: td.getAttribute("data-cd"), attrs: [...td.attributes].map(a => a.name).sort().join() }; });
+  assert.ok(/CO's brief at 0800/.test(r.title), r.title); assert.ok(/CO's brief at 0800/.test(r.cd), r.cd);
+  assert.strictEqual(r.attrs, "class,data-cd,data-k,title");
+});
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

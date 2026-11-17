@@ -143,6 +143,35 @@ test("roster_no_grip_in_a_view_only_file", async ({ page }) => {
   assert.strictEqual(await page.evaluate(() => S.roster.map(p => p.id).join()), before);
 });
 
+// z213: Ctrl+V over a flight that carries a Planned syllabus item drops that item (as Delete and the list do); a flight is refused on the WD row
+test("ctrl_v_over_a_planned_syllabus_flight_drops_the_item", async ({ page }) => {
+  await toPlan(page);
+  const ok = await page.evaluate(() => !!(S.hasSyl && S.sylDef && S.syl)); if (!ok) { console.log("     (no syllabus in this set: skipped)"); return; }
+  const fc = await flightCode(page), gc = await groundCode(page);
+  const x = await page.evaluate(() => { const i = S.roster.findIndex(p => p.id && !/inactive/i.test(p.status)); return { i, id: S.roster[i].id, item: S.sylDef.items[0].code, r: gridRow(i, 0) }; });
+  await page.evaluate(([x, fc]) => { const k = "g:" + x.r + ":20"; setVal(k, fc, true); sylCommit({ k, id: x.id, sel: x.item }, k, fc); renderPlanner(); }, [x, fc]);
+  const link = () => page.evaluate(x => { const L = sylLink(S, x.id, isoOf(S.year, cur.m, 20), 0); return L ? L.code + "|" + L.res : ""; }, x);
+  assert.ok(await link(), "planned item set up");
+  await page.evaluate(gc => { cur.clip = gc; }, gc);
+  await page.click(cell(x.r, 20)); await page.keyboard.press("Escape"); await page.keyboard.press("Control+v");
+  assert.strictEqual(await g(page, x.r, 20), gc);
+  assert.strictEqual(await link(), "", "the planned syllabus item goes with the flight");
+  // pasting a flight over a flight keeps it
+  await page.evaluate(([x, fc]) => { const k = "g:" + x.r + ":21"; setVal(k, fc, true); sylCommit({ k, id: x.id, sel: x.item }, k, fc); cur.clip = fc; renderPlanner(); }, [x, fc]);
+  await page.click(cell(x.r, 21)); await page.keyboard.press("Escape"); await page.keyboard.press("Control+v");
+  assert.ok(await page.evaluate(x => !!sylLink(S, x.id, isoOf(S.year, cur.m, 21), 0), x), "kept when a flight is pasted");
+}, { today: "2026-11-04" });
+test("ctrl_v_refuses_a_flight_on_the_wd_row", async ({ page }) => {
+  await toPlan(page);
+  if (await page.evaluate(() => rp() < 4)) { console.log("     (no WD row in this set: skipped)"); return; }
+  const fc = await flightCode(page), gc = await groundCode(page), r = await page.evaluate(() => gridRow(0, 3));
+  await setG(page, r, 20, ""); await page.evaluate(fc => { cur.clip = fc; }, fc);
+  await page.click(cell(r, 20)); await page.keyboard.press("Escape"); await page.keyboard.press("Control+v");
+  assert.strictEqual(await g(page, r, 20), "", "no flight on the WD row");
+  await page.evaluate(gc => { cur.clip = gc; }, gc); await page.keyboard.press("Control+v");
+  assert.strictEqual(await g(page, r, 20), gc, "a ground item is pasted");
+}, { today: "2026-11-04" });
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

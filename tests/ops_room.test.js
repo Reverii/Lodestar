@@ -519,6 +519,24 @@ test("picker_lists_extra_crew_from_the_plan", async ({ page }) => {   // z176: a
   assert.deepStrictEqual(r.offered, [], "planned extras offered again in + Add");
 }, ED);
 
+// z213: the Ops Room taking someone off a flight (or putting a standby code over it) also drops that flight's Planned syllabus item
+test("off_a_flight_drops_the_planned_syllabus_item", async ({ page }) => {
+  const r = await page.evaluate(day => {
+    if (!S.hasSyl || !S.sylDef) return { skip: true };
+    window.confirm = () => true;
+    const D = opsDay(day), A = [...actIndex().values()], fc = A.find(a => a.ci === CAT_FLIGHT).code, sb = A.find(a => isSb(a.code) && a.ci !== CAT_FLIGHT);
+    const i = S.roster.findIndex(p => p.id && !/inactive/i.test(p.status)), id = S.roster[i].id, item = S.sylDef.items[0].code, out = {};
+    const plan = s => { const r = gridRow(i, s), k = "g:" + r + ":" + D.d, m0 = cur.m; cur.m = D.mi; setVal(k, fc, true); sylCommit({ k, id, sel: item }, k, fc); cur.m = m0; return !!sylLink(S, id, day, s); };
+    out.set0 = plan(0); opsUnplan(D, { s: 0, code: fc }, S.dept, id);
+    out.cell0 = S.m[D.mi].grid[gridRow(i, 0)][D.d]; out.link0 = !!sylLink(S, id, day, 0);
+    if (sb) { out.set1 = plan(1); oaPlan(D, { s: 1, code: sb.code }, S.dept, id); out.cell1 = S.m[D.mi].grid[gridRow(i, 1)][D.d]; out.link1 = !!sylLink(S, id, day, 1); out.sb = sb.code; }
+    return out;
+  }, DAY);
+  if (r.skip) { console.log("     (no syllabus in this set: skipped)"); return; }
+  if (process.env.SHOWOUT) console.log(JSON.stringify(r)); assert.deepStrictEqual([r.set0, r.cell0, r.link0], [true, "", false], JSON.stringify(r));
+  if (r.sb) assert.deepStrictEqual([r.set1, r.cell1, r.link1], [true, r.sb, false], JSON.stringify(r));
+}, RO);
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

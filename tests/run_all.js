@@ -20,13 +20,12 @@ const only = process.argv[4] || "", skip = (process.env.SKIP || "").split(",").f
 const JOBS = +process.env.JOBS || 3;
 const suites = fs.readdirSync(__dirname).filter(f => /\.test\.(js|py)$/.test(f)).map(f => f.replace(/\.test\.(js|py)$/, m => m)).sort();
 // Suites that only make sense on one set: bdo_person needs a set built after z177 (BDO as a person), upgrade turns the repo's
-// layout-4 set into layout 5 (LODE_FILES = the old set). wd_row needs a layout-3 set and is left out unless LODE_OLD3 names one.
-const ONLY_SET = { bdo_person: "fresh", upgrade: "repo" };
+// layout-4 set into layout 5 (LODE_FILES = the old set). wd_row checks the layout-5 stamp, so it runs on the fresh set (z213; it was left out before).
+const ONLY_SET = { bdo_person: "fresh", upgrade: "repo", wd_row: "fresh" };
 const jobs = [];
 for (const f of suites) {
   const name = f.replace(/\.test\.(js|py)$/, ""); if (only && !name.includes(only)) continue; if (skip.includes(name)) continue;
   if (f.endsWith(".py")) { jobs.push({ name, set: "-", cmd: "python3", args: [path.join(__dirname, f)], env: {} }); continue; }
-  if (name === "wd_row") { if (process.env.LODE_OLD3) jobs.push({ name, set: "layout3", cmd: "node", args: [path.join(__dirname, f)], env: { LODE_FILES: path.resolve(process.env.LODE_OLD3) } }); else console.log("skip wd_row (set LODE_OLD3=<layout-3 set> to run it)"); continue; }
   if (ONLY_SET[name] !== "fresh") jobs.push({ name, set: "repo", cmd: "node", args: [path.join(__dirname, f)], env: { LODE_FILES: ROOT, LODE_NEW: FRESH } });
   if (ONLY_SET[name] !== "repo") jobs.push({ name, set: "fresh", cmd: "node", args: [path.join(__dirname, f)], env: { LODE_FILES: FRESH, LODE_NEW: FRESH } });
 }

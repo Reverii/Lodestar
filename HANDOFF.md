@@ -1,9 +1,28 @@
-# LODESTAR handoff (updated 2026-11-17, after z212; next-session notes below)
+# LODESTAR handoff (updated 2026-11-17, after z213; next-session notes below)
+
+## z213 (17 Nov): apostrophes, Syllabus Log after Ctrl+V and the Ops Room
+Brandon: "lets run some bug testing".
+- **Bug (fixed):** `esc()` did not escape `'`, but about 130 attributes in the dashboard are single-quoted (`title='...'`, `data-cd='...'`).
+  A planner note "CO's brief at 0800" showed as "Planner note: CO" in the tooltip and the cell card, and the rest of the text spilt into
+  stray attributes; the same for any name, description, remark or code with an apostrophe. `esc` now escapes `'` as `&#39;` (also in the
+  Excel XML it writes, which is valid XML; checked: openpyxl reads `CO's brief` back, `xlsx_check.py` 0 problems). Test `flight_card`
+  `apostrophe_in_a_note_keeps_the_tooltip_and_card_whole`.
+- **Bug (fixed):** Ctrl+V on the Planner over a flight with a Planned syllabus item left the item in the Syllabus Log (Delete, the list,
+  Block of days and the fill handle all drop it), so the cell showed the syllabus tag on a leave or ground code. Ctrl+V now goes through
+  `sylCommit` like the list. It also refuses a flight on the WD row ("The WD row takes ground and admin items only."), as the list and the
+  fill handle do. Tests `drag` `ctrl_v_over_a_planned_syllabus_flight_drops_the_item`, `ctrl_v_refuses_a_flight_on_the_wd_row` (fail on z212).
+- **Bug (fixed):** the Ops Room taking someone off a flight (`opsUnplan`) cleared their plan cell but left the Planned syllabus item; a
+  standby code put over their flight (`oaPlan`) did the same. New `sylDropIfNotFlying`. Test `ops_room`
+  `off_a_flight_drops_the_planned_syllabus_item` (fails on z212).
+- **Tests:** `wd_row` (19) passes on a fresh layout-5 set; its "needs a layout-3 set" note was out of date and `run_all.js` skipped it
+  every time. It now runs on the fresh set.
+- For Brandon: upload the DEV dashboard (z213). No xlsx changed. To test: type a planner note with an apostrophe, hover the cell.
+
 
 ## Session end (17 Nov): z211 and z212 merged to main
 - Brandon: "merge to main and push", then "conclude session". `main` holds z212; the work branch `claude/practical-lamport-j13scq` is level with it.
 - For Brandon: upload the DEV dashboard (z212). No xlsx changed since z208.
-- Next bug-testing ideas not done yet: the `wd_row` suite needs a layout-3 set (`LODE_OLD3`); ATOM suite in Singapore time; Excel-repair
+- Next bug-testing ideas not done yet (z213: `wd_row` done, it runs on the fresh set): ATOM suite in Singapore time; Excel-repair
   check on the saved files of every suite with `LODE_DUMP` on the fresh set.
 - Still open for Brandon: whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the
   planner note; the ATOM initials set rebuild once he sends the filled crew list and the ATOM export.

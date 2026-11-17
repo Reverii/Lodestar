@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z212</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z213</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1424,7 +1424,8 @@ const AWAY = ci => ci === CAT_LEAVE || ci === CAT_OFF || ci === CAT_MED || ci ==
 const $ = id => document.getElementById(id);
 const colL = n => { let s = ""; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
 const colN = s => { let n = 0; for (const ch of s) n = n * 26 + ch.charCodeAt(0) - 64; return n; };
-const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+// z213: also ' (most attributes here are single-quoted: a note like "CO's brief" cut the tooltip and the cell card short at the apostrophe)
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 const td = new TextDecoder(), te = new TextEncoder();
 function toast(msg, ms = 3200) { const t = $("toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = "none", ms); }
 
@@ -6235,14 +6236,14 @@ function oaPlan(D, x, dept, id) {
   withBook(bi, () => { const i = S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0 || !S.m[D.mi]) return; const rr = gridRow(i, x.s), v = S.m[D.mi].grid[rr][D.d];
     if (same(v, x.code) || (v && same(codeBase(v), codeBase(x.code)))) return;
     if (v && !confirm((S.roster[i].id || S.roster[i].name) + " already has " + v + " in " + SHIFTS[x.s] + " on " + S.dept + "'s plan. Replace it with " + x.code + "?")) return;
-    S.m[D.mi].grid[rr][D.d] = x.code; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), x.code); });
+    S.m[D.mi].grid[rr][D.d] = x.code; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), x.code); if (v) sylDropIfNotFlying(D.mi, rr, D.d, x.code); });
 }
 // crew the Ops Room takes off a flight lose its code from their plan cell in that shift (only when the cell still holds that code)
 function opsUnplan(D, x, dept, id) {
   const bi = books.findIndex(b => isDept(b) && same(b.S.dept, dept) && b.S.year === D.y); if (bi < 0 || !mayEdit(bi)) return;
   withBook(bi, () => { const i = S.roster.findIndex(p => same(p.id || p.name, id)); if (i < 0 || !S.m[D.mi]) return; const rr = gridRow(i, x.s), v = S.m[D.mi].grid[rr][D.d];
     if (!v || !(same(v, x.code) || same(codeBase(v), codeBase(x.code)))) return;
-    S.m[D.mi].grid[rr][D.d] = ""; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), ""); });
+    S.m[D.mi].grid[rr][D.d] = ""; put(monSheet(D.mi), colL(DAY_COL0 + D.d) + (g0() + rr), ""); sylDropIfNotFlying(D.mi, rr, D.d, ""); });
 }
 // ---- Ops Add form: an ad hoc flight on the day shown
 let OPS_G = [], GRD = null;   // the ground rows on screen; the open ground row dialog { iso, id, kind, row }
@@ -7004,6 +7005,13 @@ function sylOpen(path, ci, iso, tag) {
 }
 function sylFreeRow(st) { const used = new Set(st.syl.map(x => x.r)); let r = st.sylNext; while (used.has(r)) r++; return r < SYL_ROW0 + SYL_N ? r : -1; }
 function sylClear(st, a) { "ABCDEFH".split("").forEach(L => put("Syllabus Log", L + a.r, "")); st.syl = st.syl.filter(x => x !== a); }
+// z213: a plan cell of the current book (month mi, grid row r, day d) that no longer holds a flight or sim drops its Planned syllabus entry (Pass / Fail results stay).
+// For writers that do not go through sylCommit: the Ops Room taking someone off a flight, or putting a standby code over their flight.
+function sylDropIfNotFlying(mi, r, d, code) {
+  if (!S.hasSyl || S.kind || !S.syl || sylFlyCode(code) >= 0) return;
+  const pr = S.roster[rowPerson(r)], lk = pr && pr.id ? sylLink(S, pr.id, isoOf(S.year, mi, d), rowShift(r)) : null;
+  if (lk && lk.res === "Planned") sylClear(S, lk);
+}
 // popSyl for crew cell k of the current book, or null when the picker shows no syllabus box
 function sylPopInit(k) {
   popSyl = null;
@@ -7173,7 +7181,7 @@ async function spStamp(url) {
 }
 const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
 function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z212 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z213 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -8422,7 +8430,9 @@ document.addEventListener("keydown", e => {
   else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v") {
     if (cur.clip != null) {
       if (k.startsWith("m:") && cur.clip) { const a = actIndex().get(cur.clip.toUpperCase()); if (!a || a.ci !== CAT_FLIGHT) { toast("Master rows only take Flight codes"); return; } }
-      setVal(k, cur.clip); select(k);
+      // z213: the WD row takes ground and admin items only (as the list and the fill handle); a pasted code also keeps the syllabus log right (as Delete and the list)
+      if (k.startsWith("g:") && cur.clip && isWdRow(keyParts(k).r) && !wdAllowed(actIndex().get(cur.clip.toUpperCase()))) { toast("The WD row takes ground and admin items only."); e.preventDefault(); return; }
+      setVal(k, cur.clip, true); if (k.startsWith("g:")) sylCommit(null, k, cur.clip); renderPlanner(); renderOverview(); select(k);
     }
     e.preventDefault();
   }

@@ -1,5 +1,5 @@
 // WD (whole day) fourth row, zoom and crew divider. Build first: python3 .lodestar_build.py dashboard
-// Run: LODE_FILES=<folder with the layout-3 demo set> node tests/wd_row.test.js [name-filter]
+// Run: LODE_FILES=<folder with a fresh builder set (layout 5)> node tests/wd_row.test.js [name-filter]
 const assert = require("assert");
 const { boot } = require("./lode_lib");
 const tests = [];
@@ -12,7 +12,7 @@ test("row_helpers_exist", async ({ page }) => {
 });
 
 
-// the planner on October with the new layout (run with LODE_FILES pointing at the layout-3 demo set)
+// the planner on October with the new layout (run with LODE_FILES pointing at a fresh builder set)
 const go = page => page.evaluate(() => { document.querySelector("nav.tabs button[data-v='plan']").click(); cur.m = 9; renderPlanner(); });
 const FIXTURE = require("path").join(__dirname, "fixtures", "SUP2_layout2.xlsx");   // a layout-2 SUP 2 file (three rows per person)
 

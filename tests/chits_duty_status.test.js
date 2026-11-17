@@ -77,6 +77,28 @@ test("mc_found_in_a_file_with_three_rows_per_person", async ({ page, errs }) => 
   noErrors(errs);
 }, { mine: "Ops_Room" });
 
+test("undo_in_the_ops_room_keeps_a_view_only_file_as_refreshed", async ({ page, errs }) => {
+  // z212: in Ops Room mode Undo rolled back every open file, also one the Ops Room may only view; a refresh of that file (someone else's
+  // save) does not restart the history, so Undo brought back the copy from before the refresh and hid their changes on screen
+  const p = await opsWithSup2(page);
+  const r = await page.evaluate(async ([bi, i]) => {
+    books[bi].noEdit = true; undoReset(); await new Promise(z => setTimeout(z, 20));
+    // the Ops Room edits its own file: one Undo step
+    withBook(books.findIndex(b => b.S.kind === "ops"), () => put("Day Board", "B6", "Undo test")); await new Promise(z => setTimeout(z, 20));
+    // someone in SUP 2 saves: their file is read again here (a copy with a code on 4 Nov PM)
+    const ref = monSheet(10) + "!" + colL(DAY_COL0 + 3) + (g0(books[bi].S) + gridRow(i, 1, books[bi].S));
+    const bytes = withBook(bi, () => { dirty.set(ref, { sheet: monSheet(10), ref: ref.split("!")[1], val: "SIM" }); try { return buildXlsx().bytes; } finally { dirty.clear(); } });
+    reparseBook(bi, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); liveDone([bi]);
+    const seen = books[bi].S.m[10].grid[gridRow(i, 1, books[bi].S)][3];
+    undo(); await new Promise(z => setTimeout(z, 20));
+    return { seen, after: books[bi].S.m[10].grid[gridRow(i, 1, books[bi].S)][3], board: books[books.findIndex(b => b.S.kind === "ops")].dirty.size };
+  }, [p.bi, p.i]);
+  assert.strictEqual(r.seen, "SIM", "the refresh shows their save");
+  assert.strictEqual(r.after, "SIM", "Undo leaves the view-only file as refreshed");
+  assert.strictEqual(r.board, 0, "the Ops Room's own edit is undone");
+  noErrors(errs);
+}, { mine: "Ops_Room" });
+
 // ---- Day Status (Master Planner): a no-flying day, this year and next January
 test("day_status_saved_on_the_right_row", async ({ page, errs }) => {
   const r = await page.evaluate(() => { const bi = mpIdx(); return { bi, ed: mpEditable(), nx: books[bi].S.nx }; });

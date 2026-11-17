@@ -1,4 +1,18 @@
-# LODESTAR handoff (updated 2026-11-17, after z211; next-session notes below)
+# LODESTAR handoff (updated 2026-11-17, after z212; next-session notes below)
+
+## z212 (17 Nov): Undo after a refresh, local time stamps, Singapore time checked
+- **Bug (fixed):** in Ops Room mode Undo rolled back every open file, also one with view access only. A refresh of that file (someone
+  else's save) does not restart the Undo history (`liveDone` only does that for files you can edit), so Undo brought back the copy from
+  before the refresh and hid their changes on screen until the next refresh. Undo now skips files you can't edit (`mayEdit`). Test
+  `chits_duty_status` `undo_in_the_ops_room_keeps_a_view_only_file_as_refreshed` (fails on z211).
+- **Fixed:** the "updated" stamp written on Ground Rows (H), Flying Restrictions (E) and Alert States (E) was UTC (8 hours behind in
+  Singapore); now local time like the Change Log (`logTime`).
+- **Singapore time:** `TZ=Asia/Singapore node tests/run_all.js <fresh set>`: 93 of 93 runs clean. New `node tests/timezone.test.js` (3)
+  uses the real clock in Asia/Singapore: at 07:30 (UTC still the day before), at 23:30 and on New Year's morning, today, the time stamp,
+  the greeting and the Planner's today column are right.
+- Saved files of `block_find_req` and `chits_duty_status` (now written with `LODE_DUMP`): `xlsx_check.py` 0 problems.
+- For Brandon: upload the DEV dashboard (z212). Nothing to see in normal use.
+
 
 ## z211 (17 Nov): view-only Duty Planner
 Brandon: "continue bug testing".

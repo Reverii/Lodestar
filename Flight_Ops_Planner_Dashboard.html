@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z211</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z212</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -2083,7 +2083,7 @@ function grrSave(iso, id, kind, f) {
       put(GRR_SHEET, "A" + row, dateSerial(D.y, D.mi, D.d)); put(GRR_SHEET, "B" + row, id); S.grr.push(e); S.grrUsed.add(row);
     }
     e.kind = kind; for (const k of ["time", "act", "note", "who"]) if (f[k] !== undefined) e[k] = String(f[k]).trim();
-    [["C", e.kind], ["D", e.time], ["E", e.act], ["F", e.note], ["G", e.who], ["H", new Date().toISOString().slice(0, 16).replace("T", " ")]].forEach(([L, v]) => put(GRR_SHEET, L + e.row, v));
+    [["C", e.kind], ["D", e.time], ["E", e.act], ["F", e.note], ["G", e.who], ["H", logTime().slice(0, 16)]].forEach(([L, v]) => put(GRR_SHEET, L + e.row, v));
   });
   return ok;
 }
@@ -2297,7 +2297,7 @@ function frSave(f) {
     Object.assign(e, { from, to, text, by: SP.user ? SP.user.Title : "" });
     const A = ymd(from, S.year), B = ymd(to, S.year);
     put(FR_SHEET, "A" + e.row, dateSerial(A.y, A.mi, A.d)); put(FR_SHEET, "B" + e.row, dateSerial(B.y, B.mi, B.d)); put(FR_SHEET, "C" + e.row, text);
-    put(FR_SHEET, "D" + e.row, e.by); put(FR_SHEET, "E" + e.row, new Date().toISOString().slice(0, 16).replace("T", " "));
+    put(FR_SHEET, "D" + e.row, e.by); put(FR_SHEET, "E" + e.row, logTime().slice(0, 16));
   });
   return ok;
 }
@@ -2356,7 +2356,7 @@ function alSave(f) {
     Object.assign(e, { from, to, level, by: SP.user ? SP.user.Title : "" });
     const A = ymd(from, S.year), B = ymd(to, S.year);
     put(AL_SHEET, "A" + e.row, dateSerial(A.y, A.mi, A.d)); put(AL_SHEET, "B" + e.row, dateSerial(B.y, B.mi, B.d)); put(AL_SHEET, "C" + e.row, level);
-    put(AL_SHEET, "D" + e.row, e.by); put(AL_SHEET, "E" + e.row, new Date().toISOString().slice(0, 16).replace("T", " "));
+    put(AL_SHEET, "D" + e.row, e.by); put(AL_SHEET, "E" + e.row, logTime().slice(0, 16));
   });
   return ok;
 }
@@ -3459,7 +3459,7 @@ function undo(back = true) {
   if (popKey) closePop(true);
   const st = from.pop(); if (st.length !== books.length) { undoReset(); return; }
   to.push(undoBase || snapAll());
-  st.forEach((x, i) => { if (i !== 0 && !OPS) return; books[i].S = structuredClone(x.S); books[i].dirty = new Map(x.dirty); undoSaved(books[i], x); });   // a read-only file (the Ops Room seen from a department) is never rolled back
+  st.forEach((x, i) => { if (!mayEdit(i)) return; books[i].S = structuredClone(x.S); books[i].dirty = new Map(x.dirty); undoSaved(books[i], x); });   // a read-only file (the Ops Room seen from a department; z212: also a file with view access only in Ops Room mode, which a refresh may have re-read) is never rolled back
   undoBase = st; useBook(cur.b); OPS_CXL_CACHE = null; CHIT_GEN++;
   renderAll(); updateUndo(); toast(back ? "Undone" : "Redone", 1000);
 }
@@ -3618,6 +3618,7 @@ const unsaved = () => books.reduce((n, b) => n + b.dirty.size, 0);
 const LOG_SHEET = "Change Log", LOG_SKIP = new Set(["Currency", LOG_SHEET, ATOM_SHEET]), LOG_SHIFTS = ["AM", "PM", "NIGHT", "WD"], LOG_SLOTS = ["AM 1", "AM 2", "PM 1", "PM 2", "NIGHT 1", "NIGHT 2"];
 const LOG_HEAD = ["Time", "Name", "Email", "File", "Change", "Before", "After", "Cell"];
 const logWho = () => SP.user ? SP.user.Title : "Offline (" + (books[0] ? books[0].WB.name : "") + ")";
+// z212: also the "updated" stamp on Ground Rows, Flying Restrictions and Alert States (they were written in UTC)
 const logTime = (ms) => { const d = ms ? new Date(ms) : new Date(), p = n => String(n).padStart(2, "0"); return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds()); };
 function logVal(v, head) {
   if (v == null || v === "") return "";
@@ -7173,7 +7174,7 @@ async function spStamp(url) {
 }
 const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
 function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z211 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z212 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

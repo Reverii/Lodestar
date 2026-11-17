@@ -1,4 +1,19 @@
-# LODESTAR handoff (updated 2026-11-16, after z210; next-session notes below)
+# LODESTAR handoff (updated 2026-11-17, after z211; next-session notes below)
+
+## z211 (17 Nov): view-only Duty Planner
+Brandon: "continue bug testing".
+- **Bug (fixed):** the Duty Planner never checked view access. With view access only on SharePoint (or a file open here read-only), the
+  Duty Roster's day boxes, the BDO person boxes, the Duty Crew add / remove and a department's SDO tick boxes and "Copy my duty days"
+  all changed the screen, but `put()` dropped the edit, so nothing was saved. Now the controls are greyed out, the list editing and the
+  copy button are hidden, and each handler checks first (`dutyLocked`). Tests `chits_duty_status` `view_only_duty_planner_offers_no_edits_*`
+  (fail on z210).
+- **New check** `view_only_pages_change_nothing_*`: with view access only, every input on Crew Roster, Activities, Currency, Misc Notes, the
+  Master Planner pages and the Ops Room board is changed; nothing changes in memory and nothing is marked to save. Passed already (those
+  pages use `readOnly()` / `mpEditable()` / `opsEditable()`).
+- Suites re-run on z211: chits_duty_status 13 (both sets), bdo_person 8, dept_select 24, other_depts 10, ops_room 60 (both sets), sharepoint 14.
+- For Brandon: upload the DEV dashboard (z211). To test: someone with view access only on Duty_Roster.xlsx opens the Duty Planner: the
+  boxes are greyed out.
+
 
 ## Session end (16 Nov): z209 and z210 merged to main
 - Brandon: "continue bug testing", then "merge and push then conclude session". z210 is merged into `main` and pushed. No xlsx changed.

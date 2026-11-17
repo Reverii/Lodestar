@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-16 z210</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z211</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -5364,7 +5364,8 @@ function renderSdo() {
   let note;
   const noDuty = !ownRoster && !doesDuty(own, D);
   const allDiffs = !ownRoster && rb ? sdoDiffs(books[dutyBi()], rb) : [];
-  const syncBtn = allDiffs.length ? " <button class='btn primary' id='sdoSync' style='margin-left:6px;padding:5px 10px'>Copy my duty days from the Duty Roster (" + allDiffs.length + ")</button>" : "";
+  const dutyEd = mayEdit(dutyBi());   // z211: view access only (or a file open here read-only): the calendar and the lists are shown, not edited
+  const syncBtn = allDiffs.length && dutyEd ? " <button class='btn primary' id='sdoSync' style='margin-left:6px;padding:5px 10px'>Copy my duty days from the Duty Roster (" + allDiffs.length + ")</button>" : "";
   if (noDuty) {
     note = "<b>" + esc(own.dept) + " has no " + D + " days in its file.</b> " + (D === "SDO" && !doesSdo(own) ? "Only " + SDO_DEPTS.join(", ") + " are rostered for SDO. " : "Its Excel has no " + D + " Plan sheet yet (upload the new planner file). ") + "The calendar shows the roster for reference." + syncBtn;
   } else if (ownRoster) {
@@ -5441,6 +5442,7 @@ function renderSdo() {
     h += "</table></div>";
   }
   $("sdoCal").innerHTML = h;
+  if (!dutyEd) $("sdoCal").querySelectorAll("[data-sdo]").forEach(x => { x.disabled = true; x.title = (x.title ? x.title + "\n" : "") + "View only: this file can't be changed here."; });
   // dates by department: from the Duty Roster when there is one, otherwise from the open department files
   const src = ownRoster ? books[dutyBi()] : rb && rb.S.year === y && hasPlan(rb.S, D) ? rb : null;
   $("sdoSumTitle").textContent = D + " dates by department, " + y + (src ? " (Duty Roster)" : "");
@@ -5458,8 +5460,10 @@ function renderSdo() {
   }
   t += "<tr class='tot'><td>Total days</td>" + tot.map(x => "<td>" + x + "</td>").join("") + (src && !isB ? "<td>" + gapTot + "</td>" : "") + "</tr>" + nxRow;
   $("sdoSum").innerHTML = t;
-  renderDutyCrew(ownRoster ? books[dutyBi()] : rb, ownRoster);
+  renderDutyCrew(ownRoster ? books[dutyBi()] : rb, ownRoster && dutyEd);
 }
+// z211: the duty handlers change the file in memory first; with view access only put() would drop the change and the screen would lie
+function dutyLocked() { if (mayEdit(dutyBi())) return false; toast(books[dutyBi()] && books[dutyBi()].noEdit ? "You only have view access to this file." : "This file is open here read-only.", 2500); renderSdo(); return true; }
 // ---------- Ops Room ----------
 // The Ops Room file (kept by the SDO / AOS on duty) has one row per aircraft: callsign, tail, crew changes (blank = the dashboard's pick),
 // others, AO, ETD / ETA (blank = the Master Planner time), ATD / ATA, Mission Commander, CRMO, remarks.
@@ -7168,7 +7172,7 @@ async function spStamp(url) {
 }
 const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
 function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-16 z210 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z211 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -8761,7 +8765,7 @@ $("mpNote").addEventListener("click", e => {
   toast("Copied " + diffs.length + " slot" + (diffs.length === 1 ? "" : "s") + " (flights and squadron events) from the Master Planner. Click Save to Excel to keep them.");
 });
 $("sdoNote").addEventListener("click", e => {
-  if (e.target.id !== "sdoSync") return;
+  if (e.target.id !== "sdoSync" || dutyLocked()) return;
   const rb = rosterBook(), diffs = sdoDiffs(books[dutyBi()], rb); if (!diffs.length) return;
   const keep = cur.b; useBook(dutyBi());
   let skip = 0;
@@ -8780,7 +8784,7 @@ $("sdoNote").addEventListener("click", e => {
   toast("Copied " + (diffs.length - skip) + " duty day" + (diffs.length - skip === 1 ? "" : "s") + " (BDO and SDO) from the Duty Roster" + (skip ? "; " + skip + " left as they were" : "") + ". Click Save to Excel to keep them.");
 });
 $("sdoCal").addEventListener("change", e => {
-  const ref = e.target.dataset.sdo; if (!ref) return;
+  const ref = e.target.dataset.sdo; if (!ref || dutyLocked()) return;
   const keep = cur.b; useBook(dutyBi());
   const v = e.target.tagName === "SELECT" ? e.target.value : e.target.checked ? S.dept : "", P = plan(S, DUTY); if (v) P[ref] = v; else delete P[ref];
   put(DUTY + " Plan", ref, v); useBook(keep); renderSdo(); renderPlanner(); renderOverview();
@@ -8799,11 +8803,12 @@ function addDutyCrew(p) {
   list.push(p); writeDutyCrew(DUTY);
 }
 $("dutyCrew").addEventListener("change", e => {
-  if (e.target.id !== "dcAdd" || e.target.value === "") return;
+  if (e.target.id !== "dcAdd" || e.target.value === "" || dutyLocked()) return;
   const p = JSON.parse($("dutyCrew").dataset.ppl || "[]")[+e.target.value]; if (p) addDutyCrew({ id: p.id, name: p.name, dept: p.dept });
 });
 $("dutyCrew").addEventListener("click", e => {
   const rm = e.target.closest("button[data-dcrm]");
+  if ((rm || e.target.id === "dcType") && dutyLocked()) return;
   if (rm) { books[dutyBi()].S.crew[DUTY].splice(+rm.dataset.dcrm, 1); writeDutyCrew(DUTY); return; }
   if (e.target.id !== "dcType") return;
   const id = (prompt("Callsign of the person who can do " + DUTY + ":") || "").trim().toUpperCase(); if (!id) return;

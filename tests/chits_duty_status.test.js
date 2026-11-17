@@ -108,6 +108,47 @@ test("duty_crew_add_and_remove_are_saved", async ({ page, errs }) => {
   noErrors(errs);
 }, { mine: "Duty_Roster" });
 
+// ---- z211: the Duty Planner with view access only offers no edits (they showed on screen but were never saved)
+for (const mine of ["Duty_Roster", "Flight_Ops_Planner_SUP2"]) {
+  test("view_only_duty_planner_offers_no_edits_" + mine, async ({ page, errs }) => {
+    const r = await page.evaluate(() => { books[0].noEdit = true; document.querySelector("nav.tabs button[data-v='sdo']") && document.querySelector("nav.tabs button[data-v='sdo']").click();
+      if (!books[0].S.kind) { DUTY = "SDO"; dutyPicked = true; }   // a department ticks its SDO days (BDO days show the person the Duty Planner picked)
+      renderSdo();
+      const ctl = [...document.querySelectorAll("#sdoCal [data-sdo]")], enabled = ctl.filter(x => !x.disabled).length, st = books[dutyBi()].S, before = JSON.stringify(st.duty), crew = JSON.stringify(st.crew || null);
+      // try anyway: change the first control, click a remove button and the copy button if any are there
+      const el = ctl[0]; if (el) { if (el.type === "checkbox") el.checked = !el.checked; else el.value = el.options[1] ? el.options[1].value : ""; el.disabled = false; el.dispatchEvent(new Event("change", { bubbles: true })); }
+      const rm = document.querySelector("#dutyCrew button[data-dcrm]"), sync = document.getElementById("sdoSync");
+      return { n: ctl.length, enabled, rm: !!rm, add: !!document.getElementById("dcAdd"), sync: !!sync,
+        same: JSON.stringify(books[dutyBi()].S.duty) === before && JSON.stringify(books[dutyBi()].S.crew || null) === crew, dirty: books[dutyBi()].dirty.size }; });
+    assert.ok(r.n > 0, "the calendar has controls");
+    assert.deepStrictEqual([r.enabled, r.rm, r.add, r.sync, r.same, r.dirty], [0, false, false, false, true, 0], JSON.stringify(r));
+    noErrors(errs);
+  }, { mine });
+}
+
+// ---- z211: with view access only, typing into any page of your own file changes nothing in memory (put() would drop it anyway)
+for (const [mine, tabs] of [["Flight_Ops_Planner_SUP2", ["roster", "acts", "cur", "syl", "misc"]], ["Master_Planner", ["mp", "codes", "cmx"]], ["Ops_Room", ["ops"]]]) {
+  test("view_only_pages_change_nothing_" + mine, async ({ page, errs }) => {
+    const r = await page.evaluate(async tabs => {
+      window.confirm = () => true; window.prompt = () => "ZZ"; books[0].noEdit = true; updateSave();
+      const snap = () => JSON.stringify(books[0].S, (k, v) => v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : k.startsWith("_") ? undefined : v);
+      const before = snap(), out = {};
+      for (const t of tabs) { const b = document.querySelector("nav.tabs button[data-v='" + t + "'], [data-v='" + t + "']"); if (!b) continue; b.click(); await new Promise(z => setTimeout(z, 50));
+        const view = document.querySelector("section.view:not([style*='none']), .view.on") || document.body;
+        const els = [...document.querySelectorAll("main input, main select, main textarea, #views input, #views select, #views textarea, input[data-r], select[data-r], input[data-f], select[data-f], input[data-row], input[data-st], select[data-sdo]")].filter(x => x.offsetParent !== null && x.type !== "search" && x.type !== "file");
+        let n = 0; for (const el of els) { try { el.disabled = false;
+          if (el.type === "checkbox") el.checked = !el.checked; else if (el.tagName === "SELECT") el.selectedIndex = el.options.length > 1 ? (el.selectedIndex + 1) % el.options.length : 0; else el.value = "ZZ9";
+          el.dispatchEvent(new Event("input", { bubbles: true })); el.dispatchEvent(new Event("change", { bubbles: true })); n++; } catch (e) { } }
+        out[t] = n; }
+      return { out, same: snap() === before, dirty: books[0].dirty.size, diff: (() => { const a = before, b = snap(); let i = 0; while (i < a.length && a[i] === b[i]) i++; return a.slice(Math.max(0, i - 120), i + 60) + "  ->  " + b.slice(Math.max(0, i - 120), i + 60); })() };
+    }, tabs);
+    console.log("  inputs tried: " + JSON.stringify(r.out)); assert.ok(Object.values(r.out).reduce((a, b) => a + b, 0) > 0, "the pages had inputs to try");
+    assert.strictEqual(r.dirty, 0, "nothing to save");
+    assert.ok(r.same, "nothing changed in memory (" + JSON.stringify(r.out) + "): " + r.diff);
+    noErrors(errs);
+  }, { mine });
+}
+
 // ---- Overview and Changelog tabs draw without errors on every file kind
 for (const mine of ["Flight_Ops_Planner_SUP2", "Master_Planner", "Ops_Room"]) {
   test("every_tab_draws_" + mine, async ({ page, errs }) => {

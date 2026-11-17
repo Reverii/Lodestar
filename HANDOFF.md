@@ -1,5 +1,13 @@
 # LODESTAR handoff (updated 2026-11-17, after z212; next-session notes below)
 
+## Session end (17 Nov): z211 and z212 merged to main
+- Brandon: "merge to main and push", then "conclude session". `main` holds z212; the work branch `claude/practical-lamport-j13scq` is level with it.
+- For Brandon: upload the DEV dashboard (z212). No xlsx changed since z208.
+- Next bug-testing ideas not done yet: the `wd_row` suite needs a layout-3 set (`LODE_OLD3`); ATOM suite in Singapore time; Excel-repair
+  check on the saved files of every suite with `LODE_DUMP` on the fresh set.
+- Still open for Brandon: whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the
+  planner note; the ATOM initials set rebuild once he sends the filled crew list and the ATOM export.
+
 ## z212 (17 Nov): Undo after a refresh, local time stamps, Singapore time checked
 - **Bug (fixed):** in Ops Room mode Undo rolled back every open file, also one with view access only. A refresh of that file (someone
   else's save) does not restart the Undo history (`liveDone` only does that for files you can edit), so Undo brought back the copy from

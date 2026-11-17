@@ -9,8 +9,15 @@ const tests = [];
 const test = (name, fn, opts) => tests.push({ name, fn, opts });
 
 // save book bi in memory (inside withBook, like a real save) and read it back as a fresh open
-const roundTrip = (page, bi) => page.evaluate(bi => { const bk = books[bi], bytes = withBook(bi, () => logBuild(bk, new Map(bk.dirty)).bytes);
-  bk.dirty = new Map(); reparseBook(bi, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); }, bi);
+// (LODE_DUMP=<folder>: each saved file is also written there, for tests/xlsx_check.py)
+let dumpN = 0;
+const roundTrip = async (page, bi = 0) => {
+  const r = await page.evaluate(bi => { const bk = books[bi], bytes = withBook(bi, () => logBuild(bk, new Map(bk.dirty)).bytes);
+    bk.dirty = new Map(); reparseBook(bi, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+    return window.__dump ? { name: bk.WB.name, b64: btoa(Array.from(bytes, c => String.fromCharCode(c)).join("")) } : null; }, bi);
+  if (r && process.env.LODE_DUMP) { const fs = require("fs"), path = require("path"); fs.mkdirSync(process.env.LODE_DUMP, { recursive: true });
+    fs.writeFileSync(path.join(process.env.LODE_DUMP, path.basename(__filename, ".test.js") + "_saved_" + process.pid + "_" + (++dumpN) + "_" + r.name), Buffer.from(r.b64, "base64")); }
+};
 // a cell straight from the saved sheet XML of book bi
 const sheetCell = (page, bi, sheet, ref) => page.evaluate(([bi, sheet, ref]) => { const W = books[bi].WB; return readCellsOf(W.files, W.paths[sheet], W.sst || parseSST(W.files))[ref]; }, [bi, sheet, ref]);
 const noErrors = errs => assert.deepStrictEqual(errs.filter(e => /PAGEERROR|console\.error/.test(e)), []);
@@ -70,6 +77,28 @@ test("mc_found_in_a_file_with_three_rows_per_person", async ({ page, errs }) => 
   noErrors(errs);
 }, { mine: "Ops_Room" });
 
+test("undo_in_the_ops_room_keeps_a_view_only_file_as_refreshed", async ({ page, errs }) => {
+  // z212: in Ops Room mode Undo rolled back every open file, also one the Ops Room may only view; a refresh of that file (someone else's
+  // save) does not restart the history, so Undo brought back the copy from before the refresh and hid their changes on screen
+  const p = await opsWithSup2(page);
+  const r = await page.evaluate(async ([bi, i]) => {
+    books[bi].noEdit = true; undoReset(); await new Promise(z => setTimeout(z, 20));
+    // the Ops Room edits its own file: one Undo step
+    withBook(books.findIndex(b => b.S.kind === "ops"), () => put("Day Board", "B6", "Undo test")); await new Promise(z => setTimeout(z, 20));
+    // someone in SUP 2 saves: their file is read again here (a copy with a code on 4 Nov PM)
+    const ref = monSheet(10) + "!" + colL(DAY_COL0 + 3) + (g0(books[bi].S) + gridRow(i, 1, books[bi].S));
+    const bytes = withBook(bi, () => { dirty.set(ref, { sheet: monSheet(10), ref: ref.split("!")[1], val: "SIM" }); try { return buildXlsx().bytes; } finally { dirty.clear(); } });
+    reparseBook(bi, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); liveDone([bi]);
+    const seen = books[bi].S.m[10].grid[gridRow(i, 1, books[bi].S)][3];
+    undo(); await new Promise(z => setTimeout(z, 20));
+    return { seen, after: books[bi].S.m[10].grid[gridRow(i, 1, books[bi].S)][3], board: books[books.findIndex(b => b.S.kind === "ops")].dirty.size };
+  }, [p.bi, p.i]);
+  assert.strictEqual(r.seen, "SIM", "the refresh shows their save");
+  assert.strictEqual(r.after, "SIM", "Undo leaves the view-only file as refreshed");
+  assert.strictEqual(r.board, 0, "the Ops Room's own edit is undone");
+  noErrors(errs);
+}, { mine: "Ops_Room" });
+
 // ---- Day Status (Master Planner): a no-flying day, this year and next January
 test("day_status_saved_on_the_right_row", async ({ page, errs }) => {
   const r = await page.evaluate(() => { const bi = mpIdx(); return { bi, ed: mpEditable(), nx: books[bi].S.nx }; });
@@ -108,6 +137,47 @@ test("duty_crew_add_and_remove_are_saved", async ({ page, errs }) => {
   noErrors(errs);
 }, { mine: "Duty_Roster" });
 
+// ---- z211: the Duty Planner with view access only offers no edits (they showed on screen but were never saved)
+for (const mine of ["Duty_Roster", "Flight_Ops_Planner_SUP2"]) {
+  test("view_only_duty_planner_offers_no_edits_" + mine, async ({ page, errs }) => {
+    const r = await page.evaluate(() => { books[0].noEdit = true; document.querySelector("nav.tabs button[data-v='sdo']") && document.querySelector("nav.tabs button[data-v='sdo']").click();
+      if (!books[0].S.kind) { DUTY = "SDO"; dutyPicked = true; }   // a department ticks its SDO days (BDO days show the person the Duty Planner picked)
+      renderSdo();
+      const ctl = [...document.querySelectorAll("#sdoCal [data-sdo]")], enabled = ctl.filter(x => !x.disabled).length, st = books[dutyBi()].S, before = JSON.stringify(st.duty), crew = JSON.stringify(st.crew || null);
+      // try anyway: change the first control, click a remove button and the copy button if any are there
+      const el = ctl[0]; if (el) { if (el.type === "checkbox") el.checked = !el.checked; else el.value = el.options[1] ? el.options[1].value : ""; el.disabled = false; el.dispatchEvent(new Event("change", { bubbles: true })); }
+      const rm = document.querySelector("#dutyCrew button[data-dcrm]"), sync = document.getElementById("sdoSync");
+      return { n: ctl.length, enabled, rm: !!rm, add: !!document.getElementById("dcAdd"), sync: !!sync,
+        same: JSON.stringify(books[dutyBi()].S.duty) === before && JSON.stringify(books[dutyBi()].S.crew || null) === crew, dirty: books[dutyBi()].dirty.size }; });
+    assert.ok(r.n > 0, "the calendar has controls");
+    assert.deepStrictEqual([r.enabled, r.rm, r.add, r.sync, r.same, r.dirty], [0, false, false, false, true, 0], JSON.stringify(r));
+    noErrors(errs);
+  }, { mine });
+}
+
+// ---- z211: with view access only, typing into any page of your own file changes nothing in memory (put() would drop it anyway)
+for (const [mine, tabs] of [["Flight_Ops_Planner_SUP2", ["roster", "acts", "cur", "syl", "misc"]], ["Master_Planner", ["mp", "codes", "cmx"]], ["Ops_Room", ["ops"]]]) {
+  test("view_only_pages_change_nothing_" + mine, async ({ page, errs }) => {
+    const r = await page.evaluate(async tabs => {
+      window.confirm = () => true; window.prompt = () => "ZZ"; books[0].noEdit = true; updateSave();
+      const snap = () => JSON.stringify(books[0].S, (k, v) => v instanceof Map ? [...v.entries()] : v instanceof Set ? [...v] : k.startsWith("_") ? undefined : v);
+      const before = snap(), out = {};
+      for (const t of tabs) { const b = document.querySelector("nav.tabs button[data-v='" + t + "'], [data-v='" + t + "']"); if (!b) continue; b.click(); await new Promise(z => setTimeout(z, 50));
+        const view = document.querySelector("section.view:not([style*='none']), .view.on") || document.body;
+        const els = [...document.querySelectorAll("main input, main select, main textarea, #views input, #views select, #views textarea, input[data-r], select[data-r], input[data-f], select[data-f], input[data-row], input[data-st], select[data-sdo]")].filter(x => x.offsetParent !== null && x.type !== "search" && x.type !== "file");
+        let n = 0; for (const el of els) { try { el.disabled = false;
+          if (el.type === "checkbox") el.checked = !el.checked; else if (el.tagName === "SELECT") el.selectedIndex = el.options.length > 1 ? (el.selectedIndex + 1) % el.options.length : 0; else el.value = "ZZ9";
+          el.dispatchEvent(new Event("input", { bubbles: true })); el.dispatchEvent(new Event("change", { bubbles: true })); n++; } catch (e) { } }
+        out[t] = n; }
+      return { out, same: snap() === before, dirty: books[0].dirty.size, diff: (() => { const a = before, b = snap(); let i = 0; while (i < a.length && a[i] === b[i]) i++; return a.slice(Math.max(0, i - 120), i + 60) + "  ->  " + b.slice(Math.max(0, i - 120), i + 60); })() };
+    }, tabs);
+    console.log("  inputs tried: " + JSON.stringify(r.out)); assert.ok(Object.values(r.out).reduce((a, b) => a + b, 0) > 0, "the pages had inputs to try");
+    assert.strictEqual(r.dirty, 0, "nothing to save");
+    assert.ok(r.same, "nothing changed in memory (" + JSON.stringify(r.out) + "): " + r.diff);
+    noErrors(errs);
+  }, { mine });
+}
+
 // ---- Overview and Changelog tabs draw without errors on every file kind
 for (const mine of ["Flight_Ops_Planner_SUP2", "Master_Planner", "Ops_Room"]) {
   test("every_tab_draws_" + mine, async ({ page, errs }) => {
@@ -126,7 +196,7 @@ for (const mine of ["Flight_Ops_Planner_SUP2", "Master_Planner", "Ops_Room"]) {
   for (const t of tests) {
     if (only && !t.name.includes(only)) continue;
     ran++; let S = null;
-    try { S = await boot(Object.assign({}, t.opts)); await t.fn(S);
+    try { S = await boot(Object.assign({}, t.opts)); if (process.env.LODE_DUMP) await S.page.evaluate(() => { window.__dump = true; }); await t.fn(S);
       const bad = S.errs.filter(e => /PAGEERROR/.test(e)); if (bad.length) throw new Error(bad.join(" | "));
       pass++; console.log("ok   " + t.name); }
     catch (e) { console.log("FAIL " + t.name + ": " + String(e.message).split("\n")[0].slice(0, 400)); }

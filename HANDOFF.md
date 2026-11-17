@@ -1,4 +1,33 @@
-# LODESTAR handoff (updated 2026-11-16, after z210; next-session notes below)
+# LODESTAR handoff (updated 2026-11-17, after z212; next-session notes below)
+
+## z212 (17 Nov): Undo after a refresh, local time stamps, Singapore time checked
+- **Bug (fixed):** in Ops Room mode Undo rolled back every open file, also one with view access only. A refresh of that file (someone
+  else's save) does not restart the Undo history (`liveDone` only does that for files you can edit), so Undo brought back the copy from
+  before the refresh and hid their changes on screen until the next refresh. Undo now skips files you can't edit (`mayEdit`). Test
+  `chits_duty_status` `undo_in_the_ops_room_keeps_a_view_only_file_as_refreshed` (fails on z211).
+- **Fixed:** the "updated" stamp written on Ground Rows (H), Flying Restrictions (E) and Alert States (E) was UTC (8 hours behind in
+  Singapore); now local time like the Change Log (`logTime`).
+- **Singapore time:** `TZ=Asia/Singapore node tests/run_all.js <fresh set>`: 93 of 93 runs clean. New `node tests/timezone.test.js` (3)
+  uses the real clock in Asia/Singapore: at 07:30 (UTC still the day before), at 23:30 and on New Year's morning, today, the time stamp,
+  the greeting and the Planner's today column are right.
+- Saved files of `block_find_req` and `chits_duty_status` (now written with `LODE_DUMP`): `xlsx_check.py` 0 problems.
+- For Brandon: upload the DEV dashboard (z212). Nothing to see in normal use.
+
+
+## z211 (17 Nov): view-only Duty Planner
+Brandon: "continue bug testing".
+- **Bug (fixed):** the Duty Planner never checked view access. With view access only on SharePoint (or a file open here read-only), the
+  Duty Roster's day boxes, the BDO person boxes, the Duty Crew add / remove and a department's SDO tick boxes and "Copy my duty days"
+  all changed the screen, but `put()` dropped the edit, so nothing was saved. Now the controls are greyed out, the list editing and the
+  copy button are hidden, and each handler checks first (`dutyLocked`). Tests `chits_duty_status` `view_only_duty_planner_offers_no_edits_*`
+  (fail on z210).
+- **New check** `view_only_pages_change_nothing_*`: with view access only, every input on Crew Roster, Activities, Currency, Misc Notes, the
+  Master Planner pages and the Ops Room board is changed; nothing changes in memory and nothing is marked to save. Passed already (those
+  pages use `readOnly()` / `mpEditable()` / `opsEditable()`).
+- Suites re-run on z211: chits_duty_status 13 (both sets), bdo_person 8, dept_select 24, other_depts 10, ops_room 60 (both sets), sharepoint 14.
+- For Brandon: upload the DEV dashboard (z211). To test: someone with view access only on Duty_Roster.xlsx opens the Duty Planner: the
+  boxes are greyed out.
+
 
 ## Session end (16 Nov): z209 and z210 merged to main
 - Brandon: "continue bug testing", then "merge and push then conclude session". z210 is merged into `main` and pushed. No xlsx changed.

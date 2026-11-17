@@ -257,6 +257,58 @@ test("added_role_can_be_removed_only_when_unused", async ({ page }) => {
   await page.click("#rlList button[data-rlx='Spare']");
   assert.deepStrictEqual(await page.evaluate(() => [S.rl.map(x => x.role).join(), ROLES_ALL.includes("Spare")]), ["Examiner", false]);
 });
+// z214 (Brandon: "ask each time"): a changed callsign asks whether it is the same person; yes moves the records, no leaves them with the old callsign
+async function renameSetup(page) {
+  return page.evaluate(() => {
+    const i = S.roster.findIndex(p => p.id && S.syl.some(x => same(x.id, p.id))), old = S.roster[i].id, A = [...actIndex().values()];
+    const r = gridRow(i, 0), fl = A.find(a => a.ci === CAT_FLIGHT).code; S.m[10].grid[r][3] = fl; put(monSheet(10), colL(DAY_COL0 + 3) + (g0() + r), fl);
+    setNote(10, r, 3, "Lead, brief 0730");
+    return { i, old, nsyl: S.syl.filter(x => same(x.id, old)).length, k: "10:" + r + ":3" };
+  });
+}
+const rename = (page, i, v, yes) => page.evaluate(([i, v, yes]) => { window.__asked = ""; window.confirm = m => { window.__asked = m; return yes; };
+  document.querySelector("nav.tabs button[data-v='roster']").click(); const el = document.querySelector("#rosterTable [data-r='" + i + "'][data-f='id']");
+  el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); return window.__asked; }, [i, v, yes]);
+test("callsign_corrected_takes_the_records_along", async ({ page }) => {
+  const x = await renameSetup(page); assert.ok(x.nsyl > 0, "syllabus entries to move");
+  const asked = await rename(page, x.i, x.old + "Z", true);
+  assert.ok(new RegExp("^" + x.old + " has " + x.nsyl + " syllabus entr").test(asked) && /1 planner note/.test(asked), asked);
+  await roundTrip(page);
+  const r = await page.evaluate(([x]) => ({ id: S.roster[x.i].id, syl: S.syl.filter(y => same(y.id, x.old + "Z")).length, left: S.syl.filter(y => same(y.id, x.old)).length, note: S.notes.get(x.k) || "" }), [x]);
+  assert.deepStrictEqual(r, { id: x.old + "Z", syl: x.nsyl, left: 0, note: "Lead, brief 0730" });
+});
+test("callsign_of_someone_else_leaves_the_records", async ({ page }) => {
+  const x = await renameSetup(page);
+  await rename(page, x.i, "NEWBIE", false);
+  const now = await page.evaluate(k => S.notes.get(k) || "", x.k); assert.strictEqual(now, "", "the old note no longer shows on the new person");
+  await roundTrip(page);
+  const r = await page.evaluate(([x]) => ({ id: S.roster[x.i].id, mine: S.syl.filter(y => same(y.id, "NEWBIE")).length, old: S.syl.filter(y => same(y.id, x.old)).length, note: S.notes.get(x.k) || "" }), [x]);
+  assert.deepStrictEqual(r, { id: "NEWBIE", mine: 0, old: x.nsyl, note: "" });
+});
+test("callsign_corrected_moves_tags_chits_selection_and_ops_room_chits", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    OPS = true;   // the Ops Room file editable too
+    const i = S.roster.findIndex(p => p.id && !/inactive/i.test(p.status)), old = S.roster[i].id, r = gridRow(i, 0), fl = [...actIndex().values()].find(a => a.ci === CAT_FLIGHT).code;
+    if (!S.hasChit || !S.sylDef || !opsBook()) return { skip: true };
+    S.m[10].grid[r][4] = fl; put(monSheet(10), colL(DAY_COL0 + 4) + (g0() + r), fl); roleSet(10, r, 4, "AC");
+    const row = CHIT_ROW0 + 50; put("Medical Chits", "A" + row, old); put("Medical Chits", "B" + row, dateSerial(S.year, 10, 1)); S.chitUsed.add(row); S.chits.push({ row, id: old, down: dateSerial(S.year, 10, 1), up: null, by: "", note: "" });
+    S.sylDef.sel = [old]; put("Syllabus Settings", "B8", old);
+    const ob = opsBook(), dep = S.dept; withBook(books.indexOf(ob), () => { put("Medical Chits", "A300", dep); put("Medical Chits", "B300", old); S.chits.push({ row: 300, dept: dep, id: old, down: 1, up: null }); });
+    let asked = ""; window.confirm = m => { asked = m; return true; };
+    document.querySelector("nav.tabs button[data-v='roster']").click(); const el = document.querySelector("#rosterTable [data-r='" + i + "'][data-f='id']"); el.value = old + "Q"; el.dispatchEvent(new Event("change", { bubbles: true }));
+    const bk = books[cur.b], bytes = logBuild(bk, new Map(bk.dirty)).bytes; bk.dirty = new Map(); reparseBook(cur.b, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); useBook(cur.b);
+    const od = books[books.indexOf(ob)].dirty.get("Medical Chits!B300");
+    return { asked: /1 AC \/ Pax tag, 1 medical chit and the instructor stage selection in this file, and 1 medical chit in the Ops Room file/.test(asked), tag: S.roleTags.get("10:" + r + ":4"), chit: S.chits.filter(c => same(c.id, old + "Q")).length, sel: S.sylDef.sel.join(), want: old + "Q", ops: od && od.val };
+  });
+  if (r.skip) { console.log("     (older set: skipped)"); return; }
+  assert.deepStrictEqual(r, { asked: true, tag: "AC", chit: 1, sel: r.want, want: r.want, ops: r.want });
+});
+test("callsign_with_no_records_asks_nothing", async ({ page }) => {
+  const i = await page.evaluate(() => S.roster.findIndex(p => p.id && !S.syl.some(x => same(x.id, p.id)) && ![...S.noteRow.keys()].some(k => rowPerson(+k.split(":")[1]) === S.roster.indexOf(p)) && ![...S.roleRow.keys()].some(k => rowPerson(+k.split(":")[1]) === S.roster.indexOf(p)) && !S.chits.some(c => same(c.id, p.id)) && !(S.sylDef.sel || []).some(s => same(s, p.id))));
+  assert.ok(i >= 0); assert.strictEqual(await rename(page, i, "QUIETX", true), "");
+  assert.strictEqual(await page.evaluate(i => S.roster[i].id, i), "QUIETX");
+});
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

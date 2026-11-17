@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z213</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z214</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -7181,7 +7181,7 @@ async function spStamp(url) {
 }
 const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
 function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z213 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z214 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }
@@ -8443,6 +8443,38 @@ $("rosterTable").addEventListener("change", e => {
   if (rosterBusy) return; rosterBusy = true;
   try { rosterChange(e); } finally { rosterBusy = false; }
 });
+// z213: the records of roster row i kept under callsign old in this file: syllabus results (Syllabus Log B), planner notes (Cell Notes C),
+// AC / Pax tags (Role Tags C), medical chits (Medical Chits A) and the instructor stage selection (Syllabus Settings B8)
+function csRecords(i, old) {
+  const mine = m => [...(m || new Map())].filter(([k]) => rowPerson(+k.split(":")[1]) === i);
+  const R = { i, old, syl: (S.syl || []).filter(x => same(x.id, old)), notes: mine(S.noteRow), roles: mine(S.roleRow), chits: (S.chits || []).filter(c => same(c.id, old)),
+    sel: !!(S.sylDef && (S.sylDef.sel || []).some(x => same(x, old))) };
+  // medical chits the Ops Room keeps for this department (its Medical Chits sheet: A department, B callsign; used for files without their own sheet)
+  const ob = opsBook(); R.oi = ob ? books.indexOf(ob) : -1; R.ops = ob && ob !== books[cur.b] ? (ob.S.chits || []).filter(c => same(c.dept, S.dept) && same(c.id, old)) : [];
+  R.opsRo = R.ops.length > 0 && !mayEdit(R.oi);
+  R.n = R.syl.length + R.notes.length + R.roles.length + R.chits.length + R.ops.length + (R.sel ? 1 : 0); return R;
+}
+function csAsk(R, old, v) {
+  const L = [], n = (k, one, many) => k + " " + (k === 1 ? one : many);
+  if (R.syl.length) L.push(n(R.syl.length, "syllabus entry", "syllabus entries")); if (R.notes.length) L.push(n(R.notes.length, "planner note", "planner notes"));
+  if (R.roles.length) L.push(n(R.roles.length, "AC / Pax tag", "AC / Pax tags")); if (R.chits.length) L.push(n(R.chits.length, "medical chit", "medical chits"));
+  if (R.sel) L.push("the instructor stage selection");
+  const where = L.length ? old + " has " + (L.length > 1 ? L.slice(0, -1).join(", ") + " and " + L[L.length - 1] : L[0]) + " in this file" + (R.ops.length ? ", and " + n(R.ops.length, "medical chit", "medical chits") + " in the Ops Room file" : "") : old + " has " + n(R.ops.length, "medical chit", "medical chits") + " in the Ops Room file";
+  return where + ".\n\nIs " + v + " the same person, with the callsign corrected?\n\nOK: move them to " + v + "." + (R.opsRo ? " (The Ops Room file is open read-only here: ask the Ops Room to change its chits to " + v + ".)" : "") + "\nCancel: " + v + " is someone else; they stay with " + old + ".";
+}
+function csApply(R, v) {
+  if (R.same) {
+    R.syl.forEach(x => { put("Syllabus Log", "B" + x.r, v); x.id = v; });
+    R.notes.forEach(([, row]) => put("Cell Notes", "C" + row, v)); R.roles.forEach(([, row]) => put(ROLE_SHEET, "C" + row, v));
+    R.chits.forEach(c => { put("Medical Chits", "A" + c.row, v); c.id = v; });
+    if (R.ops.length && !R.opsRo) withBook(R.oi, () => R.ops.forEach(c => { put("Medical Chits", "B" + c.row, v); c.id = v; }));
+    if (R.sel) { S.sylDef.sel = S.sylDef.sel.map(x => same(x, R.old) ? v : x); put("Syllabus Settings", "B8", S.sylDef.sel.join(", ")); }
+    toast("Moved to " + v + "." + saveHint(), 3000); return;
+  }
+  // someone else: the old records stay in the sheets under the old callsign; they no longer show on this row (as after the file is opened again)
+  R.notes.forEach(([k]) => { S.notes.delete(k); if (S.opsNotes) S.opsNotes.delete(k); S.noteRow.delete(k); });
+  R.roles.forEach(([k]) => { S.roleTags.delete(k); if (S.roleSor) S.roleSor.delete(k); S.roleRow.delete(k); });
+}
 function rosterChange(e) {
   if (readOnly()) { renderRoster(); return; }
   const el = e.target, i = +el.dataset.r; let f = el.dataset.f; if (isNaN(i)) return;
@@ -8453,8 +8485,11 @@ function rosterChange(e) {
   if (f === "rank" || f === "name") { const cur0 = rankParts(S.roster[i].name), typed = f === "name" ? rankParts(v) : null;
     const rk = f === "rank" ? v : typed.rank || cur0.rank, rest = f === "rank" ? cur0.rest : typed.rank ? typed.rest : v;
     v = rest ? (rk ? rk + " " : "") + rest : ""; f = "name"; if (!rest && rk) { toast("Type the name first, then pick the rank."); renderRoster(); return; } }
+  // z213 (Brandon: "ask each time"): a changed callsign. This file's records name the person by callsign; without this they were cut off from them
+  let mv = null; if (f === "id") { const old = S.roster[i].id; if (old && v && !same(old, v)) { mv = csRecords(i, old); if (!mv.n) mv = null; else mv.same = confirm(csAsk(mv, old, v)); } }
   S.roster[i][f] = v;
   const rc = rosterCols(S); put("Roster", rc[f] + (ROSTER_ROW0 + i), v);
+  if (mv) csApply(mv, v);
   if (f === "name" && v && !S.roster[i].status) { const g = el.closest("tr") && el.closest("tr").dataset.grp, d0 = S.catCol && i >= REG_N ? g || "NSMEN" : "Active"; S.roster[i].status = d0; put("Roster", rc.status + (ROSTER_ROW0 + i), d0); }
   renderRoster(); renderPlanner(); renderOverview();
 }

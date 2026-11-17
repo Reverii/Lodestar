@@ -1,4 +1,21 @@
-# LODESTAR handoff (updated 2026-11-17, after z213; next-session notes below)
+# LODESTAR handoff (updated 2026-11-17, after z214; next-session notes below)
+
+## z214 (17 Nov): a changed callsign asks whether it is the same person
+Brandon: "do more bug test".
+- **Bug (fixed, Brandon chose "ask each time"):** changing a callsign on the Crew Roster only changed that cell. The person's records in
+  the file name them by callsign: Syllabus Log (B), Cell Notes (C), Role Tags (C, AC / Pax), Medical Chits (A), the instructor stage
+  selection (Syllabus Settings B8), and the Ops Room's chits for files without their own chit sheet (Ops_Room Medical Chits A dept, B
+  callsign). So RAPTOR -> RAPTORX showed no syllabus progress straight away, and after a save and reopen the notes and tags were gone
+  from the plan too (still in the sheets, linked to nobody). Now, when that person has any such record, a box lists them and asks "Is
+  RAPTORX the same person, with the callsign corrected?" OK moves them all (the Ops Room's chits too when the Ops Room file can be edited;
+  else the box says to ask the Ops Room). Cancel = someone else: the records stay under the old callsign and stop showing on that row
+  at once (as they would after a reopen). No records = no box. `csRecords` / `csAsk` / `csApply` next to `rosterChange`.
+  Tests `roster_order` `callsign_*` (4; three fail on z213).
+- **Checked, no bugs:** ATOM suite in Singapore time (97 of 97 on both sets); a click-everything run over every tab as SUP 2, the Ops
+  Room, the Master Planner and the Duty Roster (about 690 clicks, no script errors); UTC date handling; typed text in regular expressions.
+- For Brandon: upload the DEV dashboard (z214). No xlsx changed. To test: on a copy, change the callsign of someone with syllabus results
+  on the Crew Roster; the box should list their records; OK keeps their syllabus progress under the new callsign.
+
 
 ## z213 (17 Nov): apostrophes, Syllabus Log after Ctrl+V and the Ops Room
 Brandon: "lets run some bug testing".
@@ -25,7 +42,7 @@ Brandon: "lets run some bug testing".
 ## Session end (17 Nov): z211 and z212 merged to main
 - Brandon: "merge to main and push", then "conclude session". `main` holds z212; the work branch `claude/practical-lamport-j13scq` is level with it.
 - For Brandon: upload the DEV dashboard (z212). No xlsx changed since z208.
-- Next bug-testing ideas not done yet (z213: `wd_row` done, it runs on the fresh set): ATOM suite in Singapore time; Excel-repair
+- Next bug-testing ideas not done yet (z213: `wd_row` done, it runs on the fresh set; z214: ATOM in Singapore time done): Excel-repair
   check on the saved files of every suite with `LODE_DUMP` on the fresh set.
 - Still open for Brandon: whether Beta also means the release build; whether My Lodestar should show the Ops Room line instead of the
   planner note; the ATOM initials set rebuild once he sends the filled crew list and the ATOM export.

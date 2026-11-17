@@ -1259,7 +1259,7 @@ table.opst tr.f td,.mday .chip{transition:background-color .15s,opacity .15s}
     <!--DEV--><div id="devStrip" style="display:none"><b>DEV MODE</b><button class="btn" id="devGo">Open every file (dev)</button><button class="btn" id="devPick" style="display:none" title="Forget the remembered folder and pick another one">Choose another folder</button><button class="btn" id="upgGo" title="Copy everything typed in your department files into new empty files with 30 SANS / NSMEN rows (layout 5)">Upgrade department files…</button>
       <label>First tab<select id="devMine"><option>SUP 1</option><option>SUP 2</option><option>TACCO</option><option>Loadmaster</option><option>Pilot</option></select></label>
       <label><input type="checkbox" id="devAuto"> Open automatically on SharePoint</label><span class="muted">Development build only. The release build has none of this.</span></div><!--/DEV-->
-    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z214</div>
+    <div id="wDiag" class="muted" style="font-size:11px;margin-top:14px;word-break:break-all">Dashboard version 2026-11-17 z215</div>
     <div class="muted" style="font-size:11px;margin-top:4px">Built by MARTELL</div>
   </div>
 </div>
@@ -1902,7 +1902,8 @@ function loadWorkbook(buf, name, handle, other) {
   if (st.hasNotes) {
     const c = readCells("Cell Notes");
     for (let r = NOTE_ROW0; r < NOTE_ROW0 + NOTE_N; r++) {
-      const a = c["A" + r], who = str(c["C" + r]), tx = str(c["E" + r]), ox = str(c["H" + r]), si = SHIFTS.indexOf(str(c["B" + r]).toUpperCase());
+      // z215: also WD (setNote writes ROW_LABELS); a note on the WD row was dropped when the file was opened again
+      const a = c["A" + r], who = str(c["C" + r]), tx = str(c["E" + r]), ox = str(c["H" + r]), si = ROW_LABELS.slice(0, rp(st)).indexOf(str(c["B" + r]).toUpperCase());
       if (a != null || who || tx || ox) st.noteUsed.add(r);
       if (typeof a !== "number" || si < 0 || !who || !(tx || ox)) continue;
       const iso = serialToISO(a), D = ymd(iso, st.year); if (D.y !== st.year) continue;
@@ -1919,12 +1920,13 @@ function loadWorkbook(buf, name, handle, other) {
   st.rk = [];
   if (WB.paths[RK_SHEET]) { const c = readCells(RK_SHEET); for (let r = RK_ROW0; r < RK_ROW0 + RK_N; r++) { const k = str(c["A" + r]).toUpperCase().replace(/\s+/g, ""); if (k) st.rk.push({ rank: k, after: str(c["B" + r]).toUpperCase().replace(/\s+/g, ""), row: r }); } }
   // Role Tags sheet (made by the dashboard on the first tag): AC / Pax on a crew flight cell, header row 1, rows 2.. (A date, B shift, C callsign or name, D tag)
+  // z215: E holds 2 to 9 flights (Sorties takes up to 9); 4 or more were dropped when the file was opened again
   st.roleTags = new Map(); st.roleRow = new Map(); st.roleUsed = new Set(); st.roleSor = new Map();   // z175: E "Flights" = Crew / Pax / Not on per flight of a running change ("P,C")
   if (WB.paths[ROLE_SHEET]) {
     const c = readCells(ROLE_SHEET);
     for (let r = ROLE_ROW0; r < ROLE_ROW0 + ROLE_N; r++) {
       const a = c["A" + r], who = str(c["C" + r]), tag0 = str(c["D" + r]).toUpperCase(), si = SHIFTS.indexOf(str(c["B" + r]).toUpperCase());
-      const sor = str(c["E" + r]).toUpperCase().replace(/\s+/g, ""), sorOk = /^[CPN](,[CPN]){1,2}$/.test(sor), tag = tag0 === "AC" || tag0 === "PAX" ? tag0 : "";
+      const sor = str(c["E" + r]).toUpperCase().replace(/\s+/g, ""), sorOk = /^[CPN](,[CPN]){1,8}$/.test(sor), tag = tag0 === "AC" || tag0 === "PAX" ? tag0 : "";
       if (a != null || who || tag0 || sor) st.roleUsed.add(r);
       if (typeof a !== "number" || si < 0 || !who || (!tag && !sorOk)) continue;
       const iso = serialToISO(a), D = ymd(iso, st.year); if (D.y !== st.year) continue;
@@ -7181,7 +7183,7 @@ async function spStamp(url) {
 }
 const spChanged = (h, d) => d.TimeLastModified !== h.modified || !!(d.ETag && h.tag && d.ETag !== h.tag);
 function spMark(h, d) { if (!d) return; if (d.TimeLastModified) h.modified = d.TimeLastModified; if (d.ETag) h.tag = d.ETag; }
-function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z214 · SharePoint check: " + msg; }
+function spDiag(msg) { $("wDiag").textContent = "Dashboard version 2026-11-17 z215 · SharePoint check: " + msg; }
 async function spInit() {
   const q = new URLSearchParams(location.search);
   if (location.protocol !== "https:" && !q.has("sptest")) { spDiag("not running from SharePoint (" + location.protocol + ")"); return; }

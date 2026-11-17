@@ -1,4 +1,19 @@
-# LODESTAR handoff (updated 2026-11-17, after z214; next-session notes below)
+# LODESTAR handoff (updated 2026-11-17, after z215; next-session notes below)
+
+## z215 (17 Nov): two things lost when a file was opened again
+Brandon: "do more test".
+- **Bug (fixed):** a planner note or an Ops Room line on a **WD** cell was lost when the file was saved and opened again. `setNote`
+  writes the row label (AM, PM, NIGHT or WD) in Cell Notes B, but the reader only looked it up in `SHIFTS` (AM, PM, NIGHT). It now
+  accepts WD on files that have the WD row. Test `ops_notes` `wd_cell_note_survives_a_reopen` (fails on z214).
+- **Bug (fixed):** on a flight with **4 or more sorties** (Master Planner Sorties takes 1 to 9), the per-flight Crew / Pax / Not on
+  choice was written (Role Tags E, e.g. `C,P,N,C`) but dropped on reopen: the reader only took 2 or 3. Now 2 to 9. Test `role_tags`
+  `per_flight_choice_kept_for_four_or_more_flights` (fails on z214).
+- **Checked, not bugs:** a flight code renamed on the Master Planner (the Ops Room board keeps the planned crew); the Activities rename
+  already offers to update planner cells; Sorties input is kept to 1 to 9.
+- **Full run on z214:** 98 runs (now with `wd_row`); all clean apart from the two new tests above (run against z214 on purpose) and one
+  `atom` file-open timeout under load (passes alone). `xlsx_check.py` on the 249 saved files: 0 problems.
+- For Brandon: upload the DEV dashboard (z215). No xlsx changed. To test: put a note on a WD cell, save, refresh: the note stays.
+
 
 ## z214 (17 Nov): a changed callsign asks whether it is the same person
 Brandon: "do more bug test".

@@ -80,6 +80,20 @@ test("afp_remarks_carry_no_planner_lines", async ({ page }) => {
   assert.ok(!/Back by 1500H/.test(r), "no For the Ops Room line on the AFP (z197)"); assert.ok(!/SECRET planner idea/.test(r), "no planner note on the AFP");
 }, ED);
 
+// z215: a note (and the Ops Room line) on a WD cell is kept when the file is saved and opened again (the sheet says "WD", the reader only took AM / PM / NIGHT)
+test("wd_cell_note_survives_a_reopen", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    if (rp() < 4) return { skip: true };
+    const g = [...actIndex().values()].find(a => wdAllowed(a)).code, r = gridRow(1, 3), r0 = gridRow(1, 0);
+    S.m[10].grid[r][7] = g; put(monSheet(10), colL(DAY_COL0 + 7) + (g0() + r), g);
+    setNote(10, r, 7, "Course at HQ"); setNote(10, r, 7, "Bring ID", true); setNote(10, r0, 7, "AM note");
+    const bk = books[cur.b], bytes = logBuild(bk, new Map(bk.dirty)).bytes; bk.dirty = new Map(); reparseBook(cur.b, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); useBook(cur.b);
+    return { wd: S.notes.get("10:" + r + ":7") || "", ops: S.opsNotes.get("10:" + r + ":7") || "", am: S.notes.get("10:" + r0 + ":7") || "" };
+  });
+  if (r.skip) { console.log("     (no WD row: skipped)"); return; }
+  assert.deepStrictEqual(r, { wd: "Course at HQ", ops: "Bring ID", am: "AM note" });
+});
+
 (async () => {
   const only = process.argv[2]; let pass = 0, ran = 0, S = null;
   for (const t of tests) {

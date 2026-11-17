@@ -109,6 +109,18 @@ test("ops_seat_beats_pax_tag", async ({ page }) => {
 }, OPS);
 
 module.exports.tests = tests;
+// z215: Crew / Pax / Not on per flight survives a save and reopen for 2 to 9 flights (4 or more were dropped on reopen)
+test("per_flight_choice_kept_for_four_or_more_flights", async ({ page }) => {
+  const r = await page.evaluate(() => {
+    const fl = [...actIndex().values()].find(a => a.ci === CAT_FLIGHT).code, out = {}, who = S.roster.map((p, i) => p.id ? i : -1).filter(i => i >= 0);
+    for (const [q, n] of [2, 3, 4, 9].entries()) { const r = gridRow(who[q], 0), d = n + 2, k = "10:" + r + ":" + d, e = Array.from({ length: n }, (_, j) => "CPN"[j % 3]);
+      S.m[10].grid[r][d] = fl; sorSet(10, r, d, e); out[n] = { k, want: e.join(",") }; }
+    const bk = books[cur.b], bytes = logBuild(bk, new Map(bk.dirty)).bytes; bk.dirty = new Map(); reparseBook(cur.b, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)); useBook(cur.b);
+    return Object.entries(out).map(([n, x]) => n + ":" + ((S.roleSor.get(x.k) || []).join(",") === x.want));
+  });
+  assert.deepStrictEqual(r, ["2:true", "3:true", "4:true", "9:true"], JSON.stringify(r));
+});
+
 (async () => {
   const only = process.argv[2];
   let pass = 0, ran = 0;

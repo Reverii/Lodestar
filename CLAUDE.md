@@ -151,3 +151,17 @@ SharePoint REST mock: `tests/spmock.js` (z204); run `node tests/sharepoint.test.
 - Before building a sizeable UI change he usually wants a mock-up (HTML + PNG at 1280x720 in `previews/`) and says
   "build it". Small fixes: just do them.
 - Update `PROJECT_CHECKLIST.md` and `HANDOFF.md` when something is built or decided.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for Reverii/Lodestar (public repo: demo names only). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.

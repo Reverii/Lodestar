@@ -1,4 +1,13 @@
-# LODESTAR handoff (updated 2026-11-17, after z215; next-session notes below)
+# LODESTAR handoff (updated 2026-11-20, after z215; next-session notes below)
+
+## Session end (20 Nov): bug test round on z215, no bugs, no code change
+- Full `run_all --build` on z215: 98 of 98 clean (18 Nov in UTC; again 20 Nov with `TZ=Asia/Singapore` and `LODE_DUMP`).
+- Click-everything run (scratch `monkey.js`) with today = 2027-01-05 on the 2026 files, as SUP 2, Ops Room, Master Planner,
+  Duty Roster and Pilot: 922 clicks, no script errors.
+- `xlsx_check.py` on the 249 saved files: 0 problems. `reopen_check.js` on every dump: all differences traced to tests that poke
+  memory or `put()` directly, plus harmless ones (`atomPub` summary only used at publish time; `dept` on a department's own chits,
+  never read; `sylNext` is only a search start). No data lost on reopen.
+- Also added: `docs/agents/` and the Agent skills section in CLAUDE.md (issue tracker GitHub, default triage labels, single context).
 
 ## Session end (17 Nov, later): z213 to z215 merged to main
 - Brandon: "once done merge and push, thereafter conclude session". `main` holds z215; the work branch `claude/practical-lamport-j13scq` is level with it.
